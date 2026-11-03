@@ -6,8 +6,6 @@
 pack: #? Packs every package into a .nupkg under artifacts/packages
 	@./scripts/utils/print-title.sh 'magenta' 'Packing NuGet Packages'
 	${MAKE} nuke SKIP_TITLE=true TARGET=Pack
-	@echo -e "\n${CL_YELLOW}Packages written to '${CL_RESET}$(PACKAGES_OUT_DIR)${CL_YELLOW}':${CL_RESET}\n"
-	@ls -1 "$(PACKAGES_OUT_DIR)"/*.nupkg 2>/dev/null || true
 
 .PHONY: list_packages
 list_packages: #? Lists every package (id + version) produced by the solution
