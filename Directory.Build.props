@@ -15,7 +15,7 @@
     <PackageProjectUrl>https://github.com/anarchy-io/anarchy-toolkit</PackageProjectUrl>
     <RepositoryUrl>https://github.com/anarchy-io/anarchy-toolkit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
+    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
     <IncludeSymbols>true</IncludeSymbols>

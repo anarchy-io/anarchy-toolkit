@@ -1,0 +1,19 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Package metadata shared by the independently published projects under src/. -->
+  <PropertyGroup>
+    <Title>Anarchy I/O - $(MSBuildProjectName)</Title>
+    <Authors>Leandro M. Medeiros</Authors>
+    <Copyright>Copyright © 2026</Copyright>
+    <PackageTags>anarchy;toolkit;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>
