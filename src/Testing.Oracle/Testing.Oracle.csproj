@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Testing.Oracle</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Testing.Oracle</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Testing.Oracle</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Oracle integration-test fixtures: connection string, connection pool, retry/resilience policy and Unit of Work fixtures, options mapping, enum type handlers, and table reset helpers.</Description>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Testing\Testing.csproj" />
+    <ProjectReference Include="..\Testing.Db\Testing.Db.csproj" />
+    <ProjectReference Include="..\Infrastructure.Persistence.Oracle\Infrastructure.Persistence.Oracle.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" />
+  </ItemGroup>
+
+</Project>
