@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Hosting.Workers</AssemblyName>
+    <PackageId>Anarchy.Toolkit.Hosting.Workers</PackageId>
+    <RootNamespace>Anarchy.Toolkit.Hosting.Workers</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Worker pipeline: monitored/resilient background workers, heartbeat, and a self-hosted health API (service health reports, build metadata) for workers.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\Core.Health\Core.Health.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" />
+    <PackageReference Include="Polly.Core" />
+  </ItemGroup>
+
+</Project>
