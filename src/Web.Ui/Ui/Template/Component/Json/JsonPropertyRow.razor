@@ -1,0 +1,40 @@
+@using Anarchy.Toolkit.Core.Extension
+@inject JsonRenderPresenter Presenter
+
+<div class="json-property-row">
+    <span class="json-property-name"><strong>@Property.Name.ToTitleSentenceCase():</strong></span>
+
+    @if (Presenter.IsBooleanJsonValue(Property.Value))
+    {
+        <span class="json-property-value">
+            <span class="json-boolean @Presenter.GetBooleanCssClass(Property.Value)">
+                <code>@Presenter.GetBooleanDisplayValue(Property.Value)</code>
+            </span>
+        </span>
+    }
+    else if (JsonRenderPresenter.IsScalarJsonValue(Property.Value))
+    {
+        <span class="json-property-value">
+            <code>@JsonRenderPresenter.FormatScalarJsonValue(Property.Value)</code>
+        </span>
+    }
+    else if (Property.Value.ValueKind == JsonValueKind.Array)
+    {
+        <span class="json-property-value">
+            <span>(@Property.Value.GetArrayLength() items)</span>
+        </span>
+    }
+    else
+    {
+        <span class="json-property-value">
+            <JsonViewLink
+                Title="@Property.Name.ToTitleSentenceCase()"
+                JsonContent="@Presenter.PrettyJson(Property.Value)" />
+        </span>
+    }
+</div>
+
+
+@code {
+    [Parameter, EditorRequired] public JsonProperty Property { get; set; }
+}

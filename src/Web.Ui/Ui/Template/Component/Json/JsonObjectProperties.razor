@@ -1,0 +1,94 @@
+@using Anarchy.Toolkit.Core.Extension
+@inject JsonRenderPresenter Presenter
+
+@if (Payload.ValueKind == JsonValueKind.Object)
+{
+    var allProperties = Payload.EnumerateObject().ToArray();
+    var scalarProperties = allProperties
+        .Where(x => JsonRenderPresenter.IsScalarJsonValue(x.Value))
+        .ToArray();
+    var nonArrayComplexProperties = allProperties
+        .Where(x => !JsonRenderPresenter.IsScalarJsonValue(x.Value) && x.Value.ValueKind != JsonValueKind.Array)
+        .ToArray();
+    var arrayProperties = allProperties
+        .Where(x => x.Value.ValueKind == JsonValueKind.Array)
+        .ToArray();
+
+    var renderTableLabel = arrayProperties.Length > 1;
+
+    var columnProperties = scalarProperties
+        .Concat(nonArrayComplexProperties)
+        .ToArray();
+    var leftColumnLength = (columnProperties.Length + 1) / 2;
+    var columns = new[]
+    {
+        columnProperties.Take(leftColumnLength).ToArray(),
+        columnProperties.Skip(leftColumnLength).ToArray()
+    };
+
+    <div class="json-properties-columns">
+        @foreach (var column in columns)
+        {
+            <div class="json-properties-column">
+                @foreach (var property in column)
+                {
+                    <JsonPropertyRow Property="@property" />
+                }
+            </div>
+        }
+    </div>
+
+    @if (arrayProperties.Length > 0)
+    {
+        <div class="json-array-properties-section">
+            @foreach (var arrayProperty in arrayProperties)
+            {
+                var propertyName = arrayProperty.Name.ToTitleSentenceCase();
+
+                <div class="json-array-property-block">
+                    @if (arrayProperty.Value.GetArrayLength() == 0)
+                    {
+                        <div class="json-property-row">
+                            <span class="json-property-name"><strong>@propertyName:</strong></span>
+                            <span class="json-property-value"><code>[]</code></span>
+                        </div>
+                    }
+                    else if (JsonRenderPresenter.IsArrayOfScalars(arrayProperty.Value))
+                    {
+                        <details class="json-array-scalar-details">
+                            <summary>View @propertyName (@arrayProperty.Value.GetArrayLength() item(s))</summary>
+                            <ul>
+                                @foreach (var value in arrayProperty.Value.EnumerateArray())
+                                {
+                                    <li><code>@JsonRenderPresenter.FormatScalarJsonValue(value)</code></li>
+                                }
+                            </ul>
+                        </details>
+                    }
+                    else if (JsonRenderPresenter.IsArrayOfObjects(arrayProperty.Value))
+                    {
+                        <JsonArrayObjectTable
+                            RenderLabel="@renderTableLabel"
+                            PropertyName="@propertyName"
+                            Items="@arrayProperty.Value" />
+                    }
+                    else
+                    {
+                        <JsonViewLink
+                            Title="@propertyName"
+                            JsonContent="@Presenter.PrettyJson(arrayProperty.Value)" />
+                    }
+                </div>
+            }
+        </div>
+    }
+}
+else
+{
+    <JsonNavigableValue Value="@Payload" ArrayName="Payload" />
+}
+
+@code {
+    [Parameter, EditorRequired] public JsonElement Payload { get; set; }
+}
+

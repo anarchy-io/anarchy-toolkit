@@ -1,0 +1,40 @@
+@inject JsonRenderPresenter Presenter
+
+@if (Value.ValueKind == JsonValueKind.Object)
+{
+    <JsonObjectProperties Payload="@Value" />
+}
+else if (Value.ValueKind == JsonValueKind.Array)
+{
+    @if (Value.GetArrayLength() == 0)
+    {
+        <p><code>[]</code></p>
+    }
+    else if (JsonRenderPresenter.IsArrayOfScalars(Value))
+    {
+        <ul>
+            @foreach (var item in Value.EnumerateArray())
+            {
+                <li><code>@JsonRenderPresenter.FormatScalarJsonValue(item)</code></li>
+            }
+        </ul>
+    }
+    else if (JsonRenderPresenter.IsArrayOfObjects(Value))
+    {
+        <JsonArrayObjectTable PropertyName="@ArrayName" Items="@Value" RenderLabel="true" />
+    }
+    else
+    {
+        <pre class="ui-json-modal-pre">@Presenter.PrettyJson(Value)</pre>
+    }
+}
+else
+{
+    <code>@JsonRenderPresenter.FormatScalarJsonValue(Value)</code>
+}
+
+@code {
+    [Parameter, EditorRequired] public JsonElement Value { get; set; }
+    [Parameter] public string ArrayName { get; set; } = "Items";
+}
+

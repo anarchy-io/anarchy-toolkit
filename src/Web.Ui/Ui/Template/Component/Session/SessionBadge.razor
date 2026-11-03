@@ -1,0 +1,26 @@
+@inject BasePresenter Presenter
+@inject IUiSessionContext SessionContext
+@inject UiAuthenticationOptions AuthenticationOptions
+
+@if (!string.IsNullOrWhiteSpace(_clientName))
+{
+    <p class="ui-navbar-meta">
+        <strong>@_clientName</strong>
+        @if (!string.IsNullOrWhiteSpace(_targetEnvironment))
+        {
+            <EnvironmentPill Environment="@_targetEnvironment" />
+        }
+    </p>
+}
+<a href="@Presenter.GetRoute(AuthenticationOptions.LogoutPath)">→ <small><i><u>Logout</u></i></small></a>
+
+@code {
+    private string? _clientName;
+    private string? _targetEnvironment;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _clientName = await SessionContext.GetClientNameAsync();
+        _targetEnvironment = await SessionContext.GetTargetEnvironmentAsync();
+    }
+}

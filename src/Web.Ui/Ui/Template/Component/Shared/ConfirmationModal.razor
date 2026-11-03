@@ -1,0 +1,28 @@
+@if (IsOpen)
+{
+    <div class="modal-overlay" @onclick="CloseAsync">
+        <div class="form-section modal-content confirm-modal-content" @onclick:stopPropagation="true">
+            <button type="button" class="confirm-modal-close" aria-label="Close" @onclick="CloseAsync">&times;</button>
+            <h2>@Title</h2>
+            @ChildContent
+            <div class="confirm-modal-actions">
+                <button type="button" class="btn" @onclick="CloseAsync">Cancel</button>
+                <button type="button" class="btn @ConfirmButtonClass" @onclick="ConfirmAsync">@ConfirmButtonLabel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string ConfirmButtonLabel { get; set; } = string.Empty;
+    [Parameter] public string ConfirmButtonClass { get; set; } = "btn-danger";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private Task CloseAsync() => OnClose.InvokeAsync();
+
+    private Task ConfirmAsync() => OnConfirm.InvokeAsync();
+}

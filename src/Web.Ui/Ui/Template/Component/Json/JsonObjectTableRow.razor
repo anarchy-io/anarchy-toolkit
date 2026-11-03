@@ -1,0 +1,64 @@
+@inject JsonRenderPresenter Presenter
+
+<tr>
+    @foreach (var column in ScalarColumns)
+    {
+        <td>
+            @if (Item.ValueKind == JsonValueKind.Object
+                && JsonRenderPresenter.TryGetPropertyIgnoreCase(Item, column, out var scalarValue)
+                && JsonRenderPresenter.IsScalarJsonValue(scalarValue))
+            {
+                <code>@JsonRenderPresenter.FormatScalarJsonValue(scalarValue)</code>
+            }
+            else
+            {
+                <span>-</span>
+            }
+        </td>
+    }
+    @foreach (var column in ComplexColumns)
+    {
+        <td>
+            @if (Item.ValueKind == JsonValueKind.Object
+                 && JsonRenderPresenter.TryGetPropertyIgnoreCase(Item, column, out var complexValue)
+                 && !JsonRenderPresenter.IsScalarJsonValue(complexValue))
+            {
+                @if (complexValue.ValueKind == JsonValueKind.Array && complexValue.GetArrayLength() == 0)
+                {
+                    <span>-</span>
+                }
+                else if (complexValue.ValueKind == JsonValueKind.Array && JsonRenderPresenter.IsArrayOfScalars(complexValue))
+                {
+                    <details class="json-array-scalar-details-compact">
+                        <summary>Toggle @complexValue.GetArrayLength() item(s)</summary>
+                        <ul>
+                            @foreach (var value in complexValue.EnumerateArray())
+                            {
+                                <li><code>@JsonRenderPresenter.FormatScalarJsonValue(value)</code></li>
+                            }
+                        </ul>
+                    </details>
+                }
+                else
+                {
+                    <JsonViewLink
+                        Title="@ParentName"
+                        JsonContent="@Presenter.PrettyJson(complexValue)" />
+                }
+            }
+            else
+            {
+                <span>-</span>
+            }
+        </td>
+    }
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public string ParentName { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public JsonElement Item { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyCollection<string> ScalarColumns { get; set; } = [];
+    [Parameter, EditorRequired] public IReadOnlyCollection<string> ComplexColumns { get; set; } = [];
+}
+
+

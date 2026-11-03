@@ -1,0 +1,35 @@
+@implements IDisposable
+
+@inject NotificationService Notifications
+
+<div class="notification-stack" role="region" aria-label="Notifications" aria-live="polite">
+    @foreach (var notification in Notifications.Notifications)
+    {
+        <div @key="notification.Id" class="alert notification @GetLevelClass(notification.Level) @(notification.IsDismissing ? "notification-dismissing" : null)" role="@(notification.Level == NotificationLevel.Error ? "alert" : "status")">
+            <button type="button" class="notification-close" aria-label="Dismiss notification" title="Dismiss" @onclick="() => Notifications.Dismiss(notification.Id)">&times;</button>
+            <p class="notification-message">@notification.Message</p>
+            @if (notification.Details is not null)
+            {
+                <details class="notification-details">
+                    <summary>More details</summary>
+                    <pre><code>@notification.Details</code></pre>
+                </details>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => Notifications.Changed += HandleChanged;
+
+    private void HandleChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private static string GetLevelClass(NotificationLevel level) => level switch {
+        NotificationLevel.Success => "alert-success",
+        NotificationLevel.Warning => "alert-warning",
+        NotificationLevel.Error => "alert-error",
+        _ => "alert-info"
+    };
+
+    public void Dispose() => Notifications.Changed -= HandleChanged;
+}

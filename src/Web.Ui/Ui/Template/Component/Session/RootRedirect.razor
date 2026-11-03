@@ -1,0 +1,15 @@
+@inject IUiSessionContext SessionContext
+@inject NavigationManager Navigation
+@inject BasePresenter Presenter
+@inject UiAuthenticationOptions AuthenticationOptions
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var destination = await SessionContext.IsAuthenticatedAsync()
+            ? AuthenticationOptions.HomePath
+            : AuthenticationOptions.LoginPath;
+
+        Navigation.NavigateTo(Presenter.GetRoute(destination), forceLoad: true);
+    }
+}

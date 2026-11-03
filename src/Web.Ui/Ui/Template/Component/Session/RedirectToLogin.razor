@@ -1,0 +1,10 @@
+@inject NavigationManager Navigation
+@inject BasePresenter Presenter
+@inject UiAuthenticationOptions AuthenticationOptions
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo(Presenter.GetRoute(AuthenticationOptions.LoginPath), forceLoad: true);
+    }
+}

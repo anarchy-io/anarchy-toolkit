@@ -1,0 +1,50 @@
+@using Anarchy.Toolkit.Core.Extension
+@inject JsonModalState JsonModalState
+
+<a href="#" class="summary" @onclick="OpenJsonModal" @onclick:preventDefault="true">@Label</a>
+
+@code {
+    [Parameter] public string Label { get; set; } = "View";
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string JsonContent { get; set; } = string.Empty;
+    [Parameter] public bool UsePreformattedView { get; set; }
+
+    private void OpenJsonModal()
+    {
+        var isNested = JsonModalState.IsOpen;
+        var hierarchicalTitle = BuildHierarchicalTitle();
+
+        JsonModalState.Open(
+            hierarchicalTitle,
+            JsonContent,
+            UsePreformattedView,
+            appendToHistory: isNested);
+    }
+
+    /// <summary>
+    /// Builds a hierarchical title that includes parent context and ID from the JSON.
+    /// If nested, extracts the root segment from the current modal title and builds from there.
+    /// </summary>
+    private string BuildHierarchicalTitle()
+    {
+        var pathSegments = new List<string>();
+
+        // If this is a nested modal, extract the root breadcrumb segment from current title
+        if (JsonModalState.IsOpen && JsonModalState.History.Count > 0)
+        {
+            var currentTitle = JsonModalState.History[0].Title;
+            var firstSegment = currentTitle.Split(JsonModalState.BreadcrumbSeparator)[0];
+            pathSegments.Add(firstSegment);
+        }
+
+        // Add the property name (current Title parameter)
+        pathSegments.Add(Title.ToTitleSentenceCase());
+
+        // Extract ID from the JSON content if available
+        var id = JsonModalState.ExtractIdFromJson(JsonContent);
+
+        return JsonModalState.BuildBreadcrumbTitle(pathSegments.ToArray(), id);
+    }
+}
+
+

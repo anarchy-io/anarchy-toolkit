@@ -1,0 +1,14 @@
+<button class="btn @(PageNumber == CurrentPage ? "btn-primary" : string.Empty)"
+        @onclick="HandleClick"
+        disabled="@(PageNumber == CurrentPage)">
+    @PageNumber
+</button>
+
+@code {
+    [Parameter, EditorRequired] public int PageNumber { get; set; }
+    [Parameter, EditorRequired] public int CurrentPage { get; set; }
+    [Parameter, EditorRequired] public EventCallback<int> OnGoToPage { get; set; }
+
+    private Task HandleClick() => OnGoToPage.InvokeAsync(PageNumber);
+}
+

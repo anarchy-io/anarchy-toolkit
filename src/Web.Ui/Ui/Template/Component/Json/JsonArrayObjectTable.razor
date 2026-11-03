@@ -1,0 +1,50 @@
+@using Anarchy.Toolkit.Core.Extension
+@{
+    var scalarColumns = JsonRenderPresenter.GetArrayObjectScalarColumns(Items);
+    var complexColumns = JsonRenderPresenter.GetArrayObjectComplexColumns(Items);
+}
+
+@if (scalarColumns.Count + complexColumns.Count == 0)
+{
+    <p>No data available for @PropertyName.ToTitleSentenceCase().</p>
+}
+else {
+    @if (RenderLabel)
+    {
+        <h3 class="json-array-object-table-title">@PropertyName.ToTitleSentenceCase()</h3>
+    }
+    <div class="json-array-object-table">
+        <table>
+            <thead>
+            <tr>
+                @foreach (var column in scalarColumns)
+                {
+                    <th>@column.ToTitleSentenceCase()</th>
+                }
+                @foreach (var column in complexColumns)
+                {
+                    <th>@column.ToTitleSentenceCase()</th>
+                }
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Items.EnumerateArray())
+            {
+                <JsonObjectTableRow
+                    ParentName="@PropertyName"
+                    Item="@item"
+                    ScalarColumns="@scalarColumns"
+                    ComplexColumns="@complexColumns"
+                    />
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public bool RenderLabel { get; set; }
+    [Parameter, EditorRequired] public string PropertyName { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public JsonElement Items { get; set; }
+}
+
