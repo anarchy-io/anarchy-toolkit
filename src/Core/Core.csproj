@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Core</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Core</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Core</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Generic helpers, extensions, marker interfaces, the keyed client-resolver pattern, and the dependency-injection module contract (IDependencyInjectionModule and UseModule), with no infrastructure dependencies.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Humanizer" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+
+</Project>
