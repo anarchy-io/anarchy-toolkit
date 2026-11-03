@@ -1,0 +1,14 @@
+@inject BasePresenter Presenter
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <UiHeadAssets Stylesheets='["samples-ui.css"]' />
+    <HeadOutlet @rendermode="@(new InteractiveServerRenderMode(prerender: false))" />
+</head>
+<body>
+    <Routes />
+    <UiBodyScripts />
+</body>
+</html>

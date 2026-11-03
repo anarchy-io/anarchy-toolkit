@@ -1,0 +1,6 @@
+{
+  "AuthService": {
+    "Host": "Base URL of the auth service you develop against, ending with '/' (e.g. https://auth.dev.example.local/)",
+    "ClientId": "OAuth client id registered for your local Samples.Api, see the auth service's client registry"
+  }
+}

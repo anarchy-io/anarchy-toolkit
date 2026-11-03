@@ -1,0 +1,109 @@
+@page "/ui"
+@attribute [Authorize]
+
+@inject OrdersPresenter Presenter
+@inject JsonRenderPresenter JsonPresenter
+
+<PageTitle>Samples UI / Orders</PageTitle>
+
+<div class="page-container">
+    <div class="page-header-row">
+        <h1>Orders</h1>
+        <button class="btn" @onclick="Presenter.LoadAsync" disabled="@Presenter.IsLoading">Reload</button>
+    </div>
+
+    <div class="form-section">
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="search">Order or customer</label>
+                <input id="search" type="text" placeholder="e.g. DEV-0007 or Ada"
+                       @bind="Presenter.SearchText" @bind:event="oninput" @bind:after="Presenter.ApplyFilters" />
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" @bind="Presenter.SelectedStatus" @bind:after="Presenter.ApplyFilters">
+                    @foreach (var status in Presenter.StatusOptions)
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (Presenter.IsLoading)
+    {
+        <p class="loading">Loading orders…</p>
+    }
+    else
+    {
+        <div class="events-table table-with-footer">
+            <div class="table-scroll">
+                <table class="sticky-edges-table">
+                    <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Created</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Details</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var order in Presenter.PageOrders)
+                    {
+                        <tr @key="order.Id">
+                            <td class="nowrap">
+                                <code>@order.Id</code>
+                                @if (order.IsPriority)
+                                {
+                                    <span class="samples-ui-priority" title="Priority order">★</span>
+                                }
+                            </td>
+                            <td class="nowrap">@order.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@order.Customer.Name</td>
+                            <td>@order.Status</td>
+                            <td class="nowrap">€ @order.Total.ToString("N2")</td>
+                            <td>
+                                <JsonViewLink Title="Order" JsonContent="@JsonPresenter.PrettyJson(order)" />
+                            </td>
+                            <td>
+                                @if (order.Status != Order.StatusCancelled)
+                                {
+                                    <button class="btn btn-small btn-danger" @onclick="() => Presenter.RequestCancellation(order)">Cancel</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <TablePaginationFooter State="Presenter.Pagination" OnChanged="Presenter.Refresh" />
+        </div>
+
+        <Pagination State="Presenter.Pagination" OnChanged="Presenter.Refresh" />
+    }
+</div>
+
+<ConfirmationModal IsOpen="Presenter.IsConfirmationOpen"
+                   Title="Cancel order"
+                   ConfirmButtonLabel="Cancel order"
+                   OnConfirm="Presenter.ConfirmCancellationAsync"
+                   OnClose="Presenter.CloseCancellation">
+    <p>Cancel order <code>@Presenter.PendingCancellation?.Id</code> for @Presenter.PendingCancellation?.Customer.Name?</p>
+</ConfirmationModal>
+
+<TypedConfirmationModal IsOpen="Presenter.IsTypedConfirmationOpen"
+                        Title="Cancel priority order"
+                        Keyword="@(Presenter.PendingCancellation?.Id ?? string.Empty)"
+                        ConfirmButtonLabel="Cancel order"
+                        OnConfirm="Presenter.ConfirmCancellationAsync"
+                        OnClose="Presenter.CloseCancellation">
+    <p>This is a priority order. Cancelling it cannot be undone.</p>
+</TypedConfirmationModal>
+
+@code {
+    protected override Task OnInitializedAsync() => Presenter.LoadAsync();
+}

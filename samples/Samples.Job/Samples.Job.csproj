@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Samples.Job</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Samples.Job</RootNamespace>
+    <Description>Sample AWS Lambda job built on the toolkit's job host.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hosting\Hosting.csproj" />
+  </ItemGroup>
+
+</Project>

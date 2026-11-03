@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Samples.Api</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Samples.Api</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <Description>Sample REST API (Kestrel locally, AWS Lambda behind API Gateway once deployed) built on the toolkit.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Web\Web.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+@inject BasePresenter Presenter
+
+<div class="layout">
+    <header class="navbar-shell">
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <h1><a href="@Presenter.GetUiRoute()" class="samples-ui-brand">Samples UI</a></h1>
+                </div>
+                <ul class="navbar-nav">
+                    <li><SessionBadge /></li>
+                </ul>
+            </div>
+        </nav>
+
+        <NotificationHost />
+    </header>
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <JsonModalHost />
+</div>
