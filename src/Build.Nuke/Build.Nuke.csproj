@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Build.Nuke</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Build.Nuke</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Build.Nuke</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>NUKE build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, AWS Lambda/CodeDeploy/ECR release flows, KMS secrets, user secrets and Slack failure reporting.</Description>
+    <PackageTags>nuke build ci</PackageTags>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
+    <PackageReference Include="AWSSDK.KeyManagementService" />
+    <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="Nuke.Common" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tool specifications the Infrastructure/Service/Tool/*.Generated.cs wrappers are generated from
+         (`./scripts/build.nuke.sh GenerateTools`). -->
+    <None Include="specification\*.json" />
+    <!-- Imported by every build project that references this package, also when pulled in indirectly.
+         See the file itself for why it is needed. -->
+    <None Include="buildTransitive\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+
+</Project>
