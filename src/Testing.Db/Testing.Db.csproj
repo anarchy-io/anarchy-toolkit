@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Testing.Db</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Testing.Db</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Testing.Db</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Provider-agnostic relational database test helpers (DbTestHelper: enum type handlers and table truncate/clear; DbOptionsMapper) for integration tests.</Description>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+  </ItemGroup>
+
+</Project>
