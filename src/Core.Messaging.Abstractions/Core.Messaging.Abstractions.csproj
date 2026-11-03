@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Core.Messaging.Abstractions</AssemblyName>
+    <PackageId>Anarchy.Toolkit.Core.Messaging.Abstractions</PackageId>
+    <RootNamespace>Anarchy.Toolkit.Core.Messaging.Abstractions</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Message broker contracts: publisher abstraction, inbound/outbound messages, and envelope parsing.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+
+</Project>
