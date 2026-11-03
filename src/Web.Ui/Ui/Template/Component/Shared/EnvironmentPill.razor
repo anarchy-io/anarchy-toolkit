@@ -1,0 +1,14 @@
+<span class="ui-environment-pill @GetEnvironmentPillClass(Environment)">@Environment</span>
+
+@code {
+    [Parameter, EditorRequired] public string Environment { get; set; } = string.Empty;
+
+    private static string GetEnvironmentPillClass(string environment)
+    {
+        return environment.Trim().ToLowerInvariant() switch {
+            "development" or "dev" => "ui-environment-pill-development",
+            "production" or "prod" => "ui-environment-pill-production",
+            _ => "ui-environment-pill-testing"
+        };
+    }
+}

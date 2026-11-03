@@ -1,0 +1,18 @@
+@inject BasePresenter Presenter
+
+<base href="@Presenter.GetRoute()" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/svg+xml" href="@Presenter.GetRoute(FaviconPath)" />
+<link rel="stylesheet" href="@Presenter.GetRoute("toolkit-ui.css")" />
+@foreach (var stylesheet in Stylesheets)
+{
+    <link rel="stylesheet" href="@Presenter.GetRoute(stylesheet)" />
+}
+
+@code {
+    /// <summary>Favicon path; defaults to the toolkit's shared favicon.</summary>
+    [Parameter] public string FaviconPath { get; set; } = "favicon.png";
+
+    /// <summary>Application stylesheets, loaded after the toolkit ones.</summary>
+    [Parameter] public IReadOnlyCollection<string> Stylesheets { get; set; } = [];
+}

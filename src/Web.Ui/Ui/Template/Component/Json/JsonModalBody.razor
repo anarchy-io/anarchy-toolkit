@@ -1,0 +1,48 @@
+@if (UsePreformattedView)
+{
+    <pre class="ui-json-modal-pre">@JsonContent</pre>
+}
+else if (HasParsedJson)
+{
+    <JsonNavigableValue Value="@ParsedJsonValue" ArrayName="@Title" />
+}
+else
+{
+    <pre class="ui-json-modal-pre">@JsonContent</pre>
+}
+
+@code {
+    [Parameter, EditorRequired] public string JsonContent { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = "Payload";
+    [Parameter] public bool UsePreformattedView { get; set; }
+
+    private bool HasParsedJson { get; set; }
+    private JsonElement ParsedJsonValue { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        HasParsedJson = false;
+
+        if (UsePreformattedView)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(JsonContent))
+        {
+            return;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(JsonContent);
+            ParsedJsonValue = document.RootElement.Clone();
+            HasParsedJson = true;
+        }
+        catch (JsonException)
+        {
+            HasParsedJson = false;
+        }
+    }
+}
+

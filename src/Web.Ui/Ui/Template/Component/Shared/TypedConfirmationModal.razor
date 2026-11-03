@@ -1,0 +1,56 @@
+@if (IsOpen)
+{
+    <div class="modal-overlay" @onclick="CloseAsync">
+        <div class="form-section modal-content confirm-modal-content" @onclick:stopPropagation="true">
+            <button type="button" class="confirm-modal-close" aria-label="Close" @onclick="CloseAsync">&times;</button>
+            <h2>@Title</h2>
+            @ChildContent
+            <form class="confirm-modal-form" @onsubmit="ConfirmAsync" @onsubmit:preventDefault="true">
+                <label for="@_inputId">Type <code>@Keyword</code> to confirm:</label>
+                <input id="@_inputId" type="text" autocomplete="off" @bind="_input" @bind:event="oninput" />
+                <button type="submit" class="btn @ConfirmButtonClass" disabled="@(!IsValid)">@ConfirmButtonLabel</button>
+            </form>
+        </div>
+    </div>
+}
+
+@code {
+    private readonly string _inputId = $"typedConfirmation-{Guid.NewGuid():N}";
+    private string _input = string.Empty;
+
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Keyword { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string ConfirmButtonLabel { get; set; } = string.Empty;
+    [Parameter] public string ConfirmButtonClass { get; set; } = "btn-danger";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool IsValid => string.Equals(_input.Trim(), Keyword, StringComparison.Ordinal);
+
+    protected override void OnParametersSet()
+    {
+        if (!IsOpen)
+        {
+            _input = string.Empty;
+        }
+    }
+
+    private async Task CloseAsync()
+    {
+        _input = string.Empty;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task ConfirmAsync()
+    {
+        if (!IsValid)
+        {
+            return;
+        }
+
+        _input = string.Empty;
+        await OnConfirm.InvokeAsync();
+    }
+}

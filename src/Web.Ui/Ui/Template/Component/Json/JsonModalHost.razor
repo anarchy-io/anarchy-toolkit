@@ -1,0 +1,61 @@
+@implements IDisposable
+
+@inject JsonModalState JsonModalState
+
+@if (JsonModalState.IsOpen)
+{
+    <div class="modal-overlay" @onclick="Close">
+        <div class="form-section modal-content ui-json-modal-content" @onclick:stopPropagation="true">
+            <div class="ui-json-modal-header">
+                @if (JsonModalState.History.Count > 1)
+                {
+                    <nav class="ui-json-modal-breadcrumb-header" aria-label="JSON modal breadcrumbs">
+                        @{
+                            var titleSegments = JsonModalState.Title.Split(JsonModalState.BreadcrumbSeparator);
+                        }
+                        @for (var i = 0; i < titleSegments.Length; i++)
+                        {
+                            if (i > 0)
+                            {
+                                <span class="ui-json-modal-breadcrumb-separator">/</span>
+                            }
+
+                            if (i == titleSegments.Length - 1)
+                            {
+                                <span class="ui-json-modal-breadcrumb-current">@titleSegments[i]</span>
+                            }
+                            else
+                            {
+                                var historyIndex = JsonModalState.GetHistoryIndexForBreadcrumb(i);
+                                <button class="ui-json-modal-breadcrumb-link" @onclick="() => JsonModalState.NavigateTo(historyIndex)">
+                                    @titleSegments[i]
+                                </button>
+                            }
+                        }
+                    </nav>
+                }
+                else
+                {
+                    <h2 class="ui-heading-reset">@JsonModalState.Title</h2>
+                }
+                <button class="btn" @onclick="Close">Close</button>
+            </div>
+            <div class="ui-json-modal-body">
+                <JsonModalBody
+                    JsonContent="@JsonModalState.JsonContent"
+                    Title="@JsonModalState.Title"
+                    UsePreformattedView="@JsonModalState.UsePreformattedView" />
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => JsonModalState.Changed += HandleChanged;
+
+    private void Close() => JsonModalState.Close();
+
+    private void HandleChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => JsonModalState.Changed -= HandleChanged;
+}

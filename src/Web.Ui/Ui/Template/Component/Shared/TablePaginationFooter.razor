@@ -1,0 +1,33 @@
+<div class="table-footer-content">
+    <div class="table-footer-left">
+        <small>Showing @State.PageStartIndex-@State.PageEndIndex of @State.TotalItems</small>
+    </div>
+    <div class="table-footer-right">
+        <label for="@_selectId">Rows per page:</label>
+        <select id="@_selectId" value="@State.PageSize" @onchange="OnPageSizeChangedAsync">
+            @foreach (var option in PageSizeOptions)
+            {
+                <option value="@option">@option</option>
+            }
+        </select>
+    </div>
+</div>
+
+@code {
+    private readonly string _selectId = $"pageSize-{Guid.NewGuid():N}";
+
+    [Parameter, EditorRequired] public PaginationState State { get; set; } = null!;
+    [Parameter] public IReadOnlyCollection<int> PageSizeOptions { get; set; } = PaginationState.DefaultPageSizeOptions;
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private Task OnPageSizeChangedAsync(ChangeEventArgs args)
+    {
+        if (!int.TryParse(args.Value?.ToString(), out var selectedPageSize))
+        {
+            return Task.CompletedTask;
+        }
+
+        State.SetPageSize(selectedPageSize);
+        return OnChanged.InvokeAsync();
+    }
+}

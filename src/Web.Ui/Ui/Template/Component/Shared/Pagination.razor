@@ -1,0 +1,32 @@
+<div class="form-actions ui-form-actions-spaced">
+    <button class="btn" @onclick="() => ChangeAsync(State.GoToPreviousPage)" disabled="@(!State.HasPreviousPage)">Previous</button>
+    @if (State.ShowLeadingEllipsis)
+    {
+        <button class="btn" @onclick="() => GoToPageAsync(1)">1</button>
+        <span>...</span>
+    }
+    @foreach (var pageNumber in State.VisiblePageNumbers)
+    {
+        <PaginationButton PageNumber="@pageNumber" CurrentPage="@State.CurrentPage" OnGoToPage="GoToPageAsync" />
+    }
+    @if (State.ShowTrailingEllipsis)
+    {
+        <span>...</span>
+        <button class="btn" @onclick="() => GoToPageAsync(State.TotalPages)">@State.TotalPages</button>
+    }
+    <span>Page @State.CurrentPage of @State.TotalPages</span>
+    <button class="btn" @onclick="() => ChangeAsync(State.GoToNextPage)" disabled="@(!State.HasNextPage)">Next</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public PaginationState State { get; set; } = null!;
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private Task GoToPageAsync(int pageNumber) => ChangeAsync(() => State.GoToPage(pageNumber));
+
+    private Task ChangeAsync(Action change)
+    {
+        change();
+        return OnChanged.InvokeAsync();
+    }
+}
