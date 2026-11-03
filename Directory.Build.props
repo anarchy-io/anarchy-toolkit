@@ -1,0 +1,35 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Company>Anarchy</Company>
+    <Authors>Anarchy I/O</Authors>
+    <Product>Anarchy.Toolkit</Product>
+    <PackageProjectUrl>https://github.com/anarchy-io/anarchy-toolkit</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/anarchy-io/anarchy-toolkit</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <!-- Default: production projects are packable. Test projects opt out via <IsPackable>false</IsPackable>. -->
+  <PropertyGroup Condition="'$(IsPackable)' == ''">
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <!-- Embed any SQL query resources co-located with a project -->
+  <ItemGroup>
+    <EmbeddedResource Include="**\Queries\**\*.sql" />
+  </ItemGroup>
+
+</Project>

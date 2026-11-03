@@ -1,0 +1,234 @@
+# Root file: prevents settings from cascading from higher-level .editorconfig files
+root = true
+
+[*]
+indent_style = space
+trim_trailing_whitespace = true
+charset = utf-8
+insert_final_newline = true
+end_of_line = lf
+indent_size = 4 # Standard for C#
+
+[Makefile]
+indent_style = tab
+
+[*.{xml,props,csproj,targets}]
+indent_size = 2
+
+[*.{yaml,yml}]
+indent_size = 2
+
+[*.config]
+indent_size = 2
+
+[*.json]
+indent_size = 2
+
+# Applies to all SQL-like files
+[*.sql]
+
+# --- Line handling ---
+max_line_length = off
+
+# --- Indentation ---
+continuation_indent_size = 4
+
+# --- JetBrains SQL formatter options ---
+# IMPORTANT: JetBrains-specific keys (Rider / DataGrip)
+
+
+# --- Commas / wrapping ---
+ij_sql_place_comma_before_newline = true # QUERY_EL_COMMA = 1
+ij_sql_wrap_long_lines = true # QUERY_EL_LINE / SELECT_EL_LINE (approx)
+
+# --- SELECT ---
+ij_sql_use_as = true # SELECT_USE_AS_WORD = 1
+ij_sql_select_asterisk_regular = true # SELECT_ASTERISK_REGULAR = true
+
+# --- FROM / JOIN ---
+ij_sql_new_line_before_from = true # FROM_WRAP_ON = true
+ij_sql_align_from_aliases = true # FROM_ALIGN_ALIASES = true
+
+# --- ORDER BY ---
+ij_sql_align_order_by_direction = true # ORDER_ALIGN_ASC_DESC = true
+
+# --- WITH ---
+ij_sql_align_with_as = true # WITH_ALIGN_AS = true
+
+# Use leading commas instead of trailing ones
+ij_sql_place_comma_before_newline = true
+
+# Do not realign columns aggressively (prevents massive diffs)
+ij_sql_align_multiline_columns = false
+ij_sql_align_multiline_parameters = false
+
+# Keep SELECT list stable
+ij_sql_keep_line_breaks = true
+ij_sql_keep_existing_line_breaks = true
+
+# Avoid collapsing expressions into single lines
+ij_sql_wrap_long_lines = true
+ij_sql_wrap_on_typing = false
+
+# Keywords: readable but stable
+ij_sql_keyword_case = lower
+ij_sql_identifier_case = preserve
+
+# JOIN / FROM / WHERE layout
+ij_sql_new_line_before_from = true
+ij_sql_new_line_before_where = true
+ij_sql_new_line_before_group_by = true
+ij_sql_new_line_before_order_by = true
+ij_sql_new_line_before_join = true
+
+# Logical operators on new lines
+ij_sql_new_line_before_and = true
+ij_sql_new_line_before_or = true
+
+# Prevent formatter from “optimizing” your work
+ij_sql_smart_indent = false
+
+[*.cs]
+########################################
+# Line length / wrapping margin
+########################################
+max_line_length = 120
+resharper_wrap_lines_right_margin = 120
+
+########################################
+# Newline and brace placement
+########################################
+csharp_new_line_before_open_brace = methods, object_collection, control_blocks, types
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+
+# Require braces always
+csharp_style_require_braces = always:error
+resharper_braces_for_ifelse = required
+resharper_braces_for_for = required
+resharper_braces_for_foreach = required
+resharper_braces_for_while = required
+resharper_braces_for_do = required
+resharper_remove_redundant_braces = false
+
+########################################
+# Spacing
+########################################
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+
+# Object/collection initializer braces spacing (Roslyn + Rider)
+csharp_space_between_braces = true
+resharper_space_within_object_initializer_braces = true
+resharper_space_within_collection_initializer_braces = true
+resharper_space_within_array_initializer_braces = true
+resharper_space_within_single_line_array_initializer_braces = true
+resharper_space_within_empty_braces = false
+resharper_place_simple_anonymous_type_on_single_line = false
+resharper_place_simple_object_initializer_on_single_line = false
+
+# Extra Rider spacing
+resharper_space_before_semicolon = false
+resharper_space_after_cast = false
+resharper_space_within_parentheses = false
+resharper_space_within_square_brackets = false
+resharper_space_before_colon_in_inheritance_clause = true
+resharper_space_after_colon_in_inheritance_clause = true
+
+########################################
+# Using directives
+########################################
+dotnet_sort_system_directives_first = false
+resharper_place_using_directives_inside_namespace = false
+resharper_sort_usings = true
+resharper_blank_lines_before_usings = 0
+resharper_blank_lines_after_usings = 1
+
+########################################
+# Expression-bodied members
+########################################
+csharp_style_expression_bodied_constructors = false:suggestion
+csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_properties = false:suggestion
+csharp_style_expression_bodied_indexers = false:suggestion
+csharp_style_expression_bodied_operators = false:suggestion
+
+########################################
+# Var/explicit type preferences
+########################################
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:warning
+
+########################################
+# Language keywords vs framework types
+########################################
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+
+########################################
+# Qualification
+########################################
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+
+########################################
+# Modifier ordering
+########################################
+resharper_order_modifiers = public, protected, internal, private, new, abstract, virtual, override, sealed, static, readonly, extern, unsafe, volatile, async
+
+########################################
+# Wrapping and alignment
+########################################
+resharper_wrap_parameters = chop_always
+resharper_wrap_arguments = chop_always
+resharper_wrap_extends_list = chop_always
+resharper_wrap_array_initializer_style = chop_always
+resharper_wrap_object_initializer_style = chop_always
+resharper_wrap_before_binary_opsign = false
+resharper_wrap_after_binary_opsign = true
+resharper_wrap_before_ternary_opsigns = false
+resharper_wrap_after_ternary_opsigns = true
+resharper_wrap_chained_method_calls = chop_always
+resharper_wrap_anonymous_type_initializer_style = chop_always
+resharper_csharp_wrap_array_initializer_style = chop_always
+resharper_csharp_wrap_object_and_collection_initializer_style = chop_always
+resharper_wrap_object_and_collection_initializer_style = chop_always
+
+# Alignment
+resharper_align_multiline_binary_expressions_chain = true
+resharper_align_multiline_extends_list = true
+resharper_align_multiline_array_initializer = true
+resharper_align_multiline_parameter = true
+resharper_align_multiline_arguments = true
+resharper_align_multiline_for_stmt = true
+resharper_align_multiline_invocation_chains = true
+
+########################################
+# Blank line rules
+########################################
+resharper_blank_lines_before_control_statements = 1
+resharper_blank_lines_after_control_transfer_statements = 1
+resharper_blank_lines_before_namespace = 0
+resharper_blank_lines_inside_namespace = 0
+resharper_blank_lines_before_members_in_type = 1
+resharper_blank_lines_after_multiline_statements = 1
+
+########################################
+# Misc Rider cleanup preferences
+########################################
+resharper_add_missing_parentheses = true
+resharper_add_missing_semicolon = true
+resharper_remove_redundant_semicolon = true
+resharper_remove_redundant_cast = true
+resharper_remove_redundant_base_qualifier = true
+resharper_remove_redundant_parentheses = true

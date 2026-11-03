@@ -1,0 +1,74 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="AWS.Logger.SeriLog" Version="4.0.2" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.0.102.15" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.102.7" />
+    <PackageVersion Include="AWSSDK.KeyManagementService" Version="4.0.101.1" />
+    <PackageVersion Include="AWSSDK.SQS" Version="4.0.100.22" />
+    <PackageVersion Include="AWSSDK.SecretsManager" Version="4.0.100.22" />
+    <PackageVersion Include="AWSSDK.SimpleNotificationService" Version="4.0.100.22" />
+    <PackageVersion Include="Amazon.Extensions.Configuration.SystemsManager" Version="7.1.1" />
+    <PackageVersion Include="Amazon.Lambda.AspNetCoreServer" Version="10.3.0" />
+    <PackageVersion Include="Amazon.Lambda.APIGatewayEvents" Version="3.0.1" />
+    <PackageVersion Include="Amazon.Lambda.Core" Version="3.4.0" />
+    <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="3.0.1" />
+    <PackageVersion Include="Amazon.Lambda.TestUtilities" Version="4.3.0" />
+    <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+    <PackageVersion Include="Dapper" Version="[2.1.79]" />
+    <PackageVersion Include="DogStatsD-CSharp-Client" Version="8.0.0" />
+    <PackageVersion Include="GraphQL" Version="8.8.5" />
+    <PackageVersion Include="GraphQL.Server.Transports.AspNetCore" Version="8.3.3" />
+    <PackageVersion Include="GraphQL.Server.Ui.GraphiQL" Version="8.3.3" />
+    <PackageVersion Include="Humanizer" Version="3.0.10" />
+    <PackageVersion Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.92.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.23.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
+    <!-- Must stay on the 2.x line: Swashbuckle.AspNetCore.Swagger 10 is compiled against Microsoft.OpenApi 2.x.
+         Upgrading to 3.x changes IOpenApiRequestBody.Content's signature and throws MissingMethodException at runtime.
+         Bump this together with Swashbuckle.AspNetCore once it ships a build targeting Microsoft.OpenApi 3.x. -->
+    <PackageVersion Include="Microsoft.OpenApi" Version="[2.12.2]" />
+    <PackageVersion Include="Moq" Version="4.21.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="NuGet.Packaging" Version="7.9.0" />
+    <PackageVersion Include="Npgsql" Version="10.0.3" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="23.26.400" />
+    <PackageVersion Include="Nuke.Common" Version="10.1.0" />
+    <PackageVersion Include="Nuke.Tooling.Generator" Version="10.1.0" />
+    <PackageVersion Include="Polly.Core" Version="8.9.0" />
+    <PackageVersion Include="Serilog" Version="4.4.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.2" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.3.1" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.14" />
+    <PackageVersion Include="UUIDNext" Version="4.2.4" />
+    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+  </ItemGroup>
+</Project>
