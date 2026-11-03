@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Messaging.Aws</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Messaging.Aws</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Messaging.Aws</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>AWS SNS and SQS implementations of the message-broker publisher abstraction, with the shared publisher base, request-builder base, inbound mapping, and compression.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\Core.Messaging.Abstractions\Core.Messaging.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.SimpleNotificationService" />
+    <PackageReference Include="AWSSDK.SQS" />
+    <PackageReference Include="Amazon.Lambda.SQSEvents" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+</Project>
