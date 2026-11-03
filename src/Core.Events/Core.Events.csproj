@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Core.Events</AssemblyName>
+    <PackageId>Anarchy.Toolkit.Core.Events</PackageId>
+    <RootNamespace>Anarchy.Toolkit.Core.Events</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Events: an in-process (local) publish/subscribe bus with DI-based handler dispatch, and a generic domain-event processing pipeline (event envelopes, processors, and handler bus).</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\Core.Messaging.Abstractions\Core.Messaging.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+</Project>
