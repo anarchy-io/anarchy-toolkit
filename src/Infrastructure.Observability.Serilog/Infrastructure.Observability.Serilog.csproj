@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Observability.Serilog</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Observability.Serilog</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Observability.Serilog</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Serilog building blocks for AWS-hosted workloads: the EC2 instance-id enricher and the EC2 CloudWatch sink.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWS.Logger.SeriLog" />
+    <PackageReference Include="Serilog" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+
+</Project>
