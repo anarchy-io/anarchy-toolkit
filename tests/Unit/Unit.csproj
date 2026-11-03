@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Every unit test of the toolkit. Each top-level folder mirrors the src/ project it tests
+       (e.g. Core/ tests src/Core), so namespaces stay Anarchy.Toolkit.Tests.Unit.<Project>.… -->
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Tests.Unit</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Tests.Unit</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\..\src\Build.Nuke\Build.Nuke.csproj" />
+    <ProjectReference Include="..\..\src\Hosting.Workers\Hosting.Workers.csproj" />
+    <ProjectReference Include="..\..\src\Core.Events\Core.Events.csproj" />
+    <ProjectReference Include="..\..\src\Core.Health\Core.Health.csproj" />
+    <ProjectReference Include="..\..\src\Core.Messaging.Abstractions\Core.Messaging.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\..\src\Core\Core.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Messaging.Aws\Infrastructure.Messaging.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Observability.Serilog\Infrastructure.Observability.Serilog.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Oracle\Infrastructure.Persistence.Oracle.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Postgres\Infrastructure.Persistence.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Testing.Aws\Testing.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Web\Web.csproj" />
+    <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Brings Microsoft.AspNetCore.TestHost for the ASP.NET Core middleware tests. -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Configuration/: test settings bound to AppSettings; TestHelper.TestSettings<AppSettings>() reads them from this
+         assembly, and ModuleAppSettingsBaseTest loads them as "<AssemblyName>.appsettings*.json". -->
+    <EmbeddedResource Include="Configuration\appsettings*.json" LogicalName="$(AssemblyName).%(Filename)%(Extension)" />
+
+    <!-- Hosting/Workers/: this test assembly carries the build metadata itself (replacing the legacy
+         TestAssemblies.WithMetadata helper assembly). BuildMetadataReader looks for "<AssemblyName>.Properties.build.meta.json". -->
+    <EmbeddedResource Include="Hosting\Workers\TestAssemblies\build.meta.json"
+                      LogicalName="$(AssemblyName).Properties.build.meta.json" />
+
+    <!-- Hosting/Workers/: resources used by the TextResourceReader tests, resolved from the assembly name. -->
+    <EmbeddedResource Include="Hosting\Workers\Resources\resource1.txt"
+                      LogicalName="$(AssemblyName).resource1.txt" />
+    <EmbeddedResource Include="Hosting\Workers\Resources\subfolder\resource2.txt"
+                      LogicalName="$(AssemblyName).subfolder.resource2.txt" />
+  </ItemGroup>
+
+</Project>
