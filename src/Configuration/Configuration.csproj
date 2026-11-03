@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Configuration</AssemblyName>
+    <PackageId>Anarchy.Toolkit.Configuration</PackageId>
+    <RootNamespace>Anarchy.Toolkit.Configuration</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Application configuration: settings contracts, environment and secret handling, and a vendor-neutral observability bootstrap that organisations extend through an ObserverFactory.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.KeyManagementService" />
+    <PackageReference Include="AWSSDK.SecretsManager" />
+    <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+  </ItemGroup>
+
+</Project>
