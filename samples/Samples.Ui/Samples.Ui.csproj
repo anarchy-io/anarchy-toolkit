@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Samples.Ui</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Samples.Ui</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <Description>Sample back-office UI (interactive-server Blazor behind a cookie session) built on Anarchy.Toolkit.Web.Ui.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
+  </ItemGroup>
+
+</Project>

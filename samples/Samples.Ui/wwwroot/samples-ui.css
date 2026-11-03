@@ -1,0 +1,12 @@
+/* Application styles, loaded after toolkit-ui.css. */
+
+.samples-ui-brand {
+    color: inherit;
+    font-size: 1.25rem;
+    text-decoration: none;
+}
+
+.samples-ui-priority {
+    color: var(--warning-color);
+    margin-left: 0.25rem;
+}

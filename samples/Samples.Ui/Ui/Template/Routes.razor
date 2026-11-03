@@ -1,0 +1,19 @@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="main h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Samples UI / Not found</PageTitle>
+        <MainLayout>
+            <h1>Page not found</h1>
+            <p>Sorry, there's nothing at this address.</p>
+        </MainLayout>
+    </NotFound>
+</Router>
