@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Testing.Web</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Testing.Web</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Testing.Web</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Web acceptance-test base (RestApiTestCaseBase exercising both the native Kestrel and AWS Lambda pipelines), a testable Lambda entry point, and HTTP request helpers.</Description>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Testing\Testing.csproj" />
+    <ProjectReference Include="..\Web\Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+
+</Project>
