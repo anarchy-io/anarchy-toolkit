@@ -25,9 +25,11 @@
     <ProjectReference Include="..\..\src\Infrastructure.Messaging.Aws\Infrastructure.Messaging.Aws.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Observability.Serilog\Infrastructure.Observability.Serilog.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Mysql\Infrastructure.Persistence.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Oracle\Infrastructure.Persistence.Oracle.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Postgres\Infrastructure.Persistence.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Testing.Aws\Testing.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Testing.Mysql\Testing.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Web\Web.csproj" />
     <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
   </ItemGroup>
