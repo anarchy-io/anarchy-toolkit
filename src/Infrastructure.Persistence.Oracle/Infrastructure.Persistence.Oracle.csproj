@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Oracle</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Oracle</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Oracle</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Oracle implementation of the relational persistence layer: dialect, connection string, connection pool, Unit of Work, resilience policy, repository bases and service health reports.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+</Project>
