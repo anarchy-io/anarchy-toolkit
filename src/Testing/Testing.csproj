@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Testing</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Testing</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Testing</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Shared base test toolkit: TestCaseBase, TestHelper, in-memory observer/measurer/log sink with assertions, API Gateway response assertions, entity fixtures, and common test extensions.</Description>
+    <IsPackable>true</IsPackable>
+    <!-- Microsoft.NET.Test.Sdk is referenced for consumers; this kit itself is a library, not a test project. -->
+    <IsTestProject>false</IsTestProject>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.APIGatewayEvents" />
+    <PackageReference Include="Amazon.Lambda.TestUtilities" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
