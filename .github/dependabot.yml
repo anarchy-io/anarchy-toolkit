@@ -1,0 +1,64 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    # Include the central versions and every project that consumes them.
+    directories:
+      - /
+      - /build
+      - /src/*
+      - /tests/*
+      - /samples/*
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 15
+    groups:
+      aws:
+        patterns:
+          - AWS.*
+          - AWSSDK.*
+          - Amazon.*
+      testing:
+        patterns:
+          - xunit.*
+          - Microsoft.NET.Test.Sdk
+          - Microsoft.AspNetCore.Mvc.Testing
+          - AwesomeAssertions
+          - Moq
+      graphql:
+        patterns:
+          - GraphQL*
+      openapi:
+        patterns:
+          - Microsoft.OpenApi
+          - Swashbuckle.*
+      microsoft:
+        patterns:
+          - Microsoft.*
+          - System.*
+      observability:
+        patterns:
+          - Serilog*
+          - DogStatsD*
+      persistence:
+        patterns:
+          - Dapper
+          - Npgsql
+          - Oracle.*
+      build:
+        patterns:
+          - Nuke.*
+          - NuGet.*
+      other:
+        patterns:
+          - '*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      github-actions:
+        patterns:
+          - '*'
