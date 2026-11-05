@@ -1,0 +1,31 @@
+name: Code Quality
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  code-quality:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - name: Ensure layering
+        run: ./scripts/build.nuke.sh CheckLayering
+
+      - name: Validate release versions
+        env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.sha }}
+        run: ./scripts/build.nuke.sh ValidateLocalRelease --release-base "$RELEASE_BASE"
+
+      - name: Run code quality checks
+        run: ./scripts/build.nuke.sh PullRequest --IsCiBuild true

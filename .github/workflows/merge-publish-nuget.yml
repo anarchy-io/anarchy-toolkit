@@ -1,0 +1,45 @@
+name: Publish NuGet packages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-nuget
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Test and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      id-token: write  # enable GitHub OIDC token issuance for this job
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Setup .Net
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run unit tests
+        run: ./scripts/build.nuke.sh PullRequest --IsCiBuild true
+
+      - name: Pack and publish in dependency order
+        env:
+          NUKE_RELOAD_ENV: 'false'
+        run: |
+          ./scripts/build.nuke.sh Publish \
+            --nu-get-source https://api.nuget.org/v3/index.json \
+            --nu-get-api-key "${{steps.login.outputs.NUGET_API_KEY}}"
