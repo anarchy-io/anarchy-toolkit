@@ -3,7 +3,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Mysql</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Mysql</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Mysql</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Description>MySQL relational persistence adapter with connection pools, unit of work, resilience, repository bases and health reports.</Description>
   </PropertyGroup>
   <ItemGroup>

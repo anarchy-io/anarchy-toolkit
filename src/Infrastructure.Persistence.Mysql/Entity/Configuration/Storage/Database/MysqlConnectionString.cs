@@ -24,7 +24,7 @@ public class MysqlConnectionString(MysqlConnectionOptions options) : DbConnectio
             { "Ignore Command Transaction", true },
             { "Pooling", true },
             { "Minimum Pool Size", 1 },
-            { "Maximum Pool Size", 100 },
+            { "Maximum Pool Size", Options.MaximumPoolSize },
             { "Connection Idle Timeout", 60 },
             { "Keepalive", 30 }
         };

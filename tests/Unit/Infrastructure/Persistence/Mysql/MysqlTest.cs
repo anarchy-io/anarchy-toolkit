@@ -58,6 +58,17 @@ public class MysqlTest
         act.Should().Throw<Exception>().WithMessage("*Invalid Mysql connection settings*");
     }
 
+    [Theory]
+    [InlineData(DataStorageInstanceType.Reader)]
+    [InlineData(DataStorageInstanceType.Writer)]
+    public void ConnectionString_UsesDefaultAndConfiguredMaximumPoolSize(DataStorageInstanceType instanceType)
+    {
+        new MySqlConnectionStringBuilder(new MysqlConnectionString(Options()).Value(instanceType))
+            .MaximumPoolSize.Should().Be(100);
+        new MySqlConnectionStringBuilder(new MysqlConnectionString(Options() with { MaximumPoolSize = 17 }).Value(instanceType))
+            .MaximumPoolSize.Should().Be(17);
+    }
+
     private static MySqlException Error(int number) => (MySqlException)Activator.CreateInstance(
         typeof(MySqlException), BindingFlags.Instance | BindingFlags.NonPublic, null,
         [(MySqlErrorCode)number, "error"], null)!;

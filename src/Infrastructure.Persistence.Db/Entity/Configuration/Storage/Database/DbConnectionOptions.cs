@@ -21,4 +21,8 @@ public record DbConnectionOptions(
     string Password,
     string DbName,
     uint? Port,
-    int CommandTimeout);
+    int CommandTimeout)
+{
+    /// <summary>Maximum number of connections in a pool. Defaults to 100.</summary>
+    public int MaximumPoolSize { get; init; } = 100;
+}

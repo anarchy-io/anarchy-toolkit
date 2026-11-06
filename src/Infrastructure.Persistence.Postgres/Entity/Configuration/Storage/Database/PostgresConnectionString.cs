@@ -27,7 +27,7 @@ public class PostgresConnectionString(PostgresConnectionOptions options)
             { "Timeout", 10 },
             { "Pooling", true },
             { "MinPoolSize", 1 },
-            { "MaxPoolSize", 100 },
+            { "MaxPoolSize", Options.MaximumPoolSize },
             // Detect and evict half-open TCP connections (common after an AWS Lambda freeze/thaw) instead of
             // blocking on a dead socket until the OS TCP retransmit timeout elapses. Keepalive probes and a
             // bounded idle lifetime keep the pool populated only with live connections.

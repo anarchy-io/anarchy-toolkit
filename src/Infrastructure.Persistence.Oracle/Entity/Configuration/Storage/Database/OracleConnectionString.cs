@@ -45,7 +45,7 @@ public class OracleConnectionString(OracleConnectionOptions options)
             { "Connection Timeout", 10 },
             { "Pooling", true },
             { "Min Pool Size", 1 },
-            { "Max Pool Size", 100 },
+            { "Max Pool Size", Options.MaximumPoolSize },
             // Retire pooled physical connections after a bounded lifetime so the pool does not hold stale sessions.
             { "Connection Lifetime", 300 }
         };
