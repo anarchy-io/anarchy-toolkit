@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Mysql</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Mysql</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Mysql</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>MySQL relational persistence adapter with connection pools, unit of work, resilience, repository bases and health reports.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
+    <PackageReference Include="MySqlConnector" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+</Project>
