@@ -41,6 +41,17 @@ public class OracleConnectionStringTest
             .Should().Contain("(PORT=1522)");
     }
 
+    [Theory]
+    [InlineData(DataStorageInstanceType.Reader)]
+    [InlineData(DataStorageInstanceType.Writer)]
+    public void Value_UsesDefaultAndConfiguredMaximumPoolSize(DataStorageInstanceType instanceType)
+    {
+        new OracleConnectionStringBuilder(new OracleConnectionString(Options()).Value(instanceType))
+            .MaxPoolSize.Should().Be(100);
+        new OracleConnectionStringBuilder(new OracleConnectionString(Options() with { MaximumPoolSize = 17 }).Value(instanceType))
+            .MaxPoolSize.Should().Be(17);
+    }
+
     [Fact]
     public void Value_AcceptsAbsoluteHostUris()
     {

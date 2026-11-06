@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Core.Exceptions;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Entity.Configuration.Storage.Database;
 using AwesomeAssertions;
+using Npgsql;
 
 namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Postgres.Infrastructure.Entity.Configuration.Storage.Database;
 
@@ -30,6 +31,17 @@ public class PostgresConnectionStringTest
     {
         new PostgresConnectionString(Options(port: 6543)).Value(DataStorageInstanceType.Writer)
             .Should().Contain("Port=6543;");
+    }
+
+    [Theory]
+    [InlineData(DataStorageInstanceType.Reader)]
+    [InlineData(DataStorageInstanceType.Writer)]
+    public void Value_UsesDefaultAndConfiguredMaximumPoolSize(DataStorageInstanceType instanceType)
+    {
+        new NpgsqlConnectionStringBuilder(new PostgresConnectionString(Options()).Value(instanceType))
+            .MaxPoolSize.Should().Be(100);
+        new NpgsqlConnectionStringBuilder(new PostgresConnectionString(Options() with { MaximumPoolSize = 17 }).Value(instanceType))
+            .MaxPoolSize.Should().Be(17);
     }
 
     [Fact]
