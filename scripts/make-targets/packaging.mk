@@ -11,6 +11,15 @@ pack: #? Packs every package into a .nupkg under artifacts/packages
 list_packages: #? Lists every package (id + version) produced by the solution
 	${MAKE} nuke SKIP_TITLE=true TARGET=ListPackages
 
+.PHONY: release_bump
+release_bump: #? Bumps a package and its transitive package dependents
+#+ RELEASE_PROJECT|str|Project name to release (required, e.g. Core.Events)
+#+ RELEASE_BUMP|str|Version increment: patch, minor or major (required)
+	@test -n "$(RELEASE_PROJECT)" || { echo 'RELEASE_PROJECT is required'; exit 1; }
+	@test -n "$(RELEASE_BUMP)" || { echo 'RELEASE_BUMP is required'; exit 1; }
+	@./scripts/utils/print-title.sh 'magenta' 'Bumping NuGet Package Versions'
+	${MAKE} nuke SKIP_TITLE=true TARGET="GenerateLocalRelease --ReleaseProject $(RELEASE_PROJECT) --ReleaseBump $(RELEASE_BUMP)"
+
 .PHONY: publish
 publish: #? Packs and pushes all packages to the NuGet feed
 #+ API_KEY|str|API key for the feed

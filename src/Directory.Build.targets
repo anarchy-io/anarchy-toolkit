@@ -1,0 +1,8 @@
+<Project>
+
+  <!-- Update the SDK's default item after it has been included. -->
+  <ItemGroup>
+    <None Update="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>

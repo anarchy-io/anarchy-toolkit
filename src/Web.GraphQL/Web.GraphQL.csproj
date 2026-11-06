@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Web.GraphQL</PackageId>
     <AssemblyName>Anarchy.Toolkit.Web.GraphQL</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Web.GraphQL</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Description>GraphQL wiring for ASP.NET Core APIs: schema base, server registration with graph-type discovery, and policy-protected endpoint plus GraphiQL playground middleware.</Description>
     <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>
