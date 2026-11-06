@@ -105,6 +105,8 @@ make check_layering
 
 For solutions organized by layer folders instead (e.g. `src/Core/Project1/Project1.csproj` and `src/Core/Project2/Project2.csproj`), use `make check_layering BY_FOLDER=true`, or `./scripts/build.nuke.sh CheckLayering --layering-by-folder true`. The first folder under `src/` determines the layer, including `src/Testing/` for test kits. Projects directly under `src/` or in an unknown layer folder fail. The mode applies to every project under `src/`: it never falls back to name prefixes, and the default mode never falls back to folders. Projects outside `src/` remain excluded. `LayeringLayers` and `GetLayer` can still be overridden for other conventions.
 
+Set `--layering-root components` (or `make check_layering LAYERING_ROOT=components`) to use another root in either mode. The path is relative to the solution directory, or may be absolute; projects outside it are excluded.
+
 Run it after moving code, adding folders or adding project references. To see the result for this toolkit's name-based convention, [`dependency-map.html`](../dependency-map.html) (`make dependency_map`) draws the project references by layer, with violations in red. The dependency map has its own grouping configuration.
 
 ## Namespace collisions to know about

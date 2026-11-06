@@ -183,7 +183,11 @@
         },
         "LayeringByFolder": {
           "type": "boolean",
-          "description": "Determine project layers from folders under src instead of project name prefixes"
+          "description": "Determine project layers from folders under the layering root instead of project name prefixes"
+        },
+        "LayeringRoot": {
+          "type": "string",
+          "description": "Root folder for layering checks, relative to the solution (defaults to src)"
         },
         "NuGetApiKey": {
           "type": "string",

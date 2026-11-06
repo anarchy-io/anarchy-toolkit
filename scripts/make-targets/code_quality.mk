@@ -57,8 +57,9 @@ endif
 .PHONY: check_layering
 check_layering: #? Verifies the layered architecture: references, imports, layer folders
 #+ BY_FOLDER|bool|Use layer folders under src instead of project name prefixes (DEFAULT=false)
+#+ LAYERING_ROOT|str|Root folder relative to the solution (DEFAULT=src)
 	@./scripts/utils/print-title.sh 'cyan' 'Checking Layering'
-	${MAKE} nuke SKIP_TITLE=true TARGET="CheckLayering --LayeringByFolder $(if $(BY_FOLDER),$(BY_FOLDER),false)"
+	${MAKE} nuke SKIP_TITLE=true TARGET="CheckLayering --LayeringByFolder $(if $(BY_FOLDER),$(BY_FOLDER),false)$(if $(LAYERING_ROOT), --LayeringRoot '$(LAYERING_ROOT)',)"
 
 .PHONY: dependency_map
 dependency_map: #? Generates docs/dependency-map.html: project references, layers and where the code lives

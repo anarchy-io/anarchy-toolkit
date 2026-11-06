@@ -23,25 +23,40 @@ namespace Anarchy.Toolkit.Build.Nuke.Component.Tasks
         /// See <see cref="ILayeringBuild.GetLayer"/>: the prefix of the project's name for projects under <c>src/</c>,
         /// <c>null</c> (not checked) for anything else.
         /// </summary>
-        public static string? GetDefaultLayer(string projectName, string relativePath) =>
-            relativePath.Replace('\\', '/').StartsWith("src/", StringComparison.OrdinalIgnoreCase)
-                ? projectName.Split('.')[0]
-                : null;
+        public static string? GetDefaultLayer(string projectName, string relativePath) => GetDefaultLayer(projectName, relativePath, "src");
+
+        /// <summary>Gets the name prefix for projects under the specified solution-relative root.</summary>
+        public static string? GetDefaultLayer(string projectName, string relativePath, string root) =>
+            PathUnderRoot(relativePath, root) is not null ? projectName.Split('.')[0] : null;
 
         /// <summary>
         /// The first folder under <c>src/</c>, or an empty string for a project directly under <c>src/</c>;
         /// projects outside <c>src/</c> are not checked. Never falls back to the project name.
         /// </summary>
-        public static string? GetFolderLayer(string relativePath)
+        public static string? GetFolderLayer(string relativePath) => GetFolderLayer(relativePath, "src");
+
+        /// <summary>Gets the first folder under the specified solution-relative root.</summary>
+        public static string? GetFolderLayer(string relativePath, string root)
         {
-            var path = relativePath.Replace('\\', '/');
-            if (!path.StartsWith("src/", StringComparison.OrdinalIgnoreCase))
+            var path = PathUnderRoot(relativePath, root);
+            if (path is null)
             {
                 return null;
             }
 
-            var parts = path[4..].Split('/');
+            var parts = path.Split('/');
             return parts.Length > 1 ? parts[0] : string.Empty;
+        }
+
+        private static string? PathUnderRoot(string relativePath, string root)
+        {
+            var path = relativePath.Replace('\\', '/');
+            var prefix = root.Replace('\\', '/').TrimEnd('/');
+            while (prefix.StartsWith("./", StringComparison.Ordinal)) prefix = prefix[2..];
+            while (path.StartsWith("./", StringComparison.Ordinal)) path = path[2..];
+            if (prefix is "" or ".") return path.StartsWith("../", StringComparison.Ordinal) ? null : path;
+            prefix += "/";
+            return path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? path[prefix.Length..] : null;
         }
 
         public static IReadOnlyList<LayeringProject> Collect(Solution solution, Func<Project, string?> layerOf)

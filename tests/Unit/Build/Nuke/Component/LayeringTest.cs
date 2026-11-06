@@ -49,6 +49,28 @@ public class LayeringTest
         LayeringTasks.GetFolderLayer(path).Should().Be(expected);
     }
 
+    [Theory]
+    [InlineData("components/Core/App/App.csproj", "components", "Core")]
+    [InlineData("components\\Web\\App.csproj", "./components/", "Web")]
+    [InlineData("components-other/Core/App.csproj", "components", null)]
+    [InlineData("components/App.csproj", "components", "")]
+    [InlineData("Core/App.csproj", ".", "Core")]
+    [InlineData("../outside/App.csproj", ".", null)]
+    [InlineData("../shared/Core/App.csproj", "../shared", "Core")]
+    public void GetFolderLayer_GivenCustomRoot_ReturnsExpected(string path, string root, string? expected)
+    {
+        LayeringTasks.GetFolderLayer(path, root).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("components/Core/App.csproj", "components", "Core")]
+    [InlineData("src/Core/App.csproj", "components", null)]
+    [InlineData("components-other/Core/App.csproj", "components", null)]
+    public void GetDefaultLayer_GivenCustomRoot_FiltersProjects(string path, string root, string? expected)
+    {
+        LayeringTasks.GetDefaultLayer("Core.App", path, root).Should().Be(expected);
+    }
+
     [Fact]
     public void Check_GivenFolderLayers_EnforcesAllRules()
     {
