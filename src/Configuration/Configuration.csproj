@@ -4,7 +4,7 @@
     <AssemblyName>Anarchy.Toolkit.Configuration</AssemblyName>
     <PackageId>Anarchy.Toolkit.Configuration</PackageId>
     <RootNamespace>Anarchy.Toolkit.Configuration</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Description>Application configuration: settings contracts, environment and secret handling, and a vendor-neutral observability bootstrap that organisations extend through an ObserverFactory.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Postgres</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Postgres</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Postgres</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Description>PostgreSQL implementation of the relational persistence layer: dialect, connection string, connection pool, Unit of Work, resilience policy, repository bases and service health reports.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

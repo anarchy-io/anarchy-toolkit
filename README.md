@@ -38,6 +38,7 @@ make test           # run all test projects (unit/integration/end-to-end)
 make test_unit      # unit tests only (COMPILE=true to rebuild first)
 make list_projects  # list every project in the solution
 make list_packages  # list every package id + version
+make release_bump RELEASE_PROJECT=Core.Events RELEASE_BUMP=patch  # bump a package and its dependents
 make pack           # pack every package into a fresh artifacts/packages/<run-id>/ directory
 make publish        # pack + push to the NuGet feed (SOURCE=… required, API_KEY=… optional)
 make upgrade_dependencies  # bump centrally-managed package versions (dotnet-outdated)
@@ -101,6 +102,7 @@ builds and packs:
 
 Every project under `src/` is one package, and its package id, assembly name and root namespace are all
 `Anarchy.Toolkit.<project name>` (`src/Core.Events/` → `Anarchy.Toolkit.Core.Events`).
+Each project has its own `README.md`, included in its NuGet package for display on NuGet.org.
 
 Legend: **[Abs]** abstractions-only · **[Impl]** concrete implementation · dependencies list
 sibling toolkit projects only (framework/NuGet deps omitted).

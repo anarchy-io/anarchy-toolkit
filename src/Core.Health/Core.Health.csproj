@@ -4,7 +4,7 @@
     <AssemblyName>Anarchy.Toolkit.Core.Health</AssemblyName>
     <PackageId>Anarchy.Toolkit.Core.Health</PackageId>
     <RootNamespace>Anarchy.Toolkit.Core.Health</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Description>Service health-check abstractions, report entities, and the base report and aggregation every health endpoint shares.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
