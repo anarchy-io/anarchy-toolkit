@@ -3,14 +3,25 @@
 #############################
 
 .PHONY: install
-install: art_logo #? Restores dependencies and compiles the solution
-#+ ENV|str|Defaults to "dev", can be overriden to "ci"
+install: art_logo #? Sets up the development environment, restores dependencies and compiles
+#+ ENV|str|Defaults to "dev"; "ci" skips local environment setup
 #+ WITH_HOOKS|bool|Enable local GIT hooks (DEFAULT=false)
 	@./scripts/utils/print-title.sh 'green' 'Installing Environment'
+ifneq ($(ENV),ci)
+	@$(MAKE) install_dev_env
+endif
 	@$(MAKE) install_dependencies compile
 ifeq ($(WITH_HOOKS),true)
 	@$(MAKE) git_hooks_enable OPTIONS="--skip-test-runtime"
 endif
+
+.PHONY: install_dev_env
+install_dev_env: #? Installs the SDK and configures the local development environment
+	@./scripts/dev-env/install-dev-env.sh
+
+.PHONY: install_sdk
+install_sdk: #? Installs or validates the .NET SDK required by global.json
+	@./scripts/dev-env/install-sdk.sh
 
 .PHONY: install_dependencies
 install_dependencies: #? Installs the dependency packages

@@ -28,7 +28,9 @@ The repo ships a `make` + Nuke toolchain. Run `make help`
 for the full, self-documenting list.
 
 ```bash
-make install        # restore (nuget.org only) + compile; WITH_HOOKS=true also installs the git pre-commit hook
+make install        # configure the local .NET environment, restore + compile; WITH_HOOKS=true installs the git hook
+make install_dev_env # install/validate the SDK, set ASPNETCORE_ENVIRONMENT and trust development certificates
+make install_sdk    # install or validate the SDK required by global.json
 make appsettings    # generate untracked appsettings.Development.json from each appsettings.json.template (RESET=true re-asks every key)
 make compile        # build the solution (Nuke Compile, warnings-as-errors)
 make build          # clean + build
@@ -43,6 +45,10 @@ make pack           # pack every package into a fresh artifacts/packages/<run-id
 make publish        # pack + push to the NuGet feed (SOURCE=… required, API_KEY=… optional)
 make upgrade_dependencies  # bump centrally-managed package versions (dotnet-outdated)
 ```
+
+`make install` persists development settings in the shell environment file and trusts the local
+HTTPS certificate; use `ENV=ci` to skip this setup. Dependency upgrades require confirmation;
+`LOCK=Major` (default), `Minor`, or `None` controls the version lock.
 
 You can also drive Nuke directly:
 
@@ -62,7 +68,7 @@ dotnet pack  Anarchy.Toolkit.sln -c Release -o ./artifacts/packages
 ### Tooling layout
 
 - `Makefile` + `scripts/make-targets/*.mk` — self-documenting make targets (help parsed from `#?`/`#+` markers).
-- `scripts/dev-env/` — `upgrade-dependencies.sh` plus its helpers (`get-shell-env-file.sh`, `variables.env`).
+- `scripts/dev-env/` — SDK and development-environment installers, dependency upgrades and their helpers.
 - `scripts/utils/` — `print-title.sh`, `makefile-help.sh`, `lint-fix-auto-stage.sh` and `git-hooks/`
   (`make git_hooks_enable|git_hooks_disable|git_hooks_show`).
 - `scripts/build.nuke.sh` — reloads the shell env (fresh SDK) then runs the Nuke project.
