@@ -27,7 +27,10 @@ NUKE_RELOAD_ENV ?= true
 
 ###
 # Constants
+empty :=
+space := $(empty) $(empty)
 PROJECT_ROOT := $(dir $(MAKEFILE_PATH))
+PROJECT_NAME := $(notdir $(patsubst %/,%,$(subst $(space),-,$(PROJECT_ROOT))))
 PACKAGES_OUT_DIR := "$(PROJECT_ROOT)artifacts/packages"
 
 ###
@@ -47,9 +50,9 @@ else
     DOCKER_COMPOSE := docker compose
 endif
 
-DOCKER_COMPOSE_COMMAND=DOCKER_ROOT=${DOCKER_ROOT} ${DOCKER_COMPOSE} -f ${DOCKER_COMPOSE_FILE_NAME} --project-name alohomora
+DOCKER_COMPOSE_COMMAND=DOCKER_ROOT="${DOCKER_ROOT}" ${DOCKER_COMPOSE} -f "${DOCKER_COMPOSE_FILE_NAME}" --project-name "${PROJECT_NAME}"
 DOCKER_COMPOSE_EXEC := ${DOCKER_COMPOSE_COMMAND} exec
-DOCKER_DEV_CONSOLE := ${DOCKER_COMPOSE_EXEC} -e DEV_LOG_LEVEL=${LOGLEVEL} alohomora-dev-console
+DOCKER_DEV_CONSOLE := ${DOCKER_COMPOSE_EXEC} -e DEV_LOG_LEVEL=${LOGLEVEL} "${PROJECT_NAME}-dev-console"
 
 ###
 # GIT
@@ -60,13 +63,11 @@ info: art_logo #? Prints out host-relevant information
 	@./scripts/utils/print-title.sh 'blue' 'Environment Info'
 	@echo -e "${CL_GREEN}Current Env Rules:${CL_RESET} '$(ENV)'"
 	@echo -e "${CL_GREEN}Project Root:${CL_RESET} '$(PROJECT_ROOT)'"
+	@echo -e "${CL_GREEN}Project Name:${CL_RESET} '$(PROJECT_NAME)'"
 	@echo -e "${CL_GREEN}Commands Auto-Prefix:${CL_RESET} '$(START_COMMAND)'"
 	@echo -e "${CL_GREEN}Run commands in Dev Console docker container:${CL_RESET} '$(DOCKER)'"
 	@echo -e "\n${CL_GREEN}Exported Paths (\$$PATH env var):${CL_RESET}"
 	@printf '%s\n' "$$PATH" | tr ':' '\n'
-	@./scripts/utils/print-title.sh 'blue' 'Environment Info'
-	@echo -e "${CL_GREEN}Current Env Rules:${CL_RESET} '$(ENV)'"
-	@echo -e "${CL_GREEN}Project Root:${CL_RESET} '$(PROJECT_ROOT)'"
 	@./scripts/utils/print-title.sh 'blue' 'DOTNET'
 	@echo -e "\n${CL_GREEN}Dotnet active version:${CL_RESET} '$$(dotnet --version)'"
 	@echo -e "${CL_GREEN}Dotnet available SDKs:${CL_RESET}\n$$(dotnet --list-sdks)\n"

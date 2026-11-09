@@ -44,8 +44,11 @@ fi
 echo -e "\n${CL_SUBTITLE} Microsoft (R) .NET SDK version: ${CL_DEFAULT}\n$(dotnet --version)"
 
 echo -e "\n${CL_SUBTITLE} Running targets in the Nuke Build Project: ${CL_DEFAULT}\n"
+# NUKE_TELEMETRY_OPTOUT: no usage data is sent, and Nuke no longer stops on its telemetry notice to rewrite
+# 'NukeTelemetryVersion' in build/_build.csproj.
 ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development} \
     DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT:-Development} \
-    NUKE_LOG_LEVEL=Information \
+    NUKE_LOG_LEVEL=${NUKE_LOG_LEVEL:-Information} \
+    NUKE_TELEMETRY_OPTOUT=${NUKE_TELEMETRY_OPTOUT:-1} \
     NUKE_NO_LOGO=true \
     dotnet run --project "$BUILD_PROJECT_FILE" -- "$@"
