@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Db</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Db</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Db</RootNamespace>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Description>Provider-agnostic relational database implementation of the persistence abstraction: connection pool, Unit of Work, resilience policy, dialect contract, repository bases, service health reports, and the transactional outbox / event store (repository contracts, records, type-id cache, and repository bases; providers supply the dialect and the embedded SQL).</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

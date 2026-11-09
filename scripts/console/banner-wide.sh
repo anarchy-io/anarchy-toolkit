@@ -1,4 +1,5 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
+shopt -s xpg_echo
 
 ########################################################################
 #       __      __  ___     __  ___         __     _                   #
@@ -11,10 +12,10 @@
 #   leandro.m.medeiros@me.com                                          #
 ########################################################################
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts/"
-source "${SCRIPT_DIR}/dev-env/variables.env"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../shared/colors.env"
 
-echo "${CL_RED}\n\n";
+echo -e "${CL_RED}\n\n";
 echo "   ▄████████ ███▄▄▄▄      ▄████████    ▄████████  ▄████████    ▄█    █▄    ▄██   ▄  ${CL_YELLOW}    ▀█████▀      ▄██▀ ▄██████▄ ${CL_RED}";
 echo "  ███    ███ ███▀▀▀██▄   ███    ███   ███    ███ ███    ███   ███    ███   ███   ██▄${CL_YELLOW}      ███       ▄██▀ ███    ███${CL_RED}";
 echo "  ███    ███ ███   ███   ███    ███   ███    ███ ███    █▀    ███    ███   ███▄▄▄███${CL_YELLOW}      ███      ▄██▀  ███    ███${CL_RED}";

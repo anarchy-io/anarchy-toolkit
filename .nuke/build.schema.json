@@ -28,6 +28,8 @@
         "CheckLayering",
         "Clean",
         "Compile",
+        "DisableGitHook",
+        "EnableGitHook",
         "GenerateAppSettings",
         "GenerateDependencyMap",
         "GenerateLocalRelease",
@@ -48,11 +50,13 @@
         "SetTestEnvironmentVariables",
         "SetupLocal",
         "SetUserSecrets",
+        "ShowGitHooks",
         "Test",
         "TestAll",
         "TestEndToEnd",
         "TestIntegration",
         "TestUnit",
+        "UpgradeDependencies",
         "ValidateLocalRelease"
       ]
     },
@@ -149,6 +153,10 @@
             "Testing"
           ]
         },
+        "AutoStageLintFixes": {
+          "type": "boolean",
+          "description": "Re-stage lint fixes only in previously staged files without unstaged changes"
+        },
         "AwsProfile": {
           "type": "string",
           "description": "AWS credentials profile name"
@@ -165,9 +173,21 @@
             "Release"
           ]
         },
+        "DependencyInstallTool": {
+          "type": "boolean",
+          "description": "Allow installing or reinstalling dotnet-outdated without prompting"
+        },
         "DependencyMapOutput": {
           "type": "string",
           "description": "Where GenerateDependencyMap writes the HTML page; defaults to docs/dependency-map.html"
+        },
+        "DependencyUpgrade": {
+          "type": "boolean",
+          "description": "Allow upgrading dependencies without prompting"
+        },
+        "DependencyVersionLock": {
+          "type": "string",
+          "description": "Dependency version lock: Major, Minor or None"
         },
         "DOTNET_ENVIRONMENT": {
           "type": "string",
@@ -178,6 +198,30 @@
             "Shared",
             "Testing"
           ]
+        },
+        "HookDryRun": {
+          "type": "boolean",
+          "description": "Preview hook without writing"
+        },
+        "HookForce": {
+          "type": "boolean",
+          "description": "Allow replacing an existing hook"
+        },
+        "HookSkipLintFix": {
+          "type": "boolean",
+          "description": "Omit lint fixing from the hook"
+        },
+        "HookSkipTestRuntime": {
+          "type": "boolean",
+          "description": "Omit integration and end-to-end tests from the hook"
+        },
+        "HookSkipTestStatic": {
+          "type": "boolean",
+          "description": "Omit lint and unit tests from the hook"
+        },
+        "HookType": {
+          "type": "string",
+          "description": "Git hook type (default: pre-commit for enable/disable, all for show)"
         },
         "IsCiBuild": {
           "type": "boolean",

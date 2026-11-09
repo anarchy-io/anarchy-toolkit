@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Build.Nuke</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Nuke</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Nuke</RootNamespace>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Description>NUKE build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, AWS Lambda/CodeDeploy/ECR release flows, KMS secrets, user secrets and Slack failure reporting.</Description>
     <PackageTags>nuke build ci</PackageTags>
     <Nullable>enable</Nullable>
@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <!-- Tool specifications the Infrastructure/Service/Tool/*.Generated.cs wrappers are generated from
-         (`./scripts/build.nuke.sh GenerateTools`). -->
+         (`make nuke TARGET=GenerateTools`). -->
     <None Include="specification\*.json" />
     <!-- Imported by every build project that references this package, also when pulled in indirectly.
          See the file itself for why it is needed. -->
@@ -38,6 +38,11 @@
     <EmbeddedResource Include="..\..\Makefile" LogicalName="Anarchy.Boilerplate/Makefile" />
     <EmbeddedResource Include="..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" LogicalName="Anarchy.Boilerplate/%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\scripts\**\*" LogicalName="Anarchy.Boilerplate/scripts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Update="..\..\scripts\console\subtitle.sh">
+      <Link>console\subtitle.sh</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Remove="..\..\scripts\utils\**" />
+    <None Remove="..\..\scripts\utils\**" />
   </ItemGroup>
 
 </Project>

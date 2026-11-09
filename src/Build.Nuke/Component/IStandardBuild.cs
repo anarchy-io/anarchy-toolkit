@@ -30,6 +30,9 @@ namespace Anarchy.Toolkit.Build.Nuke.Component
         [Parameter("Indicates whether the build runs on CI")]
         bool IsCiBuild => TryGetValue<bool?>(() => IsCiBuild) ?? false;
 
+        [Parameter("Re-stage lint fixes only in previously staged files without unstaged changes")]
+        bool AutoStageLintFixes => TryGetValue<bool?>(() => AutoStageLintFixes) ?? false;
+
         /// <summary>Whether <see cref="Restore"/> already ran, so later steps can skip restoring.</summary>
         bool IsRestored => FinishedTargets.Any(t => t.Name == nameof(Restore));
 

@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Observability.Serilog</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Observability.Serilog</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Observability.Serilog</RootNamespace>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Description>Serilog building blocks for AWS-hosted workloads: the EC2 instance-id enricher and the EC2 CloudWatch sink.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

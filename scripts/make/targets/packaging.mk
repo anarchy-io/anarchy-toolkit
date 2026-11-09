@@ -4,7 +4,7 @@
 
 .PHONY: pack
 pack: #? Packs every package into a .nupkg under artifacts/packages
-	@./scripts/utils/print-title.sh 'magenta' 'Packing NuGet Packages'
+	@./scripts/console/title.sh 'magenta' 'Packing NuGet Packages'
 	${MAKE} nuke SKIP_TITLE=true TARGET=Pack
 
 .PHONY: list_packages
@@ -17,7 +17,7 @@ release_bump: #? Bumps a package and its transitive package dependents
 #+ RELEASE_BUMP|str|Version increment: patch, minor or major (required)
 	@test -n "$(RELEASE_PROJECT)" || { echo 'RELEASE_PROJECT is required'; exit 1; }
 	@test -n "$(RELEASE_BUMP)" || { echo 'RELEASE_BUMP is required'; exit 1; }
-	@./scripts/utils/print-title.sh 'magenta' 'Bumping NuGet Package Versions'
+	@./scripts/console/title.sh 'magenta' 'Bumping NuGet Package Versions'
 	${MAKE} nuke SKIP_TITLE=true TARGET="GenerateLocalRelease --ReleaseProject $(RELEASE_PROJECT) --ReleaseBump $(RELEASE_BUMP)"
 
 .PHONY: release_bump_changed
@@ -39,5 +39,5 @@ release_notes: #? Adds missing README release notes from commits affecting each 
 publish: #? Packs and pushes all packages to the NuGet feed
 #+ API_KEY|str|API key for the feed
 #+ SOURCE|str|NuGet feed URL (required)
-	@./scripts/utils/print-title.sh 'magenta' 'Publishing NuGet Packages'
+	@./scripts/console/title.sh 'magenta' 'Publishing NuGet Packages'
 	${MAKE} nuke SKIP_TITLE=true TARGET="Publish$(if $(API_KEY), --NuGetApiKey $(API_KEY),)$(if $(SOURCE), --NuGetSource $(SOURCE),)"

@@ -17,8 +17,8 @@ if command -v dotnet >/dev/null 2>&1 && sdk_works "$(command -v dotnet)"; then
     echo "A compatible .NET SDK is already installed: $(cd "$PROJECT_ROOT" && dotnet --version)"
 elif [[ -x "$DOTNET_DIRECTORY/dotnet" ]] && sdk_works "$DOTNET_DIRECTORY/dotnet"; then
     echo "A compatible .NET SDK is already installed in $DOTNET_DIRECTORY."
-    source "${SCRIPT_DIR}/setup-dev-env-vars.sh" "DOTNET_ROOT" "$DOTNET_ROOT_EXPORT" "true"
-    source "${SCRIPT_DIR}/setup-dev-env-vars.sh" "PATH" '$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH' "true"
+    source "${SCRIPT_DIR}/set-shell-variable.sh" "DOTNET_ROOT" "$DOTNET_ROOT_EXPORT" "true"
+    source "${SCRIPT_DIR}/set-shell-variable.sh" "PATH" '$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH' "true"
 else
     DOTNET_VERSION=$(perl -nle 'print $1 if m{"version"\s*:\s*"([^"]+)"}' "$DOTNET_GLOBAL_FILE")
     DOTNET_ROLL_FORWARD=$(perl -nle 'print $1 if m{"rollForward"\s*:\s*"([^"]+)"}' "$DOTNET_GLOBAL_FILE")
@@ -40,8 +40,8 @@ else
         echo "The installed SDK does not satisfy $DOTNET_GLOBAL_FILE." >&2
         return 1 2>/dev/null || exit 1
     fi
-    source "${SCRIPT_DIR}/setup-dev-env-vars.sh" "DOTNET_ROOT" "$DOTNET_ROOT_EXPORT" "true"
-    source "${SCRIPT_DIR}/setup-dev-env-vars.sh" "PATH" '$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH' "true"
+    source "${SCRIPT_DIR}/set-shell-variable.sh" "DOTNET_ROOT" "$DOTNET_ROOT_EXPORT" "true"
+    source "${SCRIPT_DIR}/set-shell-variable.sh" "PATH" '$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH' "true"
 fi
 
 echo "Microsoft (R) .NET SDK version $(cd "$PROJECT_ROOT" && dotnet --version)"

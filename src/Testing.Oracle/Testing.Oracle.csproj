@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Testing.Oracle</PackageId>
     <AssemblyName>Anarchy.Toolkit.Testing.Oracle</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Testing.Oracle</RootNamespace>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Description>Oracle integration-test fixtures: connection string, connection pool, retry/resilience policy and Unit of Work fixtures, options mapping, enum type handlers, and table reset helpers.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>

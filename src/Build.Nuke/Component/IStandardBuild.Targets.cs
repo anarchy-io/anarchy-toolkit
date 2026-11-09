@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Build.Nuke.Component.Tasks;
 using Nuke.Common;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities;
@@ -47,7 +48,7 @@ namespace Anarchy.Toolkit.Build.Nuke.Component
         Target LintFix => d => d
             .Description("Runs the linter auto-fixer on the whole solution")
             .DependsOn(Restore)
-            .Executes(() => DotNet("format " + LintFlags(), RootDirectory));
+            .Executes(() => LintStagingTasks.Run(RootDirectory, AutoStageLintFixes, () => DotNet("format " + LintFlags(), RootDirectory)));
 
         /// <summary>
         /// Replaces <see cref="IDefaultBuild.Test"/>, which every release target depends on, so that releasing only

@@ -1,39 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Color codes
-CL_SUBTITLE='\033[45m\033[1;97m'
-CL_DEFAULT='\033[0m' # No Color
-CL_RED='\033[0;31m'
-CL_GREEN='\033[0;32m'
-CL_YELLOW='\033[0;33m'
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPTS_DIR}/shared/colors.env"
 
-echo -e "\n${CL_SUBTITLE} Shell Information: ${CL_DEFAULT}"
+"${SCRIPTS_DIR}/console/subtitle.sh" "Shell Information:"
 bash --version 2>&1 | head -n 1
 
 ###########################################################################
 # CONFIGURATION
 ###########################################################################
 
-SCRIPT_DIR=$(cd "$( dirname "$( dirname "${BASH_SOURCE[0]}" )" )" && pwd)
-BUILD_PROJECT_FILE="$SCRIPT_DIR/build/_build.csproj"
+BUILD_PROJECT_FILE="$SCRIPTS_DIR/../build/_build.csproj"
 
 # ─── Configuration ────────────────────────────────────────────────
 # Reload the environment variables from the shell environment file, if it exists.
 # This loads the correct dotnet SDK version, in case the installation script has updated it.
-echo -e "\n${CL_SUBTITLE} Reload environment variables: ${CL_DEFAULT}"
+"${SCRIPTS_DIR}/console/subtitle.sh" "Reload environment variables:"
 
 if [ "${NUKE_RELOAD_ENV:-true}" = false ]; then
-    echo -e "\n${CL_YELLOW}Skipping reloading as NUKE_RELOAD_ENV is set to false...${CL_DEFAULT}"
+    echo -e "\n${CL_YELLOW}Skipping reloading as NUKE_RELOAD_ENV is set to false...${CL_RESET}"
 else
-    ENV_FILENAME="$(./scripts/dev-env/get-shell-env-file.sh)"
+    ENV_FILENAME="$("$SCRIPTS_DIR/bootstrap/shell-profile-path.sh")"
 
     if [[ -f "$ENV_FILENAME" ]]; then
-        echo -e "\n${CL_GREEN}Sourcing environment variables from '${ENV_FILENAME}'...${CL_DEFAULT}"
+        echo -e "\n${CL_GREEN}Sourcing environment variables from '${ENV_FILENAME}'...${CL_RESET}"
         # shellcheck disable=SC1090
         source "$ENV_FILENAME"
     else
-        echo -e "\n${CL_RED}Environment file '${ENV_FILENAME}' does not exist, skipping...${CL_DEFAULT}"
+        echo -e "\n${CL_RED}Environment file '${ENV_FILENAME}' does not exist, skipping...${CL_RESET}"
     fi
 fi
 
@@ -41,9 +36,10 @@ fi
 # EXECUTION
 ###########################################################################
 
-echo -e "\n${CL_SUBTITLE} Microsoft (R) .NET SDK version: ${CL_DEFAULT}\n$(dotnet --version)"
+"${SCRIPTS_DIR}/console/subtitle.sh" "Microsoft (R) .NET SDK version:"
+dotnet --version
 
-echo -e "\n${CL_SUBTITLE} Running targets in the Nuke Build Project: ${CL_DEFAULT}\n"
+"${SCRIPTS_DIR}/console/subtitle.sh" "Running targets in the Nuke Build Project:"
 # NUKE_TELEMETRY_OPTOUT: no usage data is sent, and Nuke no longer stops on its telemetry notice to rewrite
 # 'NukeTelemetryVersion' in build/_build.csproj.
 ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development} \

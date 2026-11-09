@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Core</PackageId>
     <AssemblyName>Anarchy.Toolkit.Core</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Core</RootNamespace>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Description>Generic helpers, extensions, marker interfaces, the keyed client-resolver pattern, and the dependency-injection module contract (IDependencyInjectionModule and UseModule), with no infrastructure dependencies.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
