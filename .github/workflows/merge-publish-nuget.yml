@@ -83,18 +83,18 @@ jobs:
       - name: Run code quality checks and tests
         run: ./scripts/build.nuke.sh PullRequest --IsCiBuild true
 
-      - name: Commit release versions and notes
-        if: steps.baseline.outputs.base != ''
-        run: |
-          set -euo pipefail
-          git add -u -- ':(glob)src/**/*.csproj'
-          git add -- ':(glob)src/**/README.md'
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # Every comparison needs a checkpoint, even when versions were already
-          # bumped manually, so later changes do not reuse that manual bump.
-          git commit --allow-empty -m 'chore(release): bump affected packages'
-          git push origin HEAD:refs/heads/main
+#      - name: Commit release versions and notes
+#        if: steps.baseline.outputs.base != ''
+#        run: |
+#          set -euo pipefail
+#          git add -u -- ':(glob)src/**/*.csproj'
+#          git add -- ':(glob)src/**/README.md'
+#          git config user.name 'github-actions[bot]'
+#          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+#          # Every comparison needs a checkpoint, even when versions were already
+#          # bumped manually, so later changes do not reuse that manual bump.
+#          git commit --allow-empty -m 'chore(release): bump affected packages'
+#          git push origin HEAD:refs/heads/main
 
       - name: Pack and publish in dependency order
         env:
