@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Http</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Http</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Http</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>Generic HTTP repository/client plumbing: base repositories, delegating handlers, and client configuration.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

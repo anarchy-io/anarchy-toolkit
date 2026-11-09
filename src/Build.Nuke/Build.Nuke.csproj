@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Build.Nuke</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Nuke</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Nuke</RootNamespace>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Description>NUKE build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, AWS Lambda/CodeDeploy/ECR release flows, KMS secrets, user secrets and Slack failure reporting.</Description>
     <PackageTags>nuke build ci</PackageTags>
     <Nullable>enable</Nullable>

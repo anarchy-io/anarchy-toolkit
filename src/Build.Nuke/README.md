@@ -95,6 +95,13 @@ See the [NUKE builds guide](https://github.com/anarchy-io/anarchy-toolkit/blob/m
 
 ## Releases
 
+### 1.1.1
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+- build: improve development environment setup
+- feat(release): automate package versions and release notes
+
 ### 1.1.0
 
 - Added configurable solution scaffolding, packaged repository tooling and selectable layering roots.

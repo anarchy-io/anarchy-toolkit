@@ -26,6 +26,11 @@ See [adding a database provider](https://github.com/anarchy-io/anarchy-toolkit#a
 
 ## Releases
 
+### 1.1.1
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+
 ### 1.1.0
 
 - Added configurable maximum database connection pool size.

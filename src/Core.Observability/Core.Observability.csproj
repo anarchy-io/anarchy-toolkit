@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Core.Observability</PackageId>
     <AssemblyName>Anarchy.Toolkit.Core.Observability</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Core.Observability</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>Observability primitives over Serilog: the Observer facade (Logger, MeasurerBase and LogContext) with call-site logging and metrics helpers.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

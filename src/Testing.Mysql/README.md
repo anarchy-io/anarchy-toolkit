@@ -26,6 +26,11 @@ See [Infrastructure.Persistence.Mysql](https://www.nuget.org/packages/Anarchy.To
 
 ## Releases
 
+### 1.1.1
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+
 ### 1.1.0
 
 - Updated the database testing and MySQL persistence dependencies alongside configurable maximum pool size support.
