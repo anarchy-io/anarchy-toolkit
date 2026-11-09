@@ -4,9 +4,19 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      release_base:
+        description: 'Optional baseline commit to generate bumps before publishing (leave empty to retry publishing)'
+        required: false
+        type: string
+      release_bump:
+        description: 'Bump when a baseline is provided'
+        type: choice
+        options: [patch, minor, major]
 
 permissions:
-  contents: read
+  contents: write
+  id-token: write
 
 concurrency:
   group: publish-nuget
@@ -17,10 +27,11 @@ jobs:
     name: Test and publish
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    permissions:
-      id-token: write  # enable GitHub OIDC token issuance for this job
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
 
       - name: NuGet login (OIDC → temp API key)
         uses: NuGet/login@v1
@@ -33,8 +44,57 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Run unit tests
+      - name: Determine release baseline
+        id: baseline
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          MANUAL_BASE: ${{ inputs.release_base }}
+        run: |
+          set -euo pipefail
+          previous=$(git log --first-parent -1 --format=%H --fixed-strings \
+            --author='41898282+github-actions' --grep='chore(release): bump affected packages')
+          if [[ "$EVENT_NAME" == push ]]; then
+            base=${previous:-$EVENT_BEFORE}
+          else
+            base=$MANUAL_BASE
+          fi
+          if [[ -n "$base" ]]; then
+            git rev-parse --verify --end-of-options "${base}^{commit}" >/dev/null
+            git merge-base --is-ancestor "$base" HEAD || { echo 'Release baseline is not an ancestor of main.'; exit 1; }
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+
+      - name: Bump affected packages
+        if: steps.baseline.outputs.base != ''
+        env:
+          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
+          RELEASE_BUMP: ${{ inputs.release_bump || 'patch' }}
+        run: |
+          ./scripts/build.nuke.sh GenerateReleaseFromChanges \
+            --release-base "$RELEASE_BASE" --release-head HEAD --release-bump "$RELEASE_BUMP"
+
+      - name: Generate missing release notes
+        if: steps.baseline.outputs.base != ''
+        env:
+          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
+        run: ./scripts/build.nuke.sh GenerateReleaseNotes --release-base "$RELEASE_BASE" --release-head HEAD
+
+      - name: Run code quality checks and tests
         run: ./scripts/build.nuke.sh PullRequest --IsCiBuild true
+
+      - name: Commit release versions and notes
+        if: steps.baseline.outputs.base != ''
+        run: |
+          set -euo pipefail
+          git add -u -- ':(glob)src/**/*.csproj'
+          git add -- ':(glob)src/**/README.md'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # Every comparison needs a checkpoint, even when versions were already
+          # bumped manually, so later changes do not reuse that manual bump.
+          git commit --allow-empty -m 'chore(release): bump affected packages'
+          git push origin HEAD:refs/heads/main
 
       - name: Pack and publish in dependency order
         env:
