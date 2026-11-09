@@ -10,6 +10,19 @@ dotnet add package Anarchy.Toolkit.Build.Nuke
 - Optional components cover containers, AWS Lambda, CodeDeploy, dependency maps, layering checks and Slack failure reporting.
 - Test targets support Microsoft.Testing.Platform as well as VSTest. The package includes a `buildTransitive` targets file for SDK-provided NuGet assemblies.
 
+## When to use it
+
+Use this package in a repository's NUKE build project when you want a common local and CI build without copying target implementations. Select only the components that fit the repository: a package-only project can use `INuGetBuild`, while applications can add container or deployment components. The package is build tooling, not an application runtime dependency.
+
+## Using an existing repository
+
+1. Reference the package from the NUKE build project and implement the required component interfaces on the build class. Supply repository-specific properties such as `Artifacts`; a package-only build can use an empty collection.
+2. Run targets through your NUKE host, for example `dotnet run --project build/_build.csproj -- Compile` and `dotnet run --project build/_build.csproj -- TestUnit`. Check `--help` or `--plan` for the targets and parameters available in your build.
+3. Use `ILayeringBuild` or `IDependencyMapBuild` if the repository follows the supported layer conventions. Override their configuration when your naming or directory layout differs.
+4. For NuGet publication, review project versions and package metadata before running `Pack` or `Publish`. Publishing is a real external operation; configure feed credentials securely and verify the target feed first.
+
+Deployment components require their corresponding external tooling, credentials and artifact configuration. See the [component reference](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/nuke-builds.md#components) for the available targets and prerequisites.
+
 ## Starting from an empty folder
 
 With the .NET 10 SDK, Bash and Make installed, create the small NUKE host first (no solution is needed yet). Use a package version containing `IBoilerplateBuild`:
@@ -79,3 +92,17 @@ The target never overwrites an existing solution, selected script, Makefile, sta
 To check a different source root, use `./scripts/build.nuke.sh CheckLayering --layering-root components` or `make check_layering LAYERING_ROOT=components`. The path is relative to the solution directory (absolute paths also work). Add `--layering-by-folder true` or `BY_FOLDER=true` to derive layers from the first folder under that root instead of project names.
 
 See the [NUKE builds guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/nuke-builds.md) for setup, component details and package publishing, and the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+
+## Releases
+
+### 1.1.0
+
+- Added configurable solution scaffolding, packaged repository tooling and selectable layering roots.
+
+### 1.0.1
+
+- Added a package-specific NuGet README.
+
+### 1.0.0
+
+- Introduced reusable NUKE build components, generated tool wrappers and transitive build targets.
