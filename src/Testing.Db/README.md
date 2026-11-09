@@ -31,6 +31,10 @@ See the [testing conventions](https://github.com/anarchy-io/anarchy-toolkit/blob
 
 ## Releases
 
+### 1.1.2
+
+- build: migrate local automation to NUKE
+
 ### 1.1.1
 
 - docs: expand package guides and release histories

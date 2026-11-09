@@ -26,6 +26,10 @@ See [Infrastructure.Persistence.Mysql](https://www.nuget.org/packages/Anarchy.To
 
 ## Releases
 
+### 1.1.2
+
+- build: migrate local automation to NUKE
+
 ### 1.1.1
 
 - docs: expand package guides and release histories

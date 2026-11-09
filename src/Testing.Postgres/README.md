@@ -32,6 +32,10 @@ See [Infrastructure.Persistence.Postgres](https://www.nuget.org/packages/Anarchy
 
 ## Releases
 
+### 1.1.2
+
+- build: migrate local automation to NUKE
+
 ### 1.1.1
 
 - docs: expand package guides and release histories

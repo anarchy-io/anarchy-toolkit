@@ -26,6 +26,10 @@ See the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme)
 
 ## Releases
 
+### 1.0.3
+
+- build: migrate local automation to NUKE
+
 ### 1.0.2
 
 - docs: expand package guides and release histories
