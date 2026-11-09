@@ -31,6 +31,8 @@
         "GenerateAppSettings",
         "GenerateDependencyMap",
         "GenerateLocalRelease",
+        "GenerateReleaseFromChanges",
+        "GenerateReleaseNotes",
         "GenerateTools",
         "Lint",
         "LintFix",
@@ -204,6 +206,10 @@
         "ReleaseBump": {
           "type": "string",
           "description": "Semantic version increment: major, minor or patch"
+        },
+        "ReleaseHead": {
+          "type": "string",
+          "description": "Git commit or ref for head of changes (defaults to HEAD)"
         },
         "ReleaseProject": {
           "type": "string",
