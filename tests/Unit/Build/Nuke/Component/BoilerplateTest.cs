@@ -22,9 +22,9 @@ public class BoilerplateTest
             File.Exists(Path.Combine(root, "MyApp.sln")).Should().BeTrue();
             File.ReadAllText(Path.Combine(root, "MyApp.sln")).Should().Contain("Core.csproj").And.Contain("_build.csproj");
             File.Exists(Path.Combine(root, "Makefile")).Should().BeTrue();
-            File.Exists(Path.Combine(root, "scripts", "make-targets", "code_quality.mk")).Should().BeTrue();
-            File.Exists(Path.Combine(root, "scripts", "utils", "ascii_art-narrow.sh")).Should().BeTrue();
-            File.Exists(Path.Combine(root, "scripts", "utils", "ascii_art-wide.sh")).Should().BeTrue();
+            File.Exists(Path.Combine(root, "scripts", "make", "targets", "code-quality.mk")).Should().BeTrue();
+            File.Exists(Path.Combine(root, "scripts", "console", "banner-compact.sh")).Should().BeTrue();
+            File.Exists(Path.Combine(root, "scripts", "console", "banner-wide.sh")).Should().BeTrue();
             File.Exists(Path.Combine(root, "tests", ".gitkeep")).Should().BeTrue();
             File.ReadAllText(Path.Combine(root, ".gitignore")).Should().Contain(".nuke/temp");
             File.ReadAllText(Path.Combine(root, ".editorconfig")).Should().Contain("root = true");
@@ -136,16 +136,122 @@ public class BoilerplateTest
             Directory.CreateDirectory(root);
             File.WriteAllText(Path.Combine(root, "existing.sln"), "existing");
             var options = new BoilerplateOptions {
-                Items = "scripts/utils,.gitignore,Directory.Build.props",
-                Exclude = "scripts/utils/git-hooks,.gitignore"
+                Items = "scripts/console,.gitignore,Directory.Build.props",
+                Exclude = "scripts/console/banner-wide.sh,.gitignore"
             };
             BoilerplateTasks.Create(root, null, options);
-            File.Exists(Path.Combine(root, "scripts", "utils", "print-title.sh")).Should().BeTrue();
-            Directory.Exists(Path.Combine(root, "scripts", "utils", "git-hooks")).Should().BeFalse();
+            File.Exists(Path.Combine(root, "scripts", "console", "title.sh")).Should().BeTrue();
+            File.Exists(Path.Combine(root, "scripts", "console", "banner-wide.sh")).Should().BeFalse();
             File.Exists(Path.Combine(root, ".gitignore")).Should().BeFalse();
             File.Exists(Path.Combine(root, "Directory.Build.props")).Should().BeTrue();
             File.Exists(Path.Combine(root, "Makefile")).Should().BeFalse();
             File.ReadAllText(Path.Combine(root, "existing.sln")).Should().Be("existing");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void PackagedMakeTargets_DelegateConvertedCommandsAndKeepHookOptions()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        var root = Path.Combine(Path.GetTempPath(), "anarchy-make-" + Guid.NewGuid());
+        try
+        {
+            Directory.CreateDirectory(root);
+            BoilerplateTasks.Create(root, null, new BoilerplateOptions { Items = "Makefile,scripts" });
+            var log = Path.Combine(root, "calls");
+            var environment = new Dictionary<string, string> { ["MAKE_TEST_LOG"] = log, ["NUKE_RELOAD_ENV"] = "false" };
+            File.WriteAllText(Path.Combine(root, "scripts", "build.nuke.sh"), "#!/usr/bin/env bash\nprintf '<%s>\\n' \"$@\" >> \"$MAKE_TEST_LOG\"\n");
+            File.WriteAllText(Path.Combine(root, "scripts", "bootstrap", "install-development-environment.sh"), "#!/usr/bin/env bash\nprintf '<bootstrap>\\n' >> \"$MAKE_TEST_LOG\"\n");
+            string RunMake(params string[] args)
+            {
+                File.WriteAllText(log, "");
+                var result = LocalProcessTasks.Run(root, "make", args, environment);
+                result.ExitCode.Should().Be(0, result.Output + result.Error);
+                return File.ReadAllText(log);
+            }
+            RunMake("lint_fix", "AUTO_STAGE=true").Should().Contain("<LintFix>\n<--AutoStageLintFixes>\n<true>");
+            RunMake("upgrade_dependencies", "LOCK=Minor", "INSTALL_TOOL=true", "UPGRADE=true")
+                .Should().Contain("<UpgradeDependencies>\n<--DependencyVersionLock>\n<Minor>\n<--DependencyInstallTool>\n<true>\n<--DependencyUpgrade>\n<true>");
+            RunMake("git_hooks_enable", "OPTIONS=--hook-type pre-push --skip-lint-fix --skip-test-static --skip-test-runtime --dry-run --force")
+                .Should().Contain("<EnableGitHook>\n<--HookType>\n<pre-push>\n<--HookSkipLintFix>\n<true>\n<--HookSkipTestStatic>\n<true>\n<--HookSkipTestRuntime>\n<true>\n<--HookDryRun>\n<true>\n<--HookForce>\n<true>");
+            RunMake("git_hooks_show", "HOOK_TYPE=pre-push").Should().Contain("<ShowGitHooks>\n<--HookType>\n<pre-push>");
+            RunMake("git_hooks_disable").Should().Contain("<DisableGitHook>\n<--HookType>\n<pre-commit>");
+            RunMake("git_hooks_enable", "OPTIONS=--help").Should().BeEmpty();
+            RunMake("nuke_help").Should().Contain("<--help>");
+            var help = LocalProcessTasks.Run(root, "make", ["help", "COMMAND=install"], environment);
+            help.ExitCode.Should().Be(0, help.Output + help.Error);
+            help.Output.Should().Contain("INSTALLATION").And.Contain("Sets up the development environment");
+            RunMake("install", "WITH_HOOKS=true").Should().Contain("<bootstrap>\n<Restore>\n<Compile>\n<EnableGitHook>\n<--HookSkipTestRuntime>\n<true>");
+            RunMake("install", "ENV=ci").Should().Contain("<Restore>\n<Compile>").And.NotContain("<bootstrap>");
+            var invalid = LocalProcessTasks.Run(root, "make", ["git_hooks_enable", "OPTIONS=--unknown"], environment);
+            invalid.ExitCode.Should().NotBe(0);
+            invalid.Error.Should().Contain("Unknown option: --unknown");
+            var missingType = LocalProcessTasks.Run(root, "make", ["git_hooks_enable", "OPTIONS=--hook-type"], environment);
+            missingType.ExitCode.Should().NotBe(0);
+            missingType.Error.Should().Contain("Missing hook type");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void PackagedInstall_BootstrapsSdkBeforeInvokingNuke()
+    {
+        if (OperatingSystem.IsWindows()) return;
+        var root = Path.Combine(Path.GetTempPath(), "anarchy-install-" + Guid.NewGuid());
+        try
+        {
+            Directory.CreateDirectory(root);
+            BoilerplateTasks.Create(root, null, new BoilerplateOptions { Items = "Makefile,scripts,global.json" });
+            var home = Path.Combine(root, "home");
+            var bin = Path.Combine(root, "fake-bin");
+            var log = Path.Combine(root, "dotnet.log");
+            Directory.CreateDirectory(home);
+            Directory.CreateDirectory(bin);
+            void Executable(string path, string content)
+            {
+                File.WriteAllText(path, content);
+                File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            }
+            Executable(Path.Combine(bin, "dotnet"), "#!/bin/bash\nexit 1\n");
+            Executable(Path.Combine(bin, "curl"), """
+                #!/bin/bash
+                set -eu
+                while [ "$1" != "-Lsfo" ]; do shift; done
+                cat > "$2" <<'INSTALLER'
+                #!/bin/bash
+                set -eu
+                while [ "$1" != "--install-dir" ]; do shift; done
+                mkdir -p "$2"
+                cat > "$2/dotnet" <<'DOTNET'
+                #!/bin/bash
+                if [ "${1:-}" = --version ]; then echo 10.0.302; else printf '%s\n' "$*" >> "$FAKE_DOTNET_LOG"; fi
+                DOTNET
+                chmod +x "$2/dotnet"
+                INSTALLER
+
+                """);
+            var environment = new Dictionary<string, string> {
+                ["HOME"] = home,
+                ["SHELL"] = "/bin/bash",
+                ["PATH"] = bin + Path.PathSeparator + System.Environment.GetEnvironmentVariable("PATH"),
+                ["DOTNET_INSTALL_DIR"] = Path.Combine(home, ".dotnet"),
+                ["DOTNET_ROOT"] = "",
+                ["NUKE_RELOAD_ENV"] = "true",
+                ["FAKE_DOTNET_LOG"] = log
+            };
+            var result = LocalProcessTasks.Run(root, "make", ["install", "WITH_HOOKS=true"], environment);
+            result.ExitCode.Should().Be(0, result.Output + result.Error);
+            var calls = File.ReadAllText(log);
+            calls.Should().Contain("dev-certs https --trust").And.Contain("-- Restore").And.Contain("-- Compile")
+                .And.Contain("-- EnableGitHook --HookSkipTestRuntime true");
+            File.ReadAllText(Path.Combine(home, ".bash_profile")).Should().Contain("DOTNET_ROOT").And.Contain("ASPNETCORE_ENVIRONMENT");
         }
         finally
         {

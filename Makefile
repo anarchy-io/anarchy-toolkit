@@ -1,12 +1,12 @@
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 
 # Include one by one to keep CLI autocompletion support
-include scripts/make-targets/globals.mk
-include scripts/make-targets/app_build.mk
-include scripts/make-targets/code_quality.mk
-include scripts/make-targets/installation.mk
-include scripts/make-targets/packaging.mk
-include scripts/make-targets/utilities.mk
+include scripts/make/targets/globals.mk
+include scripts/make/targets/application.mk
+include scripts/make/targets/code-quality.mk
+include scripts/make/targets/installation.mk
+include scripts/make/targets/packaging.mk
+include scripts/make/targets/utilities.mk
 
 .PHONY: help
 help: art_logo #? Prints the available make targets
@@ -14,7 +14,7 @@ help: art_logo #? Prints the available make targets
 
 .PHONY: help_dynamic
 help_dynamic:
-	@./scripts/utils/makefile-help.sh
+	@./scripts/make/help.sh
 
 %:
 	@echo -e "\n${BG_RED} UNKNOWN TARGET '$@' ${CL_RESET}\n"

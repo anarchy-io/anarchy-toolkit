@@ -14,10 +14,12 @@ namespace Build;
 [ShutdownDotNetAfterServerBuild]
 [DotNetVerbosityMapping]
 [TelemetryOptout]
-internal sealed partial class Build : NukeBuild, INuGetBuild, IDependencyMapBuild, ILayeringBuild
+internal sealed partial class Build : NukeBuild, INuGetBuild, IDependencyMapBuild, ILayeringBuild,
+                                      IDependencyUpgradeBuild, IGitHooksBuild
 {
     /// <summary>The toolkit ships packages only; nothing is deployed.</summary>
     public IReadOnlyCollection<Artifact> Artifacts => [];
 
-    public static int Main() => Execute<Build>(x => x.As<IDefaultBuild>().Clean);
+    public static int Main() => Execute<Build>(x => x.As<IDefaultBuild>()
+        .Clean);
 }

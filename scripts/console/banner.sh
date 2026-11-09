@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 
 ########################################################################
 #       __      __  ___     __  ___         __     _                   #
@@ -13,10 +13,10 @@
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
-if [[ $(TERM=${TERM:-xterm} tput cols) -lt 116 ]]; then
-    "${SCRIPT_DIR}/ascii_art-narrow.sh"
+if [[ $(TERM=${TERM:-xterm} tput cols 2>/dev/null || echo 90) -lt 116 ]]; then
+    "${SCRIPT_DIR}/banner-compact.sh"
 else
-    "${SCRIPT_DIR}/ascii_art-wide.sh"
+    "${SCRIPT_DIR}/banner-wide.sh"
 fi
 
 exit 0;

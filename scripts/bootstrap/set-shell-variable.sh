@@ -3,12 +3,12 @@ set -euo pipefail
 
 # ─── Configuration ────────────────────────────────────────────────
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-source "${SCRIPT_DIR}/variables.env"
+source "${SCRIPT_DIR}/../shared/colors.env"
 
 VAR_NAME=${1:-}
 VAR_VALUE=${2:-}
 OVERRIDE=${3:-false} # optional, default false
-TARGET_FILE="$("${SCRIPT_DIR}/get-shell-env-file.sh")"
+TARGET_FILE="$("${SCRIPT_DIR}/shell-profile-path.sh")"
 MANAGED_COMMENT="# Added by Anarchy Toolkit"
 
 usage() {

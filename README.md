@@ -35,7 +35,7 @@ make appsettings    # generate untracked appsettings.Development.json from each 
 make compile        # build the solution (Nuke Compile, warnings-as-errors)
 make build          # clean + build
 make lint           # dotnet format --verify-no-changes
-make lint_fix       # dotnet format (auto-fix); AUTO_STAGE=true re-stages fixed files
+make lint_fix       # dotnet format (auto-fix); AUTO_STAGE=true re-stages eligible fixes
 make test           # run all test projects (unit/integration/end-to-end)
 make test_unit      # unit tests only (COMPILE=true to rebuild first)
 make list_projects  # list every project in the solution
@@ -48,13 +48,20 @@ make upgrade_dependencies  # bump centrally-managed package versions (dotnet-out
 
 `make install` persists development settings in the shell environment file and trusts the local
 HTTPS certificate; use `ENV=ci` to skip this setup. Dependency upgrades require confirmation;
-`LOCK=Major` (default), `Minor`, or `None` controls the version lock.
+`LOCK=Major` (default), `Minor`, or `None` controls the version lock. In non-interactive use,
+`INSTALL_TOOL=true` and `UPGRADE=true` explicitly permit tool installation and upgrades respectively.
+Auto-staging only considers files already staged with no unstaged changes before linting; partially
+staged files are left for manual review. Avoid editing files concurrently with linting.
 
-You can also drive Nuke directly:
+Git hooks can be previewed with `make git_hooks_enable OPTIONS="--dry-run --skip-test-runtime"`.
+Replacing an existing hook requires `--force`. Use `make git_hooks_show` and `make git_hooks_disable`
+to inspect and remove hooks.
+
+You can also run arbitrary Nuke targets through Make:
 
 ```bash
-./scripts/build.nuke.sh <Target>     # e.g. Compile, Lint, TestAll, Pack, Publish, ListProjects
-make nuke TARGET=Pack
+make nuke TARGET=Pack                # e.g. Compile, Lint, TestAll, Pack, Publish, ListProjects
+make nuke TARGET="Lint --IsCiBuild true"
 make nuke_help                       # list all Nuke targets + parameters
 ```
 
@@ -67,10 +74,9 @@ dotnet pack  Anarchy.Toolkit.sln -c Release -o ./artifacts/packages
 
 ### Tooling layout
 
-- `Makefile` + `scripts/make-targets/*.mk` — self-documenting make targets (help parsed from `#?`/`#+` markers).
-- `scripts/dev-env/` — SDK and development-environment installers, dependency upgrades and their helpers.
-- `scripts/utils/` — `print-title.sh`, `makefile-help.sh`, `lint-fix-auto-stage.sh` and `git-hooks/`
-  (`make git_hooks_enable|git_hooks_disable|git_hooks_show`).
+- `Makefile` + `scripts/make/` — self-documenting Make targets and help (parsed from `#?`/`#+` markers).
+- `scripts/bootstrap/` — SDK and development-environment installation and shell-profile helpers.
+- `scripts/console/` and `scripts/shared/` — display utilities and shared colors.
 - `scripts/build.nuke.sh` — reloads the shell env (fresh SDK) then runs the Nuke project.
 - `build/` — the Nuke build project, see [Nuke build project](#nuke-build-project).
 - `docs/guides/` — conventions ([index](docs/guides/README.md)): [architecture](docs/guides/architecture.md),

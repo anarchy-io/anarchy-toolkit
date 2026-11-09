@@ -21,8 +21,8 @@
     <PackageVersion Include="Amazon.Lambda.SQSEvents" Version="3.0.1" />
     <PackageVersion Include="Amazon.Lambda.TestUtilities" Version="4.3.0" />
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+    <!-- Latest Dapper version (2.1.89)  has introduced a few data mapping bugs, pinning to last working version -->
     <PackageVersion Include="Dapper" Version="[2.1.79]" />
-    <PackageVersion Include="DogStatsD-CSharp-Client" Version="8.0.0" />
     <PackageVersion Include="GraphQL" Version="8.8.5" />
     <PackageVersion Include="GraphQL.Server.Transports.AspNetCore" Version="8.3.3" />
     <PackageVersion Include="GraphQL.Server.Ui.GraphiQL" Version="8.3.3" />

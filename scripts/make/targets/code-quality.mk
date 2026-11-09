@@ -4,7 +4,7 @@
 
 .PHONY: lint
 lint: #? Runs linter analysis on the whole solution
-	@./scripts/utils/print-title.sh 'cyan' 'Running Lint Analysis'
+	@./scripts/console/title.sh 'cyan' 'Running Lint Analysis'
 ifeq ($(ENV),ci)
 	${MAKE} nuke SKIP_TITLE=true TARGET="Lint --IsCiBuild true"
 else
@@ -14,23 +14,23 @@ endif
 .PHONY: lint_fix
 lint_fix: #? Runs the linter auto-fixer on the whole solution
 #+ AUTO_STAGE|bool|Restages files during pre-commit
-	@./scripts/utils/print-title.sh 'cyan' 'Running Lint Auto-Fix'
-	@AUTO_STAGE="$(AUTO_STAGE)" ./scripts/utils/lint-fix-auto-stage.sh
+	@./scripts/console/title.sh 'cyan' 'Running Lint Auto-Fix'
+	${MAKE} nuke SKIP_TITLE=true TARGET="LintFix$(if $(filter true,$(AUTO_STAGE)), --AutoStageLintFixes true,)"
 
 .PHONY: test
 test: #? Runs all solution tests
-	@./scripts/utils/print-title.sh 'cyan' 'Running All Tests'
+	@./scripts/console/title.sh 'cyan' 'Running All Tests'
 	${MAKE} nuke SKIP_TITLE=true TARGET=TestAll
 
 .PHONY: pull_request
 pull_request: #? Runs all tests and validations for the Pull Request CI-pipeline
-	@./scripts/utils/print-title.sh 'cyan' 'Running Pull Request Checks'
+	@./scripts/console/title.sh 'cyan' 'Running Pull Request Checks'
 	${MAKE} nuke SKIP_TITLE=true TARGET="PullRequest --IsCiBuild true"
 
 .PHONY: test_unit
 test_unit: #? Runs unit tests
 #+ COMPILE|bool|Rebuilds the solution before running tests (DEFAULT=false)
-	@./scripts/utils/print-title.sh 'cyan' 'Running Unit Tests'
+	@./scripts/console/title.sh 'cyan' 'Running Unit Tests'
 ifeq ($(COMPILE),true)
 	$(MAKE) compile
 endif
@@ -39,7 +39,7 @@ endif
 .PHONY: test_integration
 test_integration: #? Runs integration tests (requires local Docker resources)
 #+ COMPILE|bool|Rebuilds the solution before running tests (DEFAULT=false)
-	@./scripts/utils/print-title.sh 'cyan' 'Running Integration Tests'
+	@./scripts/console/title.sh 'cyan' 'Running Integration Tests'
 ifeq ($(COMPILE),true)
 	$(MAKE) compile
 endif
@@ -48,7 +48,7 @@ endif
 .PHONY: test_end_to_end
 test_end_to_end: #? Runs end-to-end tests
 #+ COMPILE|bool|Rebuilds the solution before running tests (DEFAULT=false)
-	@./scripts/utils/print-title.sh 'cyan' 'Running End-to-End Tests'
+	@./scripts/console/title.sh 'cyan' 'Running End-to-End Tests'
 ifeq ($(COMPILE),true)
 	$(MAKE) compile
 endif
@@ -58,10 +58,10 @@ endif
 check_layering: #? Verifies the layered architecture: references, imports, layer folders
 #+ BY_FOLDER|bool|Use layer folders under src instead of project name prefixes (DEFAULT=false)
 #+ LAYERING_ROOT|str|Root folder relative to the solution (DEFAULT=src)
-	@./scripts/utils/print-title.sh 'cyan' 'Checking Layering'
+	@./scripts/console/title.sh 'cyan' 'Checking Layering'
 	${MAKE} nuke SKIP_TITLE=true TARGET="CheckLayering --LayeringByFolder $(if $(BY_FOLDER),$(BY_FOLDER),false)$(if $(LAYERING_ROOT), --LayeringRoot '$(LAYERING_ROOT)',)"
 
 .PHONY: dependency_map
 dependency_map: #? Generates docs/dependency-map.html: project references, layers and where the code lives
-	@./scripts/utils/print-title.sh 'cyan' 'Generating Dependency Map'
+	@./scripts/console/title.sh 'cyan' 'Generating Dependency Map'
 	${MAKE} nuke SKIP_TITLE=true TARGET=GenerateDependencyMap

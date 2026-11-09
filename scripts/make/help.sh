@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ─── Colors ───────────────────────────────────────────────────────────────────
-CL_YELLOW=$'\033[1;33m'
-CL_CYAN=$'\033[1;36m'
-CL_RED=$'\033[1;31m'
-CL_GREEN=$'\033[0;32m'
-CL_BLUE=$'\033[0;34m'
-CL_RESET=$'\033[0m'
-CL_MAGENTA=$'\033[1;35m'
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "${SCRIPT_DIR}/../shared/colors.env"
+# printf below does not expand backslash escapes inside arguments.
+for color in CL_YELLOW CL_CYAN CL_RED CL_GREEN CL_BLUE CL_RESET CL_MAGENTA; do
+    printf -v "$color" '%b' "${!color}"
+done
 COMMAND="${COMMAND:-}"
 
 # ─── Helper: wrap text with fixed offset for continuation lines ──────────────
@@ -71,8 +69,8 @@ if [[ -z "$COMMAND" ]]; then
     echo -e "${CL_YELLOW}The available tasks are:${CL_RESET}\n"
 fi
 
-for file in scripts/make-targets/*.mk; do
-    filename=$(basename "$file" .mk | tr 'a-z' 'A-Z' | tr '[-_]' ' ')
+for file in scripts/make/targets/*.mk; do
+    filename=$(basename "$file" .mk | tr 'a-z' 'A-Z' | tr '_-' '  ')
     print_file_section "$filename"
 
     awk -v COMMAND="${COMMAND}" '
