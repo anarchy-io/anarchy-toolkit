@@ -4,7 +4,7 @@
     <AssemblyName>Anarchy.Toolkit.Hosting.Workers</AssemblyName>
     <PackageId>Anarchy.Toolkit.Hosting.Workers</PackageId>
     <RootNamespace>Anarchy.Toolkit.Hosting.Workers</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>Worker pipeline: monitored/resilient background workers, heartbeat, and a self-hosted health API (service health reports, build metadata) for workers.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

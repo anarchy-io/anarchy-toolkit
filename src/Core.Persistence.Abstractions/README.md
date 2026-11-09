@@ -26,6 +26,10 @@ See the [package catalogue](https://github.com/anarchy-io/anarchy-toolkit#packag
 
 ## Releases
 
+### 1.0.2
+
+- docs: expand package guides and release histories
+
 ### 1.0.1
 
 - Added a package-specific NuGet README.

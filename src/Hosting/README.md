@@ -26,6 +26,11 @@ See the [sample applications](https://github.com/anarchy-io/anarchy-toolkit/tree
 
 ## Releases
 
+### 1.0.2
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+
 ### 1.0.1
 
 - Added a package-specific NuGet README.

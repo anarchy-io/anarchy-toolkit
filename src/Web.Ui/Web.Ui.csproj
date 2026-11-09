@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Web.Ui</PackageId>
     <AssemblyName>Anarchy.Toolkit.Web.Ui</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Web.Ui</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>Blazor UI pipeline: cookie-session OAuth login, environment catalog, downstream API client base, and reusable components (notifications, modals, JSON viewer, pagination).</Description>
     <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>

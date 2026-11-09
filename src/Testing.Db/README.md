@@ -31,6 +31,11 @@ See the [testing conventions](https://github.com/anarchy-io/anarchy-toolkit/blob
 
 ## Releases
 
+### 1.1.1
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+
 ### 1.1.0
 
 - Updated the relational persistence dependency alongside configurable maximum pool size support.

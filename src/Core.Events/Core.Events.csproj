@@ -4,7 +4,7 @@
     <AssemblyName>Anarchy.Toolkit.Core.Events</AssemblyName>
     <PackageId>Anarchy.Toolkit.Core.Events</PackageId>
     <RootNamespace>Anarchy.Toolkit.Core.Events</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>Events: an in-process (local) publish/subscribe bus with DI-based handler dispatch, and a generic domain-event processing pipeline (event envelopes, processors, and handler bus).</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

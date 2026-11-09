@@ -38,6 +38,11 @@ See the [module registration example](https://github.com/anarchy-io/anarchy-tool
 
 ## Releases
 
+### 1.1.1
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+
 ### 1.1.0
 
 - Applied the configurable maximum pool size to PostgreSQL connection strings.
