@@ -28,7 +28,7 @@ See the [Oracle and persistence notes](https://github.com/anarchy-io/anarchy-too
 
 ### 1.1.2
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.1.1
 

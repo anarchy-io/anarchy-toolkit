@@ -1,20 +1,19 @@
-using Anarchy.Toolkit.Build.Nuke.Component;
-using Anarchy.Toolkit.Build.Nuke.Core.Entity.Build;
-using Anarchy.Toolkit.Build.Nuke.Infrastructure.Extension;
-using Nuke.Common;
-using Nuke.Common.CI;
-using Nuke.Common.Tools.DotNet;
+using Anarchy.Toolkit.Build.Fallout.Component;
+using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
+using Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension;
+using Fallout.Common;
+using Fallout.Common.CI;
+using Fallout.Common.Tools.DotNet;
 
 namespace Build;
 
 /// <summary>
 /// The toolkit's build: the standard targets come from <see cref="IStandardBuild"/>
-/// (<c>src/Build.Nuke</c>); the <c>Build.*.cs</c> files only add what is specific to this repository.
+/// (<c>src/Build.Fallout</c>).
 /// </summary>
 [ShutdownDotNetAfterServerBuild]
 [DotNetVerbosityMapping]
-[TelemetryOptout]
-internal sealed partial class Build : NukeBuild, INuGetBuild, IDependencyMapBuild, ILayeringBuild,
+internal sealed partial class Build : FalloutBuild, INuGetBuild, IDependencyMapBuild, ILayeringBuild,
                                       IDependencyUpgradeBuild, IGitHooksBuild
 {
     /// <summary>The toolkit ships packages only; nothing is deployed.</summary>

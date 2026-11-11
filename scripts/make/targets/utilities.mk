@@ -2,31 +2,31 @@
 ## UTILITIES
 #############################
 
-.PHONY: nuke
-nuke: #? Runs any target via the Nuke build project
+.PHONY: fallout nuke
+fallout nuke: #? Runs any target via the build project (nuke is a compatibility alias)
 #+ TARGET|str|Name of the target defined in the build project
 ifneq ($(SKIP_TITLE),true)
-	@./scripts/console/title.sh 'blue' 'Running Nuke Target'
+	@./scripts/console/title.sh 'blue' 'Running Build Target'
 endif
 ifndef TARGET
-	@echo -e "\n${CL_RED}You must provide a TARGET=<TargetName> to execute a nuke task.${CL_RESET}\n"
-	@NUKE_LOG_LEVEL=Information NUKE_NO_LOGO=true dotnet run --project ./build/_build.csproj -- --help
+	@echo -e "\n${CL_RED}You must provide a TARGET=<TargetName> to execute a build task.${CL_RESET}\n"
+	@FALLOUT_NO_LOGO=true dotnet run --project ./build/_build.csproj -- --help
 else
-	NUKE_RELOAD_ENV=${NUKE_RELOAD_ENV} ./scripts/build.nuke.sh $(TARGET)
+	FALLOUT_RELOAD_ENV=${FALLOUT_RELOAD_ENV} ./scripts/build.fallout.sh $(TARGET)
 endif
 
-.PHONY: nuke_help
-nuke_help: #? Prints the Nuke build project's help information
-	@./scripts/console/title.sh 'blue' "Nuke's Help"
-	NUKE_RELOAD_ENV=${NUKE_RELOAD_ENV} ./scripts/build.nuke.sh --help
+.PHONY: fallout_help nuke_help
+fallout_help nuke_help: #? Prints the build project's help information
+	@./scripts/console/title.sh 'blue' "Build Help"
+	FALLOUT_RELOAD_ENV=${FALLOUT_RELOAD_ENV} ./scripts/build.fallout.sh --help
 
 .PHONY: upgrade_dependencies
 upgrade_dependencies: #? Allows for upgrading all solution dependencies at once
 #+ LOCK|str|Specifies whether package versions should be partially locked. Possible values: "Major" (default), "Minor" or "None".
 #+ INSTALL_TOOL|bool|Allow installing or reinstalling dotnet-outdated without prompting (DEFAULT=false)
 #+ UPGRADE|bool|Allow upgrading without prompting (DEFAULT=false)
-	@./scripts/console/title.sh 'blue' 'UPDATE DEPENDENCIES'
-	${MAKE} nuke SKIP_TITLE=true TARGET="UpgradeDependencies$(if $(LOCK), --DependencyVersionLock $(LOCK),)$(if $(filter true,$(INSTALL_TOOL)), --DependencyInstallTool true,)$(if $(filter true,$(UPGRADE)), --DependencyUpgrade true,)"
+	@./scripts/console/title.sh 'blue' 'UPGRADE DEPENDENCIES'
+	${MAKE} fallout SKIP_TITLE=true TARGET="UpgradeDependencies$(if $(LOCK), --DependencyVersionLock $(LOCK),)$(if $(filter true,$(INSTALL_TOOL)), --DependencyInstallTool true,)$(if $(filter true,$(UPGRADE)), --DependencyUpgrade true,)"
 
 .PHONY: art_logo
 art_logo:
@@ -53,16 +53,16 @@ git_hooks_enable: #? Sets up a GIT hook
 			*) echo "Unknown option: $$1" >&2; exit 1 ;; \
 		esac; \
 	done; \
-	NUKE_RELOAD_ENV="$(NUKE_RELOAD_ENV)" ./scripts/build.nuke.sh "$${args[@]}"
+	FALLOUT_RELOAD_ENV="$(FALLOUT_RELOAD_ENV)" ./scripts/build.fallout.sh "$${args[@]}"
 
 .PHONY: git_hooks_disable
 git_hooks_disable: #? Removes a configured Git Hook
 #+ HOOK_TYPE|str|Name of the hook (default: pre-commit)
 	@./scripts/console/title.sh 'yellow' 'DISABLE GIT HOOK'
-	${MAKE} nuke SKIP_TITLE=true TARGET="DisableGitHook --HookType $(or $(HOOK_TYPE),pre-commit)"
+	${MAKE} fallout SKIP_TITLE=true TARGET="DisableGitHook --HookType $(or $(HOOK_TYPE),pre-commit)"
 
 .PHONY: git_hooks_show
 git_hooks_show: #? Shows content of a configured Git Hook
 #+ HOOK_TYPE|str|Name of the hook (default: all)
 	@./scripts/console/title.sh 'yellow' 'SHOW GIT HOOKS'
-	${MAKE} nuke SKIP_TITLE=true TARGET="ShowGitHooks$(if $(HOOK_TYPE), --HookType $(HOOK_TYPE),)"
+	${MAKE} fallout SKIP_TITLE=true TARGET="ShowGitHooks$(if $(HOOK_TYPE), --HookType $(HOOK_TYPE),)"

@@ -29,7 +29,7 @@ See [Infrastructure.Messaging.Aws](https://www.nuget.org/packages/Anarchy.Toolki
 
 ### 1.0.3
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.0.2
 

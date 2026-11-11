@@ -41,7 +41,7 @@ The [Web](https://www.nuget.org/packages/Anarchy.Toolkit.Web) and [Hosting.Worke
 
 ### 1.0.3
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.0.2
 

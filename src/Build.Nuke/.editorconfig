@@ -1,4 +1,0 @@
-# Wrappers produced by Nuke.Tooling.Generator from specification/*.json: treated as generated code
-# (nullable context disabled, analyzers skipped) so they can be regenerated verbatim.
-[*.Generated.cs]
-generated_code = true

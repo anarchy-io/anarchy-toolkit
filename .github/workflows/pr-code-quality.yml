@@ -20,12 +20,12 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - name: Ensure layering
-        run: ./scripts/build.nuke.sh CheckLayering
+        run: ./scripts/build.fallout.sh CheckLayering
 
       - name: Validate release versions
         env:
           RELEASE_BASE: ${{ github.event.pull_request.base.sha }}
-        run: ./scripts/build.nuke.sh ValidateLocalRelease --release-base "$RELEASE_BASE"
+        run: ./scripts/build.fallout.sh ValidateLocalRelease --release-base "$RELEASE_BASE"
 
       - name: Run code quality checks
-        run: ./scripts/build.nuke.sh PullRequest --IsCiBuild true
+        run: ./scripts/build.fallout.sh PullRequest --IsCiBuild true

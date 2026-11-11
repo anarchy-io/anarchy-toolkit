@@ -29,7 +29,7 @@ See the [UI guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/
 
 ### 1.0.3
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.0.2
 

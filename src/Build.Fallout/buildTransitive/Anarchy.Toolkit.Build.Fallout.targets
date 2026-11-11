@@ -1,0 +1,79 @@
+<Project>
+
+  <!--
+    Serve NuGet.* assemblies from the SDK when they are at least as new as the package
+    assemblies. The runtime can bind an older reference to a newer assembly, but not vice versa.
+
+    Fallout does not carry its own MSBuild: Fallout.Solutions references the Microsoft.Build.*
+    packages with ExcludeAssets="runtime" and loads them from the installed SDK through
+    MSBuildLocator. That MSBuild binds to the NuGet.* assemblies of the very same SDK — for
+    instance Microsoft.NET.TargetFrameworkInference.targets calls
+    [MSBuild]::GetTargetFrameworkIdentifier(), which needs NuGet.Frameworks.
+
+    Fallout.Tooling, however, depends on NuGet.Packaging as a plain package reference, so those
+    NuGet.* assemblies also land in the build project's output directory, where they shadow
+    the SDK's copies. The CLR only rolls forward to a higher version, so the build works for
+    exactly as long as our NuGet version is at least the SDK's, and breaks as soon as an agent
+    picks up a newer SDK:
+
+        Could not load file or assembly 'NuGet.Frameworks, Version=7.9.0.0, ...'.
+        The located assembly's manifest definition does not match the assembly reference.
+
+    (The package graph resolves to NuGet 7.6.0. SDK 10.0.202 ships NuGet 7.3.1, which is older
+    and therefore harmless; 10.0.400 ships 7.9.0, which is what broke the TeamCity agents when
+    they moved up from 10.0.302.)
+
+    Pinning a newer NuGet only moves the problem to the next SDK feature band, and
+    ExcludeAssets="runtime" on this package's own reference does not help either:
+    NuGet unions the asset flow across all paths to a package, so Fallout.Tooling's unrestricted
+    reference wins in the consuming project.
+
+    Dropping the assemblies altogether does not work: Fallout itself touches NuGet types while
+    building its parameter schema, which happens before anything registers MSBuildLocator's
+    assembly resolver, so there would be nothing to resolve them. Substituting the SDK's own
+    copies when they are newer keeps them resolvable and avoids shadowing the SDK with older
+    package assemblies. Newer package assemblies must remain available for newer references.
+
+    Only assemblies the SDK actually provides and whose assembly version is at least the
+    package version are substituted. Otherwise, keeping the newer package assembly satisfies
+    both the package and SDK references. Compile-time references are unaffected.
+  -->
+
+  <Target Name="AnarchyToolkitFalloutUseSdkProvidedNuGetAssemblies" AfterTargets="ResolvePackageAssets">
+
+    <ItemGroup>
+      <!-- Package-provided runtime assemblies that the SDK ships a counterpart for. -->
+      <AnarchyToolkitFalloutNuGetAssembly
+          Include="@(RuntimeCopyLocalItems)"
+          Condition="$([System.String]::Copy('%(RuntimeCopyLocalItems.NuGetPackageId)').StartsWith('NuGet.'))
+                     And Exists('$(MSBuildToolsPath)\%(RuntimeCopyLocalItems.Filename)%(RuntimeCopyLocalItems.Extension)')">
+        <PackagePath>%(RuntimeCopyLocalItems.Identity)</PackagePath>
+        <SdkPath>$(MSBuildToolsPath)\%(RuntimeCopyLocalItems.Filename)%(RuntimeCopyLocalItems.Extension)</SdkPath>
+      </AnarchyToolkitFalloutNuGetAssembly>
+    </ItemGroup>
+
+    <GetAssemblyIdentity AssemblyFiles="@(AnarchyToolkitFalloutNuGetAssembly)" Condition="'@(AnarchyToolkitFalloutNuGetAssembly)' != ''">
+      <Output TaskParameter="Assemblies" ItemName="AnarchyToolkitFalloutPackageIdentity" />
+    </GetAssemblyIdentity>
+    <ItemGroup>
+      <AnarchyToolkitFalloutPackageIdentity>
+        <PackageAssemblyVersion>%(Version)</PackageAssemblyVersion>
+      </AnarchyToolkitFalloutPackageIdentity>
+    </ItemGroup>
+    <GetAssemblyIdentity AssemblyFiles="@(AnarchyToolkitFalloutPackageIdentity->'%(SdkPath)')" Condition="'@(AnarchyToolkitFalloutPackageIdentity)' != ''">
+      <Output TaskParameter="Assemblies" ItemName="AnarchyToolkitFalloutSdkIdentity" />
+    </GetAssemblyIdentity>
+    <ItemGroup Condition="'@(AnarchyToolkitFalloutSdkIdentity)' != ''">
+      <AnarchyToolkitFalloutSupersededNuGetAssembly Include="@(AnarchyToolkitFalloutSdkIdentity)"
+          Condition="$([MSBuild]::VersionGreaterThanOrEquals('%(AnarchyToolkitFalloutSdkIdentity.Version)', '%(AnarchyToolkitFalloutSdkIdentity.PackageAssemblyVersion)'))" />
+      <!--
+        Swap the path for the SDK's copy while keeping the NuGet metadata (package id, version,
+        path in package) intact, so that the deps.json stays consistent.
+      -->
+      <RuntimeCopyLocalItems Remove="@(AnarchyToolkitFalloutSupersededNuGetAssembly->'%(PackagePath)')" />
+      <RuntimeCopyLocalItems Include="@(AnarchyToolkitFalloutSupersededNuGetAssembly->'%(SdkPath)')" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

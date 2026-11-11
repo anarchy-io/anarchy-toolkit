@@ -37,13 +37,13 @@ tests/
 
 ### Test kinds
 
-| Kind | Project | Runs | Nuke target |
+| Kind | Project | Runs | Fallout target |
 |---|---|---|---|
 | Unit | `tests/Unit/Unit.csproj` | in-process, no infrastructure | `TestUnit` (`make test_unit`) |
 | Integration | `tests/Integration/Integration.csproj` (none yet) | against real local resources (Docker: PostgreSQL, LocalStack) | `TestIntegration` |
 | End-to-end | `tests/EndToEnd/EndToEnd.csproj` (none yet) | end-to-end through a hosted API or job | `TestEndToEnd` |
 
-The Nuke build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on Microsoft.Testing.Platform, AwesomeAssertions, Moq, and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
+The Fallout build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on Microsoft.Testing.Platform, AwesomeAssertions, Moq, and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
 
 ## Test naming rules
 

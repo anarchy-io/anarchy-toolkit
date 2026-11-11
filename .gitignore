@@ -358,8 +358,8 @@ appsettings.Development.json
 # VSCode config
 .vscode
 
-# Nuke
-.nuke/temp
+# Fallout
+.fallout/temp
 
 /scripts/utils/bin
 .aws-sam

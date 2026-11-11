@@ -23,10 +23,10 @@ install_dev_env: #? Installs the SDK and configures the local development enviro
 install_sdk: #? Installs or validates the .NET SDK required by global.json
 	@./scripts/bootstrap/install-sdk.sh
 
-.PHONY: install_dependencies
-install_dependencies: #? Installs the dependency packages
+.PHONY: install_dependencies restore
+install_dependencies restore: #? Installs the dependency packages
 	@./scripts/console/title.sh 'cyan' 'Installing Dependencies'
-	${MAKE} nuke SKIP_TITLE=true TARGET=Restore
+	${MAKE} fallout SKIP_TITLE=true TARGET=Restore
 
 .PHONY: rebuild
 rebuild: #? Cleans and reinstalls the local development environment
@@ -38,7 +38,7 @@ appsettings: #? Generates the untracked appsettings.Development.json files from 
 #+ RESET|bool|Ask again for every template key, offering the current value as default (DEFAULT=false)
 	@./scripts/console/title.sh 'cyan' 'Generating Development AppSettings'
 ifeq ($(RESET),true)
-	${MAKE} nuke SKIP_TITLE=true TARGET="GenerateAppSettings --reset-app-settings"
+	${MAKE} fallout SKIP_TITLE=true TARGET="GenerateAppSettings --reset-app-settings"
 else
-	${MAKE} nuke SKIP_TITLE=true TARGET=GenerateAppSettings
+	${MAKE} fallout SKIP_TITLE=true TARGET=GenerateAppSettings
 endif

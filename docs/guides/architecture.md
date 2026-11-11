@@ -17,7 +17,7 @@ Core < Infrastructure < Configuration < Hosting < Web < Build
 | `Configuration` | Settings contracts, environment/secret handling, the observability bootstrap and the modules that register them. | `Configuration` |
 | `Hosting` | Running a process: the `IStartup` contract and `UseStartup`, job/worker startups and entry points (Lambda and EC2), the worker pipeline and the workers' self-hosted health API. | `Hosting`, `Hosting.Workers` |
 | `Web` | HTTP API and UI pipelines: startups, entry points, middleware, controllers, presentation contracts and DTOs. | `Web`, `Web.GraphQL`, `Web.Ui` |
-| `Build` | NUKE build components. On top of the chain so that no shipped project can depend on build tooling. | `Build.Nuke` |
+| `Build` | Fallout build components. On top of the chain so that no shipped project can depend on build tooling. | `Build.Fallout` |
 
 A project's layer is the **prefix of its name** (`src/<Layer>.<Name>/`, or just `src/Core/` for the base project). A project may use anything from its own layer or any layer **below** it, never above. For example, `Infrastructure.Persistence.Postgres` may use `Core` and `Core.*`, but no Core project may import an `Infrastructure.*`, `Configuration.*`, `Hosting.*`, `Web.*` or `Build.*` one.
 
@@ -48,7 +48,7 @@ A root folder named after a layer (`Core/`, `Infrastructure/`, `Configuration/`,
 | `Configuration.*` | `Core/`, `Infrastructure/` | `Configuration/Infrastructure/Entity/...` |
 | `Hosting.*` | `Core/`, `Infrastructure/`, `Configuration/` | none yet |
 | `Web.*` | `Core/`, `Infrastructure/`, `Configuration/`, `Hosting/` | `Web.Ui/Core/Service/Ui/...` |
-| `Build.*` | any lower layer | `Build.Nuke/Core/Entity/Build/...` |
+| `Build.*` | any lower layer | `Build.Fallout/Core/Entity/Build/...` |
 
 So `Infrastructure.Persistence.Oracle` may get a `Core/` folder if it has to expose its own domain entities, but code of its own layer, including its DI modules, goes at the root, never under `Infrastructure/` or `Configuration/`. Layer folders do not change the project's layer either: a `Core/` folder inside an `Infrastructure.*` project is still Infrastructure code, so it may only use projects up to Infrastructure.
 
@@ -93,7 +93,7 @@ Modules follow two rules:
 
 ## Enforcing the rule
 
-The `CheckLayering` NUKE target (`ILayeringBuild` in `src/Build.Nuke`) checks three things, using project-name prefixes by default:
+The `CheckLayering` Fallout target (`ILayeringBuild` in `src/Build.Fallout`) checks three things, using project-name prefixes by default:
 
 1. **Project references**: no project references a project of a higher layer, and no production project references a `Testing.*` kit.
 2. **File imports**: no source file imports a toolkit namespace owned by a project of a higher layer. This also catches upward dependencies that only reach a project transitively.

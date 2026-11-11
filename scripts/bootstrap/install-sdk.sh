@@ -22,7 +22,7 @@ elif [[ -x "$DOTNET_DIRECTORY/dotnet" ]] && sdk_works "$DOTNET_DIRECTORY/dotnet"
 else
     DOTNET_VERSION=$(perl -nle 'print $1 if m{"version"\s*:\s*"([^"]+)"}' "$DOTNET_GLOBAL_FILE")
     DOTNET_ROLL_FORWARD=$(perl -nle 'print $1 if m{"rollForward"\s*:\s*"([^"]+)"}' "$DOTNET_GLOBAL_FILE")
-    DOTNET_INSTALL_FILE="${PROJECT_ROOT}/.nuke/temp/dotnet-install.sh"
+    DOTNET_INSTALL_FILE="${PROJECT_ROOT}/.fallout/temp/dotnet-install.sh"
     mkdir -p "$(dirname "$DOTNET_INSTALL_FILE")" "$DOTNET_DIRECTORY"
     curl -Lsfo "$DOTNET_INSTALL_FILE" "https://dot.net/v1/dotnet-install.sh"
     chmod +x "$DOTNET_INSTALL_FILE"

@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Build.Fallout</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Build.Fallout</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Build.Fallout</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Fallout build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, AWS Lambda/CodeDeploy/ECR release flows, KMS secrets, user secrets and Slack failure reporting.</Description>
+    <PackageTags>fallout build ci</PackageTags>
+    <Nullable>enable</Nullable>
+    <!-- Fallout 11.0.18's transition-shim generator emits invalid XML paramrefs. -->
+    <NoWarn>$(NoWarn);CS1734</NoWarn>
+    <!-- The boilerplate includes the repository's dotfiles. -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
+    <PackageReference Include="AWSSDK.KeyManagementService" />
+    <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="Fallout.Common" />
+    <PackageReference Include="System.Security.Cryptography.Xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tool specifications the Infrastructure/Service/Tool/*.Generated.cs wrappers are generated from
+         (`make fallout TARGET=GenerateTools`). -->
+    <None Include="specification\*.json" />
+    <!-- Imported by every build project that references this package, also when pulled in indirectly.
+         See the file itself for why it is needed. -->
+    <None Include="buildTransitive\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\" />
+    <!-- Keep the distribution files available both in the package and to the scaffold target at runtime. -->
+    <None Include="..\..\Makefile" Pack="true" PackagePath="boilerplate/" />
+    <None Include="..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" Pack="true" PackagePath="boilerplate/" />
+    <None Include="..\..\scripts\**\*" Pack="true" PackagePath="boilerplate/scripts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\Makefile" LogicalName="Anarchy.Boilerplate/Makefile" />
+    <EmbeddedResource Include="..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" LogicalName="Anarchy.Boilerplate/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\scripts\**\*" LogicalName="Anarchy.Boilerplate/scripts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Update="..\..\scripts\console\subtitle.sh">
+      <Link>console\subtitle.sh</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Remove="..\..\scripts\utils\**" />
+    <None Remove="..\..\scripts\utils\**" />
+  </ItemGroup>
+
+</Project>
