@@ -28,7 +28,7 @@ See the [MySQL usage notes](https://github.com/anarchy-io/anarchy-toolkit#mysql)
 
 ### 1.1.2
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.1.1
 

@@ -47,7 +47,6 @@ updates:
           - Oracle.*
       build:
         patterns:
-          - Nuke.*
           - NuGet.*
       other:
         patterns:

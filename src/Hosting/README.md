@@ -28,7 +28,7 @@ See the [sample applications](https://github.com/anarchy-io/anarchy-toolkit/tree
 
 ### 1.0.3
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.0.2
 

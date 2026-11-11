@@ -1,0 +1,287 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "Host": {
+      "type": "string",
+      "enum": [
+        "AppVeyor",
+        "AzurePipelines",
+        "Bamboo",
+        "Bitbucket",
+        "Bitrise",
+        "GitHubActions",
+        "GitLab",
+        "Jenkins",
+        "Rider",
+        "SpaceAutomation",
+        "TeamCity",
+        "Terminal",
+        "TravisCI",
+        "VisualStudio",
+        "VSCode"
+      ]
+    },
+    "ExecutableTarget": {
+      "type": "string",
+      "enum": [
+        "Build",
+        "CheckLayering",
+        "Clean",
+        "Compile",
+        "DisableGitHook",
+        "EnableGitHook",
+        "GenerateAppSettings",
+        "GenerateDependencyMap",
+        "GenerateLocalRelease",
+        "GenerateReleaseFromChanges",
+        "GenerateReleaseNotes",
+        "GenerateTools",
+        "Lint",
+        "LintFix",
+        "ListPackages",
+        "ListProjects",
+        "Pack",
+        "PrintArtifactsJson",
+        "Publish",
+        "PullRequest",
+        "Restore",
+        "RunApp",
+        "RunApps",
+        "SetTestEnvironmentVariables",
+        "SetupLocal",
+        "SetUserSecrets",
+        "ShowGitHooks",
+        "Test",
+        "TestAll",
+        "TestEndToEnd",
+        "TestIntegration",
+        "TestUnit",
+        "UpgradeDependencies",
+        "ValidateLocalRelease"
+      ]
+    },
+    "Verbosity": {
+      "type": "string",
+      "description": "",
+      "enum": [
+        "Verbose",
+        "Normal",
+        "Minimal",
+        "Quiet"
+      ]
+    },
+    "FalloutBuild": {
+      "properties": {
+        "Continue": {
+          "type": "boolean",
+          "description": "Indicates to continue a previously failed build attempt"
+        },
+        "Help": {
+          "type": "boolean",
+          "description": "Shows the help text for this build assembly"
+        },
+        "Host": {
+          "description": "Host for execution. Default is 'automatic'",
+          "$ref": "#/definitions/Host"
+        },
+        "NoLogo": {
+          "type": "boolean",
+          "description": "Disables displaying the NUKE logo"
+        },
+        "Partition": {
+          "type": "string",
+          "description": "Partition to use on CI"
+        },
+        "Plan": {
+          "type": "boolean",
+          "description": "Shows the execution plan (HTML)"
+        },
+        "Profile": {
+          "type": "array",
+          "description": "Defines the profiles to load",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Root": {
+          "type": "string",
+          "description": "Root directory during build execution"
+        },
+        "Skip": {
+          "type": "array",
+          "description": "List of targets to be skipped. Empty list skips all dependencies",
+          "items": {
+            "$ref": "#/definitions/ExecutableTarget"
+          }
+        },
+        "Target": {
+          "type": "array",
+          "description": "List of targets to be invoked. Default is '{default_target}'",
+          "items": {
+            "$ref": "#/definitions/ExecutableTarget"
+          }
+        },
+        "Verbosity": {
+          "description": "Logging verbosity during build execution. Default is 'Normal'",
+          "$ref": "#/definitions/Verbosity"
+        },
+        "BuildProjectFile": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "description": "Path to the build project (.csproj) relative to the repository root. Defaults to 'build/_build.csproj' when unset. Read by the Fallout global tool's in-tool runner."
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "properties": {
+        "AppName": {
+          "type": "string",
+          "description": "Runnable app name to execute (any src/** project with OutputType=Exe)"
+        },
+        "AppNames": {
+          "type": "string",
+          "description": "Runnable app names to execute in parallel (comma-separated)"
+        },
+        "ArtifactsJsonOutput": {
+          "type": "string",
+          "description": "Artifacts JSON output file"
+        },
+        "ASPNETCORE_ENVIRONMENT": {
+          "type": "string",
+          "enum": [
+            "Acceptance",
+            "Production",
+            "Shared",
+            "Testing"
+          ],
+          "description": "Environment the build is running in (typically configured by environment variable)"
+        },
+        "AutoStageLintFixes": {
+          "type": "boolean",
+          "description": "Re-stage lint fixes only in previously staged files without unstaged changes"
+        },
+        "AwsProfile": {
+          "type": "string",
+          "description": "AWS credentials profile name"
+        },
+        "AwsRegion": {
+          "type": "string",
+          "description": "AWS default region"
+        },
+        "Configuration": {
+          "type": "string",
+          "enum": [
+            "Debug",
+            "Release"
+          ],
+          "description": "Configuration to build - (Debug or Release; defaults to Release)"
+        },
+        "DependencyInstallTool": {
+          "type": "boolean",
+          "description": "Allow installing or reinstalling dotnet-outdated without prompting"
+        },
+        "DependencyMapOutput": {
+          "type": "string",
+          "description": "Where GenerateDependencyMap writes the HTML page; defaults to docs/dependency-map.html"
+        },
+        "DependencyUpgrade": {
+          "type": "boolean",
+          "description": "Allow upgrading dependencies without prompting"
+        },
+        "DependencyVersionLock": {
+          "type": "string",
+          "description": "Dependency version lock: Major, Minor or None"
+        },
+        "DOTNET_ENVIRONMENT": {
+          "type": "string",
+          "enum": [
+            "Acceptance",
+            "Production",
+            "Shared",
+            "Testing"
+          ],
+          "description": "Environment the build is running in (typically configured by environment variable)"
+        },
+        "HookDryRun": {
+          "type": "boolean",
+          "description": "Preview hook without writing"
+        },
+        "HookForce": {
+          "type": "boolean",
+          "description": "Allow replacing an existing hook"
+        },
+        "HookSkipLintFix": {
+          "type": "boolean",
+          "description": "Omit lint fixing from the hook"
+        },
+        "HookSkipTestRuntime": {
+          "type": "boolean",
+          "description": "Omit integration and end-to-end tests from the hook"
+        },
+        "HookSkipTestStatic": {
+          "type": "boolean",
+          "description": "Omit lint and unit tests from the hook"
+        },
+        "HookType": {
+          "type": "string",
+          "description": "Git hook type (default: pre-commit for enable/disable, all for show)"
+        },
+        "IsCiBuild": {
+          "type": "boolean",
+          "description": "Indicates whether the build runs on CI"
+        },
+        "LayeringByFolder": {
+          "type": "boolean",
+          "description": "Determine project layers from folders under the layering root instead of project name prefixes"
+        },
+        "LayeringRoot": {
+          "type": "string",
+          "description": "Root folder for layering checks, relative to the solution (defaults to src)"
+        },
+        "NuGetApiKey": {
+          "type": "string",
+          "description": "API key for the NuGet feed (optional when using configured credentials)"
+        },
+        "NuGetSource": {
+          "type": "string",
+          "description": "NuGet feed URL or local directory to push packages to"
+        },
+        "ReleaseBase": {
+          "type": "string",
+          "description": "Git commit or ref to compare package versions against"
+        },
+        "ReleaseBump": {
+          "type": "string",
+          "description": "Semantic version increment: major, minor or patch"
+        },
+        "ReleaseHead": {
+          "type": "string",
+          "description": "Git commit or ref for head of changes (defaults to HEAD)"
+        },
+        "ReleaseProject": {
+          "type": "string",
+          "description": "Project name to release (for example Core.Events)"
+        },
+        "ResetAppSettings": {
+          "type": "boolean",
+          "description": "Asks again for every appsettings.json.template key, offering the current value as the default"
+        },
+        "SkipDuplicate": {
+          "type": "boolean",
+          "description": "Skip package versions already present on the feed"
+        },
+        "Solution": {
+          "type": "string",
+          "description": "Path to a solution file that is automatically loaded"
+        }
+      }
+    },
+    {
+      "$ref": "#/definitions/FalloutBuild"
+    }
+  ]
+}

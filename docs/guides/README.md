@@ -12,4 +12,4 @@ Conventions for working on the toolkit and on applications built with it.
 | [Observability](observability.md) | `Observer`, call sites, log and metric conventions, runtime sinks per host. |
 | [Building UIs](building-uis.md) | `Web.Ui`: Blazor startup, cookie-session login, environment catalog, downstream API clients, reusable components. |
 | [Testing Conventions](testing-conventions.md) | Test project layout and naming, test levels, the `src/Testing` kits, fixtures and mocks. |
-| [NUKE Builds](nuke-builds.md) | `Build.Nuke` build components, test discovery and runners, artifacts, generated CLI tool wrappers. |
+| [Fallout Builds](fallout-builds.md) | `Build.Fallout` build components, test discovery and runners, artifacts, generated CLI tool wrappers. |

@@ -40,7 +40,7 @@ See the [module registration example](https://github.com/anarchy-io/anarchy-tool
 
 ### 1.1.2
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.1.1
 

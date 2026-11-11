@@ -24,7 +24,7 @@ generic enum overloads/factories that call `EnumExtension.ToDescription()`. Enti
 
 ## Building
 
-The repo ships a `make` + Nuke toolchain. Run `make help`
+The repo ships a `make` + Fallout toolchain. Run `make help`
 for the full, self-documenting list.
 
 ```bash
@@ -32,7 +32,7 @@ make install        # configure the local .NET environment, restore + compile; W
 make install_dev_env # install/validate the SDK, set ASPNETCORE_ENVIRONMENT and trust development certificates
 make install_sdk    # install or validate the SDK required by global.json
 make appsettings    # generate untracked appsettings.Development.json from each appsettings.json.template (RESET=true re-asks every key)
-make compile        # build the solution (Nuke Compile, warnings-as-errors)
+make compile        # build the solution (Fallout Compile, warnings-as-errors)
 make build          # clean + build
 make lint           # dotnet format --verify-no-changes
 make lint_fix       # dotnet format (auto-fix); AUTO_STAGE=true re-stages eligible fixes
@@ -50,6 +50,10 @@ make upgrade_dependencies  # bump centrally-managed package versions (dotnet-out
 HTTPS certificate; use `ENV=ci` to skip this setup. Dependency upgrades require confirmation;
 `LOCK=Major` (default), `Minor`, or `None` controls the version lock. In non-interactive use,
 `INSTALL_TOOL=true` and `UPGRADE=true` explicitly permit tool installation and upgrades respectively.
+The upgrade also updates literal, unconditional versions in the root `Directory.Packages.props` for
+outdated transitive dependencies, then restores the solution to catch incompatible pins. Explicit version
+ranges, conditional versions and nested central files may need manual updates if restore fails. Review all
+changes before committing; a failed upgrade or restore can leave partial changes to resolve manually.
 Auto-staging only considers files already staged with no unstaged changes before linting; partially
 staged files are left for manual review. Avoid editing files concurrently with linting.
 
@@ -57,13 +61,15 @@ Git hooks can be previewed with `make git_hooks_enable OPTIONS="--dry-run --skip
 Replacing an existing hook requires `--force`. Use `make git_hooks_show` and `make git_hooks_disable`
 to inspect and remove hooks.
 
-You can also run arbitrary Nuke targets through Make:
+You can also run arbitrary Fallout targets through Make:
 
 ```bash
-make nuke TARGET=Pack                # e.g. Compile, Lint, TestAll, Pack, Publish, ListProjects
-make nuke TARGET="Lint --IsCiBuild true"
-make nuke_help                       # list all Nuke targets + parameters
+make fallout TARGET=Pack                # e.g. Compile, Lint, TestAll, Pack, Publish, ListProjects
+make fallout TARGET="Lint --IsCiBuild true"
+make fallout_help                       # list all Fallout targets + parameters
 ```
+
+`make nuke` and `make nuke_help` remain aliases for compatibility.
 
 Plain `dotnet` also works:
 
@@ -77,32 +83,32 @@ dotnet pack  Anarchy.Toolkit.sln -c Release -o ./artifacts/packages
 - `Makefile` + `scripts/make/` — self-documenting Make targets and help (parsed from `#?`/`#+` markers).
 - `scripts/bootstrap/` — SDK and development-environment installation and shell-profile helpers.
 - `scripts/console/` and `scripts/shared/` — display utilities and shared colors.
-- `scripts/build.nuke.sh` — reloads the shell env (fresh SDK) then runs the Nuke project.
-- `build/` — the Nuke build project, see [Nuke build project](#nuke-build-project).
+- `scripts/build.fallout.sh` — launcher that reloads the shell env and runs the build project. Set `FALLOUT_RELOAD_ENV=false` to skip reloading.
+- `build/` — the Fallout build project, see [Fallout build project](#fallout-build-project).
 - `docs/guides/` — conventions ([index](docs/guides/README.md)): [architecture](docs/guides/architecture.md),
   [async](docs/guides/async-conventions.md), [enums](docs/guides/enum-conventions.md),
   [exceptions](docs/guides/exception-conventions.md),
   [endpoints](docs/guides/exposing-endpoints.md), [observability](docs/guides/observability.md),
   [UIs](docs/guides/building-uis.md), [testing](docs/guides/testing-conventions.md) and
-  [NUKE builds](docs/guides/nuke-builds.md).
-- `.nuke/parameters.json` — marks the repo root and pins `Solution`/`Configuration`.
+  [Fallout builds](docs/guides/fallout-builds.md).
+- `.fallout/parameters.json` — marks the repo root and pins `Solution`/`Configuration`.
 
 > Tests run on **Microsoft.Testing.Platform** (`global.json` → `test.runner`).
-> The Nuke test targets route xUnit v3 projects through MSBuild's `Test` target and any VSTest
+> The Fallout test targets route xUnit v3 projects through MSBuild's `Test` target and any VSTest
 > project through `dotnet test`.
 
-### Nuke build project
+### Fallout build project
 
 `build/` is a thin consumer of the solution's own build components,
-[`Anarchy.Toolkit.Build.Nuke`](docs/guides/nuke-builds.md) (`src/Build.Nuke`),
+[`Anarchy.Toolkit.Build.Fallout`](src/Build.Fallout/README.md) (`src/Build.Fallout`),
 referenced as a project so the build always runs the code it
 builds and packs:
 
-- `Build.cs` — `partial class Build : NukeBuild, INuGetBuild`. All the standard targets come from the library:
+- `Build.cs` — `partial class Build : FalloutBuild, INuGetBuild`. All the standard targets come from the library:
   `Restore`, `Compile`, `Lint`/`LintFix`, `TestUnit`/`TestIntegration`/`TestEndToEnd`/`TestAll`, `Test` (unit
   only), `PullRequest`, `ListProjects`, `RunApp`/`RunApps`, `Clean`/`Build`. Test projects are matched by kind
   through their name segments (`Tests.Unit.*`, `*.Unit.Tests`, `*.Tests.Unit` or plain `Unit`).
-- `INuGetBuild` provides `ListPackages`, `Pack` and dependency-ordered `Publish`; see the [NUKE guide](docs/guides/nuke-builds.md#nuget-packages).
+- `INuGetBuild` provides `ListPackages`, `Pack` and dependency-ordered `Publish`.
 - `Build.CodeGeneration.cs` — `GenerateTools`, regenerating the library's CLI tool wrappers from its specifications.
 - `Directory.Build.targets` — imports the library's `buildTransitive` targets, which serve the NuGet.* assemblies
   from the installed SDK so the build keeps working on newer SDK feature bands (e.g. 10.0.400).
@@ -161,7 +167,9 @@ sibling toolkit projects only (framework/NuGet deps omitted).
 ### `Build` layer — build tooling (top of the chain: nothing ships with a dependency on it)
 | Package | Purpose | Depends on |
 |---|---|---|
-| `Anarchy.Toolkit.Build.Nuke` | NUKE build components in `Component/` (`IDefaultBuild`, `IVersionedBuild`, `IStandardBuild`, `IContainerBuild`, `ICodeDeployBuild`, `IAwsLambdaBuild`, `IFullReleaseBuild`, `IHasEndToEndTests`, `IReportFailureOnSlack`), MTP-aware test runner, KMS secrets, user secrets. See the [NUKE builds guide](docs/guides/nuke-builds.md). | — |
+| `Anarchy.Toolkit.Build.Fallout` | Fallout build components, MTP-aware test runner, deployment, secrets and local automation. See the [package README](src/Build.Fallout/README.md). | — |
+
+`Anarchy.Toolkit.Build.Nuke` is deprecated and no longer maintained here; migrate to `Anarchy.Toolkit.Build.Fallout`.
 
 ### `Testing` kits — packable test helpers (outside the layer chain)
 | Package | Purpose | Depends on |

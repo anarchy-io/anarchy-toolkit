@@ -23,7 +23,7 @@ BG_CYAN := $(shell source scripts/shared/colors.env; printf '%s' "$$BG_CYAN")
 ###
 # Global Flags
 ENV ?= dev
-NUKE_RELOAD_ENV ?= true
+FALLOUT_RELOAD_ENV ?= true
 
 ###
 # Constants

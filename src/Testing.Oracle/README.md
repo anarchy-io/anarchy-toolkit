@@ -28,7 +28,7 @@ See [Infrastructure.Persistence.Oracle](https://www.nuget.org/packages/Anarchy.T
 
 ### 1.1.2
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.1.1
 

@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
-    <ProjectReference Include="..\..\src\Build.Nuke\Build.Nuke.csproj" />
+    <ProjectReference Include="..\..\src\Build.Fallout\Build.Fallout.csproj" />
     <ProjectReference Include="..\..\src\Hosting.Workers\Hosting.Workers.csproj" />
     <ProjectReference Include="..\..\src\Core.Events\Core.Events.csproj" />
     <ProjectReference Include="..\..\src\Core.Health\Core.Health.csproj" />

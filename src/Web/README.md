@@ -29,7 +29,7 @@ See the [endpoint guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main
 
 ### 1.0.3
 
-- build: migrate local automation to NUKE
+- build: migrate local automation to build tooling
 
 ### 1.0.2
 

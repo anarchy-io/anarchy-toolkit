@@ -74,29 +74,33 @@ for file in scripts/make/targets/*.mk; do
     print_file_section "$filename"
 
     awk -v COMMAND="${COMMAND}" '
-    /^[a-zA-Z_-]+:.*#\?/ {
-        if (name != "") { print "END" }
+    function print_targets(    i) {
+        for (i = 1; i <= count; i++) {
+            if (COMMAND == "" || COMMAND == names[i]) {
+                print "TARGET|" names[i] "|" desc
+                if (notes != "") printf "%s", notes
+                print "END"
+            }
+        }
+    }
+
+    /^[a-zA-Z0-9_.-]+([ \t]+[a-zA-Z0-9_.-]+)*:.*#\?/ {
+        print_targets()
         line=$0
         sub(/#\? /, "\x1F", line) # use a unit separator
         split(line, parts, "\x1F")
         split(parts[1], nameparts, ":")
-        name = nameparts[1]
+        count = split(nameparts[1], names, /[ \t]+/)
         desc = parts[2]
-
-        if (COMMAND == "" || COMMAND == name) {
-            print "TARGET|" name "|" desc
-            active=1
-        } else {
-            active=0
-        }
+        notes = ""
         next
     }
 
-    active && /^#! / { sub(/^#! /, ""); print "WARN|" $0; next; }
+    count && /^#! / { sub(/^#! /, ""); notes = notes "WARN|" $0 "\n"; next; }
 
-    active && /^#\+ / { sub(/^#\+ /, ""); print "VAR|" $0; next; }
+    count && /^#\+ / { sub(/^#\+ /, ""); notes = notes "VAR|" $0 "\n"; next; }
 
-    END { if (name != "" && active) print "END" }
+    END { print_targets() }
     ' "$file" | while IFS='|' read -r kind f1 f2 f3; do
         case "$kind" in
             TARGET) print_target "$f1" "$f2" ;;

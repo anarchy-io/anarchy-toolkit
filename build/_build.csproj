@@ -6,9 +6,8 @@
     <RootNamespace>Build</RootNamespace>
     <Nullable>enable</Nullable>
     <NoWarn>CS0649;CS0169</NoWarn>
-    <NukeRootDirectory>..</NukeRootDirectory>
-    <NukeScriptDirectory>..</NukeScriptDirectory>
-    <NukeTelemetryVersion>0</NukeTelemetryVersion>
+    <FalloutRootDirectory>..</FalloutRootDirectory>
+    <FalloutScriptDirectory>..</FalloutScriptDirectory>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <Verbosity Condition="'$(Verbosity)' == ''">quiet</Verbosity>
     <!-- The build project is a tool, never a shipped package. -->
@@ -16,31 +15,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- The build components live in the solution itself (Anarchy.Toolkit.Build.Nuke), so the build always
+    <!-- The build components live in the solution itself (Anarchy.Toolkit.Build.Fallout), so the build always
          runs the code it is building and packing. -->
-    <ProjectReference Include="..\src\Build.Nuke\Build.Nuke.csproj" />
+    <ProjectReference Include="..\src\Build.Fallout\Build.Fallout.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" />
-    <PackageReference Include="Nuke.Tooling.Generator" />
+    <PackageReference Include="Fallout.Common" />
+    <PackageReference Include="Fallout.Tooling.Generator" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\Directory.Packages.props">
       <Link>Directory.Packages.props</Link>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="..\.nuke\temp\build.2026-11-01_14-00-26.log" />
-    <None Remove="..\.nuke\temp\build.2026-11-01_14-00-53.log" />
-    <None Remove="..\.nuke\temp\build.2026-11-01_14-03-23.log" />
-    <None Remove="..\.nuke\temp\build.2026-11-01_19-43-22.log" />
-    <None Remove="..\.nuke\temp\build.2026-11-01_19-46-26.log" />
-    <None Remove="..\.nuke\temp\build.2026-11-01_19-46-41.log" />
-    <None Remove="..\.nuke\temp\build.log" />
-    <None Remove="..\.nuke\temp\build.2026-11-03_18-43-19.log" />
   </ItemGroup>
 
   <ItemGroup>
