@@ -22,7 +22,7 @@
     <PackageVersion Include="Amazon.Lambda.TestUtilities" Version="4.3.0" />
     <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
     <!-- Latest Dapper version (2.1.89) has introduced a few data mapping bugs, pinning to last working version -->
-    <PackageVersion Include="Dapper" Version="[2.1.79]" />
+    <PackageVersion Include="Dapper" Version="[2.1.89]" />
     <PackageVersion Include="Fallout.Common" Version="11.0.18" />
     <PackageVersion Include="Fallout.Tooling.Generator" Version="11.0.18" />
     <PackageVersion Include="GraphQL" Version="8.8.5" />
