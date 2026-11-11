@@ -49,7 +49,7 @@
     <!-- Must stay on the 2.x line: Swashbuckle.AspNetCore.Swagger 10 is compiled against Microsoft.OpenApi 2.x.
          Upgrading to 3.x changes IOpenApiRequestBody.Content's signature and throws MissingMethodException at runtime.
          Bump this together with Swashbuckle.AspNetCore once it ships a build targeting Microsoft.OpenApi 3.x. -->
-    <PackageVersion Include="Microsoft.OpenApi" Version="[2.12.2]" />
+    <PackageVersion Include="Microsoft.OpenApi" Version="[3.11.0]" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="MySqlConnector" Version="2.6.2" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
