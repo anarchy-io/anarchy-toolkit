@@ -31,6 +31,10 @@ See the [testing conventions](https://github.com/anarchy-io/anarchy-toolkit/blob
 
 ## Releases
 
+### 1.1.4
+
+- chore(deps): update AWS SDK packages
+
 ### 1.1.2
 
 - build: migrate local automation to build tooling

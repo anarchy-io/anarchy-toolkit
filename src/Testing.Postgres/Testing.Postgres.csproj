@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Testing.Postgres</PackageId>
     <AssemblyName>Anarchy.Toolkit.Testing.Postgres</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Testing.Postgres</RootNamespace>
-    <Version>1.1.3</Version>
+    <Version>1.1.4</Version>
     <Description>PostgreSQL integration-test fixtures: connection string, connection pool, retry/resilience policy and Unit of Work fixtures, options mapping, enum type handlers, and table reset helpers.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>

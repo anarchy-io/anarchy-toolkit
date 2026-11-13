@@ -26,6 +26,10 @@ See the [sample applications](https://github.com/anarchy-io/anarchy-toolkit/tree
 
 ## Releases
 
+### 1.0.5
+
+- chore(deps): update AWS SDK packages
+
 ### 1.0.3
 
 - build: migrate local automation to build tooling

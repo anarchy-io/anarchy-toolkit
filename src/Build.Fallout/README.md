@@ -63,3 +63,9 @@ Use `--boilerplate-items` for a comma-separated allowlist and `--boilerplate-exc
 `all` selects every item and `none` selects nothing. Unknown names fail before any files are written. When selecting individual scripts, include their helpers: the launcher needs `scripts/shared/colors.env`, `scripts/console/subtitle.sh` and, unless environment reloading is disabled, `scripts/bootstrap/shell-profile-path.sh`.
 
 Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-existing` (or `--apend-existing`) is supplied; packaged content is then appended at most once. Review the result because later rules can change earlier ones. Existing `global.json`, `nuget.config` and `Directory.Build.props` are always preserved. The target refuses to overwrite a solution, selected script, Makefile, starter project, `.gitkeep` or existing `Solution` parameter. If an operation fails partway through, inspect the output before retrying.
+
+## Releases
+
+### 1.0.2
+
+- chore(deps): update AWS SDK packages
