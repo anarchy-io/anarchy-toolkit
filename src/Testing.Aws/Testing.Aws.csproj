@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Testing.Aws</PackageId>
     <AssemblyName>Anarchy.Toolkit.Testing.Aws</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Testing.Aws</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Description>AWS messaging test helpers (SNS/SQS helpers, typically against LocalStack, and SqsMessageFixture with gzip/zlib bodies) for message-broker integration tests.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>

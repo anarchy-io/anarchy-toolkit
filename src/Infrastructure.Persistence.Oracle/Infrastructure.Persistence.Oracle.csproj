@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Oracle</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Oracle</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Oracle</RootNamespace>
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <Description>Oracle implementation of the relational persistence layer: dialect, connection string, connection pool, Unit of Work, resilience policy, repository bases and service health reports.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
