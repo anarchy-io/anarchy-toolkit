@@ -8,12 +8,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AWS.Logger.SeriLog" Version="4.0.2" />
-    <PackageVersion Include="AWSSDK.Core" Version="4.0.103" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.102.11" />
-    <PackageVersion Include="AWSSDK.KeyManagementService" Version="4.0.101.5" />
-    <PackageVersion Include="AWSSDK.SQS" Version="4.0.100.26" />
-    <PackageVersion Include="AWSSDK.SecretsManager" Version="4.0.100.26" />
-    <PackageVersion Include="AWSSDK.SimpleNotificationService" Version="4.0.100.26" />
+    <PackageVersion Include="AWSSDK.Core" Version="4.1.0" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.1.0" />
+    <PackageVersion Include="AWSSDK.KeyManagementService" Version="4.1.0" />
+    <PackageVersion Include="AWSSDK.SQS" Version="4.1.0" />
+    <PackageVersion Include="AWSSDK.SecretsManager" Version="4.1.1" />
+    <PackageVersion Include="AWSSDK.SimpleNotificationService" Version="4.1.0" />
     <PackageVersion Include="Amazon.Extensions.Configuration.SystemsManager" Version="7.1.1" />
     <PackageVersion Include="Amazon.Lambda.AspNetCoreServer" Version="10.3.1" />
     <PackageVersion Include="Amazon.Lambda.APIGatewayEvents" Version="3.0.1" />
