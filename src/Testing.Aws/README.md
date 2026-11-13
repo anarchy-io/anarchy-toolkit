@@ -27,6 +27,10 @@ See [Infrastructure.Messaging.Aws](https://www.nuget.org/packages/Anarchy.Toolki
 
 ## Releases
 
+### 1.0.5
+
+- chore(deps): update AWS SDK packages
+
 ### 1.0.3
 
 - build: migrate local automation to build tooling
