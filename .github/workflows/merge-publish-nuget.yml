@@ -65,20 +65,22 @@ jobs:
           fi
           echo "base=$base" >> "$GITHUB_OUTPUT"
 
-      - name: Bump affected packages
-        if: steps.baseline.outputs.base != ''
-        env:
-          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
-          RELEASE_BUMP: ${{ inputs.release_bump || 'patch' }}
-        run: |
-          ./scripts/build.fallout.sh GenerateReleaseFromChanges \
-            --release-base "$RELEASE_BASE" --release-head HEAD --release-bump "$RELEASE_BUMP"
+      # Disabled while versions are bumped manually: these steps bumped versions and notes at publish time without
+      # committing them back (see the commit step below), leaving the repository behind NuGet.
+#      - name: Bump affected packages
+#        if: steps.baseline.outputs.base != ''
+#        env:
+#          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
+#          RELEASE_BUMP: ${{ inputs.release_bump || 'patch' }}
+#        run: |
+#          ./scripts/build.fallout.sh GenerateReleaseFromChanges \
+#            --release-base "$RELEASE_BASE" --release-head HEAD --release-bump "$RELEASE_BUMP"
 
-      - name: Generate missing release notes
-        if: steps.baseline.outputs.base != ''
-        env:
-          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
-        run: ./scripts/build.fallout.sh GenerateReleaseNotes --release-base "$RELEASE_BASE" --release-head HEAD
+#      - name: Generate missing release notes
+#        if: steps.baseline.outputs.base != ''
+#        env:
+#          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
+#        run: ./scripts/build.fallout.sh GenerateReleaseNotes --release-base "$RELEASE_BASE" --release-head HEAD
 
       - name: Run code quality checks and tests
         run: ./scripts/build.fallout.sh PullRequest --IsCiBuild true
