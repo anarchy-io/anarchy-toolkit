@@ -68,6 +68,12 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 
 ## Releases
 
+### 2.0.0
+
+- **Breaking:** layering, dependency map, release version and notes, Git hook, lint staging and local process tasks, their entities and the connection-string helpers moved to `Anarchy.Toolkit.Build.Cli` (namespaces `Anarchy.Toolkit.Build.Cli.Core.*` and `.Infrastructure.Helper`). Targets are unchanged; update `using` directives that referenced them directly.
+- `ILayeringBuild` gains the `LayeringLayers` and `LayeringApplicationFolders` parameters, so layers and application folders (e.g. `src/Api=Web`) can be configured in `.fallout/parameters.json`.
+- The packaged Makefile and scripts now come from `Anarchy.Toolkit.Build.Cli`.
+
 ### 1.0.2
 
 - chore(deps): update AWS SDK packages
