@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
-using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
+using Anarchy.Toolkit.Build.Cli.Core.Service;
+using Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension;
 using Fallout.Common;
 using Fallout.Common.IO;
 using Fallout.Solutions;
@@ -31,9 +31,11 @@ namespace Anarchy.Toolkit.Build.Fallout.Component
         Target GenerateDependencyMap => d => d
             .Description("Generates an HTML map of the solution's project dependencies by layer")
             .Executes(() => {
+                var solutionProjects = Solution.ToProjectInfos(RelativePath);
                 var map = DependencyMapTasks.Collect(
-                    Solution,
-                    GetDependencyMapGroup,
+                    Solution.Name ?? "Solution",
+                    solutionProjects.Keys,
+                    info => GetDependencyMapGroup(solutionProjects[info]),
                     DependencyMapLayers);
 
                 DependencyMapOutput.WriteAllText(DependencyMapTasks.RenderHtml(map));

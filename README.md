@@ -80,6 +80,8 @@ dotnet pack  Anarchy.Toolkit.sln -c Release -o ./artifacts/packages
 
 ### Tooling layout
 
+The distributed Makefile and scripts live in `src/Build.Cli/Boilerplate/`, the package's source of truth; the root `Makefile` includes them in place, and generated solutions get them at the root. Script paths below are relative to that folder.
+
 - `Makefile` + `scripts/make/` — self-documenting Make targets and help (parsed from `#?`/`#+` markers).
 - `scripts/bootstrap/` — SDK and development-environment installation and shell-profile helpers.
 - `scripts/console/` and `scripts/shared/` — display utilities and shared colors.
@@ -167,7 +169,9 @@ sibling toolkit projects only (framework/NuGet deps omitted).
 ### `Build` layer — build tooling (top of the chain: nothing ships with a dependency on it)
 | Package | Purpose | Depends on |
 |---|---|---|
-| `Anarchy.Toolkit.Build.Fallout` | Fallout build components, MTP-aware test runner, deployment, secrets and local automation. See the [package README](src/Build.Fallout/README.md). | — |
+| `Anarchy.Toolkit.Build.Fallout` | Fallout build components, MTP-aware test runner, deployment, secrets and local automation. See the [package README](src/Build.Fallout/README.md). | Build.Cli |
+| `Anarchy.Toolkit.Build.Cli` | Build and command-line operations behind Fallout and the tool: scaffolding, layering, release versioning and notes, Git hooks; the distributed Makefile and scripts. See the [package README](src/Build.Cli/README.md). | — |
+| `Anarchy.Toolkit.Build.Cli.Tool` | The `anarchy-toolkit` global .NET tool: `bootstrap` Anarchy-based solutions with configurable layering, and `scaffold` APIs, jobs and UIs into them. See the [tool README](src/Build.Cli.Tool/README.md). | Build.Cli (bundled) |
 
 `Anarchy.Toolkit.Build.Nuke` is deprecated and no longer maintained here; migrate to `Anarchy.Toolkit.Build.Fallout`.
 

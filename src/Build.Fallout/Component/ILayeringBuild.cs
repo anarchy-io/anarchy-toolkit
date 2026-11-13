@@ -1,4 +1,5 @@
-using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
+using Anarchy.Toolkit.Build.Cli.Core.Service;
+using Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension;
 using Fallout.Common;
 using Fallout.Solutions;
 using Serilog;
@@ -14,7 +15,8 @@ namespace Anarchy.Toolkit.Build.Fallout.Component
     public interface ILayeringBuild : IStandardBuild
     {
         /// <summary>The layered chain, innermost first. By default the toolkit's one (see the architecture guide).</summary>
-        IReadOnlyList<string> LayeringLayers => LayeringTasks.DefaultLayers;
+        [Parameter("Layers, innermost first (defaults to the toolkit's: Core Infrastructure Configuration Hosting Web Build)")]
+        string[] LayeringLayers => TryGetValue(() => LayeringLayers) ?? LayeringTasks.DefaultLayers.ToArray();
 
         /// <summary>Root of projects to check, relative to the solution directory (or an absolute path).</summary>
         [Parameter("Root folder for layering checks, relative to the solution (defaults to src)")]
@@ -25,22 +27,29 @@ namespace Anarchy.Toolkit.Build.Fallout.Component
         bool LayeringByFolder => TryGetValue<bool?>(() => LayeringByFolder) ?? false;
 
         /// <summary>
+        /// Folders whose projects all belong to one layer, as <c>folder=Layer</c> relative to the solution (e.g.
+        /// <c>src/Api=Web</c>), checked before <see cref="LayeringRoot"/>: applications grouped by kind rather than layer.
+        /// </summary>
+        [Parameter("Folders whose projects belong to one layer, as folder=Layer (e.g. src/Api=Web)")]
+        string[] LayeringApplicationFolders => TryGetValue(() => LayeringApplicationFolders) ?? [];
+
+        /// <summary>
         /// The layer of a project, or <c>null</c> to leave it out of the check. By default, projects under <see cref="LayeringRoot"/>
-        /// use their name prefix, or their first folder under that root if <see cref="LayeringByFolder"/> is set.
+        /// use their name prefix, or their first folder under that root if <see cref="LayeringByFolder"/> is set; projects in
+        /// one of the <see cref="LayeringApplicationFolders"/> get that folder's layer.
         /// An unknown layer is a violation.
         /// </summary>
         string? GetLayer(Project project)
         {
             var root = Path.GetRelativePath(Solution.Directory, Path.GetFullPath(LayeringRoot, Solution.Directory));
-            return LayeringByFolder
-                ? LayeringTasks.GetFolderLayer(RelativePath(project), root)
-                : LayeringTasks.GetDefaultLayer(project.Name, RelativePath(project), root);
+            return LayeringTasks.GetLayer(project.Name, RelativePath(project), root, LayeringByFolder, LayeringApplicationFolders);
         }
 
         Target CheckLayering => d => d
             .Description("Verifies the layered architecture: project references, file imports and layer folders")
             .Executes(() => {
-                var projects = LayeringTasks.Collect(Solution, GetLayer);
+                var solutionProjects = Solution.ToProjectInfos(RelativePath);
+                var projects = LayeringTasks.Collect(solutionProjects.Keys, info => GetLayer(solutionProjects[info]));
                 var violations = LayeringTasks.Check(projects, LayeringLayers, LayeringByFolder);
 
                 if (violations.Count > 0)

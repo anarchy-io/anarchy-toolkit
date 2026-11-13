@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Build.Cli</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Build.Cli</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Build.Cli</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Command-line foundations for Anarchy solutions: starter solution scaffolding, build hosts, application templates and dotnet CLI helpers.</Description>
+    <PackageTags>anarchy cli scaffold</PackageTags>
+    <Nullable>enable</Nullable>
+    <!-- The scaffold includes the repository's dotfiles. -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Everything distributed to consumers: Boilerplate/ (Makefile and scripts) plus the repository's own settings
+         files. Embedded for the scaffolder at runtime and packed for reference. -->
+    <None Remove="Boilerplate\**" />
+    <EmbeddedResource Include="Boilerplate\**" LogicalName="Anarchy.Boilerplate/%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" LogicalName="Anarchy.Boilerplate/%(Filename)%(Extension)" />
+    <None Include="Boilerplate\**;..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" Pack="true" PackagePath="boilerplate/%(RecursiveDir)" Visible="false" />
+  </ItemGroup>
+
+</Project>

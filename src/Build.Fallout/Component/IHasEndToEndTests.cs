@@ -1,5 +1,5 @@
+using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
-using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
 using Fallout.Common;
 using Fallout.Common.IO;
 using Fallout.Solutions;

@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
-using Logger = Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper.Logger;
+using Anarchy.Toolkit.Build.Cli.Core.Entity;
+using Logger = Anarchy.Toolkit.Build.Cli.Infrastructure.Helper.Logger;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component.Tasks
 {

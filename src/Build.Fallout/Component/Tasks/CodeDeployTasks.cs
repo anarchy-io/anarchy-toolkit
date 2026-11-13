@@ -8,7 +8,7 @@ using Fallout.Common.IO;
 using Fallout.Common.Tooling;
 using Fallout.Common.Tools.DotNet;
 using Fallout.Common.Utilities;
-using Logger = Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper.Logger;
+using Logger = Anarchy.Toolkit.Build.Cli.Infrastructure.Helper.Logger;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component.Tasks
 {

@@ -1,5 +1,5 @@
+using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
-using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
 using Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension;
 using Fallout.Common;
 using Fallout.Common.CI.TeamCity;
@@ -7,7 +7,7 @@ using Fallout.Common.Execution;
 using Fallout.Common.Tools.Slack;
 using System.Text;
 using Environment = Anarchy.Toolkit.Build.Fallout.Core.ValueSet.Build.Environment;
-using Logger = Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper.Logger;
+using Logger = Anarchy.Toolkit.Build.Cli.Infrastructure.Helper.Logger;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component
 {
