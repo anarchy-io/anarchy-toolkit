@@ -4,7 +4,7 @@
     <AssemblyName>Anarchy.Toolkit.Hosting</AssemblyName>
     <PackageId>Anarchy.Toolkit.Hosting</PackageId>
     <RootNamespace>Anarchy.Toolkit.Hosting</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Description>Generic startup and entry-point bootstrapping for Jobs and Workers (Lambda and EC2).</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

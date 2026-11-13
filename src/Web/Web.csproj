@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Web</PackageId>
     <AssemblyName>Anarchy.Toolkit.Web</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Web</RootNamespace>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Description>Shared REST API pipeline: startup bases, entry points, middleware, auth, swagger, and presentation helpers.</Description>
     <!-- Library web project: no implicit Program entry point required. -->
     <OutputType>Library</OutputType>
