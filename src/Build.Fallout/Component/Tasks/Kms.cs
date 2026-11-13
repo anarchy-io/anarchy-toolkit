@@ -2,7 +2,7 @@ using Amazon;
 using Amazon.Extensions.NETCore.Setup;
 using Amazon.KeyManagementService;
 using Amazon.KeyManagementService.Model;
-using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
+using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using System.Collections.Concurrent;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component.Tasks

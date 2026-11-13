@@ -28,6 +28,8 @@ See the [Fallout builds guide](https://github.com/anarchy-io/anarchy-toolkit/blo
 
 ## Starting from an empty folder
 
+For a guided setup, including APIs, jobs and UIs, install the `Anarchy.Toolkit.Build.Cli.Tool` global tool and run `anarchy-toolkit bootstrap`. See the [tool README](../Build.Cli.Tool/README.md). To set up the build host manually instead:
+
 With the .NET 10 SDK, Bash and Make installed, create a build host first:
 
 ```bash
@@ -41,8 +43,8 @@ Use the example above in `build/Program.cs`, adding `IBoilerplateBuild` to the c
 
 ```bash
 dotnet run --project build/_build.csproj -- SetupBoilerplate --boilerplate-solution-name MyApp
-make compile FALLOUT_RELOAD_ENV=false
-make check_layering FALLOUT_RELOAD_ENV=false
+make compile
+make check_layering
 ```
 
 By default, scaffolding creates a solution containing the build and a starter `src/Core` project, along with `tests/`, `samples/`, `docs/`, `Makefile`, scripts and configuration files. Review the supplied .NET SDK and test-runner settings and enable or adapt the optional Make targets for your build components and tools.

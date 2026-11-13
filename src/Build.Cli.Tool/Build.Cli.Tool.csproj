@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>anarchy-toolkit</ToolCommandName>
+    <PackageId>Anarchy.Toolkit.Build.Cli.Tool</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Build.Cli.Tool</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Build.Cli.Tool</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>The anarchy-toolkit command: bootstrap Anarchy-based .NET solutions and scaffold APIs, jobs and UIs into them from guided wizards.</Description>
+    <PackageTags>anarchy bootstrap scaffold dotnet-tool</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" />
+    <ProjectReference Include="..\Build.Cli\Build.Cli.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Packages the generated projects reference. Only their versions are needed, embedded below; referencing the
+         projects also lets release automation bump this tool whenever one of them is bumped. -->
+    <ProjectReference Include="..\Build.Fallout\Build.Fallout.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Hosting\Hosting.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Web\Web.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Web.Ui\Web.Ui.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+  </ItemGroup>
+
+  <!-- Embeds "AnarchyToolkitPackage:<PackageId>" = "<Version>" assembly metadata for each package above. -->
+  <Target Name="CollectToolkitPackageProjects">
+    <ItemGroup>
+      <_ToolkitPackageProject Include="@(ProjectReference)" Condition="'%(ProjectReference.ToolkitPackage)' == 'true'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="EmbedToolkitPackageVersions" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="CollectToolkitPackageProjects"
+          Outputs="%(_ToolkitPackageProject.Identity)">
+    <XmlPeek XmlInputPath="%(_ToolkitPackageProject.FullPath)" Query="/Project/PropertyGroup/PackageId/text()">
+      <Output TaskParameter="Result" PropertyName="_ToolkitPackageId" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="%(_ToolkitPackageProject.FullPath)" Query="/Project/PropertyGroup/Version/text()">
+      <Output TaskParameter="Result" PropertyName="_ToolkitPackageVersion" />
+    </XmlPeek>
+    <Error Condition="'$(_ToolkitPackageId)' == '' Or '$(_ToolkitPackageVersion)' == ''"
+           Text="%(_ToolkitPackageProject.Identity) must declare an explicit PackageId and Version." />
+    <ItemGroup>
+      <AssemblyMetadata Include="AnarchyToolkitPackage:$(_ToolkitPackageId)" Value="$(_ToolkitPackageVersion)" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -2,7 +2,7 @@ using Anarchy.Toolkit.Build.Fallout.Infrastructure.Entity.UserSecrets;
 using Anarchy.Toolkit.Build.Fallout.Infrastructure.Service.Tool.DotNetUserSecrets;
 using Fallout.Common.IO;
 using Fallout.Common.Tooling;
-using Logger = Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper.Logger;
+using Logger = Anarchy.Toolkit.Build.Cli.Infrastructure.Helper.Logger;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component.Tasks
 {

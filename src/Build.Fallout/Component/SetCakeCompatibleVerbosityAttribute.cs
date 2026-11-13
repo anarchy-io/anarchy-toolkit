@@ -1,6 +1,6 @@
 using Fallout.Common;
 using Fallout.Common.Execution;
-using Logger = Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper.Logger;
+using Logger = Anarchy.Toolkit.Build.Cli.Infrastructure.Helper.Logger;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component
 {

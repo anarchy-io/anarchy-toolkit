@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using Fallout.Solutions;
 
 namespace Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension
@@ -14,5 +15,18 @@ namespace Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension
         public static bool ContainsPackageReferenceToAny(this Project project, IEnumerable<string> packages) =>
             project.GetItems<string>("PackageReference")
                    .Any(r => packages.Contains(r, StringComparer.OrdinalIgnoreCase));
+
+        /// <summary>Maps the solution's projects to the plain inputs of the Build.Cli checks, keyed back to their project.</summary>
+        public static IReadOnlyDictionary<SolutionProjectInfo, Project> ToProjectInfos(this Solution solution, Func<Project, string> relativePath) =>
+            solution.AllProjects.ToDictionary<Project, SolutionProjectInfo, Project>(
+                project => new SolutionProjectInfo(
+                    project.Name,
+                    project.Path,
+                    project.Directory,
+                    relativePath(project),
+                    project.GetProperty("RootNamespace") ?? project.Name,
+                    project.GetItems<string>("ProjectReference").ToArray()),
+                project => project,
+                ReferenceEqualityComparer.Instance);
     }
 }

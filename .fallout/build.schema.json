@@ -234,9 +234,23 @@
           "type": "boolean",
           "description": "Indicates whether the build runs on CI"
         },
+        "LayeringApplicationFolders": {
+          "type": "array",
+          "description": "Folders whose projects belong to one layer, as folder=Layer (e.g. src/Api=Web)",
+          "items": {
+            "type": "string"
+          }
+        },
         "LayeringByFolder": {
           "type": "boolean",
           "description": "Determine project layers from folders under the layering root instead of project name prefixes"
+        },
+        "LayeringLayers": {
+          "type": "array",
+          "description": "Layers, innermost first (defaults to the toolkit's: Core Infrastructure Configuration Hosting Web Build)",
+          "items": {
+            "type": "string"
+          }
         },
         "LayeringRoot": {
           "type": "string",
