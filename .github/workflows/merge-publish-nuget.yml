@@ -83,7 +83,7 @@ jobs:
 #        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh GenerateReleaseNotes --release-base "$RELEASE_BASE" --release-head HEAD
 
       - name: Run code quality checks and tests
-        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh PullRequest --IsCiBuild true
+        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh PullRequest
 
 #      - name: Commit release versions and notes
 #        if: steps.baseline.outputs.base != ''
