@@ -8,21 +8,37 @@ using Spectre.Console;
 namespace Anarchy.Toolkit.Build.Cli.Tool.Service;
 
 /// <summary>
-/// Runs the tool: parses the command line, runs a wizard when needed, and bootstraps or scaffolds. Scaffolding looks
-/// for a solution from the working directory upwards.
+/// Runs the tool: parses the command line (showing the help without a command), runs a wizard when needed, and
+/// bootstraps or scaffolds. Bootstrapping defaults to the working directory; scaffolding looks for a solution from the
+/// working directory upwards.
 /// </summary>
 public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVersions versions, string workingDirectory)
 {
     private const string ReviewSettings = "Review each application's settings (auth service URLs, client IDs) before running it.";
 
+    /// <summary>
+    /// Creates the application for the real console, the package versions embedded in this assembly and the current
+    /// directory.
+    /// </summary>
     public static ToolApplication CreateDefault() => new(
         new SpectreWizardPrompter(AnsiConsole.Console),
         ToolkitPackageVersionReader.FromAssembly(typeof(ToolApplication).Assembly),
         Directory.GetCurrentDirectory());
 
+    /// <summary>
+    /// Runs the command given by <paramref name="args"/>.
+    /// </summary>
+    /// <param name="args">The command-line arguments, without the executable name.</param>
+    /// <param name="interactive">
+    /// Whether input can be prompted for; when <c>false</c>, commands that need a wizard fail instead.
+    /// </param>
+    /// <returns>
+    /// The process exit code: <c>0</c> on success or help; <c>1</c> on invalid input, failure or cancellation.
+    /// </returns>
     public int Run(IReadOnlyList<string> args, bool interactive)
     {
         var command = ToolCommandLine.Parse(args);
+        if (command.Mode != ToolMode.Invalid) prompter.ShowBanner();
         if (command.Mode == ToolMode.Help)
         {
             prompter.ShowHelp();
@@ -41,8 +57,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
 
         var workspace = SolutionWorkspace.Find(workingDirectory);
         return command.Mode switch {
-            ToolMode.Auto when workspace is not null => Scaffold(workspace, null),
-            ToolMode.Auto or ToolMode.Bootstrap => Bootstrap(command),
+            ToolMode.Bootstrap => Bootstrap(command),
             _ when workspace is null => Fail("No Anarchy solution (.fallout/parameters.json with a Solution) found here or above; run 'anarchy-toolkit bootstrap' first."),
             _ => Scaffold(workspace, command.Application)
         };

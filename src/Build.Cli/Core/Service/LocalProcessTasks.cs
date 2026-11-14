@@ -2,8 +2,15 @@ using System.Diagnostics;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
+/// <summary>
+/// Runs local processes such as <c>git</c>.
+/// </summary>
 public static class LocalProcessTasks
 {
+    /// <summary>
+    /// Runs <paramref name="executable"/> in <paramref name="root"/> and waits for it to exit. With
+    /// <paramref name="capture"/>, its output and error are returned; otherwise they go to the console and come back empty.
+    /// </summary>
     public static (int ExitCode, string Output, string Error) Run(string root, string executable, IEnumerable<string> arguments,
         IReadOnlyDictionary<string, string>? environment = null, bool capture = true)
     {
@@ -23,6 +30,10 @@ public static class LocalProcessTasks
         return (process.ExitCode, output.GetAwaiter().GetResult(), error.GetAwaiter().GetResult());
     }
 
+    /// <summary>
+    /// Runs <paramref name="executable"/> in <paramref name="root"/> and returns its output.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the process exits with a non-zero code.</exception>
     public static string Require(string root, string executable, params string[] arguments)
     {
         var result = Run(root, executable, arguments);

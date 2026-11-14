@@ -23,7 +23,7 @@ public class ToolkitToolTest
         new(prompter, Versions, workingDirectory ?? Path.GetTempPath());
 
     [Theory]
-    [InlineData(new string[0], ToolMode.Auto, true)]
+    [InlineData(new string[0], ToolMode.Help, false)]
     [InlineData(new[] { "-h" }, ToolMode.Help, false)]
     [InlineData(new[] { "bootstrap" }, ToolMode.Bootstrap, true)]
     [InlineData(new[] { "bootstrap", "MyApp" }, ToolMode.Bootstrap, false)]
@@ -124,7 +124,8 @@ public class ToolkitToolTest
         var prompter = new ScriptedPrompter();
         var application = Application(prompter);
 
-        application.Run([], interactive: false).Should().Be(1);
+        application.Run([], interactive: false).Should().Be(0);
+        application.Run(["bootstrap"], interactive: false).Should().Be(1);
         application.Run(["scaffold"], interactive: false).Should().Be(1);
         application.Run(["bootstrap", "../bad"], interactive: false).Should().Be(1);
         application.Run(["scaffold", "api", "Orders"], interactive: false).Should().Be(1);
@@ -165,16 +166,24 @@ public class ToolkitToolTest
                 "Orders", false, "Billing", false,
                 true);
 
-            Application(prompter).Run([], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
+            Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
 
+            prompter.BannersShown.Should().Be(1);
             prompter.Progress.Should().Contain("Creating src/Api/Orders/Orders.csproj");
             var solution = File.ReadAllText(Path.Combine(root, "MyApp.sln"));
             solution.Should().Contain("_build.csproj").And.Contain("Configuration.csproj").And.Contain("Orders.csproj").And.Contain("Billing.csproj");
             File.Exists(Path.Combine(root, "src", "Core", "Core.csproj")).Should().BeFalse();
             File.ReadAllText(Path.Combine(root, "src", "Library", "Web", "Web.csproj")).Should().Contain(@"..\Hosting\Hosting.csproj");
-            File.ReadAllText(Path.Combine(root, "build", "_build.csproj")).Should().Contain("Version=\"1.2.3\"");
+            var packages = File.ReadAllText(Path.Combine(root, "Directory.Packages.props"));
+            packages.Should().Contain("<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>")
+                .And.Contain("<PackageVersion Include=\"Anarchy.Toolkit.Build.Fallout\" Version=\"1.2.3\" />")
+                .And.Contain("<PackageVersion Include=\"Anarchy.Toolkit.Web\" Version=\"2.0.0\" />")
+                .And.Contain("<PackageVersion Include=\"Anarchy.Toolkit.Hosting\" Version=\"3.0.0\" />")
+                .And.NotContain("Anarchy.Toolkit.Web.Ui");
+            File.ReadAllText(Path.Combine(root, "build", "_build.csproj"))
+                .Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Build.Fallout\" />").And.NotContain("Version=");
             var api = File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Orders.csproj"));
-            api.Should().Contain("Include=\"Anarchy.Toolkit.Web\" Version=\"2.0.0\"").And.Contain("<IsPackable>false</IsPackable>")
+            api.Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Web\" />").And.NotContain("Version=").And.Contain("<IsPackable>false</IsPackable>")
                 .And.Contain("<RootNamespace>Api.Orders</RootNamespace>").And.Contain(@"..\..\Library\Web\Web.csproj");
             File.ReadAllText(Path.Combine(root, "src", "Jobs", "Billing", "Billing.csproj"))
                 .Should().Contain(@"..\..\Library\Hosting\Hosting.csproj").And.NotContain("<OutputType>");
@@ -185,12 +194,16 @@ public class ToolkitToolTest
 
             // Scaffold from a subdirectory: the solution is found upwards and its layout and ports are respected.
             var scaffold = new ScriptedPrompter(ApplicationKind.Ui, "Orders", "Admin", true);
-            Application(scaffold, Path.Combine(root, "src", "Api")).Run([], interactive: true)
+            Application(scaffold, Path.Combine(root, "src", "Api")).Run(["scaffold"], interactive: true)
                 .Should().Be(0, string.Join("\n", scaffold.Errors));
 
             scaffold.ValidationErrors.Should().ContainSingle().Which.Should().Contain("Orders already exists");
             File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "Program.cs")).Should().Contain("args, 5002, 5003");
             File.ReadAllText(Path.Combine(root, "MyApp.sln")).Should().Contain("Admin.csproj");
+            File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "Admin.csproj")).Should().NotContain("Version=");
+            var updated = File.ReadAllText(Path.Combine(root, "Directory.Packages.props"));
+            updated.Should().Contain("    <PackageVersion Include=\"Anarchy.Toolkit.Web.Ui\" Version=\"2.1.0\" />\n");
+            updated.Split("Include=\"Anarchy.Toolkit.Web\"").Should().HaveCount(2);
 
             var direct = new ScriptedPrompter();
             Application(direct, root).Run(["scaffold", "api", "Admin"], interactive: false).Should().Be(1);
@@ -220,6 +233,29 @@ public class ToolkitToolTest
             var workspace = SolutionWorkspace.Load(root);
             workspace.Layout.Should().BeEquivalentTo(new SolutionLayout(LayeringMode.Prefix, ["Core", "Web"]));
             workspace.UsedPorts.Should().BeEquivalentTo(new[] { 5000, 5001 });
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_ScaffoldsVersionedReferencesWhenTheSolutionManagesNoVersionsCentrally()
+    {
+        var root = TempRoot();
+        try
+        {
+            Application(new ScriptedPrompter()).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            File.Delete(Path.Combine(root, "Directory.Packages.props"));
+
+            var prompter = new ScriptedPrompter();
+            Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Orders.csproj"))
+                .Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Web\" Version=\"2.0.0\" />");
+            File.Exists(Path.Combine(root, "Directory.Packages.props")).Should().BeFalse();
         }
         finally
         {

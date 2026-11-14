@@ -1,4 +1,3 @@
-using Anarchy.Toolkit.Build.Cli.Core.Service;
 using AwesomeAssertions;
 using System.Diagnostics;
 using static Anarchy.Toolkit.Build.Cli.Core.Service.ReleaseVersionTasks;

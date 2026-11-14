@@ -29,7 +29,7 @@ public class BoilerplateTest
             File.Exists(Path.Combine(root, "tests", ".gitkeep")).Should().BeTrue();
             File.ReadAllText(Path.Combine(root, ".gitignore")).Should().Contain(".fallout/temp");
             File.ReadAllText(Path.Combine(root, ".editorconfig")).Should().Contain("root = true");
-            File.ReadAllText(Path.Combine(root, "global.json")).Should().Contain("10.0.0");
+            File.ReadAllText(Path.Combine(root, "global.json")).Should().Contain("10.0.0").And.Contain("Microsoft.Testing.Platform");
             File.ReadAllText(Path.Combine(root, "nuget.config")).Should().Contain("api.nuget.org");
             File.ReadAllText(Path.Combine(root, "Directory.Build.props")).Should().Contain("**\\Queries\\**\\*.sql");
             var parameters = JsonNode.Parse(File.ReadAllText(Path.Combine(root, ".fallout", "parameters.json")))!;
@@ -129,6 +129,42 @@ public class BoilerplateTest
     }
 
     [Fact]
+    public void Create_GivenExistingGlobalJsonAndAppendExisting_AddsOnlyMissingTestRunner()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "anarchy-boilerplate-" + Guid.NewGuid());
+        try
+        {
+            Directory.CreateDirectory(root);
+            var path = Path.Combine(root, "global.json");
+            var options = new BoilerplateOptions { Items = "global.json", AppendExisting = true };
+
+            File.WriteAllText(path, """{ "sdk": { "version": "9.0.100" } }""");
+            BoilerplateTasks.Create(root, null, options);
+            var json = JsonNode.Parse(File.ReadAllText(path))!;
+            json["sdk"]!["version"]!.GetValue<string>().Should().Be("9.0.100");
+            json["test"]!["runner"]!.GetValue<string>().Should().Be("Microsoft.Testing.Platform");
+
+            var merged = File.ReadAllText(path);
+            BoilerplateTasks.Create(root, null, options);
+            File.ReadAllText(path).Should().Be(merged);
+
+            const string ownRunner = """{ "test": { "runner": "VSTest" } }""";
+            File.WriteAllText(path, ownRunner);
+            BoilerplateTasks.Create(root, null, options);
+            File.ReadAllText(path).Should().Be(ownRunner);
+
+            const string withComments = "{\n  // pinned\n  \"sdk\": { \"version\": \"9.0.100\" }\n}";
+            File.WriteAllText(path, withComments);
+            BoilerplateTasks.Create(root, null, options);
+            File.ReadAllText(path).Should().Be(withComments);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void Create_GivenSelection_HandlesOnlyRequestedItems()
     {
         var root = Path.Combine(Path.GetTempPath(), "anarchy-boilerplate-" + Guid.NewGuid());
@@ -188,7 +224,11 @@ public class BoilerplateTest
             help.ExitCode.Should().Be(0, help.Output + help.Error);
             help.Output.Should().Contain("INSTALLATION").And.Contain("Sets up the development environment");
             RunMake("install", "WITH_HOOKS=true").Should().Contain("<bootstrap>\n<Restore>\n<Compile>\n<EnableGitHook>\n<--HookSkipTestRuntime>\n<true>");
-            RunMake("install", "ENV=ci").Should().Contain("<Restore>\n<Compile>").And.NotContain("<bootstrap>");
+            RunMake("install", "ENV=ci").Should().Contain("<Restore>\n<--IsCiBuild>\n<true>\n<Compile>\n<--IsCiBuild>\n<true>").And.NotContain("<bootstrap>");
+            RunMake("lint").Should().Be("<Lint>\n");
+            RunMake("lint", "ENV=ci").Should().Be("<Lint>\n<--IsCiBuild>\n<true>\n");
+            RunMake("compile", "ENV=ci").Should().Be("<Compile>\n<--IsCiBuild>\n<true>\n");
+            RunMake("pull_request", "ENV=ci").Should().Be("<PullRequest>\n<--IsCiBuild>\n<true>\n");
             var invalid = LocalProcessTasks.Run(root, "make", ["git_hooks_enable", "OPTIONS=--unknown"], environment);
             invalid.ExitCode.Should().NotBe(0);
             invalid.Error.Should().Contain("Unknown option: --unknown");
@@ -293,7 +333,7 @@ public class BoilerplateTest
             var environment = new Dictionary<string, string> {
                 ["HOME"] = home,
                 ["SHELL"] = "/bin/bash",
-                ["PATH"] = bin + Path.PathSeparator + System.Environment.GetEnvironmentVariable("PATH"),
+                ["PATH"] = bin + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH"),
                 ["DOTNET_INSTALL_DIR"] = Path.Combine(home, ".dotnet"),
                 ["DOTNET_ROOT"] = "",
                 ["FALLOUT_RELOAD_ENV"] = "true",

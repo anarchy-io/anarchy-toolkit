@@ -3,8 +3,16 @@ using System.Security.Cryptography;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
+/// <summary>
+/// Runs a lint fix and re-stages the files it changed, for use in a pre-commit hook.
+/// </summary>
 public static class LintStagingTasks
 {
+    /// <summary>
+    /// Runs <paramref name="lint"/>; with <paramref name="autoStage"/>, then re-stages the fully staged files it
+    /// changed. Partially staged files, symbolic links, and files whose index entry changed meanwhile are left alone.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when a <c>git</c> command fails.</exception>
     public static void Run(string root, bool autoStage, Action lint)
     {
         if (!autoStage) { lint(); return; }

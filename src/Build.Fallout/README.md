@@ -6,7 +6,7 @@ Reusable [Fallout](https://fallout.build/) build components for .NET repositorie
 dotnet add build/_build.csproj package Anarchy.Toolkit.Build.Fallout
 ```
 
-Implement the components appropriate to your repository on a `FalloutBuild` class. For example, a package-only build can implement `INuGetBuild`, `ILayeringBuild`, `IDependencyMapBuild`, `IDependencyUpgradeBuild` and `IGitHooksBuild`, with an empty `Artifacts` collection. Use `IBoilerplateBuild` for scaffolding, or add the AWS, container, CodeDeploy and Slack components as needed. External deployment and publication targets require their respective tools and credentials.
+Implement the components appropriate to your repository on a `FalloutBuild` class. For example, a package-only build can implement `INuGetBuild`, `ILayeringBuild`, `IDependencyMapBuild`, `IDependencyUpgradeBuild` and `IGitHooksBuild`, with an empty `Artifacts` collection. Use `IBoilerplateBuild` for scaffolding, or add the container (`IContainerBuild`, `IDockerBuild`) components as needed. External deployment and publication targets require their respective tools and credentials.
 
 ```csharp
 using Anarchy.Toolkit.Build.Fallout.Component;
@@ -25,6 +25,22 @@ class Build : FalloutBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
 Create `.fallout/parameters.json` with the solution path, then run `dotnet run --project build/_build.csproj -- --help` to see targets and parameters. The included scaffolding target writes its solution setting to `.fallout/parameters.json`; it will not overwrite existing files.
 
 See the [Fallout builds guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/fallout-builds.md) for component details and package publishing.
+
+## Local containers
+
+`IDockerBuild` manages a local environment on a Docker Compose file (default: `docker/docker-compose.yml`, project named after the repository directory). It uses `docker compose` when available, otherwise the legacy `docker-compose`, and passes the compose file's directory as `DOCKER_ROOT`. The boilerplate's `docker.mk` exposes each target to Make:
+
+| Target | Make | What it does |
+|---|---|---|
+| `DockerInfo` | `docker_info` | Docker engine and Compose versions, the Compose command, and the running containers |
+| `DockerStopAll` | `docker_stopall` | Stops every container running on the host |
+| `DockerLogs` | `container_logs` | Prints the environment's logs, of `DockerContainer` if given |
+| `DockerStart` | `start` | `up --detach --quiet-pull --remove-orphans`, then waits for each `DockerWaitFor` container (healthy, with `DockerWaitForHealthy`) |
+| `DockerStop`, `DockerRestart`, `DockerDestroy` | `stop`, `restart`, `destroy` | Stop, restart (`DockerContainer` only, if given) or remove the environment, including its volumes |
+| `DockerWaitRunning` | `wait_running_container` | Waits up to `DockerTimeout` seconds (default 60) for `DockerContainer` to be running |
+| `DockerWaitHealthy` | `wait_healthy_container` | Waits up to `DockerStartTimeout` seconds (default 180) for it to be running, then up to `DockerTimeout` for its health check to pass; fails at once if it turns unhealthy or has no health check |
+
+The waits show a progress bar on interactive terminals and plain lines otherwise (CI, redirected output).
 
 ## Starting from an empty folder
 
@@ -64,9 +80,13 @@ Use `--boilerplate-items` for a comma-separated allowlist and `--boilerplate-exc
 
 `all` selects every item and `none` selects nothing. Unknown names fail before any files are written. When selecting individual scripts, include their helpers: the launcher needs `scripts/shared/colors.env`, `scripts/console/subtitle.sh` and, unless environment reloading is disabled, `scripts/bootstrap/shell-profile-path.sh`.
 
-Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-existing` (or `--apend-existing`) is supplied; packaged content is then appended at most once. Review the result because later rules can change earlier ones. Existing `global.json`, `nuget.config` and `Directory.Build.props` are always preserved. The target refuses to overwrite a solution, selected script, Makefile, starter project, `.gitkeep` or existing `Solution` parameter. If an operation fails partway through, inspect the output before retrying.
+Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-existing` (or `--apend-existing`) is supplied; packaged content is then appended at most once. Review the result because later rules can change earlier ones. The same option adds the packaged `test` section (`"runner": "Microsoft.Testing.Platform"`, which `dotnet test` needs to run xUnit.net v3 projects) to an existing `global.json` that does not have one; the rest of the file is kept, and a file with comments is left alone. Existing `nuget.config` and `Directory.Build.props` are always preserved, as is `global.json` otherwise. The target refuses to overwrite a solution, selected script, Makefile, starter project, `.gitkeep` or existing `Solution` parameter. If an operation fails partway through, inspect the output before retrying.
 
 ## Releases
+
+### 3.0.0
+
+- feat(Build.Fallout): replace AWS release flows with Docker and container builds
 
 ### 2.0.0
 

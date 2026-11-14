@@ -26,6 +26,10 @@ See [Infrastructure.Persistence.Oracle](https://www.nuget.org/packages/Anarchy.T
 
 ## Releases
 
+### 1.1.5
+
+- refactor(src): clean up code style across library packages
+
 ### 1.1.4
 
 - chore(deps): update AWS SDK packages

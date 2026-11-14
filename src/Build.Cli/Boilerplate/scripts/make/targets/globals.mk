@@ -39,6 +39,8 @@ PACKAGES_OUT_DIR := "$(PROJECT_ROOT)artifacts/packages"
 # Docker Config
 DOCKER_ROOT=${PROJECT_ROOT}docker
 DOCKER_COMPOSE_FILE_NAME=${DOCKER_ROOT}/docker-compose.yml
+# Compose project names must be lower case.
+DOCKER_PROJECT_NAME := $(shell printf '%s' '$(PROJECT_NAME)' | tr '[:upper:]' '[:lower:]')
 
 # Detect Docker Compose version and assign to DOCKER_COMPOSE variable
 DOCKER_VERSION := $(shell docker version --format '{{.Server.Version}}' 2>/dev/null)
@@ -52,9 +54,9 @@ else
     DOCKER_COMPOSE := docker compose
 endif
 
-DOCKER_COMPOSE_COMMAND=DOCKER_ROOT="${DOCKER_ROOT}" ${DOCKER_COMPOSE} -f "${DOCKER_COMPOSE_FILE_NAME}" --project-name "${PROJECT_NAME}"
+DOCKER_COMPOSE_COMMAND=DOCKER_ROOT="${DOCKER_ROOT}" ${DOCKER_COMPOSE} -f "${DOCKER_COMPOSE_FILE_NAME}" --project-name "${DOCKER_PROJECT_NAME}"
 DOCKER_COMPOSE_EXEC := ${DOCKER_COMPOSE_COMMAND} exec
-DOCKER_DEV_CONSOLE := ${DOCKER_COMPOSE_EXEC} -e DEV_LOG_LEVEL=${LOGLEVEL} "${PROJECT_NAME}-dev-console"
+DOCKER_DEV_CONSOLE := ${DOCKER_COMPOSE_EXEC} -e DEV_LOG_LEVEL=${LOGLEVEL} "${DOCKER_PROJECT_NAME}-dev-console"
 
 ###
 # GIT

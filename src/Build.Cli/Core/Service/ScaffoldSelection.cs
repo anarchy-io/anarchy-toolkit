@@ -2,14 +2,16 @@ using Anarchy.Toolkit.Build.Cli.Core.Entity;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
-/// <summary>Resolves <see cref="ScaffoldOptions.Items"/> and <see cref="ScaffoldOptions.Exclude"/> against the available items.</summary>
+/// <summary>
+/// Resolves <see cref="ScaffoldOptions.Items"/> and <see cref="ScaffoldOptions.Exclude"/> against the available items.
+/// </summary>
 internal sealed class ScaffoldSelection
 {
     private static readonly string[] GeneratedItems = ["solution", "core", "tests", "samples", "docs", "Directory.Build.props"];
     private readonly string[] _includes;
     private readonly string[] _excludes;
 
-    /// <exception cref="ArgumentException">A selector matches no available item.</exception>
+    /// <exception cref="ArgumentException">Thrown when a selector matches no available item.</exception>
     public ScaffoldSelection(IEnumerable<string> resourcePaths, ScaffoldOptions options)
     {
         var available = resourcePaths.Concat(GeneratedItems).ToArray();
@@ -22,6 +24,9 @@ internal sealed class ScaffoldSelection
         }
     }
 
+    /// <summary>
+    /// Whether an item is included and not excluded. A <c>scripts</c> selector also matches every script below that folder.
+    /// </summary>
     public bool Includes(string item) =>
         _includes.Any(selector => Matches(item, selector)) && !_excludes.Any(selector => Matches(item, selector));
 

@@ -15,7 +15,9 @@ public sealed partial record SolutionWorkspace(
     IReadOnlyCollection<string> ProjectNames,
     IReadOnlyCollection<int> UsedPorts)
 {
-    /// <summary>The workspace containing <paramref name="directory"/>, searching upwards, or null if there is none.</summary>
+    /// <summary>
+    /// The workspace containing <paramref name="directory"/>, searching upwards, or null if there is none.
+    /// </summary>
     public static SolutionWorkspace? Find(string directory)
     {
         for (var current = new DirectoryInfo(Path.GetFullPath(directory)); current is not null; current = current.Parent)
@@ -27,6 +29,11 @@ public sealed partial record SolutionWorkspace(
         return null;
     }
 
+    /// <summary>
+    /// Reads the workspace at <paramref name="root"/>: the layout from the <c>ILayeringBuild</c> parameters, and the
+    /// projects and used ports from the files under <c>src</c> (<c>bin</c>/<c>obj</c> excluded).
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when <c>.fallout/parameters.json</c> defines no solution.</exception>
     public static SolutionWorkspace Load(string root)
     {
         root = Path.GetFullPath(root);
@@ -56,7 +63,9 @@ public sealed partial record SolutionWorkspace(
         return new SolutionWorkspace(root, Path.Combine(root, solution), layout, projects, ports);
     }
 
-    /// <summary><c>RunWebHost&lt;Startup&gt;(args)</c> (default ports) or <c>RunWebHost&lt;Startup&gt;(args, 5002, 5003)</c>.</summary>
+    /// <summary>
+    /// <c>RunWebHost&lt;Startup&gt;(args)</c> (default ports) or <c>RunWebHost&lt;Startup&gt;(args, 5002, 5003)</c>.
+    /// </summary>
     [GeneratedRegex(@"RunWebHost<[^>]+>\(\s*args\s*(?:,\s*(\d+)\s*,\s*(\d+)\s*)?\)")]
     private static partial Regex RunWebHostRegex();
 }

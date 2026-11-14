@@ -1,18 +1,16 @@
-using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using Anarchy.Toolkit.Build.Cli.Core.Service;
 using Anarchy.Toolkit.Build.Fallout.Component;
-using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
 using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
 using AwesomeAssertions;
 using Fallout.Common;
 using Fallout.Common.Execution;
 using Fallout.Common.IO;
+using Fallout.Common.Tools.DotNet;
 using Fallout.Persistence.Solution.Model;
 using Fallout.Solutions;
-using System.IO.Compression;
 using System.Linq.Expressions;
 using System.Reflection;
-using BuildEnvironment = Anarchy.Toolkit.Build.Fallout.Core.ValueSet.Build.Environment;
+
 
 namespace Anarchy.Toolkit.Tests.Unit.Build.Fallout.Component;
 
@@ -21,25 +19,24 @@ public class TargetGraphTest
     // Exercise Fallout's actual component resolution without running any publishing or deployment tools.
     // Each row is target | direct dependencies | action count | dynamic conditions | requirements.
     private const string TargetSpecifications = """
-        AnnounceCodeDeployArtifactsToTeamCity||1|1|0
-        AwsCliPackage|PublishLambda|1|1|0
         Build|Clean|1|0|0
-        BuildRelease|Clean,Build,Test,DeployServer|0|0|0
-        BuildReleaseCodeDeploy|Build,Test,PackCodeDeploy|0|0|0
-        BuildReleaseFull|PublishLambda,BuildReleaseCodeDeploy|0|0|0
         CheckLayering||1|0|0
         Clean||1|0|0
         Compile|Restore|1|0|0
-        ConfigureLocalCloudformationParameters||1|0|0
-        DeployArtifacts||1|0|0
-        DeployLocal|PublishLambda|1|0|0
-        DeployServer|PublishLambda,AwsCliPackage,PublishLambdaCI|0|1|0
         DisableGitHook||1|0|0
+        DockerDestroy||1|0|0
+        DockerInfo||1|0|0
+        DockerLogs||1|0|0
+        DockerRestart||1|0|0
+        DockerStart||1|0|0
+        DockerStop||1|0|0
+        DockerStopAll||1|0|0
+        DockerWaitHealthy||1|0|1
+        DockerWaitRunning||1|0|1
         EcrImageBuild|EcrPublishAppArtifact|1|0|0
         EcrImagePush|EcrImageBuild|1|0|0
         EcrPublishAppArtifact|Compile|1|0|2
         EnableGitHook||1|0|0
-        EndToEndTest|SetEndToEndTestEnvironmentVariables|1|0|0
         GenerateAppSettings||1|0|0
         GenerateDependencyMap||1|0|0
         GenerateLocalRelease||1|0|2
@@ -50,34 +47,19 @@ public class TargetGraphTest
         ListPackages||1|0|0
         ListProjects||1|0|0
         Pack|Compile|1|0|0
-        PackCodeDeploy|PublishLinux,ValidateCodeDeploySettings|1|0|0
-        PrintArtifactsJson||1|0|0
         Publish|Pack|1|0|1
-        PublishLambda|Clean|1|1|0
-        PublishLambdaCI|Clean|1|1|0
-        PublishLinux|Clean,WriteBuildMetadata|1|0|0
-        PullRequest|Lint,TestAll|0|0|0
-        ReportFailure||1|1|0
+        PullRequest|Lint,CheckLayering,TestAll|0|0|0
         Restore||1|0|0
-        Run|Clean,Build,Test,PublishLambda,DeployLocal|0|0|0
         RunApp||1|0|0
         RunApps||1|0|0
-        SetEndToEndTestEnvironmentVariables||1|1|0
-        SetTestEnvironmentVariables||1|1|0
         SetupBoilerplate||1|0|0
-        SetupLocal||0|0|0
-        SetUserSecrets||1|0|0
         ShowGitHooks||1|0|0
-        Test|TestUnit|0|0|0
         TestAll|TestUnit,TestIntegration,TestEndToEnd|0|0|0
-        TestEndToEnd|Compile,SetTestEnvironmentVariables|1|0|0
-        TestIntegration|Compile,SetTestEnvironmentVariables|1|0|0
-        TestUnit|Compile,SetTestEnvironmentVariables|1|0|0
+        TestEndToEnd|Compile|1|0|0
+        TestIntegration|Compile|1|0|0
+        TestUnit|Compile|1|0|0
         UpgradeDependencies||1|0|0
-        ValidateCodeDeploySettings||1|0|0
-        ValidateDeploymentAcceptance||0|0|0
         ValidateLocalRelease||1|0|1
-        WriteBuildMetadata||1|0|0
         """;
 
     public static IEnumerable<object[]> TargetCases => TargetSpecifications.Split('\n', StringSplitOptions.RemoveEmptyEntries)
@@ -101,33 +83,6 @@ public class TargetGraphTest
         target.Actions.Should().HaveCount(actions);
         target.DynamicConditions.Should().HaveCount(conditions);
         target.DelegateRequirements.Should().HaveCount(requirements);
-    }
-
-    [Fact]
-    public void ReleaseAndSetupTargets_KeepTheirOrderingAndTriggers()
-    {
-        ExecutableTarget Get(string name) => Targets.Value.Single(t => t.Name == name);
-        Get("WriteBuildMetadata").OrderDependencies.Select(t => t.Name).Should().Contain("Clean");
-        Get("AwsCliPackage").OrderDependencies.Select(t => t.Name).Should().Contain("Test");
-        Get("PublishLambdaCI").OrderDependencies.Select(t => t.Name).Should().Contain("Test");
-        Get("PackCodeDeploy").Triggers.Select(t => t.Name).Should().Contain("AnnounceCodeDeployArtifactsToTeamCity");
-        Get("SetupLocal").Triggers.Select(t => t.Name).Should().BeEquivalentTo("SetUserSecrets", "GenerateAppSettings", "ConfigureLocalCloudformationParameters");
-        Get("ValidateDeploymentAcceptance").Triggers.Select(t => t.Name).Should().BeEquivalentTo("EndToEndTest", "ReportFailure");
-        foreach (var name in new[] { "BuildRelease", "BuildReleaseCodeDeploy", "DeployArtifacts" })
-            Get(name).Triggers.Select(t => t.Name).Should().Contain("ReportFailure");
-        Get("ReportFailure").AssuredAfterFailure.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void LambdaTargets_OnlyRunForTheirConfiguredDeploymentVersion(bool v2)
-    {
-        var targets = CreateTargets(new TestBuild { UseV2Deployment = v2 });
-        bool Condition(string name) => targets.Single(t => t.Name == name).DynamicConditions.Single().Item2();
-        Condition("PublishLambda").Should().Be(!v2);
-        Condition("AwsCliPackage").Should().Be(!v2);
-        Condition("PublishLambdaCI").Should().Be(v2);
     }
 
     [Fact]
@@ -170,16 +125,6 @@ public class TargetGraphTest
     }
 
     [Fact]
-    public void ValidateCodeDeploySettings_RejectsEmptyArtifactsAndAcceptsEnabledArtifact()
-    {
-        var build = new TestBuild();
-        var validate = CreateTargets(build).Single(t => t.Name == "ValidateCodeDeploySettings").Actions.Single();
-        validate.Should().Throw<Exception>().WithMessage("*None of the projects are configured*");
-        build.ArtifactList.Add(new Artifact { CodeDeploy = { ArchiveName = "app" } });
-        validate.Should().NotThrow();
-    }
-
-    [Fact]
     public void GenerateLocalRelease_BumpsSelectedProjectAndDependents()
     {
         using var root = new TemporaryRoot();
@@ -205,6 +150,15 @@ public class TargetGraphTest
     }
 
     [Fact]
+    public void ToolVerbosity_IsMinimalUnlessTheBuildRunsOnCi()
+    {
+        var build = new TestBuild();
+        ((IDefaultBuild)build).ToolVerbosity.Should().Be(DotNetVerbosity.minimal);
+        build.IsCiBuild = true;
+        ((IDefaultBuild)build).ToolVerbosity.Should().Be(DotNetVerbosity.diagnostic);
+    }
+
+    [Fact]
     public void GenerateAppSettings_InCiWritesDefaultsWithoutPrompting()
     {
         using var root = new TemporaryRoot();
@@ -214,32 +168,6 @@ public class TargetGraphTest
         CreateTargets(build).Single(t => t.Name == "GenerateAppSettings").Actions.Single()();
         var content = File.ReadAllText(Path.Combine(root.Path, "src/App/appsettings.Development.json"));
         content.Should().Contain("5000").And.NotContain("enter a secret");
-    }
-
-    [Fact]
-    public void PrintArtifactsJson_UsesConfiguredOutputAndDeploymentTypes()
-    {
-        using var root = new TemporaryRoot();
-        var build = root.Build();
-        build.ArtifactsJsonOutput = Path.Combine(root.Path, "artifacts.json");
-        build.ArtifactList.Add(new Artifact { ProjectFile = AbsolutePath.Create(root.File("src/App/App.csproj", "<Project/>")), CodeDeploy = { ArchiveName = "app" } });
-        CreateTargets(build).Single(t => t.Name == "PrintArtifactsJson").Actions.Single()();
-        File.ReadAllText(build.ArtifactsJsonOutput).Should().Contain("CodeDeploy").And.Contain("app");
-    }
-
-    [Fact]
-    public void PackCodeDeploy_CreatesArchiveForEnabledArtifactsOnly()
-    {
-        using var root = new TemporaryRoot();
-        var build = root.Build();
-        build.ArtifactList.Add(new Artifact { ProjectFile = AbsolutePath.Create(root.File("src/App/App.csproj", "<Project/>")), CodeDeploy = { ArchiveName = "app" } });
-        build.ArtifactList.Add(new Artifact { ProjectFile = AbsolutePath.Create(root.File("src/Skipped/Skipped.csproj", "<Project/>")) });
-        root.File("artifacts/App/linux-x64/app.txt", "published");
-        Directory.CreateDirectory(Path.Combine(root.Path, "artifacts", "packaged"));
-        CreateTargets(build).Single(t => t.Name == "PackCodeDeploy").Actions.Single()();
-        using var zip = ZipFile.OpenRead(Path.Combine(root.Path, "artifacts", "packaged", "app.zip"));
-        zip.Entries.Select(e => e.FullName).Should().Contain("app.txt");
-        Directory.GetFiles(Path.Combine(root.Path, "artifacts", "packaged")).Should().HaveCount(1);
     }
 
     [Fact]
@@ -299,26 +227,6 @@ public class TargetGraphTest
         Requirements("Publish").Should().ContainSingle().Which.Should().Be("local-feed");
     }
 
-    [Fact]
-    public void ServerOnlyTargets_UseTheBuildHostCondition()
-    {
-        var build = new TestBuild();
-        var targets = CreateTargets(build);
-        foreach (var name in new[] { "DeployServer", "SetTestEnvironmentVariables", "SetEndToEndTestEnvironmentVariables", "AnnounceCodeDeployArtifactsToTeamCity" })
-            targets.Single(t => t.Name == name).DynamicConditions.Single().Item2().Should().Be(((IFalloutBuild)build).IsServerBuild);
-    }
-
-    [Fact]
-    public void DefaultBuild_KeepsItsOriginalTestAndPullRequestDependencies()
-    {
-        var targets = CreateTargets(new DefaultTestBuild());
-        targets.Single(t => t.Name == "Test").ExecutionDependencies.Select(t => t.Name)
-            .Should().BeEquivalentTo("Build", "SetTestEnvironmentVariables");
-        targets.Single(t => t.Name == "PullRequest").ExecutionDependencies.Select(t => t.Name)
-            .Should().BeEquivalentTo("Build", "Test");
-        targets.Single(t => t.Name == "SetupLocal").Triggers.Select(t => t.Name).Should().ContainSingle().Which.Should().Be("SetUserSecrets");
-    }
-
     private static IReadOnlyCollection<ExecutableTarget> CreateTargets<T>(T build) where T : FalloutBuild
     {
         var factory = typeof(FalloutBuild).Assembly.GetType("Fallout.Common.Execution.ExecutableTargetFactory", throwOnError: true)!;
@@ -331,9 +239,8 @@ public class TargetGraphTest
         public IReadOnlyCollection<Artifact> Artifacts => [];
     }
 
-    private sealed class TestBuild : FalloutBuild, IFullReleaseBuild, IContainerBuild, IHasEndToEndTests,
-        IReportFailureOnSlack, INuGetBuild, ILayeringBuild, IDependencyMapBuild, IBoilerplateBuild,
-        IDependencyUpgradeBuild, IGitHooksBuild, IFalloutBuild
+    private sealed class TestBuild : FalloutBuild, IContainerBuild, INuGetBuild, ILayeringBuild,
+        IDependencyMapBuild, IBoilerplateBuild, IDependencyUpgradeBuild, IGitHooksBuild, IDockerBuild, IFalloutBuild
     {
         public AbsolutePath TestRoot { get; set; } = AbsolutePath.Create(Directory.GetCurrentDirectory());
         AbsolutePath IFalloutBuild.RootDirectory => TestRoot;
@@ -341,10 +248,6 @@ public class TargetGraphTest
         public List<Artifact> ArtifactList { get; } = [];
         public IReadOnlyCollection<Artifact> Artifacts => ArtifactList;
         public string ContainerRegistry => "example.invalid";
-        public IReadOnlyDictionary<string, ConfigurationValue> EndToEndTestConfiguration => new Dictionary<string, ConfigurationValue>();
-        public string ApplicationName => "test";
-        public IReadOnlyDictionary<BuildEnvironment, Secret> EncryptedSlackWebhookUrls => new Dictionary<BuildEnvironment, Secret>();
-        public bool UseV2Deployment { get; set; }
         public bool IsCiBuild { get; set; }
         public string? HookType { get; set; }
         public bool HookDryRun { get; set; }
@@ -354,7 +257,6 @@ public class TargetGraphTest
         public string? ReleaseBase { get; set; }
         public string? NuGetSource { get; set; }
         public string? BoilerplateItems { get; set; }
-        public string? ArtifactsJsonOutput { get; set; }
         public AbsolutePath DependencyMapOutput { get; set; } = AbsolutePath.Create(Path.Combine(Directory.GetCurrentDirectory(), "map.html"));
         public string DependencyVersionLock { get; set; } = "Major";
     }

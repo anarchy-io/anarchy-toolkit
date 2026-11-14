@@ -4,8 +4,8 @@
     <PackageId>Anarchy.Toolkit.Build.Fallout</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Fallout</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Fallout</RootNamespace>
-    <Version>2.0.0</Version>
-    <Description>Fallout build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, AWS Lambda/CodeDeploy/ECR release flows, KMS secrets, user secrets and Slack failure reporting.</Description>
+    <Version>3.0.0</Version>
+    <Description>Fallout build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, linting, layering checks, NuGet and ECR container release flows and local app runs.</Description>
     <PackageTags>fallout build ci</PackageTags>
     <Nullable>enable</Nullable>
     <!-- Fallout 11.0.18's transition-shim generator emits invalid XML paramrefs. -->
@@ -17,8 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
-    <PackageReference Include="AWSSDK.KeyManagementService" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="Fallout.Common" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
@@ -29,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Tool specifications the Infrastructure/Service/Tool/*.Generated.cs wrappers are generated from
+    <!-- Tool specifications the Infrastructure/Service/Tool/<Tool>/*.Generated.cs wrappers are generated from
          (`make fallout TARGET=GenerateTools`). -->
     <None Include="specification\*.json" />
     <!-- Imported by every build project that references this package, also when pulled in indirectly.

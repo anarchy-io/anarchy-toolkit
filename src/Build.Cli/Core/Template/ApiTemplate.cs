@@ -1,10 +1,13 @@
-using Anarchy.Toolkit.Build.Cli.Core.Entity;
-
 namespace Anarchy.Toolkit.Build.Cli.Core.Template;
 
-/// <summary>A REST API on <c>RestApiWebAppStartupBase</c> with JWT authorization and one anonymous endpoint.</summary>
+/// <summary>
+/// A REST API on <c>RestApiWebAppStartupBase</c> with JWT authorization and one anonymous endpoint.
+/// </summary>
 internal static class ApiTemplate
 {
+    /// <summary>
+    /// The project files, keyed by path relative to the project directory.
+    /// </summary>
     public static IReadOnlyDictionary<string, string> Render(ApplicationContext context)
     {
         var app = context.App;

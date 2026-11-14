@@ -17,6 +17,9 @@ internal sealed class ScriptedPrompter(params object[] answers) : IWizardPrompte
     public SolutionPlan? ShownPlan { get; private set; }
     public ApplicationSpec? ShownScaffold { get; private set; }
     public bool ShowedHelp { get; private set; }
+    public int BannersShown { get; private set; }
+
+    public void ShowBanner() => BannersShown++;
 
     public void ShowWelcome(string title, string description) { }
 

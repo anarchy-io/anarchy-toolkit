@@ -6,14 +6,30 @@ using System.Text.Json.Nodes;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
-/// <summary>Creates a minimal solution and installs the packaged build scripts without replacing existing files.</summary>
+/// <summary>
+/// Creates a minimal solution and installs the packaged build scripts without replacing existing files.
+/// </summary>
 public static class SolutionScaffolder
 {
     private const string ResourcePrefix = "Anarchy.Boilerplate/";
 
-    // These files are never replaced. Text settings may be appended, but only on request.
+    // These files are never replaced. Text settings and global.json's test runner may be added, but only on request.
     private static readonly string[] Preserved = [".gitignore", ".editorconfig", "global.json", "nuget.config", "Directory.Build.props"];
 
+    /// <summary>
+    /// Installs the selected packaged files into <paramref name="root"/> and, unless excluded, creates
+    /// <c>src/Core/Core.csproj</c>, the <c>tests</c>, <c>samples</c> and <c>docs</c> folders, a
+    /// <c>Directory.Build.props</c>, and a solution named <paramref name="solutionName"/> recorded in
+    /// <c>.fallout/parameters.json</c>. Existing <c>.gitignore</c>, <c>.editorconfig</c>, <c>global.json</c>,
+    /// <c>nuget.config</c> and <c>Directory.Build.props</c> files are kept.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the solution is selected and <paramref name="solutionName"/> is invalid, or a selector is unknown.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when generated files or a solution already exist, the build host is missing, or Fallout's parameters
+    /// already define a solution.
+    /// </exception>
     public static void Create(string root, string? solutionName, ScaffoldOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -69,6 +85,11 @@ public static class SolutionScaffolder
                 {
                     FileHelper.AppendOnce(destination, input);
                     log($"Applied packaged settings to {destination}");
+                }
+                else if (options.AppendExisting && resource.Path == "global.json" &&
+                         FileHelper.AddMissingJsonProperty(destination, input, "test"))
+                {
+                    log($"Added the packaged test runner to {destination}");
                 }
                 else
                 {

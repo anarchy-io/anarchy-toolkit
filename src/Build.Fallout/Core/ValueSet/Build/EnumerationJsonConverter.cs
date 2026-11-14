@@ -5,10 +5,14 @@ using System.Text.Json.Serialization;
 
 namespace Anarchy.Toolkit.Build.Fallout.Core.ValueSet.Build;
 
-/// <summary>Reads Fallout enumeration values from parameter files as strings.</summary>
+/// <summary>
+/// Reads and writes Fallout enumeration values in parameter files as strings. A value is read by matching,
+/// case-insensitively, either the name of one of the type's public static fields or that field's value.
+/// </summary>
+/// <typeparam name="T">The enumeration type to convert.</typeparam>
 public sealed class EnumerationJsonConverter<T> : JsonConverter<T> where T : Enumeration
 {
-    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.String)
             throw new JsonException($"Expected a string for {typeToConvert.Name}.");

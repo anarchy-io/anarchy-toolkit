@@ -22,6 +22,9 @@ public sealed record DependencyMap(
             .Concat(Projects.Select(p => p.Group).Where(g => !IsLayer(g)).Distinct().Order(StringComparer.Ordinal))
             .ToArray();
 
+    /// <summary>
+    /// Whether <paramref name="group"/> is one of the <see cref="Layers"/>, rather than a group outside the chain.
+    /// </summary>
     public bool IsLayer(string group) => Layers.Contains(group);
 
     /// <summary>
@@ -45,13 +48,3 @@ public sealed record DependencyMap(
 
     private int Rank(string layer) => Layers.ToList().IndexOf(layer);
 }
-
-/// <param name="Name">The project name.</param>
-/// <param name="Group">Its layer, or a group outside the chain (e.g. <c>Tests</c>).</param>
-/// <param name="SourceFiles">Number of <c>.cs</c> files, <c>bin</c>/<c>obj</c> excluded.</param>
-/// <param name="SourceLines">Number of non-blank lines in those files.</param>
-public sealed record DependencyMapProject(string Name, string Group, int SourceFiles, int SourceLines);
-
-/// <param name="From">The referencing project.</param>
-/// <param name="To">The referenced project.</param>
-public sealed record DependencyMapReference(string From, string To);

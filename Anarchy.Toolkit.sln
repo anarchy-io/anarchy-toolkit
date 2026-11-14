@@ -92,6 +92,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution items", "solution 
 		Makefile = Makefile
 		nuget.config = nuget.config
 		README.md = README.md
+		.github\workflows\merge-publish-nuget.yml = .github\workflows\merge-publish-nuget.yml
+		.github\workflows\pr-code-quality.yml = .github\workflows\pr-code-quality.yml
+		.github\dependabot.yml = .github\dependabot.yml
 	EndProjectSection
 EndProject
 Global

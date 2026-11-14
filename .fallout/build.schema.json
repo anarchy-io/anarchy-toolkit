@@ -29,6 +29,15 @@
         "Clean",
         "Compile",
         "DisableGitHook",
+        "DockerDestroy",
+        "DockerInfo",
+        "DockerLogs",
+        "DockerRestart",
+        "DockerStart",
+        "DockerStop",
+        "DockerStopAll",
+        "DockerWaitHealthy",
+        "DockerWaitRunning",
         "EnableGitHook",
         "GenerateAppSettings",
         "GenerateDependencyMap",
@@ -41,17 +50,12 @@
         "ListPackages",
         "ListProjects",
         "Pack",
-        "PrintArtifactsJson",
         "Publish",
         "PullRequest",
         "Restore",
         "RunApp",
         "RunApps",
-        "SetTestEnvironmentVariables",
-        "SetupLocal",
-        "SetUserSecrets",
         "ShowGitHooks",
-        "Test",
         "TestAll",
         "TestEndToEnd",
         "TestIntegration",
@@ -146,10 +150,6 @@
           "type": "string",
           "description": "Runnable app names to execute in parallel (comma-separated)"
         },
-        "ArtifactsJsonOutput": {
-          "type": "string",
-          "description": "Artifacts JSON output file"
-        },
         "ASPNETCORE_ENVIRONMENT": {
           "type": "string",
           "enum": [
@@ -163,14 +163,6 @@
         "AutoStageLintFixes": {
           "type": "boolean",
           "description": "Re-stage lint fixes only in previously staged files without unstaged changes"
-        },
-        "AwsProfile": {
-          "type": "string",
-          "description": "AWS credentials profile name"
-        },
-        "AwsRegion": {
-          "type": "string",
-          "description": "AWS default region"
         },
         "Configuration": {
           "type": "string",
@@ -195,6 +187,43 @@
         "DependencyVersionLock": {
           "type": "string",
           "description": "Dependency version lock: Major, Minor or None"
+        },
+        "DockerArgs": {
+          "type": "string",
+          "description": "Extra arguments for docker compose up or logs"
+        },
+        "DockerComposeFile": {
+          "type": "string",
+          "description": "Docker Compose file (default: docker/docker-compose.yml)"
+        },
+        "DockerContainer": {
+          "type": "string",
+          "description": "Container to show the logs of, restart or wait for"
+        },
+        "DockerProjectName": {
+          "type": "string",
+          "description": "Docker Compose project name (default: the repository directory's name)"
+        },
+        "DockerStartTimeout": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Seconds to wait for a container to start before checking its health (default: 180)"
+        },
+        "DockerTimeout": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Seconds to wait for a container to become healthy (default: 60; running, for DockerWaitRunning)"
+        },
+        "DockerWaitFor": {
+          "type": "array",
+          "description": "Containers DockerStart waits for",
+          "items": {
+            "type": "string"
+          }
+        },
+        "DockerWaitForHealthy": {
+          "type": "boolean",
+          "description": "Wait for the containers to be healthy rather than running"
         },
         "DOTNET_ENVIRONMENT": {
           "type": "string",

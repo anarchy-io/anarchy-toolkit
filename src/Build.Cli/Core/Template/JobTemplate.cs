@@ -1,10 +1,13 @@
-using Anarchy.Toolkit.Build.Cli.Core.Entity;
-
 namespace Anarchy.Toolkit.Build.Cli.Core.Template;
 
-/// <summary>A job on <c>JobEntryPointBase</c> (e.g. an AWS Lambda handler) delegating to one scoped service.</summary>
+/// <summary>
+/// A job on <c>JobEntryPointBase</c> (e.g. an AWS Lambda handler) delegating to one scoped service.
+/// </summary>
 internal static class JobTemplate
 {
+    /// <summary>
+    /// The project files, keyed by path relative to the project directory.
+    /// </summary>
     public static IReadOnlyDictionary<string, string> Render(ApplicationContext context)
     {
         var ns = context.Namespace;
@@ -18,7 +21,9 @@ internal static class JobTemplate
 
                 namespace {{ns}};
 
-                /// <summary>Job handler (<c>{{ns}}::{{ns}}.Function::HandleAsync</c> as an AWS Lambda function).</summary>
+                /// <summary>
+                /// Job handler (<c>{{ns}}::{{ns}}.Function::HandleAsync</c> as an AWS Lambda function).
+                /// </summary>
                 public sealed class Function : JobEntryPointBase<JobStartup>
                 {
                     public async Task<string> HandleAsync(string input)
@@ -67,7 +72,9 @@ internal static class JobTemplate
 
                 namespace {{ns}}.Infrastructure.Entity.Configuration;
 
-                /// <summary>The job's settings, supplied by the environment.</summary>
+                /// <summary>
+                /// The job's settings, supplied by the environment.
+                /// </summary>
                 public sealed class AppSettings : IAppSettings;
 
                 """,

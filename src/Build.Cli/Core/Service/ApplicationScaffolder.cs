@@ -5,10 +5,14 @@ using Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
-/// <summary>Writes application projects into a solution's layout.</summary>
+/// <summary>
+/// Writes application projects into a solution's layout.
+/// </summary>
 public static class ApplicationScaffolder
 {
-    /// <summary>Why <paramref name="app"/> cannot join a solution with the <paramref name="taken"/> project names, or null if it can.</summary>
+    /// <summary>
+    /// Why <paramref name="app"/> cannot join a solution with the <paramref name="taken"/> project names, or null if it can.
+    /// </summary>
     public static string? Validate(SolutionLayout layout, ApplicationSpec app, IEnumerable<string> taken)
     {
         if (!NameRules.IsValidApplicationName(app.Name)) return $"'{app.Name}': {NameRules.ApplicationNameHelp}";
@@ -18,7 +22,13 @@ public static class ApplicationScaffolder
         return taken.Contains(project, StringComparer.OrdinalIgnoreCase) ? $"A project named {project} already exists." : null;
     }
 
-    /// <summary>Writes the project; adding it to the solution is up to the caller.</summary>
+    /// <summary>
+    /// Writes the project; adding it to the solution is up to the caller. Follows the solution's package management:
+    /// under a <c>Directory.Packages.props</c> enabling central management, the package version is pinned there (unless
+    /// it already is) and the reference is unversioned; otherwise the reference carries the version. The project
+    /// references its layer's library only if that library exists.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the project directory already exists.</exception>
     public static void Create(string root, SolutionLayout layout, ApplicationSpec app, string packageVersion, (int Http, int Https)? ports)
     {
         root = Path.GetFullPath(root);
@@ -29,12 +39,21 @@ public static class ApplicationScaffolder
         var library = layout.LibraryOf(app.Kind) is { } path && File.Exists(Path.Combine(root, path))
             ? Path.GetRelativePath(directory, Path.Combine(root, path)).Replace('\\', '/')
             : null;
-        var context = new ApplicationContext(app, layout.ProjectName(app), layout.RootNamespace(app), packageVersion, ports, library);
+        string? referenceVersion = packageVersion;
+        if (CentralPackages.Find(directory) is { } centralPackages)
+        {
+            CentralPackages.Ensure(centralPackages, app.PackageId, packageVersion);
+            referenceVersion = null;
+        }
+        var context = new ApplicationContext(app, layout.ProjectName(app), layout.RootNamespace(app), referenceVersion, ports, library);
         foreach (var (file, content) in ApplicationTemplates.Render(context))
             FileHelper.WriteNewText(Path.Combine(directory, file), content);
     }
 
-    /// <summary>Adds an application to an existing solution, on the next free local ports.</summary>
+    /// <summary>
+    /// Adds an application to an existing solution, on the next free local ports.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the application is invalid for the solution (see <see cref="Validate"/>), or when its directory already exists.</exception>
     public static void Add(SolutionWorkspace workspace, ApplicationSpec app, ToolkitPackageVersions versions, Action<string>? progress = null)
     {
         if (Validate(workspace.Layout, app, workspace.ProjectNames) is { } error) throw new InvalidOperationException(error);

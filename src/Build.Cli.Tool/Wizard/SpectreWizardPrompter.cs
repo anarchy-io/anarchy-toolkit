@@ -1,12 +1,26 @@
 using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using Anarchy.Toolkit.Build.Cli.Core.Service;
+using Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 using Spectre.Console;
 
 namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 
-/// <summary>An <see cref="IWizardPrompter"/> on Spectre.Console: validated prompts, selection lists, tables and spinners.</summary>
+/// <summary>
+/// An <see cref="IWizardPrompter"/> on Spectre.Console: validated prompts, selection lists, tables and spinners.
+/// User-supplied text is markup-escaped. The banner is skipped when output is redirected, and progress falls back to
+/// plain lines when the console is not interactive.
+/// </summary>
 public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompter
 {
+    public void ShowBanner()
+    {
+        // Kept out of redirected output, so piped or captured output stays plain.
+        if (Console.IsOutputRedirected) return;
+        var writer = console.Profile.Out.Writer;
+        writer.Write(ConsoleBanner.Render(console.Profile.Width, color: console.Profile.Capabilities.Ansi));
+        writer.Flush();
+    }
+
     public void ShowWelcome(string title, string description)
     {
         console.Write(new Rule($"[bold yellow]{Markup.Escape(title)}[/]").LeftJustified());
@@ -17,17 +31,16 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
     public void ShowHelp()
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(4)).AddColumn();
-        grid.AddRow("[blue]anarchy-toolkit[/]", "Scaffold into the solution here, or bootstrap a new one if there is none.");
         grid.AddRow("[blue]anarchy-toolkit bootstrap[/]", "Guided setup: name, layering, and the APIs, jobs and UIs to start with.");
         grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]][/]", "Create the baseline solution in an empty or new directory (default: current).");
         grid.AddRow("[blue]anarchy-toolkit scaffold[/]", "Guided addition of an API, job or UI to the solution here.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts.");
-        grid.AddRow("[blue]anarchy-toolkit --help[/]", "Show this help.");
+        grid.AddRow("[blue]anarchy-toolkit [[--help]][/]", "Show this help.");
 
         console.Write(new Panel(grid)
             .Header("[bold yellow]Anarchy toolkit[/]")
             .Border(BoxBorder.Rounded));
-        console.MarkupLine("[grey]Existing files are never overwritten. The .NET 10 SDK is required.[/]");
+        console.MarkupLine("[grey]Existing files are never overwritten. Package versions follow the solution's Directory.Packages.props when it manages them centrally. The .NET 10 SDK is required.[/]");
     }
 
     public string Ask(string prompt, string? defaultValue, Func<string, string?> validate)

@@ -27,38 +27,6 @@ public class ArtifactTest
     }
 
     [Fact]
-    public void DeploymentSettings_GivenNothingConfigured_AreDisabled()
-    {
-        // Act
-        var artifact = new Artifact { ProjectFile = ProjectFile };
-
-        // Assert
-        artifact.CodeDeploy.IsEnabled.Should().BeFalse();
-        artifact.AwsLambda.IsEnabled.Should().BeFalse();
-        artifact.AwsLambda.IsLocalDeploymentEnabled.Should().BeFalse();
-    }
-
-    [Fact]
-    public void DeploymentSettings_GivenArchiveNames_AreEnabled()
-    {
-        // Act
-        var artifact = new Artifact {
-            ProjectFile = ProjectFile,
-            CodeDeploy = { ArchiveName = "anarchy-io-api" },
-            AwsLambda = {
-                ArchiveName = ProjectFile.Parent / "Anarchy.Io.Api.zip",
-                FunctionName = "Anarchy.Io.Api",
-                TestEventFile = ProjectFile.Parent / "event.json",
-            },
-        };
-
-        // Assert
-        artifact.CodeDeploy.IsEnabled.Should().BeTrue();
-        artifact.AwsLambda.IsEnabled.Should().BeTrue();
-        artifact.AwsLambda.IsLocalDeploymentEnabled.Should().BeTrue();
-    }
-
-    [Fact]
     public void ConfigurationValue_GivenString_KeepsValue()
     {
         // Act

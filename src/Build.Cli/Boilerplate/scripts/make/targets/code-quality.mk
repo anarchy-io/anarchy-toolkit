@@ -5,11 +5,7 @@
 .PHONY: lint
 lint: #? Runs linter analysis on the whole solution
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Lint Analysis'
-ifeq ($(ENV),ci)
-	${MAKE} fallout SKIP_TITLE=true TARGET="Lint --IsCiBuild true"
-else
 	${MAKE} fallout SKIP_TITLE=true TARGET="Lint"
-endif
 
 .PHONY: lint_fix
 lint_fix: #? Runs the linter auto-fixer on the whole solution
@@ -17,15 +13,15 @@ lint_fix: #? Runs the linter auto-fixer on the whole solution
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Lint Auto-Fix'
 	${MAKE} fallout SKIP_TITLE=true TARGET="LintFix$(if $(filter true,$(AUTO_STAGE)), --AutoStageLintFixes true,)"
 
+.PHONY: pull_request
+pull_request: #? Runs all tests and validations for the Pull Request CI-pipeline
+	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Pull Request Checks'
+	${MAKE} fallout SKIP_TITLE=true TARGET="PullRequest"
+
 .PHONY: test
 test: #? Runs all solution tests
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running All Tests'
 	${MAKE} fallout SKIP_TITLE=true TARGET=TestAll
-
-.PHONY: pull_request
-pull_request: #? Runs all tests and validations for the Pull Request CI-pipeline
-	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Pull Request Checks'
-	${MAKE} fallout SKIP_TITLE=true TARGET="PullRequest --IsCiBuild true"
 
 .PHONY: test_unit
 test_unit: #? Runs unit tests
@@ -34,7 +30,7 @@ test_unit: #? Runs unit tests
 ifeq ($(COMPILE),true)
 	$(MAKE) compile
 endif
-	${MAKE} fallout SKIP_TITLE=true TARGET="TestUnit --IsCiBuild true"
+	${MAKE} fallout SKIP_TITLE=true TARGET="TestUnit"
 
 .PHONY: test_integration
 test_integration: #? Runs integration tests (requires local Docker resources)

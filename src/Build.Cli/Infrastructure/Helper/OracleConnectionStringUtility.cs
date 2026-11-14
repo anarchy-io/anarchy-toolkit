@@ -7,8 +7,8 @@ namespace Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 public static class OracleConnectionStringUtility
 {
     /// <summary>
-    /// Gets an ADO.NET Oracle connection string based on host, username, and password. By default the
-    /// <paramref name="serviceName"/> used is <c>SERVICES</c>.
+    /// Gets an ADO.NET Oracle connection string over TCPS (port <c>2484</c>) based on host, username, and password.
+    /// By default the <paramref name="serviceName"/> used is <c>SERVICES</c>.
     /// </summary>
     public static string GetOracleConnectionString(
         string host,
