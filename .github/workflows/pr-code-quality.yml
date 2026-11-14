@@ -28,4 +28,4 @@ jobs:
         run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh ValidateLocalRelease --release-base "$RELEASE_BASE"
 
       - name: Run code quality checks
-        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh PullRequest --IsCiBuild true
+        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh PullRequest
