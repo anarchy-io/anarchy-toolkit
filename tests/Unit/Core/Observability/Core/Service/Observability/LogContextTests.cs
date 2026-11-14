@@ -130,6 +130,6 @@ public class LogContextTests
                  .CreateLogger();
     }
 
-    private readonly InMemorySink _sink = new InMemorySink();
+    private readonly InMemorySink _sink = new();
     private readonly Logger _logger;
 }

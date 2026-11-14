@@ -8,7 +8,7 @@ internal static class EphemeralPortUtility
     private const int MinimumEphemeralPortNumber = 1024;
     private const int MaximumEphemeralPortNumber = 65535;
 
-    private static readonly Random _random = new Random();
+    private static readonly Random Random = new();
 
     public static int FindFreeEphemeralTcpPort()
     {
@@ -18,9 +18,9 @@ internal static class EphemeralPortUtility
         for (var attempt = 0; attempt < maximumNumberOfAttempts; attempt++)
         {
             int portNumber;
-            lock (_random)
+            lock (Random)
             {
-                portNumber = _random.Next(MinimumEphemeralPortNumber, excludingMaxPortValue);
+                portNumber = Random.Next(MinimumEphemeralPortNumber, excludingMaxPortValue);
             }
 
             if (IsTcpPortAvailable(portNumber))

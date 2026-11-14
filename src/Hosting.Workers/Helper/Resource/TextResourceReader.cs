@@ -40,7 +40,7 @@ public class TextResourceReader : IResourceReader<string?>
         );
     }
 
-    public string? Read(string path)
+    public string? Read(string? path)
     {
         string? result = null;
         var completeResourceName = FileToResourcePath(Path.Combine(_basePath, path ?? ""));

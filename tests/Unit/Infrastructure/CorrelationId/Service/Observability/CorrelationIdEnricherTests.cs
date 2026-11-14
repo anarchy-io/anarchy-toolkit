@@ -9,8 +9,8 @@ namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.CorrelationId.Service.Observ
 
 public class CorrelationIdEnricherTests
 {
-    private const string _propertyNameCorrelationId = "CorrelationId";
-    private const string _propertyNameAttemptId = "AttemptId";
+    private const string PropertyNameCorrelationId = "CorrelationId";
+    private const string PropertyNameAttemptId = "AttemptId";
 
     private readonly TestLogEvent _logEvent = new();
     // CorrelationIdEnricher is internal and the toolkit does not expose internals to this test assembly,
@@ -26,7 +26,7 @@ public class CorrelationIdEnricherTests
 
         _sut.Enrich(_logEvent, _propertyFactoryMock.Object);
 
-        _logEvent.Properties.Should().ContainKey(_propertyNameCorrelationId)
+        _logEvent.Properties.Should().ContainKey(PropertyNameCorrelationId)
                  .WhoseValue.Should().BeEquivalentTo(new ScalarValue(expected));
     }
 
@@ -38,7 +38,7 @@ public class CorrelationIdEnricherTests
 
         _sut.Enrich(_logEvent, _propertyFactoryMock.Object);
 
-        _logEvent.Properties.Should().ContainKey(_propertyNameAttemptId)
+        _logEvent.Properties.Should().ContainKey(PropertyNameAttemptId)
                  .WhoseValue.Should().BeEquivalentTo(new ScalarValue(expected));
     }
 
@@ -48,11 +48,11 @@ public class CorrelationIdEnricherTests
         var oldValue = Guid.NewGuid().ToString("N");
         var newValue = Guid.NewGuid().ToString("N");
         GivenFactoryReturns(correlationId: newValue);
-        _logEvent.AddPropertyIfAbsent(GivenLogEventProperty(_propertyNameCorrelationId, oldValue));
+        _logEvent.AddPropertyIfAbsent(GivenLogEventProperty(PropertyNameCorrelationId, oldValue));
 
         _sut.Enrich(_logEvent, _propertyFactoryMock.Object);
 
-        _logEvent.Properties.Should().ContainKey(_propertyNameCorrelationId)
+        _logEvent.Properties.Should().ContainKey(PropertyNameCorrelationId)
                  .WhoseValue.Should().BeEquivalentTo(new ScalarValue(oldValue));
     }
 
@@ -62,29 +62,29 @@ public class CorrelationIdEnricherTests
         var oldValue = Guid.NewGuid().ToString("N");
         var newValue = Guid.NewGuid().ToString("N");
         GivenFactoryReturns(attemptId: newValue);
-        _logEvent.AddPropertyIfAbsent(GivenLogEventProperty(_propertyNameAttemptId, oldValue));
+        _logEvent.AddPropertyIfAbsent(GivenLogEventProperty(PropertyNameAttemptId, oldValue));
 
         _sut.Enrich(_logEvent, _propertyFactoryMock.Object);
 
-        _logEvent.Properties.Should().ContainKey(_propertyNameAttemptId)
+        _logEvent.Properties.Should().ContainKey(PropertyNameAttemptId)
                  .WhoseValue.Should().BeEquivalentTo(new ScalarValue(oldValue));
     }
 
     private void GivenFactoryReturns(string? correlationId = null, string? attemptId = null)
     {
         _propertyFactoryMock
-           .Setup(x => x.CreateProperty(_propertyNameCorrelationId, It.IsAny<string?>(), false))
+           .Setup(x => x.CreateProperty(PropertyNameCorrelationId, It.IsAny<string?>(), false))
            .Returns(
                 GivenLogEventProperty(
-                    name: _propertyNameCorrelationId,
+                    name: PropertyNameCorrelationId,
                     value: correlationId ?? Guid.NewGuid().ToString("N")
                 )
             );
         _propertyFactoryMock
-           .Setup(x => x.CreateProperty(_propertyNameAttemptId, It.IsAny<string?>(), false))
+           .Setup(x => x.CreateProperty(PropertyNameAttemptId, It.IsAny<string?>(), false))
            .Returns(
                 GivenLogEventProperty(
-                    name: _propertyNameAttemptId,
+                    name: PropertyNameAttemptId,
                     value: attemptId ?? Guid.NewGuid().ToString("N")
                 )
             );
@@ -103,7 +103,7 @@ public class CorrelationIdEnricherTests
 
         return (ILogEventEnricher)Activator.CreateInstance(enricherType,
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public,
-            binder: null, args: [_propertyNameCorrelationId, _propertyNameAttemptId], culture: null)!;
+            binder: null, args: [PropertyNameCorrelationId, PropertyNameAttemptId], culture: null)!;
     }
 
     private class TestLogEvent : LogEvent

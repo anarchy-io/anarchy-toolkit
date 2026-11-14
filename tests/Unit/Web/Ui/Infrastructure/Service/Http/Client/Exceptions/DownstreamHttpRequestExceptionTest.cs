@@ -22,7 +22,7 @@ public class DownstreamHttpRequestExceptionTest
         exception.Message.Should().EndWith(": Order is locked");
         exception.Message.Should().Contain("https://api.example.com/orders/1");
         exception.ResponseJson.Should().NotBeNull();
-        exception.ResponseContent.Should().Contain(System.Environment.NewLine);
+        exception.ResponseContent.Should().Contain(Environment.NewLine);
     }
 
     [Fact]

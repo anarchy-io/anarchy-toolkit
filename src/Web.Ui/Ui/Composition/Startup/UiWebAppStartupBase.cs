@@ -24,7 +24,7 @@ public abstract class UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>(
     /// Override to specify custom UI authentication options.
     /// Return null to disable authentication, or default options will be used.
     /// </summary>
-    protected virtual UiAuthenticationOptions? GetUiAuthenticationOptions() => new();
+    protected virtual UiAuthenticationOptions GetUiAuthenticationOptions() => new();
 
     /// <summary>
     /// Override to change how rendered links are built.

@@ -7,7 +7,7 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper;
 public static class CompressionHelper
 {
     private static readonly UTF8Encoding StrictUtf8 =
-        new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+        new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
     public static string DecompressToUtf8(Stream input, CompressionType compressionType)
     {

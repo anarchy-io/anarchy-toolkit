@@ -9,10 +9,10 @@ namespace Anarchy.Toolkit.Infrastructure.Observability.Serilog.Extension.Observa
 
 public static class LoggerConfigurationExtensions
 {
-    private const bool _disableLogGroupCreation = true;
-    private const string _libraryLogFileName = "/var/log/dotnetapp/aws-logger-error.log";
-    private static readonly string _logStreamNameSuffix = Guid.NewGuid().ToString("N") + "-application_logs";
-    private const int _maxQueuedMessages = 100_000;
+    private const bool DisableLogGroupCreation = true;
+    private const string LibraryLogFileName = "/var/log/dotnetapp/aws-logger-error.log";
+    private static readonly string LogStreamNameSuffix = Guid.NewGuid().ToString("N") + "-application_logs";
+    private const int MaxQueuedMessages = 100_000;
 
     /// <param name="configuration">The sink configuration.</param>
     extension(LoggerSinkConfiguration configuration)
@@ -42,10 +42,10 @@ public static class LoggerConfigurationExtensions
 
             var awsLoggerConfig = new AWSLoggerConfig {
                 LogGroup = logGroup,
-                DisableLogGroupCreation = _disableLogGroupCreation,
-                LibraryLogFileName = _libraryLogFileName,
-                LogStreamNameSuffix = _logStreamNameSuffix,
-                MaxQueuedMessages = _maxQueuedMessages
+                DisableLogGroupCreation = DisableLogGroupCreation,
+                LibraryLogFileName = LibraryLogFileName,
+                LogStreamNameSuffix = LogStreamNameSuffix,
+                MaxQueuedMessages = MaxQueuedMessages
             };
 
             configure?.Invoke(awsLoggerConfig);

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Mime;
 
@@ -48,6 +49,7 @@ public class AspNetCoreBaseTests : IAsyncLifetime
         }
 
         _host = await Host.CreateDefaultBuilder(Array.Empty<string>())
+                          .ConfigureLogging(logging => logging.ClearProviders())
                           .ConfigureWebHostDefaults(b => {
                               b.UseEnvironment("Development");
                               b.UseStartup<T>();
@@ -58,8 +60,8 @@ public class AspNetCoreBaseTests : IAsyncLifetime
         _server = _host.GetTestServer();
     }
 
-    private IHost? _host = null;
-    private TestServer? _server = null;
+    private IHost? _host;
+    private TestServer? _server;
     protected const string OnlyGetRequestsAllowedMessage = "Only GET requests are allowed.";
     protected const string DefaultResponseText = "Default response";
 

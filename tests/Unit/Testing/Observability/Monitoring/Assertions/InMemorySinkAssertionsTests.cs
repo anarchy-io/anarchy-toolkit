@@ -197,8 +197,7 @@ public class InMemorySinkAssertionsTests
     }
 
     public static TheoryData<string, string> WildcardsTestData =>
-        new TheoryData<string, string>
-        {
+        new() {
             {"*", "any message matches"},
             {"* message", "matches beginning of the message"},
             {"message *", "message ending matches"},
@@ -208,7 +207,7 @@ public class InMemorySinkAssertionsTests
             {"any last character matches ?", "any last character matches X"}
         };
 
-    private readonly InMemorySink _sink = new InMemorySink();
+    private readonly InMemorySink _sink = new();
 
     private TestLogEvent AddMessageToSink(string expectedMessage)
     {

@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Core.Persistence.Abstractions</PackageId>
     <AssemblyName>Anarchy.Toolkit.Core.Persistence.Abstractions</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Core.Persistence.Abstractions</RootNamespace>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <Description>Database abstraction layer: Unit of Work, async-local flow context, storage policy, and repository contracts.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

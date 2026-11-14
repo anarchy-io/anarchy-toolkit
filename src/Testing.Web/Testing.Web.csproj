@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Testing.Web</PackageId>
     <AssemblyName>Anarchy.Toolkit.Testing.Web</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Testing.Web</RootNamespace>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Description>Web end-to-end test base (RestApiTestCaseBase exercising both the native Kestrel and AWS Lambda pipelines), a testable Lambda entry point, and HTTP request helpers.</Description>
     <IsPackable>true</IsPackable>
     <OutputType>Library</OutputType>

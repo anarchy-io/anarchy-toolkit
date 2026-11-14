@@ -1,4 +1,3 @@
-using Anarchy.Toolkit.Configuration;
 using Anarchy.Toolkit.Hosting.Host.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

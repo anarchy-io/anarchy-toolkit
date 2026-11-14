@@ -6,7 +6,7 @@ namespace Anarchy.Toolkit.Web.Presentation.Converter.Json;
 
 public class DefaultLocaleJsonConverter : JsonConverter<string?>
 {
-    public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var value = reader.GetString();
         return value.IsNullOrEmpty() ? "nl_NL" : value;

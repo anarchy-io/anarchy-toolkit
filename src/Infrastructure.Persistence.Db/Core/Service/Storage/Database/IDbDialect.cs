@@ -39,10 +39,10 @@ public interface IDbDialect
     static virtual bool CanSelectFromInsert => true;
 
     /// <summary>SQL creating a savepoint, or <c>null</c> when not supported.</summary>
-    static virtual string? SavepointCreateSql(string savepointName) => $"SAVEPOINT {savepointName}";
+    static virtual string SavepointCreateSql(string savepointName) => $"SAVEPOINT {savepointName}";
 
     /// <summary>SQL rolling back to a savepoint, or <c>null</c> when not supported.</summary>
-    static virtual string? SavepointRollbackSql(string savepointName) => $"ROLLBACK TO SAVEPOINT {savepointName}";
+    static virtual string SavepointRollbackSql(string savepointName) => $"ROLLBACK TO SAVEPOINT {savepointName}";
 
     /// <summary>SQL releasing a savepoint, or <c>null</c> when the provider has no such statement.</summary>
     static virtual string? SavepointReleaseSql(string savepointName) => $"RELEASE SAVEPOINT {savepointName}";
