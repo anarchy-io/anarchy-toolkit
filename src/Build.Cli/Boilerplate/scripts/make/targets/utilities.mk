@@ -2,17 +2,21 @@
 ## UTILITIES
 #############################
 
+# With ENV=ci, every target runs as a CI build: its dotnet commands use diagnostic verbosity (see IDefaultBuild).
+FALLOUT_CI_FLAGS = $(if $(and $(filter ci,$(ENV)),$(if $(findstring --IsCiBuild,$(TARGET)),,ci)), --IsCiBuild true,)
+
 .PHONY: fallout nuke
 fallout nuke: #? Runs any target via the build project (nuke is a compatibility alias)
 #+ TARGET|str|Name of the target defined in the build project
+#+ ENV|str|Set to "ci" to run it as a CI build (--IsCiBuild true)
 ifneq ($(SKIP_TITLE),true)
 	@$(SCRIPTS_DIR)/console/title.sh 'blue' 'Running Build Target'
 endif
 ifndef TARGET
 	@echo -e "\n${CL_RED}You must provide a TARGET=<TargetName> to execute a build task.${CL_RESET}\n"
-	@FALLOUT_NO_LOGO=true dotnet run --project ./build/_build.csproj -- --help
+	@NUKE_LOG_LEVEL=Information NUKE_NO_LOGO=true dotnet run --project ./build/_build.csproj -- --help
 else
-	FALLOUT_RELOAD_ENV=${FALLOUT_RELOAD_ENV} $(SCRIPTS_DIR)/build.fallout.sh $(TARGET)
+	FALLOUT_RELOAD_ENV=${FALLOUT_RELOAD_ENV} $(SCRIPTS_DIR)/build.fallout.sh $(TARGET)$(FALLOUT_CI_FLAGS)
 endif
 
 .PHONY: fallout_help nuke_help

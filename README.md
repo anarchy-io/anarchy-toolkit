@@ -107,8 +107,8 @@ referenced as a project so the build always runs the code it
 builds and packs:
 
 - `Build.cs` — `partial class Build : FalloutBuild, INuGetBuild`. All the standard targets come from the library:
-  `Restore`, `Compile`, `Lint`/`LintFix`, `TestUnit`/`TestIntegration`/`TestEndToEnd`/`TestAll`, `Test` (unit
-  only), `PullRequest`, `ListProjects`, `RunApp`/`RunApps`, `Clean`/`Build`. Test projects are matched by kind
+  `Restore`, `Compile`, `Lint`/`LintFix`, `TestUnit`/`TestIntegration`/`TestEndToEnd`/`TestAll`,
+  `PullRequest`, `ListProjects`, `RunApp`/`RunApps`, `Clean`/`Build`. Test projects are matched by kind
   through their name segments (`Tests.Unit.*`, `*.Unit.Tests`, `*.Tests.Unit` or plain `Unit`).
 - `INuGetBuild` provides `ListPackages`, `Pack` and dependency-ordered `Publish`.
 - `Build.CodeGeneration.cs` — `GenerateTools`, regenerating the library's CLI tool wrappers from its specifications.

@@ -5,14 +5,34 @@ using System.Xml.Linq;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
-/// <summary>Plans local semantic version bumps and checks their propagation through project references.</summary>
+/// <summary>
+/// Plans local semantic version bumps and checks their propagation through project references.
+/// </summary>
 public static class ReleaseVersionTasks
 {
+    /// <summary>
+    /// A semantic version increment, ordered from smallest to largest.
+    /// </summary>
     public enum Bump { Patch = 1, Minor = 2, Major = 3 }
 
+    /// <summary>
+    /// A versioned project.
+    /// </summary>
+    /// <param name="Path">The full path of the project file.</param>
+    /// <param name="Name">The project file name without extension.</param>
+    /// <param name="Version">Its <c>major.minor.patch</c> version.</param>
+    /// <param name="References">Full paths of the referenced projects, among those read together.</param>
+    /// <param name="Content">The project file's text.</param>
     public sealed record Project(string Path, string Name, string Version, IReadOnlyList<string> References, string Content);
 
-    /// <summary>Reads explicit versions and local project references without changing project formatting.</summary>
+    /// <summary>
+    /// Reads explicit versions and local project references without changing project formatting. Only references to
+    /// other projects in <paramref name="paths"/> are kept.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no or duplicate paths are given, a project lacks exactly one unconditional stable <c>Version</c>, or
+    /// a reference uses MSBuild properties, items or wildcards.
+    /// </exception>
     public static IReadOnlyList<Project> ReadProjects(IEnumerable<string> paths, Func<string, string> read)
     {
         var files = paths.Select(Path.GetFullPath).Order(StringComparer.Ordinal).ToArray();
@@ -40,7 +60,10 @@ public static class ReleaseVersionTasks
         }).ToArray();
     }
 
-    /// <summary>Finds the selected projects and all their transitive dependents, once each.</summary>
+    /// <summary>
+    /// Finds the selected projects and all their transitive dependents, once each, ordered by name.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when a name does not match exactly one project.</exception>
     public static IReadOnlyList<Project> Dependents(IReadOnlyCollection<Project> projects, IEnumerable<string> projectNames)
     {
         var nameList = projectNames.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
@@ -71,10 +94,16 @@ public static class ReleaseVersionTasks
         return projects.Where(p => seen.Contains(p.Path)).OrderBy(p => p.Name, StringComparer.Ordinal).ToArray();
     }
 
-    /// <summary>Finds the selected project and all its transitive dependents, once each.</summary>
+    /// <summary>
+    /// Finds the selected project and all its transitive dependents, once each.
+    /// </summary>
     public static IReadOnlyList<Project> Dependents(IReadOnlyCollection<Project> projects, string projectName) =>
         Dependents(projects, [projectName]);
 
+    /// <summary>
+    /// The version after a bump, resetting the lower components (e.g. a minor bump of <c>1.2.3</c> is <c>1.3.0</c>).
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="version"/> is not a stable semantic version.</exception>
     public static string Increment(string version, Bump bump)
     {
         var (major, minor, patch) = Parse(version);
@@ -86,7 +115,11 @@ public static class ReleaseVersionTasks
         };
     }
 
-    /// <summary>Prepares every edit before writing any file, preserving the rest of the project text.</summary>
+    /// <summary>
+    /// Plans a <paramref name="bump"/> of the named projects and all their transitive dependents, without writing any
+    /// file: the new content of each project, keyed by path, with only the <c>Version</c> changed.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when a name is unknown or a <c>Version</c> cannot be updated safely.</exception>
     public static IReadOnlyDictionary<string, string> Plan(IReadOnlyCollection<Project> projects, IEnumerable<string> names, Bump bump)
     {
         var result = new Dictionary<string, string>();
@@ -101,11 +134,17 @@ public static class ReleaseVersionTasks
         return result;
     }
 
-    /// <summary>Prepares every edit before writing any file, preserving the rest of the project text.</summary>
+    /// <summary>
+    /// Plans a <paramref name="bump"/> of the named project and all its transitive dependents; see the overload taking several names.
+    /// </summary>
     public static IReadOnlyDictionary<string, string> Plan(IReadOnlyCollection<Project> projects, string name, Bump bump) =>
         Plan(projects, [name], bump);
 
-    /// <summary>Plans automatic bumps, retaining versions already increased relative to the baseline.</summary>
+    /// <summary>
+    /// Plans automatic bumps like <c>Plan</c>, but skips projects whose version is already higher than in
+    /// <paramref name="baseline"/> (keyed by project path); new projects are bumped.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when a version is lower than its baseline.</exception>
     public static IReadOnlyDictionary<string, string> PlanChanges(IReadOnlyCollection<Project> projects,
         IEnumerable<string> names, Bump bump, IReadOnlyDictionary<string, string> baseline)
     {
@@ -125,7 +164,11 @@ public static class ReleaseVersionTasks
         return result;
     }
 
-    /// <summary>Checks each existing bumped project and its transitive existing dependents against the baseline.</summary>
+    /// <summary>
+    /// Checks the versions against <paramref name="baseline"/> (keyed by project path): none may decrease, and each
+    /// dependent of a bumped project must be bumped at least as much. Projects missing from the baseline are new and
+    /// not checked. Returns one error per problem.
+    /// </summary>
     public static IReadOnlyList<string> Validate(IReadOnlyCollection<Project> projects, IReadOnlyDictionary<string, string> baseline)
     {
         var changes = new Dictionary<string, Bump?>(StringComparer.OrdinalIgnoreCase);
@@ -150,7 +193,11 @@ public static class ReleaseVersionTasks
         return errors;
     }
 
-    /// <summary>Reads versions from a Git commit. Missing files are treated as new projects.</summary>
+    /// <summary>
+    /// Reads the versions of the projects at a Git revision, keyed by full project path. Projects not tracked at that
+    /// revision are new and left out.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when a project is outside the repository, or Git fails.</exception>
     public static IReadOnlyDictionary<string, string> ReadBaseline(string root, IEnumerable<string> paths, string revision)
     {
         var commit = ResolveCommit(root, revision);
@@ -168,7 +215,10 @@ public static class ReleaseVersionTasks
         return result;
     }
 
-    /// <summary>Resolves a Git revision or ref to an exact 40-character commit SHA.</summary>
+    /// <summary>
+    /// Resolves a Git revision or ref to an exact 40-character commit SHA.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the revision is blank, all zeros (as a new branch's push base), or not a commit.</exception>
     public static string ResolveCommit(string root, string revision)
     {
         if (string.IsNullOrWhiteSpace(revision) || revision.All(c => c == '0'))
@@ -176,7 +226,11 @@ public static class ReleaseVersionTasks
         return Git(root, "rev-parse", "--verify", "--end-of-options", revision + "^{commit}").Trim();
     }
 
-    /// <summary>Requires the checked-out source and shared build settings to match the selected head.</summary>
+    /// <summary>
+    /// Requires <paramref name="head"/> to be the checked-out <c>HEAD</c>, with no uncommitted changes to the sources
+    /// or shared build settings, and no untracked files under <c>src</c> or <c>scripts</c>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the working tree does not match the head.</exception>
     public static void VerifyWorkingTree(string root, string head)
     {
         var commit = ResolveCommit(root, head);
@@ -188,7 +242,10 @@ public static class ReleaseVersionTasks
         if (changes.Length != 0 || untracked.Length != 0) throw new InvalidOperationException("Release source or build settings have uncommitted changes. Commit or stash them before generating a release.");
     }
 
-    /// <summary>Retrieves file paths changed between two Git commits, normalized with forward slashes.</summary>
+    /// <summary>
+    /// Retrieves the repository-relative paths changed between two Git commits, with forward slashes as Git reports
+    /// them; a rename counts as a deletion and an addition.
+    /// </summary>
     public static IReadOnlyList<string> GetChangedFiles(string root, string baseRef, string headRef = "HEAD")
     {
         var baseCommit = ResolveCommit(root, baseRef);
@@ -199,7 +256,9 @@ public static class ReleaseVersionTasks
             .ToArray();
     }
 
-    /// <summary>Attempts to read a file from a Git commit, returning null if the file does not exist in that commit.</summary>
+    /// <summary>
+    /// Attempts to read a file from a Git commit, returning null if the file does not exist in that commit.
+    /// </summary>
     public static string? TryGitShow(string root, string commitOrRef, string relativePath)
     {
         var normalized = relativePath.Replace('\\', '/').TrimStart('/');
@@ -209,7 +268,10 @@ public static class ReleaseVersionTasks
         return tracked.Contains(normalized) ? Git(root, "show", $"{commit}:{normalized}") : null;
     }
 
-    /// <summary>Parses package IDs and versions defined in a Directory.Packages.props XML content.</summary>
+    /// <summary>
+    /// Parses the package IDs and versions of a <c>Directory.Packages.props</c>; empty content yields none.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when a <c>PackageVersion</c> has no ID or version, or is duplicated.</exception>
     public static IReadOnlyDictionary<string, string> ParsePackageVersions(string xmlContent)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -227,7 +289,10 @@ public static class ReleaseVersionTasks
         return result;
     }
 
-    /// <summary>Detects package IDs that were added, removed, or had their versions updated between two Directory.Packages.props snapshots.</summary>
+    /// <summary>
+    /// Detects the package IDs added, removed, or with a changed version between two <c>Directory.Packages.props</c>
+    /// snapshots; null means the file is absent.
+    /// </summary>
     public static IReadOnlySet<string> DetectPackageVersionChanges(string? baseXml, string? headXml)
     {
         var basePackages = baseXml != null ? ParsePackageVersions(baseXml) : new Dictionary<string, string>();
@@ -251,7 +316,10 @@ public static class ReleaseVersionTasks
         return changed;
     }
 
-    /// <summary>Extracts all package IDs consumed by a project from its restored project.assets.json content.</summary>
+    /// <summary>
+    /// Extracts the IDs of all packages, direct and transitive, in a restored <c>project.assets.json</c>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the content is empty or has no <c>libraries</c> object.</exception>
     public static IReadOnlySet<string> ReadConsumedPackagesFromAssets(string assetsJsonContent)
     {
         var packages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -273,7 +341,9 @@ public static class ReleaseVersionTasks
         return packages;
     }
 
-    /// <summary>Extracts direct PackageReference package IDs from a project file content.</summary>
+    /// <summary>
+    /// Extracts the IDs of the <c>PackageReference</c> items (<c>Include</c> or <c>Update</c>) of a project file.
+    /// </summary>
     public static IReadOnlySet<string> ReadDirectPackageReferences(string projectContent)
     {
         var packages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -287,7 +357,11 @@ public static class ReleaseVersionTasks
         return packages;
     }
 
-    /// <summary>Returns all package IDs consumed directly or transitively by a project.</summary>
+    /// <summary>
+    /// Returns all package IDs consumed directly or transitively by a project. <paramref name="assetsJsonReader"/>
+    /// defaults to reading <c>obj/project.assets.json</c> next to the project.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the project has not been restored.</exception>
     public static IReadOnlySet<string> GetConsumedPackages(
         Project project,
         Func<Project, string?>? assetsJsonReader = null)
@@ -308,7 +382,11 @@ public static class ReleaseVersionTasks
         return File.Exists(assetsPath) ? File.ReadAllText(assetsPath) : null;
     }
 
-    /// <summary>Checks whether a changed repository-relative file path should be ignored by change detection.</summary>
+    /// <summary>
+    /// Whether a changed repository-relative path cannot affect a package: anything under <c>tests</c>, <c>samples</c>,
+    /// <c>build</c>, <c>docs</c>, <c>scripts</c> or tooling folders, and root files such as <c>README.md</c>,
+    /// <c>Makefile</c> or the solution.
+    /// </summary>
     public static bool IsIgnoredFile(string file)
     {
         var normalized = file.Replace('\\', '/').TrimStart('/');
@@ -340,7 +418,10 @@ public static class ReleaseVersionTasks
         return false;
     }
 
-    /// <summary>Checks whether a changed repository-relative file path represents a shared build configuration that conservatively affects all packages.</summary>
+    /// <summary>
+    /// Whether a changed path (in any folder) is shared build configuration that conservatively affects all packages:
+    /// <c>Directory.Build.props</c>, <c>Directory.Build.targets</c>, <c>global.json</c> or <c>nuget.config</c>.
+    /// </summary>
     public static bool IsAffectAllFile(string file)
     {
         var fileName = Path.GetFileName(file.Replace('\\', '/'));
@@ -350,7 +431,12 @@ public static class ReleaseVersionTasks
                string.Equals(fileName, "nuget.config", StringComparison.OrdinalIgnoreCase);
     }
 
-    /// <summary>Identifies projects directly affected by changed files or external dependency updates before transitive resolution.</summary>
+    /// <summary>
+    /// Identifies the projects directly affected by changed files or package version updates, before transitive
+    /// resolution, ordered by name. Shared build settings, unknown <c>.props</c>/<c>.targets</c> or <c>src</c> files,
+    /// and <c>Directory.Packages.props</c> changes that cannot be attributed to specific packages affect every project.
+    /// The file readers default to <c>HEAD~1</c> and <c>HEAD</c> (falling back to the working tree).
+    /// </summary>
     public static IReadOnlyList<Project> DetectDirectlyAffectedProjects(
         string root,
         IReadOnlyCollection<Project> projects,
@@ -486,7 +572,9 @@ public static class ReleaseVersionTasks
             .ToArray();
     }
 
-    /// <summary>Detects directly and transitively affected projects from a list of changed files.</summary>
+    /// <summary>
+    /// Detects directly and transitively affected projects from a list of changed files.
+    /// </summary>
     public static IReadOnlyList<Project> DetectAffectedProjects(
         string root,
         IReadOnlyCollection<Project> projects,
@@ -508,7 +596,9 @@ public static class ReleaseVersionTasks
         return Dependents(projects, directlyAffected.Select(p => p.Name));
     }
 
-    /// <summary>Detects directly and transitively affected projects between two Git commits.</summary>
+    /// <summary>
+    /// Detects directly and transitively affected projects between two Git commits.
+    /// </summary>
     public static IReadOnlyList<Project> DetectAffectedProjects(
         string root,
         IReadOnlyCollection<Project> projects,
@@ -538,6 +628,10 @@ public static class ReleaseVersionTasks
         return (major, minor, patch);
     }
 
+    /// <summary>
+    /// Runs <c>git</c> in <paramref name="root"/> and returns its output.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when Git exits with a non-zero code.</exception>
     public static string Git(string root, params string[] args)
     {
         var start = new ProcessStartInfo("git") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true };

@@ -26,6 +26,10 @@ See [adding a database provider](https://github.com/anarchy-io/anarchy-toolkit#a
 
 ## Releases
 
+### 1.1.4
+
+- refactor(src): clean up code style across library packages
+
 ### 1.1.2
 
 - build: migrate local automation to build tooling

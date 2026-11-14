@@ -27,6 +27,10 @@ See the [UI guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/
 
 ## Releases
 
+### 1.0.6
+
+- refactor(src): clean up code style across library packages
+
 ### 1.0.5
 
 - chore(deps): update AWS SDK packages

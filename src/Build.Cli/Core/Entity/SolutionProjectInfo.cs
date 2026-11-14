@@ -1,6 +1,8 @@
 namespace Anarchy.Toolkit.Build.Cli.Core.Entity;
 
-/// <summary>A solution project, as read by the build host, for the checks that work on plain inputs.</summary>
+/// <summary>
+/// A solution project, as read by the build host, for the checks that work on plain inputs.
+/// </summary>
 /// <param name="Name">The project name, e.g. <c>Infrastructure.Http</c>.</param>
 /// <param name="Path">The full path of the project file.</param>
 /// <param name="Directory">The full path of the project's directory.</param>

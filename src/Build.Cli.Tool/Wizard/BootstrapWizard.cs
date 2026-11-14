@@ -9,7 +9,10 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 /// </summary>
 public sealed class BootstrapWizard(IWizardPrompter prompter)
 {
-    /// <summary>The confirmed plan, or null if the user declined it.</summary>
+    /// <summary>
+    /// Asks for the solution's settings, shows the resulting plan and asks for confirmation.
+    /// </summary>
+    /// <returns>The confirmed plan, or <c>null</c> if the user declined it.</returns>
     public SolutionPlan? Run()
     {
         prompter.ShowWelcome("Anarchy solution bootstrap",

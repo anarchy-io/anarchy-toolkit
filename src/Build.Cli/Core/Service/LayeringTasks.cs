@@ -9,7 +9,9 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// </summary>
 public static partial class LayeringTasks
 {
-    /// <summary>The group of the test kits: they may reference any layer, but no layer may reference them.</summary>
+    /// <summary>
+    /// The group of the test kits: they may reference any layer, but no layer may reference them.
+    /// </summary>
     public const string Testing = "Testing";
 
     /// <summary>
@@ -24,7 +26,10 @@ public static partial class LayeringTasks
     /// </summary>
     public static string? GetDefaultLayer(string projectName, string relativePath) => GetDefaultLayer(projectName, relativePath, "src");
 
-    /// <summary>Gets the name prefix for projects under the specified solution-relative root.</summary>
+    /// <summary>
+    /// The prefix of the project's name (up to the first dot) for projects under <paramref name="root"/>, a
+    /// solution-relative folder; <c>null</c> (not checked) for anything else.
+    /// </summary>
     public static string? GetDefaultLayer(string projectName, string relativePath, string root) =>
         PathUnderRoot(relativePath, root) is not null ? projectName.Split('.')[0] : null;
 
@@ -39,7 +44,7 @@ public static partial class LayeringTasks
     /// (<c>folder=Layer</c>, e.g. <c>src/Api=Web</c>) containing it, else its folder under <paramref name="root"/> when
     /// <paramref name="byFolder"/> is set, else its name prefix if it is under <paramref name="root"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">An application folder entry is not <c>folder=Layer</c>.</exception>
+    /// <exception cref="ArgumentException">Thrown when an application folder entry is not <c>folder=Layer</c>.</exception>
     public static string? GetLayer(string projectName, string relativePath, string root, bool byFolder, IEnumerable<string> applicationFolders)
     {
         foreach (var entry in applicationFolders)
@@ -53,7 +58,10 @@ public static partial class LayeringTasks
         return byFolder ? GetFolderLayer(relativePath, root) : GetDefaultLayer(projectName, relativePath, root);
     }
 
-    /// <summary>Gets the first folder under the specified solution-relative root.</summary>
+    /// <summary>
+    /// The first folder under <paramref name="root"/>, a solution-relative folder, or an empty string for a project
+    /// directly under it; <c>null</c> (not checked) for projects outside it.
+    /// </summary>
     public static string? GetFolderLayer(string relativePath, string root)
     {
         var path = PathUnderRoot(relativePath, root);
@@ -77,7 +85,10 @@ public static partial class LayeringTasks
         return path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? path[prefix.Length..] : null;
     }
 
-    /// <summary>Reads the projects with a layer (see <paramref name="layerOf"/>), ordered by name.</summary>
+    /// <summary>
+    /// Reads the projects with a layer (see <paramref name="layerOf"/>), ordered by name. References are reduced to
+    /// project names, and sources and root folders are read from disk.
+    /// </summary>
     public static IReadOnlyList<LayeringProject> Collect(IEnumerable<SolutionProjectInfo> solutionProjects, Func<SolutionProjectInfo, string?> layerOf)
     {
         var projects = solutionProjects
@@ -114,7 +125,10 @@ public static partial class LayeringTasks
     public static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, IReadOnlyList<string> layers) =>
         Check(projects, layers, false);
 
-    /// <summary>Checks layering and reports unknown layers as missing folder names when <paramref name="byFolder"/> is set.</summary>
+    /// <summary>
+    /// As <see cref="Check(IReadOnlyCollection{LayeringProject}, IReadOnlyList{string})"/>; <paramref name="byFolder"/>
+    /// only words the unknown-layer violations as a missing layer folder rather than a missing name prefix.
+    /// </summary>
     public static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, IReadOnlyList<string> layers, bool byFolder)
     {
         var violations = new List<string>();
@@ -183,7 +197,9 @@ public static partial class LayeringTasks
             .Where(x => x.Relative.Split(Path.DirectorySeparatorChar)[0] is not ("bin" or "obj"))
             .ToDictionary(x => x.Relative.Replace('\\', '/'), x => File.ReadAllText(x.File));
 
-    /// <summary><c>using X;</c>, <c>global using X;</c>, <c>using static X;</c> and <c>using A = X;</c>, capturing <c>X</c>.</summary>
+    /// <summary>
+    /// <c>using X;</c>, <c>global using X;</c>, <c>using static X;</c> and <c>using A = X;</c>, capturing <c>X</c>.
+    /// </summary>
     [GeneratedRegex(@"^\s*(?:global\s+)?using\s+(?:static\s+)?(?:\w+\s*=\s*)?([\w.]+)\s*;", RegexOptions.Multiline)]
     private static partial Regex UsingRegex();
 }

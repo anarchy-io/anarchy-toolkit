@@ -1,5 +1,3 @@
-using Anarchy.Toolkit.Build.Cli.Core.Entity;
-
 namespace Anarchy.Toolkit.Build.Cli.Core.Template;
 
 /// <summary>
@@ -8,6 +6,9 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Template;
 /// </summary>
 internal static class UiTemplate
 {
+    /// <summary>
+    /// The project files, keyed by path relative to the project directory.
+    /// </summary>
     public static IReadOnlyDictionary<string, string> Render(ApplicationContext context)
     {
         var app = context.App;
@@ -85,10 +86,14 @@ internal static class UiTemplate
 
                 public sealed class AppSettings : IAppSettings
                 {
-                    /// <summary>The OAuth service users sign in against with their client credentials.</summary>
+                    /// <summary>
+                    /// The OAuth service users sign in against with their client credentials.
+                    /// </summary>
                     [Required] public Uri AuthServiceBaseUrl { get; init; } = new("https://auth.example.local/");
 
-                    /// <summary>The scope requested at login; empty grants every scope allowed for the client.</summary>
+                    /// <summary>
+                    /// The scope requested at login; empty grants every scope allowed for the client.
+                    /// </summary>
                     public string? Scope { get; init; }
                 }
 

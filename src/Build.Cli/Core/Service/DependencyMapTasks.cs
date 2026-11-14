@@ -14,17 +14,25 @@ public static class DependencyMapTasks
 {
     private const string MermaidScript = "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
 
-    /// <summary>Categorical colors (light, dark), assigned to groups in display order.</summary>
+    /// <summary>
+    /// Categorical colors (light, dark), assigned to groups in display order.
+    /// </summary>
     private static readonly (string Light, string Dark)[] Palette =
     [
         ("#2a78d6", "#3987e5"), ("#eb6834", "#d95926"), ("#1baf7a", "#199e70"), ("#eda100", "#c98500"),
         ("#e87ba4", "#d55181"), ("#008300", "#008300"), ("#6250d6", "#9085e9"), ("#e34948", "#e66767"),
     ];
 
-    /// <summary>Groups past the palette share this neutral color; the table and legend still name them.</summary>
+    /// <summary>
+    /// Groups past the palette share this neutral color; the table and legend still name them.
+    /// </summary>
     private static readonly (string Light, string Dark) OverflowColor = ("#8a8984", "#7a7974");
 
-    /// <summary>See <c>IDependencyMapBuild.GetDependencyMapGroup</c>.</summary>
+    /// <summary>
+    /// The default group of a project (see <c>IDependencyMapBuild.GetDependencyMapGroup</c>): null (not mapped) under
+    /// <c>build/</c>, <c>Tests</c> under <c>tests/</c>, <c>Samples</c> under <c>samples/</c>, otherwise its name prefix
+    /// if that is one of <paramref name="layers"/> or <c>Testing</c>, else <c>Other</c>.
+    /// </summary>
     public static string? GetDefaultGroup(string projectName, string relativePath, IReadOnlyList<string> layers)
     {
         var path = relativePath.Replace('\\', '/');
@@ -37,7 +45,9 @@ public static class DependencyMapTasks
         return layers.Contains(prefix) || prefix == "Testing" ? prefix : "Other";
     }
 
-    /// <summary>Maps the projects with a group (see <paramref name="groupOf"/>) and the references between them.</summary>
+    /// <summary>
+    /// Maps the projects with a group (see <paramref name="groupOf"/>) and the references between them.
+    /// </summary>
     public static DependencyMap Collect(string title, IEnumerable<SolutionProjectInfo> solutionProjects, Func<SolutionProjectInfo, string?> groupOf, IReadOnlyList<string> layers)
     {
         var projects = solutionProjects
@@ -69,7 +79,9 @@ public static class DependencyMapTasks
         return new DependencyMap(title, layers, mapped, references);
     }
 
-    /// <summary>Counts the <c>.cs</c> files under a project directory and their non-blank lines, ignoring <c>bin</c>/<c>obj</c>.</summary>
+    /// <summary>
+    /// Counts the <c>.cs</c> files under a project directory and their non-blank lines, ignoring <c>bin</c>/<c>obj</c>.
+    /// </summary>
     public static (int Files, int Lines) CountSource(string directory)
     {
         var files = Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories)
@@ -79,7 +91,9 @@ public static class DependencyMapTasks
         return (files.Length, files.Sum(file => File.ReadLines(file).Count(line => !string.IsNullOrWhiteSpace(line))));
     }
 
-    /// <summary>Renders the map as a static HTML page. The output is deterministic: same map, same bytes.</summary>
+    /// <summary>
+    /// Renders the map as a static HTML page. The output is deterministic: same map, same bytes.
+    /// </summary>
     public static string RenderHtml(DependencyMap map)
     {
         var groups = map.Groups;
@@ -485,7 +499,9 @@ public static class DependencyMapTasks
 
     private static (string Light, string Dark) ColorOf(int index) => index < Palette.Length ? Palette[index] : OverflowColor;
 
-    /// <summary>A full circle as two arcs, so it can be combined into an even-odd ring path.</summary>
+    /// <summary>
+    /// A full circle as two arcs, so it can be combined into an even-odd ring path.
+    /// </summary>
     private static string Circle(double center, double r) =>
         $"M{N(center - r)} {N(center)} a{N(r)} {N(r)} 0 1 0 {N(2 * r)} 0 a{N(r)} {N(r)} 0 1 0 {N(-2 * r)} 0 Z";
 

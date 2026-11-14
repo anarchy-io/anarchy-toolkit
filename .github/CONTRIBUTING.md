@@ -20,7 +20,7 @@ Dependencies restore from nuget.org. See the [README](../README.md) for the Make
 3. Run the unit tests and relevant checks:
 
    ```bash
-   dotnet test --project tests/Unit/Unit.csproj --configuration Release
+   make test_unit
    make lint
    make check_layering
    ```

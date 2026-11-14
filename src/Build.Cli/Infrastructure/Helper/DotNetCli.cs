@@ -2,9 +2,15 @@ using System.Diagnostics;
 
 namespace Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 
-/// <summary>Runs <c>dotnet</c> commands, keeping their output out of the console unless they fail.</summary>
+/// <summary>
+/// Runs <c>dotnet</c> commands, keeping their output out of the console unless they fail.
+/// </summary>
 public static class DotNetCli
 {
+    /// <summary>
+    /// Runs <c>dotnet</c> with <paramref name="arguments"/> in <paramref name="workingDirectory"/> and waits for it to exit.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the command fails; the message includes its output.</exception>
     public static void Run(string workingDirectory, params string[] arguments)
     {
         var start = new ProcessStartInfo("dotnet") {

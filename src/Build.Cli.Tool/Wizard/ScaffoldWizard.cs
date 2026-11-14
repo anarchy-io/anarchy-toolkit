@@ -3,10 +3,18 @@ using Anarchy.Toolkit.Build.Cli.Core.Service;
 
 namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 
-/// <summary>Guides the user through adding an API, job or UI to an existing solution.</summary>
+/// <summary>
+/// Guides the user through adding an API, job or UI to an existing solution.
+/// </summary>
 public sealed class ScaffoldWizard(IWizardPrompter prompter)
 {
-    /// <summary>The confirmed application, or null if the user declined it.</summary>
+    /// <summary>
+    /// Asks for the kind and name of the application, shows the project to add and asks for confirmation.
+    /// </summary>
+    /// <param name="workspace">The solution to add to; only the kinds its layering supports are offered.</param>
+    /// <returns>
+    /// The confirmed application, or <c>null</c> if the user declined it or the solution supports no application kind.
+    /// </returns>
     public ApplicationSpec? Run(SolutionWorkspace workspace)
     {
         prompter.ShowWelcome("Anarchy application scaffold",

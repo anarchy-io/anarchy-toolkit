@@ -69,7 +69,8 @@ if [[ -z "$COMMAND" ]]; then
     echo -e "${CL_YELLOW}The available tasks are:${CL_RESET}\n"
 fi
 
-for file in "${SCRIPT_DIR}"/targets/*.mk; do
+# MAKE_EXTRA_TARGETS: space-separated, project-specific target files to list after the distributed ones.
+for file in "${SCRIPT_DIR}"/targets/*.mk ${MAKE_EXTRA_TARGETS:-}; do
     filename=$(basename "$file" .mk | tr 'a-z' 'A-Z' | tr '_-' '  ')
     print_file_section "$filename"
 

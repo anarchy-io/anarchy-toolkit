@@ -1,6 +1,8 @@
 namespace Anarchy.Toolkit.Build.Cli.Core.Entity;
 
-/// <summary>A project as checked by the <c>CheckLayering</c> target.</summary>
+/// <summary>
+/// A project as checked by the <c>CheckLayering</c> target.
+/// </summary>
 /// <param name="Name">The project name, e.g. <c>Infrastructure.Http</c>.</param>
 /// <param name="Layer">
 /// Its layer, <c>Testing</c> for a test kit, or any other value for a project that should be in a layer but is not

@@ -3,10 +3,19 @@ using static Anarchy.Toolkit.Build.Cli.Core.Service.ReleaseVersionTasks;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
-/// <summary>Builds package release notes from the commits affecting each package.</summary>
+/// <summary>
+/// Builds package release notes from the commits affecting each package.
+/// </summary>
 public static class ReleaseNotesTasks
 {
-    /// <summary>Collects commit subjects for the packages affected by a Git range, including dependents.</summary>
+    /// <summary>
+    /// Collects the commit subjects for the packages affected by a Git range, including dependents, keyed by project
+    /// path. Each commit is attributed to the packages it affects compared to its first parent; release bump commits
+    /// are skipped.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <paramref name="baseRef"/> is not an ancestor of <paramref name="headRef"/>, or Git fails.
+    /// </exception>
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> Collect(
         string root, IReadOnlyCollection<Project> projects, string baseRef, string headRef)
     {
@@ -36,7 +45,11 @@ public static class ReleaseNotesTasks
         return affected.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<string>)pair.Value, StringComparer.OrdinalIgnoreCase);
     }
 
-    /// <summary>Plans README edits without replacing existing entries or writing any files.</summary>
+    /// <summary>
+    /// Plans the README edits, keyed by README path, without writing any files: each package with
+    /// <paramref name="messages"/> gets an entry for its current version in the <c>README.md</c> next to its project
+    /// (created when <paramref name="read"/> returns null). READMEs that already list the version are left out.
+    /// </summary>
     public static IReadOnlyDictionary<string, string> Plan(
         IReadOnlyCollection<Project> projects, IReadOnlyDictionary<string, IReadOnlyList<string>> messages,
         Func<string, string?> read)
@@ -52,7 +65,13 @@ public static class ReleaseNotesTasks
         return edits;
     }
 
-    /// <summary>Adds an entry at the beginning of the Releases section, unless that version is already present.</summary>
+    /// <summary>
+    /// Adds an entry at the beginning of the <c>## Releases</c> section (appended when missing), unless that version
+    /// is already listed. Code fences are ignored, and the README's line endings are kept.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the README has more than one Releases section, or <paramref name="subjects"/> has no non-blank subject.
+    /// </exception>
     public static string AddEntry(string readme, string version, IReadOnlyList<string> subjects)
     {
         var newline = readme.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";

@@ -9,15 +9,22 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// </summary>
 public static class AppSettingsMerger
 {
-    /// <summary>Asks for one setting; <c>null</c> or blank means "keep the current value, if any".</summary>
+    /// <summary>
+    /// Asks for one setting; <c>null</c> or blank means "keep the current value, if any".
+    /// </summary>
     public delegate string? Prompt(string key, string hint, string? currentValue);
 
+    /// <summary>
+    /// The merged settings, and the keys of the settings left unset (no value and no answer).
+    /// </summary>
     public sealed record MergeResult(JsonObject Settings, IReadOnlyList<string> Missing);
 
     /// <summary>
     /// Fills <paramref name="existing"/> (or a new object) with every key of <paramref name="template"/> that is
-    /// not set yet, asking <paramref name="prompt"/> for string ones. A value equal to its template hint counts as
-    /// not set. With <paramref name="reset"/>, set keys are asked for again too, offering their value as default.
+    /// not set yet: string values are hints, so <paramref name="prompt"/> is asked for them; other values are fixed
+    /// defaults and copied as-is. A value equal to its template hint counts as not set. With <paramref name="reset"/>,
+    /// set string keys are asked for again too, offering their value as default. <paramref name="existing"/> is not
+    /// modified.
     /// </summary>
     public static MergeResult Merge(
         JsonObject template, JsonObject? existing, bool reset, Prompt? prompt)
@@ -99,7 +106,10 @@ public static class AppSettingsMerger
      && value.GetValueKind() == JsonValueKind.String
      && value.GetValue<string>() == hint;
 
-    /// <summary>Whether a setting key looks like it holds a secret, to read it with masked input.</summary>
+    /// <summary>
+    /// Whether a setting key looks like it holds a secret, to read it with masked input. Keys ending in <c>Name</c>
+    /// (e.g. <c>ClientSecretName</c>) only name a secret and are not sensitive.
+    /// </summary>
     public static bool IsSensitive(string key)
     {
         var name = key[(key.LastIndexOf(':') + 1)..];
@@ -109,14 +119,18 @@ public static class AppSettingsMerger
             && !name.EndsWith("Name", StringComparison.Ordinal);
     }
 
-    /// <summary>Parses a settings file's content, allowing comments and trailing commas; <c>null</c> when it is not an object.</summary>
+    /// <summary>
+    /// Parses a settings file's content, allowing comments and trailing commas; <c>null</c> when it is not an object.
+    /// </summary>
     public static JsonObject? ParseJsonObject(string json) =>
         JsonNode.Parse(
             json,
             documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true }
         ) as JsonObject;
 
-    /// <summary>Whether a relative path goes through <c>bin</c>, <c>obj</c>, <c>node_modules</c> or a hidden folder.</summary>
+    /// <summary>
+    /// Whether a relative path goes through <c>bin</c>, <c>obj</c>, <c>node_modules</c> or a hidden folder.
+    /// </summary>
     public static bool IsInIgnoredDirectory(string relativePath) =>
         relativePath
             .Split('/', '\\')

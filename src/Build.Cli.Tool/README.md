@@ -9,7 +9,7 @@ dotnet tool install --global Anarchy.Toolkit.Build.Cli.Tool
 anarchy-toolkit
 ```
 
-Without a command, the tool scaffolds into the solution in the current directory (or above), or bootstraps a new one if there is none.
+Without a command (or with `--help`), the tool shows its usage. Every command starts by printing Anarchy's logo, the same as `scripts/console/banner.sh` (wide on terminals of 116 columns or more, compact otherwise); it is omitted when the output is redirected.
 
 | Command | What it does |
 |---|---|
@@ -28,7 +28,7 @@ The wizard asks for:
 4. the layers, innermost first (default: `Core, Infrastructure, Configuration, Hosting, Web`). A library project is created per layer, each referencing the one below it;
 5. which kinds of application to start with, then a name for each one, as many as you like.
 
-It then shows the plan, including each web application's local ports, and asks for confirmation before writing anything. Every solution also contains a Fallout build host, Makefile, scripts and configuration. Existing files are never overwritten; if a failure occurs after generation starts, inspect the destination before retrying.
+It then shows the plan, including each web application's local ports, and asks for confirmation before writing anything. Every solution also contains a Fallout build host, Makefile, scripts and configuration. Package versions are always managed centrally: the root `Directory.Packages.props` sets `ManagePackageVersionsCentrally` and pins each toolkit package the solution uses, and the projects' `PackageReference`s carry no versions. Existing files are never overwritten; if a failure occurs after generation starts, inspect the destination before retrying.
 
 ### Layering
 
@@ -55,6 +55,8 @@ Applications are not packable, so `Pack` ignores them. Web applications get loca
 
 Run `anarchy-toolkit scaffold` anywhere inside a solution created by `bootstrap` (or any solution whose `.fallout/parameters.json` names its solution file). It places the application according to the solution's layering settings, refuses names already used by a project, and adds it to the solution.
 
+It follows the solution's package management. When the nearest `Directory.Packages.props` above the new project enables central package management (in that file or in `Directory.Build.props`), the package version is added there as a `PackageVersion`, unless the package is already pinned, in which case the existing version is kept, and the project's reference is unversioned. Otherwise the reference carries the version.
+
 ## Requirements
 
 The .NET 10 SDK is required to generate and build solutions. The generated projects reference the `Anarchy.Toolkit.Build.Fallout`, `Anarchy.Toolkit.Web`, `Anarchy.Toolkit.Web.Ui` and `Anarchy.Toolkit.Hosting` versions this tool was built with, which must be available on a configured NuGet feed. The generated `nuget.config` uses nuget.org by default; adjust it if using a private feed.
@@ -72,6 +74,10 @@ make check_layering
 The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build.Cli/README.md); see the [Fallout package README](../Build.Fallout/README.md) for the build targets.
 
 ## Releases
+
+### 2.0.0
+
+- feat(Build.Fallout): replace AWS release flows with Docker and container builds
 
 ### 1.0.0
 

@@ -1,7 +1,8 @@
 namespace Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 
 /// <summary>
-/// A wrapper around <see cref="Serilog.Log"/> used by the build components.
+/// A wrapper around <see cref="Serilog.Log"/> used by the build components: <c>Normal</c> logs at
+/// <c>Debug</c> level and <c>Trace</c> at <c>Verbose</c>; the others map to their Serilog namesakes.
 /// </summary>
 public static class Logger
 {

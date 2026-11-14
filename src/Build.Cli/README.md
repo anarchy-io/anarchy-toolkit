@@ -18,6 +18,10 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.1.0
+
+- feat(Build.Fallout): replace AWS release flows with Docker and container builds
+
 ### 1.0.0
 
 - Introduced solution bootstrapping and scaffolding with configurable layering, application templates and the build operations extracted from Build.Fallout.

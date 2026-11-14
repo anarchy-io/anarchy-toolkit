@@ -8,10 +8,13 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// <summary>
 /// Bootstraps a whole solution into an empty directory: the Fallout build host, the standard scaffold, a library
 /// project per layer and the planned applications, all added to the solution, with layering configured for the layout.
+/// Package versions are always managed centrally, in the root <c>Directory.Packages.props</c>.
 /// </summary>
 public static class SolutionBootstrapper
 {
-    /// <summary>Why <paramref name="directory"/> cannot receive a new solution, or null if it can.</summary>
+    /// <summary>
+    /// Why <paramref name="directory"/> cannot receive a new solution, or null if it can.
+    /// </summary>
     public static string? ValidateRootDirectory(string? directory)
     {
         if (string.IsNullOrWhiteSpace(directory)) return "Enter a directory.";
@@ -27,7 +30,9 @@ public static class SolutionBootstrapper
         }
     }
 
-    /// <summary>Why the plan cannot be created, or null if it can.</summary>
+    /// <summary>
+    /// Why the plan cannot be created, or null if it can.
+    /// </summary>
     public static string? Validate(SolutionPlan plan)
     {
         if (!NameRules.IsValidSolutionName(plan.Name)) return NameRules.SolutionNameHelp;
@@ -42,17 +47,24 @@ public static class SolutionBootstrapper
         return ValidateRootDirectory(plan.RootDirectory);
     }
 
+    /// <summary>
+    /// Creates the planned solution, reporting each step to <paramref name="progress"/>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the plan is invalid (see <see cref="Validate"/>) or a <c>dotnet</c> command fails.</exception>
     public static void Create(SolutionPlan plan, ToolkitPackageVersions versions, Action<string>? progress = null)
     {
         if (Validate(plan) is { } error) throw new InvalidOperationException(error);
         var report = progress ?? (_ => { });
         var root = Path.GetFullPath(plan.RootDirectory);
         var layout = plan.Layout;
-        var packageVersions = plan.Applications.Select(app => app.PackageId).Distinct()
-            .ToDictionary(id => id, id => versions[id]);
+        var packageVersions = plan.Applications.Select(app => app.PackageId).Append(ToolkitPackageVersions.BuildFallout)
+            .Distinct().ToDictionary(id => id, id => versions[id]);
+
+        report("Creating the central package versions");
+        FileHelper.WriteNewText(Path.Combine(root, CentralPackages.FileName), CentralPackages.Render(packageVersions));
 
         report("Creating the build host");
-        BuildHostScaffolder.Create(root, versions[ToolkitPackageVersions.BuildFallout]);
+        BuildHostScaffolder.Create(root, null);
 
         report("Installing the scaffold and creating the solution");
         SolutionScaffolder.Create(root, plan.Name, new ScaffoldOptions { Exclude = "core" });
