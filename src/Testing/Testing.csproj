@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Testing</PackageId>
     <AssemblyName>Anarchy.Toolkit.Testing</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Testing</RootNamespace>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Description>Shared base test toolkit: TestCaseBase, TestHelper, in-memory observer/measurer/log sink with assertions, API Gateway response assertions, entity fixtures, and common test extensions.</Description>
     <IsPackable>true</IsPackable>
     <!-- Microsoft.NET.Test.Sdk is referenced for consumers; this kit itself is a library, not a test project. -->

@@ -8,29 +8,29 @@ namespace Anarchy.Toolkit.Tests.Unit.Testing.Observability.Monitoring.Metrics;
 
 public class WhenAssertingMetrics
 {
-    private const string _counterMetricName = "metric.counter";
-    private const string _gaugeMetricName = "metric.gauge";
-    private const string _eventMetricName = "metric.event";
-    private const string _timerMetricName = "metric.timer";
-    private const string _defaultTag = "";
-    private const string _exampleTag = "foo:bar";
+    private const string CounterMetricName = "metric.counter";
+    private const string GaugeMetricName = "metric.gauge";
+    private const string EventMetricName = "metric.event";
+    private const string TimerMetricName = "metric.timer";
+    private const string DefaultTag = "";
+    private const string ExampleTag = "foo:bar";
 
     [Fact]
     public void GivenCounterIsIncremented_NotHaveCounterFailsWithMessage()
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
 
         Action action = () => metrics
                              .Should()
-                             .NotHaveCounter(_counterMetricName);
+                             .NotHaveCounter(CounterMetricName);
 
         action.Should().Throw<XunitException>()
               .Which
               .Message
               .Should()
-              .Be($"Expected metrics to not contain a counter '{_counterMetricName}', but it exists.");
+              .Be($"Expected metrics to not contain a counter '{CounterMetricName}', but it exists.");
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class WhenAssertingMetrics
         var metrics = new InMemoryMeasurer();
 
         Action action = () => metrics.Should()
-                                     .NotHaveCounter(_counterMetricName);
+                                     .NotHaveCounter(CounterMetricName);
 
         action.Should().NotThrow();
     }
@@ -49,10 +49,10 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
 
         metrics.Should()
-               .HaveCounter(_counterMetricName);
+               .HaveCounter(CounterMetricName);
     }
 
     [Fact]
@@ -61,13 +61,13 @@ public class WhenAssertingMetrics
         var metrics = new InMemoryMeasurer();
 
         Action action = () => metrics.Should()
-                                     .HaveCounter(_counterMetricName);
+                                     .HaveCounter(CounterMetricName);
 
         action.Should().Throw<XunitException>()
               .Which
               .Message
               .Should()
-              .Be($"Expected metrics to contain a counter '{_counterMetricName}', but it does not exist.");
+              .Be($"Expected metrics to contain a counter '{CounterMetricName}', but it does not exist.");
     }
 
     [Fact]
@@ -75,12 +75,12 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
 
         metrics.Should()
-               .HaveCounter(_counterMetricName)
+               .HaveCounter(CounterMetricName)
                .Which
-               .HasTag(_defaultTag);
+               .HasTag(DefaultTag);
     }
 
     [Fact]
@@ -88,10 +88,10 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
 
         Action action = () => metrics.Should()
-                                     .HaveCounter(_counterMetricName)
+                                     .HaveCounter(CounterMetricName)
                                      .Which
                                      .HasTag("THIS ONE DOESN'T EXIST");
 
@@ -99,7 +99,7 @@ public class WhenAssertingMetrics
               .Which
               .Message
               .Should()
-              .Be($"Expected \'{_counterMetricName}\' to have tag 'THIS ONE DOESN'T EXIST', but it does not exist.");
+              .Be($"Expected \'{CounterMetricName}\' to have tag 'THIS ONE DOESN'T EXIST', but it does not exist.");
     }
 
     [Fact]
@@ -107,12 +107,12 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName, _exampleTag);
+        metrics.IncrementCounter(CounterMetricName, ExampleTag);
 
         Action action = () => metrics.Should()
-                                     .HaveCounter(_counterMetricName)
+                                     .HaveCounter(CounterMetricName)
                                      .Which
-                                     .HasTag(_exampleTag)
+                                     .HasTag(ExampleTag)
                                      .And
                                      .HasValue(2);
 
@@ -120,7 +120,7 @@ public class WhenAssertingMetrics
               .Which
               .Message
               .Should()
-              .Be($"Expected \'{_counterMetricName}[{_exampleTag}]\' to have value '2', but found '1'.");
+              .Be($"Expected \'{CounterMetricName}[{ExampleTag}]\' to have value '2', but found '1'.");
     }
 
     [Fact]
@@ -128,10 +128,10 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName, _exampleTag);
+        metrics.IncrementCounter(CounterMetricName, ExampleTag);
 
         Action action = () => metrics.Should()
-                                     .HaveCounter(_counterMetricName)
+                                     .HaveCounter(CounterMetricName)
                                      .Which
                                      .HasValue(2);
 
@@ -139,7 +139,7 @@ public class WhenAssertingMetrics
               .Which
               .Message
               .Should()
-              .Be($"Expected \'{_counterMetricName}\' to have value '2', but found '1'.");
+              .Be($"Expected \'{CounterMetricName}\' to have value '2', but found '1'.");
     }
 
     [Fact]
@@ -147,10 +147,10 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
 
-        metrics.Should().HaveCounter(_counterMetricName)
-               .Which.HasTags([_defaultTag]);
+        metrics.Should().HaveCounter(CounterMetricName)
+               .Which.HasTags([DefaultTag]);
     }
 
     [Fact]
@@ -159,10 +159,10 @@ public class WhenAssertingMetrics
         var extraTag = $"tag:{Guid.NewGuid():N}";
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName, _exampleTag, extraTag);
+        metrics.IncrementCounter(CounterMetricName, ExampleTag, extraTag);
 
-        metrics.Should().HaveCounter(_counterMetricName)
-               .Which.HasTags([_defaultTag, _exampleTag, extraTag]);
+        metrics.Should().HaveCounter(CounterMetricName)
+               .Which.HasTags([DefaultTag, ExampleTag, extraTag]);
     }
 
     [Fact]
@@ -172,13 +172,13 @@ public class WhenAssertingMetrics
         string[] tags = ["test:tag", "test:tag2"];
         string[] expectedTags = ["test:tag", "THIS ONE DOESN'T EXIST", "test:tag2"];
 
-        metrics.IncrementCounter(_counterMetricName, tags);
+        metrics.IncrementCounter(CounterMetricName, tags);
 
-        Action action = () => metrics.Should().HaveCounter(_counterMetricName)
+        Action action = () => metrics.Should().HaveCounter(CounterMetricName)
                                      .Which.HasTags(expectedTags);
         action.Should().Throw<XunitException>()
               .Which.Message.Should().Match(
-                   $"Expected '{_counterMetricName}' to have tags [{string.Join(", ", expectedTags)}]*"
+                   $"Expected '{CounterMetricName}' to have tags [{string.Join(", ", expectedTags)}]*"
                );
     }
 
@@ -189,10 +189,10 @@ public class WhenAssertingMetrics
 
         var metrics = new InMemoryMeasurer();
 
-        metrics.Gauge(_gaugeMetricName, someMetricValue);
+        metrics.Gauge(GaugeMetricName, someMetricValue);
 
         metrics.Should()
-               .HaveGauge(_gaugeMetricName)
+               .HaveGauge(GaugeMetricName)
                .Which.HasValue(someMetricValue);
     }
 
@@ -218,7 +218,7 @@ public class WhenAssertingMetrics
         var metrics = new InMemoryMeasurer();
 
         metrics.Should()
-            .NotHaveGauge(_gaugeMetricName);
+            .NotHaveGauge(GaugeMetricName);
     }
 
     [Fact]
@@ -228,10 +228,10 @@ public class WhenAssertingMetrics
 
         var metrics = new InMemoryMeasurer();
 
-        metrics.Event(_eventMetricName, someMetricValue);
+        metrics.Event(EventMetricName, someMetricValue);
 
         metrics.Should()
-               .HaveEvent(_eventMetricName)
+               .HaveEvent(EventMetricName)
                .Which.HasValue(someMetricValue);
     }
 
@@ -257,7 +257,7 @@ public class WhenAssertingMetrics
         var metrics = new InMemoryMeasurer();
 
         metrics.Should()
-            .NotHaveEvent(_eventMetricName);
+            .NotHaveEvent(EventMetricName);
     }
 
     [Fact]
@@ -265,11 +265,11 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName);
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
 
         Action action = () => metrics.Should()
-                                     .HaveCounter(_counterMetricName)
+                                     .HaveCounter(CounterMetricName)
                                      .Which
                                      .HasSamples([1.0, 1.0, 1.0]);
 
@@ -277,7 +277,7 @@ public class WhenAssertingMetrics
               .Which
               .Message
               .Should()
-              .Be($"Expected metric '{_counterMetricName}' to have 3 samples but found 2");
+              .Be($"Expected metric '{CounterMetricName}' to have 3 samples but found 2");
     }
 
     [Fact]
@@ -285,12 +285,12 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName);
-        metrics.IncrementCounter(_counterMetricName);
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
+        metrics.IncrementCounter(CounterMetricName);
 
         Action action = () => metrics.Should()
-                                     .HaveCounter(_counterMetricName)
+                                     .HaveCounter(CounterMetricName)
                                      .Which
                                      .HasSamples([1.0, 1.0, 2.0]);
 
@@ -298,7 +298,7 @@ public class WhenAssertingMetrics
               .Which
               .Message
               .Should()
-              .Be($"Expected metric \"{_counterMetricName}\" to contain samples {{1.0, 1.0, 2.0}} in order, but 2.0 (index 2) did not appear (in the right order).");
+              .Be($"Expected metric \"{CounterMetricName}\" to contain samples {{1.0, 1.0, 2.0}} in order, but 2.0 (index 2) did not appear (in the right order).");
     }
 
     [Fact]
@@ -306,14 +306,14 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.IncrementCounter(_counterMetricName, _exampleTag);
-        metrics.IncrementCounter(_counterMetricName, _exampleTag);
-        metrics.IncrementCounter(_counterMetricName);
+        metrics.IncrementCounter(CounterMetricName, ExampleTag);
+        metrics.IncrementCounter(CounterMetricName, ExampleTag);
+        metrics.IncrementCounter(CounterMetricName);
 
         metrics.Should()
-               .HaveCounter(_counterMetricName)
+               .HaveCounter(CounterMetricName)
                .Which
-               .HasTag(_exampleTag)
+               .HasTag(ExampleTag)
                .And
                .HasSamples([1.0, 1.0]);
     }
@@ -338,10 +338,10 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
         var expectedValue = TimeSpan.FromMinutes(42);
-        metrics.Timer(_timerMetricName, expectedValue);
+        metrics.Timer(TimerMetricName, expectedValue);
 
         var actual =
-            metrics.Should().HaveTimer(_timerMetricName).Which.HasValue();
+            metrics.Should().HaveTimer(TimerMetricName).Which.HasValue();
 
         actual.Which.Should().Be(expectedValue);
     }
@@ -368,9 +368,9 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.Invoking(m => m.Should().HaveTimer(_timerMetricName))
+        metrics.Invoking(m => m.Should().HaveTimer(TimerMetricName))
                .Should().Throw<XunitException>()
-               .WithMessage($"Expected metrics to contain a timer '{_timerMetricName}', but it does not exist.");
+               .WithMessage($"Expected metrics to contain a timer '{TimerMetricName}', but it does not exist.");
     }
 
     [Fact]
@@ -378,7 +378,7 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.Should().NotHaveTimer(_timerMetricName);
+        metrics.Should().NotHaveTimer(TimerMetricName);
     }
 
     [Fact]
@@ -417,6 +417,6 @@ public class WhenAssertingMetrics
     {
         var metrics = new InMemoryMeasurer();
 
-        metrics.Should().NotHaveHistogram(_timerMetricName);
+        metrics.Should().NotHaveHistogram(TimerMetricName);
     }
 }

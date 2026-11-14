@@ -18,11 +18,10 @@ public sealed class SnsAwsPublisherRequestBuilder(
 
     protected override PublishRequest CreateEmptyRequest() => new();
 
-    protected override MessageAttributeValue AwsAttribute(string value) =>
-        new MessageAttributeValue { DataType = "String", StringValue = value };
+    protected override MessageAttributeValue AwsAttribute(string value) => new() { DataType = "String", StringValue = value };
 
     protected override MessageAttributeValue AwsAttribute(byte[] value) =>
-        new MessageAttributeValue { DataType = "Binary", BinaryValue = new MemoryStream(value) };
+        new() { DataType = "Binary", BinaryValue = new MemoryStream(value) };
 
     protected override string BuildDestinationAddress(string destinationName) => string.Format(
         TemplateDestinationAddress, options.Region, options.AccountId, destinationName);

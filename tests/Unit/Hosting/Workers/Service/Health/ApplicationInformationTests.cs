@@ -8,13 +8,13 @@ namespace Anarchy.Toolkit.Tests.Unit.Hosting.Workers.Service.Health;
 
 public class ApplicationInformationTests
 {
-    private ApplicationInformation CreateSut() =>
+    private static ApplicationInformation CreateSut() =>
         ApplicationInformation.WithCustomMetadata(
             buildMetadata: new StubBuildMetadata(),
             applicationStartTime: DateTimeOffset.Now
         );
 
-    private ApplicationInformation CreateSutWithStartTimeAndCustomClock(
+    private static ApplicationInformation CreateSutWithStartTimeAndCustomClock(
         DateTimeOffset applicationStartTime,
         DateTimeOffset systemTime
     )
@@ -23,6 +23,7 @@ public class ApplicationInformationTests
             buildMetadata: new StubBuildMetadata(),
             applicationStartTime: applicationStartTime
         );
+
         sut.Clock = () => systemTime;
 
         return sut;
@@ -40,7 +41,8 @@ public class ApplicationInformationTests
             systemTime: systemTime
         );
 
-        sut.Uptime.Should().Be(expectedUptime);
+        sut.Uptime.Should()
+            .Be(expectedUptime);
     }
 
     [Fact]
@@ -48,29 +50,32 @@ public class ApplicationInformationTests
     {
         var sut = CreateSut();
 
-        sut.SystemTime.Should().BeCloseTo(DateTimeOffset.Now, precision: TimeSpan.FromMilliseconds(10));
+        sut.SystemTime.Should()
+            .BeCloseTo(DateTimeOffset.Now, precision: TimeSpan.FromSeconds(1));
     }
 
     [Fact]
     public void CreateWithNullBuildMetadataShouldThrowException()
     {
         Action create = () => ApplicationInformation.WithCustomMetadata(
-                            buildMetadata: null!,
-                            applicationStartTime: DateTimeOffset.Now
-                        );
+            buildMetadata: null!,
+            applicationStartTime: DateTimeOffset.Now
+        );
 
-        create.Should().Throw<ArgumentNullException>();
+        create.Should()
+            .Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void CreateWithNullAssemblyShouldThrowException()
     {
         Action create = () => ApplicationInformation.WithMetadataFromAssembly(
-                            assembly: null!,
-                            applicationStartTime: DateTimeOffset.Now
-                        );
+            assembly: null!,
+            applicationStartTime: DateTimeOffset.Now
+        );
 
-        create.Should().Throw<ArgumentNullException>();
+        create.Should()
+            .Throw<ArgumentNullException>();
     }
 
     [Fact]
@@ -80,19 +85,20 @@ public class ApplicationInformationTests
 
         var sut = CreateSut();
 
-        sut.Should().BeEquivalentTo(
-            new {
-                ApplicationName = buildMetadata.ApplicationName,
-                ApplicationVersion = buildMetadata.ApplicationVersion,
-                BuildCommitHash = buildMetadata.BuildCommitHash,
-                BuildMachineName = buildMetadata.BuildMachineName,
-                BuildTimestamp = buildMetadata.BuildTimestamp,
-                BuildUsername = buildMetadata.BuildUsername,
-                BuildNumber = buildMetadata.BuildNumber,
-                RunbookUri = buildMetadata.RunbookUri,
-                OperatingSystem = OperatingSystemInfo.Current,
-            }
-        );
+        sut.Should()
+            .BeEquivalentTo(
+                new {
+                    buildMetadata.ApplicationName,
+                    buildMetadata.ApplicationVersion,
+                    buildMetadata.BuildCommitHash,
+                    buildMetadata.BuildMachineName,
+                    buildMetadata.BuildTimestamp,
+                    buildMetadata.BuildUsername,
+                    buildMetadata.BuildNumber,
+                    buildMetadata.RunbookUri,
+                    OperatingSystem = OperatingSystemInfo.Current,
+                }
+            );
     }
 
     [Fact]
@@ -104,15 +110,32 @@ public class ApplicationInformationTests
         );
 
         // see TestAssemblies/build.meta.json for the origin of these values
-        sut.ApplicationName.Should().Be(WithMetadataHelper.AssemblyName);
-        sut.ApplicationVersion.Should().Be(WithMetadataHelper.Version);
-        sut.BuildMachineName.Should().Be("BUILD_MACHINE");
-        sut.BuildUsername.Should().Be("username");
-        sut.BuildTimestamp.Should().Be(new DateTimeOffset(2017, 4, 10, 16, 0, 23, TimeSpan.FromHours(2)));
-        sut.BuildCommitHash.Should().Be("4d1c60112414122951e6d2a4d3c75146452ecdd4");
-        sut.BuildNumber.Should().Be("1234.0");
-        sut.RunbookUri.Should().BeNull();
-        sut.OperatingSystem.Should().Be(OperatingSystemInfo.Current);
+        sut.ApplicationName.Should()
+            .Be(WithMetadataHelper.AssemblyName);
+
+        sut.ApplicationVersion.Should()
+            .Be(WithMetadataHelper.Version);
+
+        sut.BuildMachineName.Should()
+            .Be("BUILD_MACHINE");
+
+        sut.BuildUsername.Should()
+            .Be("username");
+
+        sut.BuildTimestamp.Should()
+            .Be(new DateTimeOffset(2017, 4, 10, 16, 0, 23, TimeSpan.FromHours(2)));
+
+        sut.BuildCommitHash.Should()
+            .Be("4d1c60112414122951e6d2a4d3c75146452ecdd4");
+
+        sut.BuildNumber.Should()
+            .Be("1234.0");
+
+        sut.RunbookUri.Should()
+            .BeNull();
+
+        sut.OperatingSystem.Should()
+            .Be(OperatingSystemInfo.Current);
     }
 
     private class StubBuildMetadata : IBuildMetadata

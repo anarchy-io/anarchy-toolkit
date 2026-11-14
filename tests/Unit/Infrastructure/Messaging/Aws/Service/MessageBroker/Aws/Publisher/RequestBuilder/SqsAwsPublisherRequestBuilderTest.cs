@@ -17,7 +17,7 @@ public class SqsAwsPublisherRequestBuilderTest : TestCaseBase
     private static readonly AwsMessagingOptions FixtureOptions =
         new(AwsRegion.EuropeIreland.ToDescription(), "123456789012");
 
-    public SqsAwsPublisherRequestBuilder Sut() => new(FixtureOptions);
+    public static SqsAwsPublisherRequestBuilder Sut() => new(FixtureOptions);
 
     [Fact]
     public void FromOutboundMessage_WhenStandardQueue_BuildsExpectedSendMessageRequest()

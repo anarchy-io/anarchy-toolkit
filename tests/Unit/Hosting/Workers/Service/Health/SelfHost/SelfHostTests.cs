@@ -17,7 +17,7 @@ public class SelfHostTests : IDisposable
         HttpMethod verb,
         HttpStatusCode expectedStatusCode,
         string? expectedContentType,
-        Action<string> contentAssertion
+        Action<string>? contentAssertion
     )
     {
         var cancellationToken = TestContext.Current.CancellationToken;
@@ -27,10 +27,12 @@ public class SelfHostTests : IDisposable
         var request = new HttpRequestMessage(verb, url);
         using var response = await _httpClient.SendAsync(request, cancellationToken);
 
-        response.StatusCode.Should().Be(expectedStatusCode);
+        response.StatusCode.Should()
+            .Be(expectedStatusCode);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        contentType.Should().Be(expectedContentType);
+        contentType.Should()
+            .Be(expectedContentType);
 
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
         contentAssertion?.Invoke(content);
@@ -38,8 +40,8 @@ public class SelfHostTests : IDisposable
 
     public void Dispose()
     {
-        _httpClient?.Dispose();
-        _healthApi?.Dispose();
+        _httpClient.Dispose();
+        _healthApi.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -51,7 +53,8 @@ public class SelfHostTests : IDisposable
             verb: HttpMethod.Get,
             expectedStatusCode: HttpStatusCode.OK,
             expectedContentType: null,
-            contentAssertion: content => content.Should().BeEmpty()
+            contentAssertion: content => content.Should()
+                .BeEmpty()
         );
     }
 
@@ -62,8 +65,9 @@ public class SelfHostTests : IDisposable
             url: "/health/services",
             verb: HttpMethod.Get,
             expectedStatusCode: HttpStatusCode.OK,
-            expectedContentType: _jsonMimeType,
-            contentAssertion: content => content.Should().Contain("\"Passed\":true")
+            expectedContentType: JsonMimeType,
+            contentAssertion: content => content.Should()
+                .Contain("\"Passed\":true")
         );
     }
 
@@ -83,8 +87,9 @@ public class SelfHostTests : IDisposable
             url: "/health/services",
             verb: HttpMethod.Get,
             expectedStatusCode: HttpStatusCode.InternalServerError,
-            expectedContentType: _jsonMimeType,
-            contentAssertion: content => content.Should().Contain("\"Passed\":false")
+            expectedContentType: JsonMimeType,
+            contentAssertion: content => content.Should()
+                .Contain("\"Passed\":false")
         );
     }
 
@@ -93,7 +98,9 @@ public class SelfHostTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddApplicationHealthEndpoints(WithMetadataHelper.Assembly);
-        services.AddScoped<IReadOnlyCollection<IServiceHealthReport>>(_ => [new StubServiceHealthReport("Scoped report")]);
+        services.AddScoped<IReadOnlyCollection<IServiceHealthReport>>(_ =>
+            [new StubServiceHealthReport("Scoped report")]);
+
         using var provider = services.BuildServiceProvider(validateScopes: true);
 
         _healthApi = SelfHostedApplicationHealthApi.WithServices(
@@ -103,8 +110,9 @@ public class SelfHostTests : IDisposable
             url: "/health/services",
             verb: HttpMethod.Get,
             expectedStatusCode: HttpStatusCode.OK,
-            expectedContentType: _jsonMimeType,
-            contentAssertion: content => content.Should().Contain("Scoped report")
+            expectedContentType: JsonMimeType,
+            contentAssertion: content => content.Should()
+                .Contain("Scoped report")
         );
     }
 
@@ -115,8 +123,9 @@ public class SelfHostTests : IDisposable
             url: "/health/status",
             verb: HttpMethod.Get,
             expectedStatusCode: HttpStatusCode.OK,
-            expectedContentType: _jsonMimeType,
-            contentAssertion: content => content.Should().Contain("\"current_time\"")
+            expectedContentType: JsonMimeType,
+            contentAssertion: content => content.Should()
+                .Contain("\"current_time\"")
         );
     }
 
@@ -128,7 +137,8 @@ public class SelfHostTests : IDisposable
             verb: HttpMethod.Get,
             expectedStatusCode: HttpStatusCode.NotFound,
             expectedContentType: null,
-            contentAssertion: content => content.Should().BeEmpty()
+            contentAssertion: content => content.Should()
+                .BeEmpty()
         );
     }
 
@@ -139,8 +149,9 @@ public class SelfHostTests : IDisposable
             url: "/health/instance",
             verb: HttpMethod.Post,
             expectedStatusCode: HttpStatusCode.MethodNotAllowed,
-            expectedContentType: _plainTextMimeType,
-            contentAssertion: content => content.Should().Be(_onlyGetRequestsAllowedMessage)
+            expectedContentType: PlainTextMimeType,
+            contentAssertion: content => content.Should()
+                .Be(OnlyGetRequestsAllowedMessage)
         );
     }
 
@@ -151,8 +162,9 @@ public class SelfHostTests : IDisposable
             url: "/health/services",
             verb: HttpMethod.Post,
             expectedStatusCode: HttpStatusCode.MethodNotAllowed,
-            expectedContentType: _plainTextMimeType,
-            contentAssertion: content => content.Should().Be(_onlyGetRequestsAllowedMessage)
+            expectedContentType: PlainTextMimeType,
+            contentAssertion: content => content.Should()
+                .Be(OnlyGetRequestsAllowedMessage)
         );
     }
 
@@ -163,8 +175,9 @@ public class SelfHostTests : IDisposable
             url: "/health/status",
             verb: HttpMethod.Post,
             expectedStatusCode: HttpStatusCode.MethodNotAllowed,
-            expectedContentType: _plainTextMimeType,
-            contentAssertion: content => content.Should().Be(_onlyGetRequestsAllowedMessage)
+            expectedContentType: PlainTextMimeType,
+            contentAssertion: content => content.Should()
+                .Be(OnlyGetRequestsAllowedMessage)
         );
     }
 
@@ -183,7 +196,8 @@ public class SelfHostTests : IDisposable
             verb: HttpMethod.Get,
             expectedStatusCode: HttpStatusCode.OK,
             expectedContentType: "application/json",
-            contentAssertion: content => content.Should().Contain("\"current_time\"")
+            contentAssertion: content => content.Should()
+                .Contain("\"current_time\"")
         );
     }
 
@@ -193,16 +207,18 @@ public class SelfHostTests : IDisposable
         _healthApi.Start();
 
         _healthApi.Invoking(obj => obj.Start())
-                  .Should().Throw<InvalidOperationException>()
-                  .Which.Message.Should()
-                  .ContainEquivalentOf("already started");
+            .Should()
+            .Throw<InvalidOperationException>()
+            .Which.Message.Should()
+            .ContainEquivalentOf("already started");
     }
 
     [Fact]
     public void StopBeforeStartDoesNotThrow()
     {
         _healthApi.Invoking(obj => obj.Stop())
-                  .Should().NotThrow();
+            .Should()
+            .NotThrow();
     }
 
     [Fact]
@@ -214,7 +230,8 @@ public class SelfHostTests : IDisposable
         // The legacy test blocked with GetAsync("/").Wait(); awaited here to satisfy the xUnit analyzers.
         Func<Task> act = () => _httpClient.GetAsync("/", TestContext.Current.CancellationToken);
 
-        await act.Should().ThrowAsync<HttpRequestException>();
+        await act.Should()
+            .ThrowAsync<HttpRequestException>();
     }
 
     [Fact]
@@ -225,12 +242,13 @@ public class SelfHostTests : IDisposable
 
         Func<Task> act = () => _httpClient.GetAsync("/", TestContext.Current.CancellationToken);
 
-        await act.Should().ThrowAsync<HttpRequestException>();
+        await act.Should()
+            .ThrowAsync<HttpRequestException>();
     }
 
-    private const string _onlyGetRequestsAllowedMessage = "Only GET requests are allowed.";
-    private const string _plainTextMimeType = "text/plain";
-    private const string _jsonMimeType = "application/json";
+    private const string OnlyGetRequestsAllowedMessage = "Only GET requests are allowed.";
+    private const string PlainTextMimeType = "text/plain";
+    private const string JsonMimeType = "application/json";
 
     private readonly int _portNumber = EphemeralPortUtility.FindFreeEphemeralTcpPort();
     private readonly HttpClient _httpClient;
@@ -256,12 +274,12 @@ public class SelfHostTests : IDisposable
     {
         public string ApplicationName { get; } = string.Empty;
         public string ApplicationVersion { get; } = string.Empty;
-        public string? TargetFramework { get; }
-        public string? BuildNumber { get; }
-        public string? BuildMachineName { get; }
-        public string? BuildUsername { get; }
-        public DateTimeOffset? BuildTimestamp { get; }
-        public string? BuildCommitHash { get; }
-        public string? RunbookUri { get; }
+        public string? TargetFramework { get; } = null;
+        public string? BuildNumber { get; } = null;
+        public string? BuildMachineName { get; } = null;
+        public string? BuildUsername { get; } = null;
+        public DateTimeOffset? BuildTimestamp { get; } = null;
+        public string? BuildCommitHash { get; } = null;
+        public string? RunbookUri { get; } = null;
     }
 }

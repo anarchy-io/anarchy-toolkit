@@ -6,10 +6,10 @@ namespace Anarchy.Toolkit.Tests.Unit.Hosting.Workers.Resources;
 
 public class TextResourceReaderTests
 {
-    private const string _resourceFileName = "resource1.txt";
-    private const string _resourceContents = "contents";
-    private const string _subfolderResourceFileName = "resource2.txt";
-    private const string _subfolderResourceContents = "subfoldercontents";
+    private const string ResourceFileName = "resource1.txt";
+    private const string ResourceContents = "contents";
+    private const string SubfolderResourceFileName = "resource2.txt";
+    private const string SubfolderResourceContents = "subfoldercontents";
 
     [Fact]
     public void Read_FromAssemblySubfolder()
@@ -17,9 +17,9 @@ public class TextResourceReaderTests
         const string subfolder = "subfolder";
         var textResourceReader = new TextResourceReader(GetType().GetTypeInfo().Assembly, subfolder);
 
-        var actual = textResourceReader.Read(_subfolderResourceFileName);
+        var actual = textResourceReader.Read(SubfolderResourceFileName);
 
-        actual.Should().Be(_subfolderResourceContents);
+        actual.Should().Be(SubfolderResourceContents);
     }
 
     [Fact]
@@ -27,9 +27,9 @@ public class TextResourceReaderTests
     {
         var textResourceReader = new TextResourceReader(GetType().GetTypeInfo().Assembly);
 
-        var actual = textResourceReader.Read(_resourceFileName);
+        var actual = textResourceReader.Read(ResourceFileName);
 
-        actual.Should().Be(_resourceContents);
+        actual.Should().Be(ResourceContents);
     }
 
     [Fact]
@@ -37,8 +37,8 @@ public class TextResourceReaderTests
     {
         var textResourceReader = new TextResourceReader(typeof(TextResourceReaderTests));
 
-        var actual = textResourceReader.Read(_resourceFileName);
+        var actual = textResourceReader.Read(ResourceFileName);
 
-        actual.Should().Be(_resourceContents);
+        actual.Should().Be(ResourceContents);
     }
 }

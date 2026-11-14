@@ -10,7 +10,7 @@ namespace Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
 /// </summary>
 public interface ILocalEventBus
 {
-    System.Threading.Tasks.Task PublishAsync<TEvent>(TEvent @event, bool absorbErrors = true, CancellationToken ct = default)
+    Task PublishAsync<TEvent>(TEvent @event, bool absorbErrors = true, CancellationToken ct = default)
         where TEvent : ILocalEvent;
 }
 
@@ -19,7 +19,7 @@ public interface ILocalEventBus
 /// </summary>
 public sealed class LocalEventBus(IServiceProvider serviceProvider, Observer observer) : ILocalEventBus
 {
-    public async System.Threading.Tasks.Task PublishAsync<TEvent>(TEvent @event, bool absorbErrors = true,
+    public async Task PublishAsync<TEvent>(TEvent @event, bool absorbErrors = true,
                                                                   CancellationToken cancellationToken = default)
         where TEvent : ILocalEvent
     {

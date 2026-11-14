@@ -42,7 +42,7 @@ public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory c
         client.Dispose();
     }
 
-    private HttpRequestMessage GetJsonPostRequest(string requestUri, object payload)
+    private static HttpRequestMessage GetJsonPostRequest(string requestUri, object payload)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
         request.Content = new JsonContent(payload);
@@ -50,7 +50,7 @@ public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory c
         return request;
     }
 
-    private HttpRequestMessage AddCustomHeaders(HttpRequestMessage request, IEnumerable<HttpHeader>? httpHeaders = null)
+    private static HttpRequestMessage AddCustomHeaders(HttpRequestMessage request, IEnumerable<HttpHeader>? httpHeaders = null)
     {
         if (httpHeaders == null) return request;
 

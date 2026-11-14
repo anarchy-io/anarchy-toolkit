@@ -1,5 +1,4 @@
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Api;
-using Anarchy.Toolkit.Core.Observability.Entity.Service;
 using Anarchy.Toolkit.Core.Observability.Extension;
 using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health;
@@ -31,7 +30,7 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
 
         _healthApi = SelfHostedApplicationHealthApi.WithServices(_appSettings.WorkerHealthCheck.ServicePort,
-                                                                 _scopeFactory);
+            _scopeFactory);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -47,9 +46,10 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
         _healthApi.Start();
 
         _observer.LogInformation(
-            (CallSiteEntity)caller,
+            caller,
             "Started listening for health requests on {Uri}",
             new Uri($"http://localhost:{_appSettings.WorkerHealthCheck.ServicePort}"));
+
         return Task.CompletedTask;
     }
 

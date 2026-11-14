@@ -52,7 +52,7 @@ public abstract class EntityFixtureBase<T> : IEntityFixture<T>
         {
             return BuildWithActivator(defaultObject, inputObject, overrideWithNulls)
                    ?? BuildViaConstructor(defaultObject, inputObject, overrideWithNulls)
-                   ?? OverrideDefaultProperties(defaultObject, inputObject, overrideWithNulls)
+                   ?? EntityFixtureBase<T>.OverrideDefaultProperties(defaultObject, inputObject, overrideWithNulls)
                    ?? defaultObject;
         }
         catch
@@ -105,7 +105,7 @@ public abstract class EntityFixtureBase<T> : IEntityFixture<T>
         }
     }
 
-    private T OverrideDefaultProperties(T defaultObject, object inputObject, bool overrideWithNulls)
+    private static T OverrideDefaultProperties(T defaultObject, object inputObject, bool overrideWithNulls)
     {
         var inputProperties = inputObject.GetType().GetProperties();
 
@@ -149,7 +149,7 @@ public abstract class EntityFixtureBase<T> : IEntityFixture<T>
 
                 return (T)ctor.Invoke(ctorArguments);
             }
-            catch (System.Exception exception)
+            catch (Exception exception)
             {
                 Console.WriteLine("Failed to build entity fixture: {0}", exception);
             }

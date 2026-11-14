@@ -1,29 +1,28 @@
-namespace Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Service
+namespace Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Service;
+
+public static class CorrelationContext
 {
-    public static class CorrelationContext
+    public static string? CorrelationId => Values.Value?.CorrelationId;
+    public static string? AttemptId => Values.Value?.AttemptId;
+
+    public static void SetCorrelationValues(string? correlationId, string? attemptId)
     {
-        public static string? CorrelationId => _values.Value?.CorrelationId;
-        public static string? AttemptId => _values.Value?.AttemptId;
+        var values = new CorrelationValues(correlationId: correlationId, attemptId: attemptId);
 
-        public static void SetCorrelationValues(string? correlationId, string? attemptId)
+        Values.Value = values;
+    }
+
+    private static readonly AsyncLocal<CorrelationValues?> Values = new();
+
+    private class CorrelationValues
+    {
+        public string? CorrelationId { get; }
+        public string? AttemptId { get; }
+
+        public CorrelationValues(string? correlationId, string? attemptId)
         {
-            var values = new CorrelationValues(correlationId: correlationId, attemptId: attemptId);
-
-            _values.Value = values;
-        }
-
-        private static readonly AsyncLocal<CorrelationValues?> _values = new AsyncLocal<CorrelationValues?>();
-
-        private class CorrelationValues
-        {
-            public string? CorrelationId { get; }
-            public string? AttemptId { get; }
-
-            public CorrelationValues(string? correlationId, string? attemptId)
-            {
-                CorrelationId = correlationId;
-                AttemptId = attemptId;
-            }
+            CorrelationId = correlationId;
+            AttemptId = attemptId;
         }
     }
 }

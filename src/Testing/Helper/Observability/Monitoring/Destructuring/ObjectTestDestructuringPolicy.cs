@@ -1,17 +1,16 @@
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Anarchy.Toolkit.Testing.Helper.Observability.Monitoring.Destructuring
+namespace Anarchy.Toolkit.Testing.Helper.Observability.Monitoring.Destructuring;
+
+public class ObjectTestDestructuringPolicy : IDestructuringPolicy
 {
-    public class ObjectTestDestructuringPolicy : IDestructuringPolicy
+    public bool TryDestructure(
+        object value,
+        ILogEventPropertyValueFactory propertyValueFactory,
+        out LogEventPropertyValue result)
     {
-        public bool TryDestructure(
-            object value,
-            ILogEventPropertyValueFactory propertyValueFactory,
-            out LogEventPropertyValue result)
-        {
-            result = new ScalarValue(value);
-            return true;
-        }
+        result = new ScalarValue(value);
+        return true;
     }
 }

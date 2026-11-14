@@ -5,7 +5,7 @@ namespace Anarchy.Toolkit.Tests.Unit.Testing.Observability.Monitoring.TestHelper
 
 internal static class InMemoryMeasurerExtensions
 {
-    private static readonly PropertyInfo _metricsProperty =
+    private static readonly PropertyInfo MetricsProperty =
         typeof(InMemoryMeasurer).GetProperty("Metrics", BindingFlags.Instance | BindingFlags.NonPublic)
         ?? throw new InvalidOperationException("InMemoryMeasurer.Metrics property not found.");
 
@@ -14,5 +14,5 @@ internal static class InMemoryMeasurerExtensions
     /// InternalsVisibleTo, which the toolkit does not grant to this assembly.
     /// </summary>
     public static List<Metric> GetMetrics(this InMemoryMeasurer metrics) =>
-        (List<Metric>)_metricsProperty.GetValue(metrics)!;
+        (List<Metric>)MetricsProperty.GetValue(metrics)!;
 }

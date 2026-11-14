@@ -34,14 +34,14 @@ public static class HttpContextFixture
     private class TestController
     {
         [IgnoreExceptionHandling]
-        public void TestMethod()
+        public static void TestMethod()
         {
         }
     }
 
     private class TestController2
     {
-        public void TestMethod()
+        public static void TestMethod()
         {
         }
     }

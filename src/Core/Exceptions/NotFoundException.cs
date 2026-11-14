@@ -2,8 +2,8 @@ namespace Anarchy.Toolkit.Core.Exceptions;
 
 public class NotFoundException : Exception
 {
-    public readonly object? Filters = null;
-    public readonly object? Object = null;
+    public readonly object? Filters;
+    public readonly object? Object;
 
     public NotFoundException() : base("The item was not found")
     {
