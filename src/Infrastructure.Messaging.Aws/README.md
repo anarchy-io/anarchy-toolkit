@@ -36,6 +36,7 @@ See the [registration example](https://github.com/anarchy-io/anarchy-toolkit#con
 ### 1.0.6
 
 - refactor(src): clean up code style across library packages
+- chore(deps): update AWS SDK, Lambda ASP.NET Core server and MySqlConnector packages
 
 ### 1.0.5
 

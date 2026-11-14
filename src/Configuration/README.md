@@ -30,6 +30,7 @@ See the [observability guide](https://github.com/anarchy-io/anarchy-toolkit/blob
 ### 1.0.6
 
 - refactor(src): clean up code style across library packages
+- chore(deps): update AWS SDK, Lambda ASP.NET Core server and MySqlConnector packages
 
 ### 1.0.5
 

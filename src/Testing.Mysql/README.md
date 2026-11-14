@@ -29,6 +29,7 @@ See [Infrastructure.Persistence.Mysql](https://www.nuget.org/packages/Anarchy.To
 ### 1.1.5
 
 - refactor(src): clean up code style across library packages
+- chore(deps): update AWS SDK, Lambda ASP.NET Core server and MySqlConnector packages
 
 ### 1.1.4
 

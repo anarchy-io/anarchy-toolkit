@@ -34,6 +34,7 @@ See the [testing conventions](https://github.com/anarchy-io/anarchy-toolkit/blob
 ### 1.1.5
 
 - refactor(src): clean up code style across library packages
+- chore(deps): update AWS SDK, Lambda ASP.NET Core server and MySqlConnector packages
 
 ### 1.1.4
 
