@@ -22,7 +22,7 @@ Use this package when implementing a relational adapter or shared repository beh
 3. Configure reader and writer hosts, credentials, command timeout and resilience settings at the host. `DbConnectionOptions.MaximumPoolSize` defaults to 100 and is applied by the included providers.
 4. Register the provider module and optional health reports, then inject the repository and unit-of-work abstractions into application services. Define transaction and retry boundaries explicitly, especially when an operation has non-database side effects.
 
-See [adding a database provider](https://github.com/anarchy-io/anarchy-toolkit#adding-a-database-provider) and the [persistence notes](https://github.com/anarchy-io/anarchy-toolkit#notes--follow-ups), including known limitations.
+See [adding a database provider](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#adding-a-database-provider) and the [persistence notes](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#provider-notes), including known limitations.
 
 ## Releases
 

@@ -1,0 +1,98 @@
+# Jekyll configuration for the Anarchy I/O Toolkit documentation, published with GitHub Pages
+# by .github/workflows/publish-docs.yml. Restart `make docs_serve` after editing this file.
+
+title: Anarchy I/O Toolkit
+subtitle: "Build without limits."
+description: >-
+  Reusable, self-contained NuGet packages for building .NET services.
+locale: en-US
+url: "https://anarchy-io.github.io"
+baseurl: "/anarchy-toolkit"
+repository: "anarchy-io/anarchy-toolkit"
+logo: "/assets/images/logo/anarchy-512.png"
+
+remote_theme: "mmistakes/minimal-mistakes@4.28.0"
+minimal_mistakes_skin: "default"  # recolored with the brand palette in assets/css/main.scss
+search: true
+atom_feed:
+  hide: true
+
+plugins:
+  - jekyll-remote-theme
+  - jekyll-include-cache
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-relative-links
+  - jekyll-titles-from-headings
+
+# Pages are plain Markdown readable on GitHub too: titles come from their first heading
+# and `.md` links are rewritten to the generated pages.
+titles_from_headings:
+  enabled: true
+  strip_title: true
+  collections: false
+optional_front_matter:
+  remove_originals: true
+relative_links:
+  enabled: true
+readme_index:
+  enabled: true
+  remove_originals: true
+  with_frontmatter: true
+
+footer:
+  links:
+    - label: "NuGet.org"
+      icon: "fas fa-fw fa-cube"
+      url: "https://www.nuget.org/profiles/anarchy-io"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/anarchy-io/anarchy-toolkit"
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  auto_ids: true
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - scripts
+  - vendor
+  - .jekyll-cache
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: single
+      sidebar:
+        nav: "start"
+      toc: true
+      toc_sticky: true
+      share: false
+      read_time: false
+      show_date: false
+  - scope:
+      path: "guides"
+    values:
+      sidebar:
+        nav: "guides"
+  - scope:
+      path: "packages"
+    values:
+      sidebar:
+        nav: "packages"
+  # Pages with wide tables: the sticky "On this page" sidebar squeezes them, so give them the full width.
+  # Set here rather than in front matter, which GitHub and NuGet.org would render as a table.
+  - scope:
+      path: "packages/README.md"
+    values:
+      toc: false
+      classes: wide
+  - scope:
+      path: "guides/fallout-builds.md"
+    values:
+      toc: false
+      classes: wide

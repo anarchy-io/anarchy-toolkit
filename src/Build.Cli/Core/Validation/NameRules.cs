@@ -17,7 +17,7 @@ public static partial class NameRules
     /// Explains <see cref="IsValidApplicationName"/> to the user.
     /// </summary>
     public const string ApplicationNameHelp =
-        "Application names must start with a letter and contain only letters and digits (e.g. Orders).";
+        "Application names must start with a letter and contain only letters and digits.";
 
     /// <summary>
     /// Whether a name can be used for a solution file: a letter or digit followed by letters, digits, dots, underscores or hyphens.

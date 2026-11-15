@@ -1,0 +1,29 @@
+<!-- Renders ```mermaid blocks (left as code by kramdown) as diagrams, as GitHub does -->
+<script type="module">
+  const blocks = document.querySelectorAll("div.language-mermaid, pre > code.language-mermaid");
+  if (blocks.length > 0) {
+    const { default: mermaid } = await import("https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs");
+    blocks.forEach((block) => {
+      const diagram = document.createElement("div");
+      diagram.className = "mermaid";
+      diagram.textContent = block.textContent;
+      (block.closest("div.language-mermaid") || block.parentElement).replaceWith(diagram);
+    });
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "base",
+      themeVariables: {
+        fontFamily: "Inter, sans-serif",
+        primaryColor: "#F5F5F7",
+        primaryTextColor: "#111114",
+        primaryBorderColor: "#F02020",
+        lineColor: "#85858F",
+        secondaryColor: "#FFFFFF",
+        tertiaryColor: "#F5F5F7",
+        clusterBkg: "#FFFFFF",
+        clusterBorder: "#DCDCE2"
+      }
+    });
+    await mermaid.run({ querySelector: ".mermaid" });
+  }
+</script>

@@ -23,7 +23,7 @@ public static class Labels
     public static string DescribeKind(ApplicationKind kind) => kind switch {
         ApplicationKind.Api => "API - a REST API on Anarchy.Toolkit.Web",
         ApplicationKind.Job => "Job - a background job or AWS Lambda function on Anarchy.Toolkit.Hosting",
-        ApplicationKind.Ui => "UI - a Blazor back-office UI on Anarchy.Toolkit.Web.Ui",
+        ApplicationKind.Ui => "UI - a Blazor WebApp on Anarchy.Toolkit.Web.Ui",
         _ => kind.ToString()
     };
 

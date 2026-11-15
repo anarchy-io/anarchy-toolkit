@@ -1,0 +1,176 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+search: false
+---
+
+@charset "utf-8";
+
+/* Anarchy brand palette (see the brand guide): neutral-first, red/orange used sparingly */
+$anarchy-red: #F02020;
+$anarchy-orange: #FF751F;
+$anarchy-black: #111114;
+$anarchy-carbon: #1C1C21;
+$anarchy-steel: #85858F;
+$anarchy-cloud: #F5F5F7;
+$anarchy-border: #DCDCE2;
+$anarchy-gradient: linear-gradient(110deg, $anarchy-red 0%, $anarchy-orange 100%);
+
+/* Typography: Inter for text, JetBrains Mono for code (loaded in _includes/head/custom.html) */
+$sans-serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+$monospace: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+$global-font-family: $sans-serif;
+$header-font-family: $sans-serif;
+
+/* Theme variables, set before the skin so they win over its defaults */
+$background-color: #FFFFFF;
+$text-color: $anarchy-black;
+$muted-text-color: #5C5C66;
+$primary-color: $anarchy-red;
+$border-color: $anarchy-border;
+$code-background-color: $anarchy-cloud;
+$link-color: #C81818; /* darker than Anarchy Red, for AA contrast on white */
+$link-color-hover: $anarchy-orange;
+$link-color-visited: #A51414;
+$masthead-link-color: #FFFFFF;
+$masthead-link-color-hover: $anarchy-orange;
+$navicon-link-color-hover: $anarchy-orange;
+$footer-background-color: $anarchy-carbon;
+$border-radius: 8px;
+
+@import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
+@import "minimal-mistakes"; // main partials
+
+/* Dark masthead with the brand accent underline */
+.masthead {
+  background: $anarchy-black;
+  border-bottom: 3px solid transparent;
+  border-image: $anarchy-gradient 1;
+
+  .site-title,
+  .greedy-nav a,
+  .site-subtitle {
+    color: #FFFFFF;
+  }
+
+  .greedy-nav {
+    background: $anarchy-black;
+
+    a:hover {
+      color: $anarchy-orange;
+    }
+
+    .visible-links a:before {
+      background: $anarchy-gradient;
+    }
+
+    .hidden-links {
+      background: $anarchy-carbon;
+    }
+  }
+
+  .greedy-nav__toggle .navicon,
+  .greedy-nav__toggle .navicon:before,
+  .greedy-nav__toggle .navicon:after,
+  .search__toggle {
+    color: #FFFFFF;
+    background-color: #FFFFFF;
+  }
+
+  .search__toggle {
+    background-color: transparent;
+  }
+}
+
+.page__footer {
+  color: #A1A1AA;
+  border-top: 3px solid transparent;
+  border-image: $anarchy-gradient 1;
+
+  a {
+    color: #FFFFFF;
+  }
+}
+
+/* Headings */
+.page__title,
+.page__content h1,
+.page__content h2 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.page__content h2 {
+  border-bottom-color: $anarchy-border;
+}
+
+/* Primary buttons and the splash call to action use the signature gradient */
+.btn--primary {
+  background: $anarchy-gradient;
+  border: 0;
+
+  &:hover {
+    background: $anarchy-red;
+  }
+}
+
+.page__hero--overlay {
+  .page__title {
+    font-size: 3.5em;
+  }
+
+  .btn--light-outline {
+    border-color: $anarchy-orange;
+
+    &:hover {
+      background: $anarchy-gradient;
+      color: #FFFFFF;
+    }
+  }
+}
+
+/* Sidebar navigation */
+.nav__list .nav__items {
+  .active {
+    color: $anarchy-red;
+    font-weight: 600;
+  }
+}
+
+.nav__sub-title {
+  color: $anarchy-steel;
+  border-bottom-color: $anarchy-border;
+}
+
+.toc .nav__title {
+  background: $anarchy-black;
+}
+
+.toc__menu a:hover {
+  color: $anarchy-red;
+}
+
+/* Tables and code */
+table {
+  font-size: 0.85em;
+}
+
+thead {
+  background: $anarchy-cloud;
+}
+
+div.highlighter-rouge,
+figure.highlight {
+  border-radius: $border-radius;
+}
+
+/* Mermaid diagrams */
+.mermaid {
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+/* Banner images inside pages */
+.page__content > p > img:only-child {
+  width: 100%;
+  border-radius: $border-radius;
+}

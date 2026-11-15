@@ -22,7 +22,7 @@ Reference this package from application and domain-facing code that needs reposi
 
 Select transaction boundaries deliberately: the abstractions do not provision databases, retry entire business operations or make external side effects transactional.
 
-See the [package catalogue](https://github.com/anarchy-io/anarchy-toolkit#package-catalogue) and [database provider guide](https://github.com/anarchy-io/anarchy-toolkit#adding-a-database-provider).
+See the [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/) and [database provider guide](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#adding-a-database-provider).
 
 ## Releases
 

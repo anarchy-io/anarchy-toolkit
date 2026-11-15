@@ -22,7 +22,7 @@ Use correlation and attempt IDs to connect log events from the same request or r
 
 The default behavior generates missing values. `IgnoreIfMissing` and `ThrowIfMissing` are available when the application instead wants to accept missing headers or reject them. Coordinate header names with upstream and downstream services.
 
-See the [observability guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/observability.md) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

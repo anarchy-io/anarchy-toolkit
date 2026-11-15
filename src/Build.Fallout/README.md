@@ -24,7 +24,7 @@ class Build : FalloutBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
 
 Create `.fallout/parameters.json` with the solution path, then run `dotnet run --project build/_build.csproj -- --help` to see targets and parameters. The included scaffolding target writes its solution setting to `.fallout/parameters.json`; it will not overwrite existing files.
 
-See the [Fallout builds guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/fallout-builds.md) for component details and package publishing.
+See the [Fallout builds guide](https://anarchy-io.github.io/anarchy-toolkit/guides/fallout-builds.html) for component details and package publishing.
 
 ## Local containers
 

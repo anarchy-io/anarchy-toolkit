@@ -22,7 +22,7 @@ Use this package in an infrastructure adapter that calls an external HTTP API an
 
 Use mocks for business-rule unit tests and a controlled HTTP endpoint for integration tests that need to verify serialization, authentication and failure handling.
 
-See the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme) and [architecture guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/architecture.md).
+See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [architecture guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html).
 
 ## Releases
 

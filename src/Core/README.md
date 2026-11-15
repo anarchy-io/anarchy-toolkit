@@ -20,9 +20,9 @@ Reference Core from domain and application projects that need shared contracts w
 2. Group related service registrations in an `IDependencyInjectionModule`. Call `services.UseModule<TModule>(configuration, environment)` for a parameterless module, or pass an instance to `UseModule` when it needs options.
 3. Keep the module's configuration choices in the application: pass `IConfiguration`, the host environment and any options factories from startup rather than hard-coding environment-specific values in domain code.
 
-For a complete registration example using a concrete adapter, see the [module guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/architecture.md#dependency-injection-modules).
+For a complete registration example using a concrete adapter, see the [module guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules).
 
-See the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme) and [dependency-injection guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/architecture.md#dependency-injection-modules).
+See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [dependency-injection guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules).
 
 ## Releases
 

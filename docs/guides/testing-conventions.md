@@ -1,6 +1,6 @@
 # Testing Conventions
 
-This guide explains how test cases and shared test resources are named and organised in the toolkit. The goal is simple: a test or fixture should be easy to find from the type it exercises. 🧭
+This guide explains how test cases and shared test resources are named and organized in the toolkit. The goal is simple: a test or fixture should be easy to find from the type it exercises. 🧭
 
 ## Test layout
 
@@ -70,7 +70,7 @@ FooBarControllerTest.Read.cs
 
 ### Test methods
 
-Name test methods after the observed behaviour:
+Name test methods after the observed behavior:
 
 ```csharp
 Create_WhenFooHasNoBars_ReturnsEmptyResult()
@@ -80,7 +80,7 @@ This makes the scenario, condition and outcome visible in the test results witho
 
 ## Choosing the test level
 
-Choose the lowest test level that gives confidence in the behaviour. Unit tests are fast and focused; integration and end-to-end tests verify boundaries that mocks cannot prove.
+Choose the lowest test level that gives confidence in the behavior. Unit tests are fast and focused; integration and end-to-end tests verify boundaries that mocks cannot prove.
 
 ### Unit tests
 
@@ -97,7 +97,7 @@ public class EventHandlerBusTest : TestCaseBase
     [Fact]
     public async Task ProcessAsync_WhenNoHandlerMatches_ThrowsNoHandlersForEventException()
     {
-        // Configure only the behaviour this scenario needs, then assert the business result.
+        // Configure only the behavior this scenario needs, then assert the business result.
     }
 }
 ```
@@ -120,7 +120,7 @@ Mocks can still be used for dependencies outside the boundary under test, but do
 
 ### End-to-end tests
 
-APIs and jobs built on the toolkit are validated end-to-end in `*.EndToEnd.Tests` projects. These tests exercise the hosted application and can verify several integrations together. They should validate externally observable behaviour (an API response, a processed message, a completed job) rather than implementation details.
+APIs and jobs built on the toolkit are validated end-to-end in `*.EndToEnd.Tests` projects. These tests exercise the hosted application and can verify several integrations together. They should validate externally observable behavior (an API response, a processed message, a completed job) rather than implementation details.
 
 ## Test kits 🧰
 
@@ -135,7 +135,7 @@ Most unit and integration tests should inherit from `TestCaseBase`. It provides:
 
 Tests that read settings inherit from `TestCaseBase<TAppSettings>` instead, where `TAppSettings` is your own settings type implementing `IAppSettings` (the toolkit never ships a concrete one). It adds `TestSettings()`: a cached `TAppSettings` bound from the `appsettings.json` and `appsettings.Development.json` embedded in the assembly that declares `TAppSettings` (`<EmbeddedResource Include="appsettings*.json" />`). `TestHelper.TestSettings<TAppSettings>()` returns the same instance outside a `TestCaseBase`.
 
-`FixtureObserver` is fully in memory, so its logs (`SinkLogs`) and metrics (`InMemoryMeasurer`) can be asserted when observability is the behaviour under test. Avoid asserting incidental logs or metrics in ordinary business-rule tests; assert the business result first. 🎯
+`FixtureObserver` is fully in memory, so its logs (`SinkLogs`) and metrics (`InMemoryMeasurer`) can be asserted when observability is the behavior under test. Avoid asserting incidental logs or metrics in ordinary business-rule tests; assert the business result first. 🎯
 
 ```csharp
 public class FooBarServiceTest : TestCaseBase

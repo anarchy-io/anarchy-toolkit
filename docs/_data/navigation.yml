@@ -1,0 +1,91 @@
+# Masthead links
+main:
+  - title: "Overview"
+    url: /overview/
+  - title: "Get Started"
+    url: /getting-started/
+  - title: "Packages"
+    url: /packages/
+  - title: "Guides"
+    url: /guides/
+  - title: "NuGet"
+    url: https://www.nuget.org/profiles/anarchy-io
+  - title: "GitHub"
+    url: https://github.com/anarchy-io/anarchy-toolkit
+
+# Sidebars, one per section (assigned by path in _config.yml)
+start:
+  - title: "Introduction"
+    children:
+      - title: "Overview"
+        url: /overview/
+      - title: "Getting Started"
+        url: /getting-started/
+  - title: "Choose your path"
+    children:
+      - title: "New Solution with the CLI"
+        url: /getting-started/cli-tool.html
+      - title: "Adding the Fallout Build"
+        url: /getting-started/fallout.html
+      - title: "Using the Packages"
+        url: /getting-started/consuming-packages.html
+  - title: "Examples"
+    children:
+      - title: "Samples"
+        url: /samples/
+
+guides:
+  - title: "Guides"
+    url: /guides/
+    children:
+      - title: "Layered Architecture"
+        url: /guides/architecture.html
+      - title: "Fallout Builds"
+        url: /guides/fallout-builds.html
+  - title: "Writing code"
+    children:
+      - title: "Async"
+        url: /guides/async-conventions.html
+      - title: "Enums"
+        url: /guides/enum-conventions.html
+      - title: "Exceptions"
+        url: /guides/exception-conventions.html
+      - title: "Observability"
+        url: /guides/observability.html
+  - title: "Building applications"
+    children:
+      - title: "Exposing Endpoints"
+        url: /guides/exposing-endpoints.html
+      - title: "Building UIs"
+        url: /guides/building-uis.html
+      - title: "Database Providers"
+        url: /guides/database-providers.html
+  - title: "Quality"
+    children:
+      - title: "Testing"
+        url: /guides/testing-conventions.html
+
+packages:
+  - title: "Packages"
+    url: /packages/
+    children:
+      - title: "Core"
+        url: /packages/#core-domain-and-application-abstractions
+      - title: "Infrastructure"
+        url: /packages/#infrastructure-adapters-to-external-systems
+      - title: "Configuration"
+        url: /packages/#configuration-settings-secrets-and-observability-bootstrap
+      - title: "Hosting"
+        url: /packages/#hosting-running-a-process
+      - title: "Web"
+        url: /packages/#web-api-and-ui-pipelines
+      - title: "Build"
+        url: /packages/#build-build-tooling
+      - title: "Testing kits"
+        url: /packages/#testing-kits-reusable-test-helpers
+  - title: "Start here"
+    children:
+      - title: "CLI Tool"
+        url: /packages/Build.Cli.Tool/
+      - title: "Fallout Build"
+        url: /packages/Build.Fallout/

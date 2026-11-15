@@ -34,7 +34,7 @@ services.UseModule(
 
 Populate and validate reader/writer hosts, credentials, database name, time zone and command timeout in that section; a null port uses 5432. Set `MaximumPoolSize` when the default of 100 is unsuitable. The unkeyed storage policy uses the writer; keyed `reader` and `writer` policies select the corresponding pools. Register health reports separately and use provider repository bases with your own PostgreSQL SQL.
 
-See the [module registration example](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/architecture.md#dependency-injection-modules) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [module registration example](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

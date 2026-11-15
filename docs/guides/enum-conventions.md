@@ -58,7 +58,14 @@ Under the hood, `AttributeIdCacheBase<TAttributeTypes, TId>` (`Anarchy.Toolkit.I
 2. it keeps a `name -> id` map in memory for fast lookups,
 3. if a value is missing, it inserts that single value and caches the returned id.
 
-You get the flexibility of strings without paying the storage and lookup cost repeatedly in the main data tables. Derive from `AttributeIdCacheBase` for your own auxiliary tables (see `EventWriterMultiAttributeIdCache` and its `PostgresEventWriterMultiAttributeIdCache` / `OracleEventWriterMultiAttributeIdCache` subclasses for an example).
+You get the flexibility of strings without paying the storage and lookup cost repeatedly in the main data tables. Derive from `AttributeIdCacheBase` for your own auxiliary tables (see `EventWriterMultiAttributeIdCache` for an example), e.g.:
+
+```csharp
+public sealed class CustomerStatusIdCache : AttributeIdCacheBase<CustomerStatusTable, int>
+{
+    // hydrate and insert queries for the customer_status auxiliary table
+}
+```
 
 ### 🔄 Why the cache is cleared on rollback
 
