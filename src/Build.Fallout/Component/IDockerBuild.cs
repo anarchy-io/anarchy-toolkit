@@ -35,6 +35,13 @@ public interface IDockerBuild : IFalloutBuild
     [Parameter("Seconds to wait for a container to start before checking its health (default: 180)")]
     int DockerStartTimeout => TryGetValue<int?>(() => DockerStartTimeout) ?? LocalContainerTasks.DefaultStartTimeout;
 
+    /// <summary>
+    /// An extra readiness check DockerWaitRunning runs once DockerContainer is running: called once a second with the
+    /// container's name until it returns true, for up to DockerTimeout seconds. Override it to check containers that
+    /// have no health check of their own (e.g. probe a port or an HTTP endpoint); none by default.
+    /// </summary>
+    Func<string, bool>? DockerReadinessCheck => null;
+
     LocalContainerTasks Containers => new(RootDirectory, DockerComposeFile, DockerProjectName);
 
     Target DockerInfo => d => d.Description("Show the Docker engine, Compose command and running containers")
@@ -61,7 +68,7 @@ public interface IDockerBuild : IFalloutBuild
 
     Target DockerWaitRunning => d => d.Description("Wait for DockerContainer to be running")
         .Requires(() => DockerContainer)
-        .Executes(() => Containers.WaitForRunning(DockerContainer!, DockerTimeout));
+        .Executes(() => Containers.WaitForRunning(DockerContainer!, DockerTimeout, DockerReadinessCheck));
 
     Target DockerWaitHealthy => d => d.Description("Wait for DockerContainer to be running, then healthy")
         .Requires(() => DockerContainer)

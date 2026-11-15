@@ -131,6 +131,30 @@ public class LocalContainerTasksTest : IDisposable
     }
 
     [Fact]
+    public void WaitForRunning_ThenPollsTheReadinessCheckUntilItPasses()
+    {
+        _cli.Respond("docker inspect --format {{.State.Running}} db", 0, "true");
+        var calls = new List<string>();
+
+        Tasks().WaitForRunning("db", timeout: 10, ready: container => {
+            calls.Add(container);
+            return calls.Count == 3;
+        });
+
+        calls.Should().Equal("db", "db", "db");
+        _output.ToString().Should().Contain("db is running after 1s").And.Contain("db is ready after 3s");
+    }
+
+    [Fact]
+    public void WaitForRunning_FailsWhenTheReadinessCheckNeverPasses()
+    {
+        _cli.Respond("docker inspect --format {{.State.Running}} db", 0, "true");
+
+        Tasks().Invoking(tasks => tasks.WaitForRunning("db", timeout: 3, ready: _ => false))
+            .Should().Throw<InvalidOperationException>().WithMessage("*did not become ready within 3 seconds*");
+    }
+
+    [Fact]
     public void WaitForHealthy_WaitsForRunningThenForTheHealthCheck()
     {
         const string health = "docker inspect --format {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}} db";

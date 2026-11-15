@@ -127,13 +127,26 @@ public sealed class LocalContainerTasks(
     /// Waits up to <paramref name="timeout"/> seconds for a container to be running.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when the container is not running in time.</exception>
-    public void WaitForRunning(string container, int timeout = DefaultTimeout)
+    public void WaitForRunning(string container, int timeout = DefaultTimeout) => WaitForRunning(container, timeout, null);
+
+    /// <summary>
+    /// Waits up to <paramref name="timeout"/> seconds for a container to be running. When <paramref name="ready"/> is
+    /// given, then waits up to <paramref name="timeout"/> more seconds, calling it once a second with the container's
+    /// name, until it returns true: a custom health check for containers that have none.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the container is not running, or not ready, in time.</exception>
+    public void WaitForRunning(string container, int timeout, Func<string, bool>? ready)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(container);
         Wait($"Waiting for [blue]{Markup.Escape(container)}[/] to start", timeout, () =>
             Inspect(container, "{{.State.Running}}") == "true" ? WaitState.Done : WaitState.Pending,
             seconds => $"[green]{Markup.Escape(container)} is running[/] after {seconds}s",
             () => $"Container '{container}' did not start within {timeout} seconds.");
+        if (ready is null) return;
+        Wait($"Waiting for [blue]{Markup.Escape(container)}[/] to be ready", timeout, () =>
+            ready(container) ? WaitState.Done : WaitState.Pending,
+            seconds => $"[green]{Markup.Escape(container)} is ready[/] after {seconds}s",
+            () => $"Container '{container}' did not become ready within {timeout} seconds.");
     }
 
     /// <summary>

@@ -9,6 +9,8 @@ dotnet add package Anarchy.Toolkit.Build.Cli
 - Solutions: `SolutionBootstrapper` creates a complete solution from a `SolutionPlan` in an empty directory: the Fallout build host (`BuildHostScaffolder`), the packaged Makefile, scripts and settings files (`SolutionScaffolder`), a library per layer and the planned applications. `SolutionWorkspace` reads an existing solution's layout and `ApplicationScaffolder` adds an API, job or UI to it. Existing files are never overwritten.
 - Layouts: `SolutionLayout` places libraries and applications by folder (`src/Library/<Layer>`, `src/Api`, `src/Jobs`, `src/Ui`) or by name prefix (`src/<Layer>.<Name>`), and gives the matching `ILayeringBuild` parameters.
 - Build operations: layering checks, dependency maps, release versioning and notes, Git hooks, dependency upgrades and NuGet packaging, without depending on Fallout.
+- Containers: `LocalContainerTasks` manages a Docker Compose environment; `WaitForRunning` takes an optional readiness callback for containers without a health check.
+- Banners: tools built on this package choose their banner with `ConsoleBannerOptions`: Anarchy's logo by default (`AnarchyConsoleBanner`), their own `IConsoleBanner` through `Banner`, or none with `Hide = true`. `Write(console)` prints it, skipping redirected output. The `anarchy-toolkit` tool always prints Anarchy's.
 
 Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rather than this package directly.
 
