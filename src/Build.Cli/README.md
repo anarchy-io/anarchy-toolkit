@@ -20,6 +20,11 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.2.0
+
+- Configurable console banners: `IConsoleBanner`, `AnarchyConsoleBanner` and `ConsoleBannerOptions` let tools keep Anarchy's banner, render their own or print none.
+- `LocalContainerTasks.WaitForRunning` gains an overload with a readiness callback.
+
 ### 1.1.0
 
 - feat(Build.Fallout): replace AWS release flows with Docker and container builds

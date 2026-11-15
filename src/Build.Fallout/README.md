@@ -94,6 +94,10 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 
 ## Releases
 
+### 3.1.0
+
+- `IDockerBuild` gains the overridable `DockerReadinessCheck`, a custom check `DockerWaitRunning` polls once the container is running, for containers without a health check.
+
 ### 3.0.0
 
 - feat(Build.Fallout): replace AWS release flows with Docker and container builds

@@ -75,6 +75,10 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 
 ## Releases
 
+### 2.1.0
+
+- Prints its banner through `Anarchy.Toolkit.Build.Cli` 1.2.0's `ConsoleBannerOptions` (still always Anarchy's), and generated solutions reference `Anarchy.Toolkit.Build.Fallout` 3.1.0.
+
 ### 2.0.0
 
 - feat(Build.Fallout): replace AWS release flows with Docker and container builds
