@@ -1,8 +1,10 @@
 using Anarchy.Toolkit.Build.Cli.Core.Service;
+using Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper;
 using Fallout.Common;
 using Fallout.Common.IO;
 using Fallout.Common.Utilities;
 using Serilog;
+using Spectre.Console;
 using System.Text.Json;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component;
@@ -87,7 +89,7 @@ public partial interface IStandardBuild
         var outputFile = templateFile.Parent / DevelopmentAppSettingsFileName;
         var relativeOutput = RootDirectory.GetRelativePathTo(outputFile).ToString().Replace('\\', '/');
 
-        Log.Information("Generating {Output}", relativeOutput);
+        BuildConsole.Section(relativeOutput);
 
         var template = AppSettingsMerger.ParseJsonObject(templateFile.ReadAllText())
                        ?? throw new Exception($"'{RootDirectory.GetRelativePathTo(templateFile)}' must hold a JSON object.");
@@ -110,20 +112,23 @@ public partial interface IStandardBuild
 
     private static string? PromptForAppSetting(string key, string hint, string? currentValue)
     {
+        var console = BuildConsole.Out;
         var sensitive = AppSettingsMerger.IsSensitive(key);
 
-        Console.WriteLine();
-        Console.WriteLine($"  {key}");
-        Console.WriteLine($"    {hint}");
+        console.WriteLine();
+        console.MarkupLine($"[bold]{Markup.Escape(key)}[/]");
+        console.MarkupLine($"  [grey]{Markup.Escape(hint)}[/]");
 
         if (currentValue is not null)
         {
-            Console.WriteLine($"    Current: {(sensitive ? new string('*', currentValue.Length) : currentValue)} (Enter keeps it)");
+            var shown = sensitive ? new string('*', currentValue.Length) : currentValue;
+            console.MarkupLine($"  Current: [green]{Markup.Escape(shown)}[/] [grey](Enter keeps it)[/]");
         }
 
-        Console.Write("  > ");
+        var prompt = new TextPrompt<string>("  [blue]>[/]").AllowEmpty();
+        if (sensitive) prompt.Secret();
 
-        return sensitive ? ConsoleUtility.ReadSecret() : Console.ReadLine();
+        return console.Prompt(prompt);
     }
 
     private static bool IsInIgnoredDirectory(RelativePath path) => AppSettingsMerger.IsInIgnoredDirectory(path.ToString());
