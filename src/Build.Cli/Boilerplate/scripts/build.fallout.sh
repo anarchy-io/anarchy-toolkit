@@ -35,6 +35,12 @@ else
     fi
 fi
 
+# Fallout runs DOTNET_EXE when set; a path left over from a removed SDK (e.g. Homebrew's) would fail every target.
+if [[ -n "${DOTNET_EXE:-}" && ! -x "$DOTNET_EXE" ]]; then
+    echo -e "\n${CL_YELLOW}DOTNET_EXE points to '${DOTNET_EXE}', which is not an executable; ignoring it and using 'dotnet' from PATH.${CL_RESET}"
+    unset DOTNET_EXE
+fi
+
 ###########################################################################
 # EXECUTION
 ###########################################################################
