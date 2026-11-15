@@ -26,6 +26,10 @@ See the [Oracle and persistence notes](https://github.com/anarchy-io/anarchy-too
 
 ## Releases
 
+### 1.1.5
+
+- `System.Security.Cryptography.Pkcs` aligned with the .NET 10 LTS (10.0.15, down from 11.0.0).
+
 ### 1.1.4
 
 - refactor(src): clean up code style across library packages

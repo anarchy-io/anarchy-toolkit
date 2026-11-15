@@ -26,6 +26,10 @@ See the [sample tests](https://github.com/anarchy-io/anarchy-toolkit/tree/main/s
 
 ## Releases
 
+### 1.0.7
+
+- References `Anarchy.Toolkit.Web` 1.0.7, aligned with the .NET 10 LTS.
+
 ### 1.0.6
 
 - refactor(src): clean up code style across library packages
