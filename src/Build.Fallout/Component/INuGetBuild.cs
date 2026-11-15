@@ -1,10 +1,12 @@
 using Anarchy.Toolkit.Build.Cli.Core.Service;
 using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
+using Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper;
 using Fallout.Common;
 using Fallout.Common.IO;
 using Fallout.Common.Tools.DotNet;
 using Fallout.Solutions;
 using Serilog;
+using Spectre.Console;
 using static Fallout.Common.Tools.DotNet.DotNetTasks;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component;
@@ -53,13 +55,17 @@ public interface INuGetBuild : IStandardBuild
     Target ListPackages => d => d
         .Description("Lists source projects selected for NuGet packing")
         .Executes(() => {
+            var table = BuildConsole.Table("Project", "Package ID", "Version");
             foreach (var project in NuGetProjects)
             {
                 var solutionProject = Solution.AllProjects.FirstOrDefault(p => p.Path == project);
-                Log.Information("{Project}: {PackageId} {Version}", project,
-                    solutionProject?.GetProperty("PackageId") ?? Path.GetFileNameWithoutExtension(project),
-                    solutionProject?.GetProperty("Version") ?? "(MSBuild default)");
+                var version = solutionProject?.GetProperty("Version");
+                table.AddRow($"[grey]{Markup.Escape(RootDirectory.GetRelativePathTo(project).ToString())}[/]",
+                    Markup.Escape(solutionProject?.GetProperty("PackageId") ?? Path.GetFileNameWithoutExtension(project)),
+                    version is null ? "[grey](MSBuild default)[/]" : $"[green]{Markup.Escape(version)}[/]");
             }
+
+            BuildConsole.Write(table);
         });
 
     Target GenerateLocalRelease => d => d
@@ -72,11 +78,8 @@ public interface INuGetBuild : IStandardBuild
                 throw new InvalidOperationException("Release bump must be major, minor or patch.");
             var projects = ReleaseVersionTasks.ReadProjects(NuGetProjects.Select(p => p.ToString()), File.ReadAllText);
             var edits = ReleaseVersionTasks.Plan(projects, ReleaseProject!, bump);
-            foreach (var (path, content) in edits)
-            {
-                File.WriteAllText(path, content);
-                Log.Information("Bumped {Project} ({Bump})", Path.GetFileNameWithoutExtension(path), bump);
-            }
+            foreach (var (path, content) in edits) File.WriteAllText(path, content);
+            ShowReleaseSummary(projects, edits, [ReleaseProject!]);
         });
 
     Target GenerateReleaseFromChanges => d => d
@@ -92,18 +95,24 @@ public interface INuGetBuild : IStandardBuild
             var headRef = string.IsNullOrWhiteSpace(ReleaseHead) ? "HEAD" : ReleaseHead;
             ReleaseVersionTasks.VerifyWorkingTree(RootDirectory, headRef);
             var projects = ReleaseVersionTasks.ReadProjects(NuGetProjects.Select(p => p.ToString()), File.ReadAllText);
-            if (ReleaseVersionTasks.GetChangedFiles(RootDirectory, ReleaseBase!, headRef).Contains("Directory.Packages.props", StringComparer.OrdinalIgnoreCase))
+            var baseCommit = ReleaseVersionTasks.ResolveCommit(RootDirectory, ReleaseBase!);
+            var headCommit = ReleaseVersionTasks.ResolveCommit(RootDirectory, headRef);
+            var changedFiles = ReleaseVersionTasks.GetChangedFiles(RootDirectory, baseCommit, headCommit);
+            if (changedFiles.Contains("Directory.Packages.props", StringComparer.OrdinalIgnoreCase))
             {
                 // The solution restore does not include source projects that are not in the solution.
                 var solutionPaths = Solution.AllProjects.Select(p => p.Path.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 foreach (var project in projects.Where(p => !solutionPaths.Contains(p.Path)))
                     DotNetRestore(s => s.SetProjectFile(project.Path).SetVerbosity(ToolVerbosity));
             }
-            var affected = ReleaseVersionTasks.DetectAffectedProjects(RootDirectory, projects, ReleaseBase!, headRef);
+            var direct = ReleaseVersionTasks.DetectDirectlyAffectedProjects(RootDirectory, projects, changedFiles,
+                file => ReleaseVersionTasks.TryGitShow(RootDirectory, baseCommit, file),
+                file => ReleaseVersionTasks.TryGitShow(RootDirectory, headCommit, file));
+            var affected = direct.Count == 0 ? [] : ReleaseVersionTasks.Dependents(projects, direct.Select(p => p.Name));
 
             if (affected.Count == 0)
             {
-                Log.Information("No packages affected by changes between {Base} and {Head}", ReleaseBase, headRef);
+                BuildConsole.Skipped($"No packages affected by changes between {ReleaseBase} and {headRef}.");
                 return;
             }
 
@@ -112,11 +121,8 @@ public interface INuGetBuild : IStandardBuild
             var updated = ReleaseVersionTasks.ReadProjects(projects.Select(p => p.Path), path => edits.TryGetValue(path, out var content) ? content : File.ReadAllText(path));
             var errors = ReleaseVersionTasks.Validate(updated, baseline);
             if (errors.Count > 0) throw new InvalidOperationException(string.Join(Environment.NewLine, errors));
-            foreach (var (path, content) in edits)
-            {
-                File.WriteAllText(path, content);
-                Log.Information("Bumped {Project} ({Bump})", Path.GetFileNameWithoutExtension(path), bump);
-            }
+            foreach (var (path, content) in edits) File.WriteAllText(path, content);
+            ShowReleaseSummary(projects, edits, direct.Select(p => p.Name));
         });
 
     Target GenerateReleaseNotes => d => d
@@ -133,11 +139,20 @@ public interface INuGetBuild : IStandardBuild
                 DotNetRestore(s => s.SetProjectFile(project.Path).SetVerbosity(ToolVerbosity));
             var messages = ReleaseNotesTasks.Collect(RootDirectory, projects, ReleaseBase!, head);
             var edits = ReleaseNotesTasks.Plan(projects, messages, path => File.Exists(path) ? File.ReadAllText(path) : null);
+            if (edits.Count == 0)
+            {
+                BuildConsole.Skipped("Release notes are already up to date.");
+                return;
+            }
+
+            var table = BuildConsole.Table("Release notes updated");
             foreach (var (path, content) in edits)
             {
                 File.WriteAllText(path, content);
-                Log.Information("Updated release notes in {Readme}", path);
+                table.AddRow($"[green]{Markup.Escape(RootDirectory.GetRelativePathTo(path).ToString())}[/]");
             }
+
+            BuildConsole.Write(table);
         });
 
     Target ValidateLocalRelease => d => d
@@ -186,14 +201,59 @@ public interface INuGetBuild : IStandardBuild
         .Requires(() => NuGetSource)
         .Executes(() => {
             var packages = NuGetPackageTasks.OrderForPublish(NuGetPackageTasks.FindPackages(PackagesDirectory));
-            foreach (var package in packages)
+            var results = BuildConsole.Table("#", "Package", "Status");
+            var index = 0;
+            try
             {
-                Log.Information("Pushing {Package} to {Source}", Path.GetFileName(package), NuGetSource);
-                DotNetNuGetPush(s => s
-                    .SetTargetPath(package)
-                    .SetSource(NuGetSource)
-                    .SetApiKey(NuGetApiKey)
-                    .SetSkipDuplicate(SkipDuplicate));
+                foreach (var package in packages)
+                {
+                    index++;
+                    var name = Path.GetFileName(package);
+                    BuildConsole.Section($"Pushing {index}/{packages.Count}: {name}");
+                    try
+                    {
+                        DotNetNuGetPush(s => s
+                            .SetTargetPath(package)
+                            .SetSource(NuGetSource)
+                            .SetApiKey(NuGetApiKey)
+                            .SetSkipDuplicate(SkipDuplicate));
+                    }
+                    catch
+                    {
+                        results.AddRow(index.ToString(), Markup.Escape(name), "[red]failed[/]");
+                        throw;
+                    }
+
+                    results.AddRow(index.ToString(), Markup.Escape(name), "[green]pushed[/]");
+                }
+            }
+            finally
+            {
+                foreach (var package in packages.Skip(results.Rows.Count))
+                    results.AddRow((++index).ToString(), Markup.Escape(Path.GetFileName(package)), "[grey]not attempted[/]");
+                BuildConsole.Section($"Publish summary ({NuGetSource})");
+                BuildConsole.Write(results);
             }
         });
+
+    /// <summary>
+    /// Prints the version changes in <paramref name="edits"/> as a table, marking the projects in
+    /// <paramref name="changed"/> as changed and every other one as a dependent.
+    /// </summary>
+    private void ShowReleaseSummary(IReadOnlyCollection<ReleaseVersionTasks.Project> projects,
+                                    IReadOnlyDictionary<string, string> edits, IEnumerable<string> changed)
+    {
+        var direct = changed.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var updated = ReleaseVersionTasks.ReadProjects(edits.Keys, path => edits[path]).ToDictionary(p => p.Path);
+        var table = BuildConsole.Table("Project", "Version", "Reason");
+        foreach (var project in projects.Where(p => updated.ContainsKey(p.Path)).OrderBy(p => p.Name, StringComparer.Ordinal))
+        {
+            table.AddRow(Markup.Escape(project.Name),
+                $"[grey]{Markup.Escape(project.Version)}[/] → [green]{Markup.Escape(updated[project.Path].Version)}[/]",
+                direct.Contains(project.Name) ? "[yellow]changed[/]" : "[grey]dependent[/]");
+        }
+
+        BuildConsole.Section($"Bumped {updated.Count} packages");
+        BuildConsole.Out.Write(table);
+    }
 }

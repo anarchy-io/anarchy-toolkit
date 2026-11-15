@@ -1,9 +1,11 @@
 using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
+using Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper;
 using Fallout.Common;
 using Fallout.Common.IO;
 using Fallout.Common.Utilities;
 using Fallout.Solutions;
 using Serilog;
+using Spectre.Console;
 using System.Xml.Linq;
 
 namespace Anarchy.Toolkit.Build.Fallout.Component;
@@ -13,13 +15,14 @@ public partial interface IStandardBuild
     Target ListProjects => d => d
         .Description("Lists all valid projects within the solution")
         .Executes(() => {
-            foreach (var project in Solution.AllProjects)
+            var table = BuildConsole.Table("", "Project", "Path");
+            foreach (var project in Solution.AllProjects.OrderBy(p => RelativePath(p), StringComparer.Ordinal))
             {
                 var relativePath = RelativePath(project);
-
-                Log.Information("{Icon} {ProjectName} ({RelativePath})", GetProjectIcon(project, relativePath),
-                    project.Name, relativePath);
+                table.AddRow(GetProjectIcon(project, relativePath), Markup.Escape(project.Name), $"[grey]{Markup.Escape(relativePath)}[/]");
             }
+
+            BuildConsole.Write(table);
         });
 
     /// <summary>
@@ -166,10 +169,13 @@ public partial interface IStandardBuild
             return;
         }
 
+        var table = BuildConsole.Table("App", "Path");
         foreach (var project in projects)
         {
-            Log.Warning("- {AppName} ({RelativePath})", project.Name, RelativePath(project));
+            table.AddRow($"[green]{Markup.Escape(project.Name)}[/]", $"[grey]{Markup.Escape(RelativePath(project))}[/]");
         }
+
+        BuildConsole.Write(table);
     }
 
     /// <summary>
