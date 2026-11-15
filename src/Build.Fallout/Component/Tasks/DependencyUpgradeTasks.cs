@@ -1,4 +1,5 @@
 using Anarchy.Toolkit.Build.Cli.Core.Service;
+using Anarchy.Toolkit.Build.Fallout.Infrastructure.Helper;
 using NuGet.Versioning;
 using Serilog;
 using System.Runtime.InteropServices;
@@ -37,14 +38,15 @@ internal static class DependencyUpgradeTasks
             var result = LocalProcessTasks.Run(root, executable, args, environment, capture: false);
             if (result.ExitCode != 0) throw new InvalidOperationException($"{executable} exited with code {result.ExitCode}.");
         }
-        bool Confirm(string question)
-        {
-            if (!interactive) return false;
-            Console.Write($"{question} [y/N] ");
-            return string.Equals(Console.ReadLine()?.Trim(), "y", StringComparison.OrdinalIgnoreCase);
-        }
+        bool Confirm(string question) => interactive && BuildConsole.Confirm(question);
+        void Section(string title) => BuildConsole.Section(title);
+        void Skipped(string message) => BuildConsole.Skipped(message);
 
-        RunRequired(dotnetExecutable, ["list", solution, "package", "--outdated"]);
+        Section($"Outdated packages (version lock: {normalized})");
+        var listArgs = new List<string> { "list", solution, "package", "--outdated" };
+        if (normalized == "Major") listArgs.Add("--highest-minor");
+        else if (normalized == "Minor") listArgs.Add("--highest-patch");
+        RunRequired(dotnetExecutable, listArgs);
         var home = cliHome ?? Environment.GetEnvironmentVariable("DOTNET_CLI_HOME") ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var tool = Path.Combine(home, ".dotnet", "tools", OperatingSystem.IsWindows() ? "dotnet-outdated.exe" : "dotnet-outdated");
         var runtimeRoot = Directory.GetParent(RuntimeEnvironment.GetRuntimeDirectory().TrimEnd(Path.DirectorySeparatorChar))?.Parent?.Parent?.FullName;
@@ -64,7 +66,8 @@ internal static class DependencyUpgradeTasks
         if (!ToolWorks())
         {
             if (!installTool && !Confirm("Install or reinstall the global dotnet-outdated-tool?"))
-            { Log.Warning("dotnet-outdated-tool unavailable; upgrade skipped."); return; }
+            { Skipped("dotnet-outdated-tool unavailable; upgrade skipped."); return; }
+            Section("Installing dotnet-outdated-tool");
             // Uninstall only if installed; the tool may exist but fail due to runtime incompatibility.
             var installed = LocalProcessTasks.Require(root, dotnetExecutable, "tool", "list", "--global");
             if (installed.Split('\n').Any(line => line.TrimStart().StartsWith("dotnet-outdated-tool ", StringComparison.OrdinalIgnoreCase)))
@@ -73,7 +76,7 @@ internal static class DependencyUpgradeTasks
             if (!ToolWorks()) throw new InvalidOperationException("dotnet-outdated-tool cannot run after installation.");
         }
         if (!upgrade && !Confirm($"Upgrade all outdated dependencies (version lock: {normalized})?"))
-        { Log.Information("Dependency upgrade skipped."); return; }
+        { Skipped("Dependency upgrade skipped."); return; }
         // dotnet-outdated only upgrades direct references. Centrally pinned transitive
         // packages must be upgraded too, before their dependents are changed.
         var props = Path.Combine(root, "Directory.Packages.props");
@@ -87,6 +90,7 @@ internal static class DependencyUpgradeTasks
             {
                 if (packages.Length != 0)
                 {
+                    Section("Upgrading central transitive pins");
                     var args = new List<string> { solution, "--transitive", "--transitive-depth", "20", "--version-lock", normalized, "--output", report };
                     foreach (var package in packages) { args.Add("--include"); args.Add(package!); }
                     RunRequired(tool, args, env);
@@ -95,8 +99,11 @@ internal static class DependencyUpgradeTasks
             }
             finally { if (File.Exists(report)) File.Delete(report); }
         }
+        Section("Upgrading direct references");
         RunRequired(tool, [solution, "--upgrade", "--no-restore", "--version-lock", normalized], env);
+        Section("Restoring packages");
         RunRequired(dotnetExecutable, ["restore", solution]);
+        BuildConsole.Success("Dependencies upgraded.");
     }
 
     /// <summary>
