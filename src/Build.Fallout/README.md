@@ -37,10 +37,20 @@ See the [Fallout builds guide](https://github.com/anarchy-io/anarchy-toolkit/blo
 | `DockerLogs` | `container_logs` | Prints the environment's logs, of `DockerContainer` if given |
 | `DockerStart` | `start` | `up --detach --quiet-pull --remove-orphans`, then waits for each `DockerWaitFor` container (healthy, with `DockerWaitForHealthy`) |
 | `DockerStop`, `DockerRestart`, `DockerDestroy` | `stop`, `restart`, `destroy` | Stop, restart (`DockerContainer` only, if given) or remove the environment, including its volumes |
-| `DockerWaitRunning` | `wait_running_container` | Waits up to `DockerTimeout` seconds (default 60) for `DockerContainer` to be running |
+| `DockerWaitRunning` | `wait_running_container` | Waits up to `DockerTimeout` seconds (default 60) for `DockerContainer` to be running, then, if `DockerReadinessCheck` is overridden, up to `DockerTimeout` more for it to pass |
 | `DockerWaitHealthy` | `wait_healthy_container` | Waits up to `DockerStartTimeout` seconds (default 180) for it to be running, then up to `DockerTimeout` for its health check to pass; fails at once if it turns unhealthy or has no health check |
 
 The waits show a progress bar on interactive terminals and plain lines otherwise (CI, redirected output).
+
+For containers without a health check, override `DockerReadinessCheck` in the build to add your own; it is called once a second with the container's name until it returns true:
+
+```csharp
+Func<string, bool>? IDockerBuild.DockerReadinessCheck => container =>
+{
+    try { using var client = new TcpClient("localhost", 5432); return true; }
+    catch (SocketException) { return false; }
+};
+```
 
 ## Starting from an empty folder
 

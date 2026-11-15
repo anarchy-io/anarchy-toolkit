@@ -12,14 +12,7 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 /// </summary>
 public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompter
 {
-    public void ShowBanner()
-    {
-        // Kept out of redirected output, so piped or captured output stays plain.
-        if (Console.IsOutputRedirected) return;
-        var writer = console.Profile.Out.Writer;
-        writer.Write(ConsoleBanner.Render(console.Profile.Width, color: console.Profile.Capabilities.Ansi));
-        writer.Flush();
-    }
+    public void ShowBanner() => new ConsoleBannerOptions().Write(console);
 
     public void ShowWelcome(string title, string description)
     {
