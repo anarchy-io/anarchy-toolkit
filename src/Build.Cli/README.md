@@ -20,6 +20,12 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.2.1
+
+- `install-sdk.sh` installs the pinned feature band (e.g. `10.0.1xx`) when `global.json` only lets patches roll forward, the default, instead of a newer feature band its own check rejects; it also announces what it installs before downloading.
+- `build.fallout.sh` ignores a `DOTNET_EXE` that is not an executable (e.g. left over from a removed Homebrew SDK) and uses `dotnet` from `PATH`.
+- The bootstrap scripts print standard headings and colours through `title.sh`, `subtitle.sh` and `colors.env`; `install-sdk.sh` shows a title when run on its own and a subtitle when part of `install_dev_env`.
+
 ### 1.2.0
 
 - Configurable console banners: `IConsoleBanner`, `AnarchyConsoleBanner` and `ConsoleBannerOptions` let tools keep Anarchy's banner, render their own or print none.

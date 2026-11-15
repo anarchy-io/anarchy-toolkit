@@ -75,6 +75,10 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 
 ## Releases
 
+### 2.2.0
+
+- Generated solutions reference `Anarchy.Toolkit.Build.Fallout` 3.2.0 and `Anarchy.Toolkit.Web`/`Anarchy.Toolkit.Web.Ui` 1.0.7, and get the `Anarchy.Toolkit.Build.Cli` 1.2.1 SDK installation and `DOTNET_EXE` fixes in their scripts.
+
 ### 2.1.0
 
 - Prints its banner through `Anarchy.Toolkit.Build.Cli` 1.2.0's `ConsoleBannerOptions` (still always Anarchy's), and generated solutions reference `Anarchy.Toolkit.Build.Fallout` 3.1.0.

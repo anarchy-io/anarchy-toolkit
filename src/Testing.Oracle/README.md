@@ -26,6 +26,10 @@ See [Infrastructure.Persistence.Oracle](https://www.nuget.org/packages/Anarchy.T
 
 ## Releases
 
+### 1.1.6
+
+- References `Anarchy.Toolkit.Infrastructure.Persistence.Oracle` 1.1.5, aligned with the .NET 10 LTS.
+
 ### 1.1.5
 
 - refactor(src): clean up code style across library packages

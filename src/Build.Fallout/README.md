@@ -94,6 +94,12 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 
 ## Releases
 
+### 3.2.0
+
+- Target output is formatted with Spectre.Console: `ListProjects`, `ListPackages` and the `RunApp`/`RunApps` app hints print tables, `GenerateAppSettings` prompts per file with masked input for secrets, the release targets end with a summary of version changes (changed or dependent), and `Publish` numbers each push and prints a summary.
+- The dependency upgrade lists outdated packages within its version lock (`--highest-minor` for `Major`, `--highest-patch` for `Minor`), and prints each step under its own heading.
+- `System.Security.Cryptography.Xml` aligned with the .NET 10 LTS (10.0.15, down from 11.0.0).
+
 ### 3.1.0
 
 - `IDockerBuild` gains the overridable `DockerReadinessCheck`, a custom check `DockerWaitRunning` polls once the container is running, for containers without a health check.
