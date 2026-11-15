@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "${SCRIPT_DIR}/../shared/colors.env"
+
 current_shell=$(basename "${SHELL:-}")
 target_file=""
 
@@ -19,14 +22,14 @@ case "$current_shell" in
         target_file="$HOME/.profile"
         ;;
     *)
-        echo "Unsupported shell '$current_shell'. Please set your env file manually." >&2
+        echo -e "${CL_RED_BOLD}Unsupported shell '${current_shell}'. Please set your env file manually.${CL_RESET}" >&2
         exit 1
         ;;
 esac
 
 if [[ ! -f "$target_file" ]]; then
     touch "$target_file"
-    echo "Created new shell environment file: $target_file" >&2
+    echo -e "${CL_YELLOW}Created new shell environment file: ${CL_RESET}${target_file}" >&2
 fi
 
 # Stdout must contain only the resolved path so callers can safely use command substitution.
