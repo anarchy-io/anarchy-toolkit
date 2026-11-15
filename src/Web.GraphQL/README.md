@@ -30,7 +30,7 @@ app.UseToolkitGraphQl<MySchema>("MyGraphQlPolicy");
 
 Replace `MySchema` and the policy name with your application types. Optional path arguments override the endpoint and GraphiQL routes. The GraphQL endpoint requires the supplied policy; evaluate whether the separately served GraphiQL UI should be exposed in each environment.
 
-See the [endpoint guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/exposing-endpoints.md) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/guides/exposing-endpoints.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

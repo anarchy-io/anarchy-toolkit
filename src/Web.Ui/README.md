@@ -12,7 +12,7 @@ dotnet add package Anarchy.Toolkit.Web.Ui
 
 ## When to use it
 
-Use this package for a server-interactive Blazor back-office UI that signs in with OAuth client credentials, maintains a cookie session and calls environment-specific downstream APIs. It provides shared UI infrastructure and components, not your application's pages, API contracts or identity server.
+Use this package for a server-interactive Blazor WebApp that signs in with OAuth client credentials, maintains a cookie session and calls environment-specific downstream APIs. It provides shared UI infrastructure and components, not your application's pages, API contracts or identity server.
 
 ## How to use it
 
@@ -21,9 +21,9 @@ Use this package for a server-interactive Blazor back-office UI that signs in wi
 3. Register `AddToolkitUiApiHttpClient`, your own clients and presenters. Derive a client from `UiApiClientBase` to resolve the target environment and send authenticated calls.
 4. Map your Razor application with interactive server rendering, then compose pages and layouts with the supplied login, session, notification, modal and pagination components. Keep real credentials and deployment URLs in appropriate configuration or secret stores.
 
-The [UI guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/building-uis.md#wiring-a-ui) includes startup and client examples; the [sample startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Ui/Composition/Startup.cs) also demonstrates a local stub setup.
+The [UI guide](https://anarchy-io.github.io/anarchy-toolkit/guides/building-uis.html#wiring-a-ui) includes startup and client examples; the [sample startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Ui/Composition/Startup.cs) also demonstrates a local stub setup.
 
-See the [UI guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/building-uis.md), [UI sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [UI guide](https://anarchy-io.github.io/anarchy-toolkit/guides/building-uis.html), [UI sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

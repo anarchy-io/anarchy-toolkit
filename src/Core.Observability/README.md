@@ -29,7 +29,7 @@ observer.ExecutionIncrementCount(caller, 1, Tags.Success);
 
 Use `observer.MonitoredActionAsync` for an async action that should report duration and outcome. Keep high-cardinality values such as IDs in logs rather than metric tags. `Configuration` supplies a host-level `ObserverFactory`; `Testing` supplies an in-memory observer for assertions.
 
-See the [observability guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/observability.md) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

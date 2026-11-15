@@ -191,7 +191,7 @@ Out of the box the toolkit is vendor-neutral:
 - **Locally**: readable console logs at `Debug` level; metrics are printed by `ConsoleMeasurer`.
 - **Hosted (Lambda, EC2 or containers)**: JSON console logs with the log context, correlation ids, structured exceptions and `app_name` (plus the AWS request context on Lambda). Metrics are written as structured log events by `LoggerMeasurer`, so nothing is lost before a metrics backend is plugged in.
 
-### Plugging in an organisation's setup
+### Plugging in an organization's setup
 
 Derive from `ObserverFactory` and override only the steps that differ, then hand it to `ModuleObservability`:
 
@@ -220,11 +220,11 @@ services.UseModule(
     environment);
 ```
 
-An organisation-wide factory, for example, could add Datadog metrics (the Lambda extension layer on Lambda, the DogStatsD agent on EC2), CloudWatch logging on EC2, the standard log properties under the organisation's names, and its own correlation headers, all without changing the toolkit.
+An organization-wide factory, for example, could add Datadog metrics (the Lambda extension layer on Lambda, the DogStatsD agent on EC2), CloudWatch logging on EC2, the standard log properties under the organization's names, and its own correlation headers, all without changing the toolkit.
 
 ## Testing telemetry
 
-`TestCaseBase.FixtureObserver` is an `InMemoryObserver`, so logs and metrics can be asserted when observability *is* the behaviour under test:
+`TestCaseBase.FixtureObserver` is an `InMemoryObserver`, so logs and metrics can be asserted when observability *is* the behavior under test:
 
 ```csharp
 FixtureObserver.SinkLogs.Should().HaveMessage("Processed order {OrderId}");

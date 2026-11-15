@@ -22,7 +22,7 @@ Choose this package for a long-running process that needs hosted workers, operat
 
 The [sample worker startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Worker/Composition/WorkerStartup.cs) demonstrates registering a heartbeat and a custom hosted worker.
 
-See the [worker sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Worker) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [worker sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Worker) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

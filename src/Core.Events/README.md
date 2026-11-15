@@ -32,7 +32,7 @@ await bus.PublishAsync(new OrderPlaced(), absorbErrors: false, ct: cancellationT
 
 Each publish resolves handlers in a new DI scope and awaits them sequentially. Handler exceptions are logged and absorbed by default; set `absorbErrors: false` to propagate the first failure. No registered handlers is a no-op. For external delivery, compose this package with a broker adapter instead.
 
-See the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme) and [architecture guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/architecture.md).
+See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [architecture guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html).
 
 ## Releases
 

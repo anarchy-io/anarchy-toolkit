@@ -4,7 +4,7 @@
     <AssemblyName>Anarchy.Toolkit.Samples.Ui</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Samples.Ui</RootNamespace>
     <OutputType>Exe</OutputType>
-    <Description>Sample back-office UI (interactive-server Blazor behind a cookie session) built on Anarchy.Toolkit.Web.Ui.</Description>
+    <Description>Sample WebApp (interactive-server Blazor behind a cookie session) built on Anarchy.Toolkit.Web.Ui.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

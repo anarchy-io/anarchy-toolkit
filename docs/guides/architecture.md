@@ -1,6 +1,6 @@
 # Layered Architecture
 
-This guide explains how the toolkit is organised on disk and in namespaces, and the one rule that keeps it healthy: **dependencies only point down the layers**. 🧭
+This guide explains how the toolkit is organized on disk and in namespaces, and the one rule that keeps it healthy: **dependencies only point down the layers**. 🧭
 
 ## The layers
 
@@ -17,15 +17,15 @@ Core < Infrastructure < Configuration < Hosting < Web < Build
 | `Configuration` | Settings contracts, environment/secret handling, the observability bootstrap and the modules that register them. | `Configuration` |
 | `Hosting` | Running a process: the `IStartup` contract and `UseStartup`, job/worker startups and entry points (Lambda and EC2), the worker pipeline and the workers' self-hosted health API. | `Hosting`, `Hosting.Workers` |
 | `Web` | HTTP API and UI pipelines: startups, entry points, middleware, controllers, presentation contracts and DTOs. | `Web`, `Web.GraphQL`, `Web.Ui` |
-| `Build` | Fallout build components. On top of the chain so that no shipped project can depend on build tooling. | `Build.Fallout` |
+| `Build` | Build tooling: the Fallout build components, the command-line operations behind them and the `anarchy-toolkit` .NET tool. On top of the chain so that no shipped project can depend on build tooling. | `Build.Fallout`, `Build.Cli`, `Build.Cli.Tool` |
 
 A project's layer is the **prefix of its name** (`src/<Layer>.<Name>/`, or just `src/Core/` for the base project). A project may use anything from its own layer or any layer **below** it, never above. For example, `Infrastructure.Persistence.Postgres` may use `Core` and `Core.*`, but no Core project may import an `Infrastructure.*`, `Configuration.*`, `Hosting.*`, `Web.*` or `Build.*` one.
 
-The test kits (`Testing.*`) and the test projects under `tests/` (one per test kind, e.g. `tests/Unit/Unit.csproj`) sit outside the chain: they may reference any layer, but no production project may reference them. The same goes for [`samples/`](../../samples) (sample applications), which live outside `src/`.
+The test kits (`Testing.*`) and the test projects under `tests/` (one per test kind, e.g. `tests/Unit/Unit.csproj`) sit outside the chain: they may reference any layer, but no production project may reference them. The same goes for [`samples/`](../samples/README.md) (sample applications), which live outside `src/`.
 
 ## Inside a project
 
-A project's own code sits **directly at its root**, organised by responsibility (`Entity/`, `Service/`, `Repository/`, `Extension/`, `DependencyInjection/`, ...), and namespaces follow folders:
+A project's own code sits **directly at its root**, organized by responsibility (`Entity/`, `Service/`, `Repository/`, `Extension/`, `DependencyInjection/`, ...), and namespaces follow folders:
 
 ```text
 src/Infrastructure.Persistence.Postgres/
@@ -60,6 +60,7 @@ A project that has concrete services to register exposes them through one or mor
 |---|---|---|
 | `Infrastructure.Persistence.Postgres` | `ModulePostgres(connectionOptions, resilienceOptions)`, `ModulePostgresHealthReport` | Connection string, keyed `writer`/`reader` pools and policies, retry builder, flow context, `IUnitOfWork`; reader/writer health reports. |
 | `Infrastructure.Persistence.Oracle` | `ModuleOracle(connectionOptions, resilienceOptions)`, `ModuleOracleHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
+| `Infrastructure.Persistence.Mysql` | `ModuleMysql(connectionOptions, resilienceOptions)`, `ModuleMysqlHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
 | `Infrastructure.Messaging.Aws` | `ModuleSnsMessageBroker(options)`, `ModuleSqsMessageBroker(options)` | Keyed `topic` (SNS) and `queue` (SQS) publishers. |
 | `Infrastructure.CorrelationId` | `ModuleCorrelationId(options?)` | Defaults unless a factory supplies options. |
 | `Hosting.Workers` | `ModuleApplicationHealth(assembly)` | The workers' health endpoints (`/health/instance`, `/health/services`, `/health/status`) with the build metadata embedded in `assembly`. `AddServiceHealthCheckWorker(assembly)` registers them together with the `ServiceHealthCheckWorker` that serves them. |
@@ -107,7 +108,13 @@ For solutions organized by layer folders instead (e.g. `src/Core/Project1/Projec
 
 Set `--layering-root components` (or `make check_layering LAYERING_ROOT=components`) to use another root in either mode. The path is relative to the solution directory, or may be absolute; projects outside it are excluded.
 
-Run it after moving code, adding folders or adding project references. To see the result for this toolkit's name-based convention, [`dependency-map.html`](../dependency-map.html) (`make dependency_map`) draws the project references by layer, with violations in red. The dependency map has its own grouping configuration.
+Run it after moving code, adding folders or adding project references.
+
+## Dependency map
+
+`make dependency_map` regenerates [`dependency-map.html`](../dependency-map.html), which draws the toolkit's project references by layer, with violations in red. It uses its own grouping configuration, independent of the layering check. Regenerate and commit it whenever project references change, so the map below stays current.
+
+<iframe src="../dependency-map.html" title="Anarchy.Toolkit dependency map" loading="lazy" style="width: 100%; height: 900px; border: 1px solid #dddcd7; border-radius: 4px;"></iframe>
 
 ## Namespace collisions to know about
 
@@ -122,7 +129,7 @@ The responsibility folders produce a few namespace segments that collide with ty
   ```
 
 - **`Attribute`.** Under `.../Entity/Attribute/` or `Presentation/Attribute/`, derive from `System.Attribute` explicitly.
-- **`Host`.** A `Host/` folder (e.g. `Hosting/Host/`) can shadow `Microsoft.Extensions.Hosting.Host` for code in neighbouring namespaces. If you get `CS0118` on `Host.CreateDefaultBuilder(...)`, use the full type name.
+- **`Host`.** A `Host/` folder (e.g. `Hosting/Host/`) can shadow `Microsoft.Extensions.Hosting.Host` for code in neighboring namespaces. If you get `CS0118` on `Host.CreateDefaultBuilder(...)`, use the full type name.
 
 The general fix for `CS0118` ("is a namespace but is used like a type") or `CS0104` (ambiguous reference) is the same: an alias placed right after the file-scoped namespace line.
 

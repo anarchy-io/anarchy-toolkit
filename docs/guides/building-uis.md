@@ -2,7 +2,7 @@
 
 `Anarchy.Toolkit.Web.Ui` is a generic back-office UI: an interactive-server Blazor app behind a cookie session, where developers log in with OAuth client credentials and the UI calls downstream APIs on their behalf. Everything domain-specific (which APIs, which pages, which environment URLs) is supplied by the consumer.
 
-[`samples/Samples.Ui`](../../samples/Samples.Ui) is a runnable example of everything below.
+[`samples/Samples.Ui`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) is a runnable example of everything below.
 
 ## What you get
 

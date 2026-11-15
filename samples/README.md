@@ -10,7 +10,7 @@ Applications built on the toolkit, one per kind of workload a typical service ru
 | [`Samples.Ui`](Samples.Ui) | Back-office UI | `UiWebAppStartupBase` with two environments, an orders page built from the `Web.Ui` components (`LoginForm`, `SessionBadge`, `NotificationHost`, `JsonModalHost`/`JsonViewLink`, `Pagination`, `TablePaginationFooter`, `ConfirmationModal`, `TypedConfirmationModal`), and a `UiApiClientBase` client. Stub auth and orders endpoints under `/stub` (local hosts only) let it run without external services. |
 | [`Samples.Tests`](Samples.Tests) | Tests | Smoke tests running the API through both the native and Lambda pipelines (`RestApiTestCaseBase`), invoking the job handler, and exercising the UI's shell and stubs. |
 
-Every sample registers `ModuleLibConfiguration`, so it gets the toolkit's vendor-neutral `ObserverFactory`. To use an organisation's own sinks, log properties or metrics backend, pass a derived factory through `new ModuleLibConfiguration<…>(new ModuleObservability(new MyObserverFactory()))`. See the [observability guide](../docs/guides/observability.md#plugging-in-an-organisations-setup).
+Every sample registers `ModuleLibConfiguration`, so it gets the toolkit's vendor-neutral `ObserverFactory`. To use an organization's own sinks, log properties or metrics backend, pass a derived factory through `new ModuleLibConfiguration<…>(new ModuleObservability(new MyObserverFactory()))`. See the [observability guide](../docs/guides/observability.md#plugging-in-an-organizations-setup).
 
 Run the API locally:
 
@@ -24,4 +24,4 @@ Run the UI locally, then open https://localhost:5101 and log in with client ID `
 dotnet run --project samples/Samples.Ui --environment Development
 ```
 
-Pick either environment on the login page: each has its own orders. Cancelling a shipped order shows how a failed downstream call is reported; priority orders (★) ask for typed confirmation.
+Pick either environment on the login page: each has its own orders. Canceling a shipped order shows how a failed downstream call is reported; priority orders (★) ask for typed confirmation.

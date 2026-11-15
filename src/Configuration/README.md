@@ -23,7 +23,7 @@ Use this package at the composition boundary of a service that needs typed setti
 
 The [sample API settings module](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/DependencyInjection/ModuleAppSettings.cs) and [startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/Startup.cs) show the wiring end to end.
 
-See the [observability guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/observability.md) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

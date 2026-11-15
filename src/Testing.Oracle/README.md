@@ -22,7 +22,7 @@ Use this package to test Oracle-specific SQL, mappings and persistence behavior 
 
 `SingletonOracleHelper` shares a policy when that fits the test lifecycle. Coordinate parallel tests and cleanup, and do not use production schemas or credentials.
 
-See [Infrastructure.Persistence.Oracle](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Persistence.Oracle), the [testing conventions](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/testing-conventions.md) and the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See [Infrastructure.Persistence.Oracle](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Persistence.Oracle), the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html) and the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

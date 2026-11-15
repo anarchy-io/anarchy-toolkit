@@ -27,7 +27,7 @@ await DbTestHelper.ClearTableAsync<MyConnection>(policy, "orders", cancellationT
 
 Replace `OrderStatus`, `MyConnection` and `policy` with your own enum, database connection type and configured policy. Table names are inserted into SQL, so use trusted fixed identifiers, never user input. Cleanup is destructive; use a dedicated test schema and account for foreign keys, identity behavior and tests running concurrently.
 
-See the [testing conventions](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/testing-conventions.md) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

@@ -20,7 +20,7 @@ Add the desired enrichers to the host's `LoggerConfiguration`, or override `Obse
 
 For an EC2-hosted CloudWatch sink, configure `Ec2CloudWatch(logGroup)` in the host's sink setup and provide the necessary AWS credentials, region and CloudWatch permissions. Avoid adding an EC2-specific sink or metadata enricher to environments where they are not appropriate. The package does not create an observability backend or define your retention policy for you.
 
-See the [observability guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/observability.md) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

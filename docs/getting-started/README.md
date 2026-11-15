@@ -1,0 +1,32 @@
+# Getting Started
+
+The fastest way to get going with the toolkit is through its build tooling: the **`anarchy-toolkit` CLI tool** creates a complete solution, and the **Fallout build components** it relies on can also be added to a repository you already have. Individual packages work on their own too.
+
+![Developer workstation with a terminal and code editor, dark theme, red-orange accent lighting, wide banner](../assets/images/headers/getting-started.png)
+
+```mermaid
+flowchart TD
+    Start{"What do you have?"}
+    Start -->|"An empty folder"| CLI["<b>anarchy-toolkit bootstrap</b><br/>solution + build + apps"]
+    Start -->|"A repository, no build tooling"| Fallout["<b>Anarchy.Toolkit.Build.Fallout</b><br/>build targets for your solution"]
+    Start -->|"An application that needs a capability"| Packages["<b>Individual packages</b><br/>dotnet add package + UseModule"]
+    CLI --> Scaffold["anarchy-toolkit scaffold<br/>api · job · ui"]
+    Fallout --> Make["make compile · test · check_layering · pack"]
+    Scaffold --> Make
+```
+
+| Path | Best for | Page |
+|---|---|---|
+| **CLI tool** | New services and monorepos: generates the layered solution, the Fallout build, the Makefile and scripts, and APIs, jobs or UIs on the toolkit's packages. | [New solution with the CLI](cli-tool.md) |
+| **Fallout build** | Existing repositories: adds standard compile, lint, test, layering, dependency-map, packaging, release and Docker targets. | [Adding the Fallout build](fallout.md) |
+| **Packages** | Existing applications: add persistence, messaging, observability, hosting or web plumbing one package at a time. | [Using the packages](consuming-packages.md) |
+
+## Requirements
+
+- The [.NET 10 SDK](https://dotnet.microsoft.com/download).
+- Bash and Make, for the generated Makefile and scripts (macOS, Linux or WSL).
+- Access to nuget.org, where the packages are published under the [`anarchy-io` profile](https://www.nuget.org/profiles/anarchy-io) (or a feed mirroring the `Anarchy.Toolkit.*` packages).
+
+## See it working
+
+The [samples](../samples/README.md) are complete applications built on the toolkit's defaults: a REST API, a Lambda job, an EC2 worker and a back-office UI, with their tests.

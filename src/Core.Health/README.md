@@ -35,7 +35,7 @@ public sealed class ExampleHealthReport : ServiceHealthReportBase
 
 Supply reports as an `IReadOnlyCollection<IServiceHealthReport>` to the toolkit's web or worker health endpoints, or call `HealthCheckReport.RunAsync(reports)` to aggregate them directly. A successful placeholder check does not establish that a real dependency is healthy.
 
-The [Web](https://www.nuget.org/packages/Anarchy.Toolkit.Web) and [Hosting.Workers](https://www.nuget.org/packages/Anarchy.Toolkit.Hosting.Workers) packages expose health endpoints. See the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+The [Web](https://www.nuget.org/packages/Anarchy.Toolkit.Web) and [Hosting.Workers](https://www.nuget.org/packages/Anarchy.Toolkit.Hosting.Workers) packages expose health endpoints. See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

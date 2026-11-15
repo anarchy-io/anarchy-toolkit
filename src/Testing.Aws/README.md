@@ -21,9 +21,9 @@ Use this test-only package to exercise SNS/SQS publishing or message processing 
 3. Receive and assert messages with the helper; use `SqsMessageFixture` when testing a Lambda handler with a constructed `SQSEvent`, including compressed bodies.
 4. Dispose the helper and clean up test resources. Use unique names or isolate tests that purge queues, and never point destructive cleanup at production resources.
 
-The generic `SqsHelper<TAppSettings>` can use the test settings of your settings type; see the [testing guide](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/testing-conventions.md) for details. `PrepareTopicAsync` deletes and recreates an existing topic, so isolate resource names carefully.
+The generic `SqsHelper<TAppSettings>` can use the test settings of your settings type; see the [testing guide](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html) for details. `PrepareTopicAsync` deletes and recreates an existing topic, so isolate resource names carefully.
 
-See [Infrastructure.Messaging.Aws](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Messaging.Aws), the [testing conventions](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/guides/testing-conventions.md) and the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See [Infrastructure.Messaging.Aws](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Messaging.Aws), the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html) and the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

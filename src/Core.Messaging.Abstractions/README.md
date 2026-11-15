@@ -28,7 +28,7 @@ await publisher.PublishAsync(message, cancellationToken);
 
 Register a concrete `IMessageBrokerPublisher` in the host and resolve the appropriate keyed publisher when using the AWS adapters. The builder also accepts partition keys and attributes; enum destinations are resolved through their descriptions. Batch publishing can report per-chunk outcomes and may throw if any chunk fails, so handle partial success deliberately.
 
-See the [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

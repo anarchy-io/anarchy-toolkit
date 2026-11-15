@@ -80,6 +80,6 @@ In workers built on `WorkerBase` / `MonitoredWorkerBase` / `ResilientWorkerBase`
 
 - pass the worker's `stoppingToken` from `RunIterationAsync` into use cases and repositories,
 - make polling and publishing loops stoppable,
-- avoid uncancellable network or database calls in shutdown paths.
+- avoid uncancelable network or database calls in shutdown paths.
 
 This gives cleaner shutdowns, fewer stuck operations, and better resilience for continuously running workers. 💙

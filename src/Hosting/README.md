@@ -22,7 +22,7 @@ Use Hosting for the composition and lifecycle of a job or worker that is not its
 
 See the runnable [worker startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Worker/Composition/WorkerStartup.cs), [worker entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Worker/Composition/WorkerEntryPoint.cs), and [Lambda job](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Job) for concrete implementations. For REST endpoints, use `Anarchy.Toolkit.Web`; for long-running worker and health primitives, add `Hosting.Workers`.
 
-See the [sample applications](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [sample applications](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

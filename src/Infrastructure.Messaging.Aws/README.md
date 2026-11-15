@@ -29,7 +29,7 @@ services.AddSqsMessageBroker(options);
 
 Alternatively, register the modules with options factories using `UseModule`. Resolve the keyed `topic` or `queue` publisher and build messages with `OutboundMessageBuilder` from the abstractions package. Configure AWS credentials and permissions for the actual destinations, and plan for broker size limits, batch failures and duplicate delivery.
 
-See the [registration example](https://github.com/anarchy-io/anarchy-toolkit#consuming-a-package) and [toolkit overview](https://github.com/anarchy-io/anarchy-toolkit#readme).
+See the [registration example](https://anarchy-io.github.io/anarchy-toolkit/getting-started/consuming-packages.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 
