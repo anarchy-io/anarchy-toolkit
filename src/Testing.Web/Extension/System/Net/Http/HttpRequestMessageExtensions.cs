@@ -12,6 +12,7 @@ namespace Anarchy.Toolkit.Testing.Web.Extension.System.Net.Http;
 /// </summary>
 public static class HttpRequestMessageExtensions
 {
+    /// <param name="request">The request being extended.</param>
     extension(HttpRequestMessage request)
     {
         /// <summary>
@@ -34,6 +35,12 @@ public static class HttpRequestMessageExtensions
         /// Optional token audience. When <c>null</c>, the first supplied scope is used.
         /// </param>
         /// <returns>The same <see cref="HttpRequestMessage"/> instance for chaining.</returns>
+        /// <remarks>
+        /// The token is unsigned and valid for one hour; any existing <c>Authorization</c> header is replaced.
+        /// The API under test must therefore be configured (in its test settings) to accept such tokens.
+        /// </remarks>
+        /// <exception cref="ArgumentNullException"><paramref name="scopes"/> is <see langword="null"/>.</exception>
+        /// <exception cref="Anarchy.Toolkit.Core.Exceptions.EmptyArgumentException"><paramref name="scopes"/> is empty.</exception>
         public HttpRequestMessage MockAuthorizationToken<TAppSettings>(
             string[] scopes,
             string clientId = "test-client",
