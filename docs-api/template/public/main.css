@@ -1,0 +1,215 @@
+/*
+ * Anarchy I/O brand overrides for DocFX's modern template, layered on top of it (see docs-api/docfx.json): the
+ * modern template ships an empty public/main.css for exactly this. Only colours, type and the header and footer
+ * chrome change here; the API page layouts, TOC, search and theme switching are DocFX's own.
+ *
+ * Tokens come from docs/assets/css/tokens.css, copied next to this file by the build, so both sites share them.
+ */
+@import url("tokens.css");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap");
+
+:root {
+  --bs-body-font-family: var(--anarchy-font-sans);
+  --bs-font-sans-serif: var(--anarchy-font-sans);
+  --bs-font-monospace: var(--anarchy-font-mono);
+  --bs-border-radius: var(--anarchy-radius);
+  --anarchy-header-height: 64px;
+}
+
+[data-bs-theme="light"] {
+  --bs-body-color: var(--anarchy-black);
+  --bs-secondary-color: var(--anarchy-muted);
+  --bs-border-color: var(--anarchy-border);
+  --bs-tertiary-bg: var(--anarchy-cloud);
+  --anarchy-content-link: var(--anarchy-link);
+  --anarchy-content-link-hover: var(--anarchy-link-hover);
+  --anarchy-active: var(--anarchy-red);
+}
+
+/* Dark mode is DocFX's own (the Jekyll site has none): keep it, with the brand accents readable on dark */
+[data-bs-theme="dark"] {
+  --bs-body-bg: var(--anarchy-black);
+  --bs-tertiary-bg: var(--anarchy-carbon);
+  --anarchy-content-link: var(--anarchy-orange);
+  --anarchy-content-link-hover: var(--anarchy-white);
+  --anarchy-active: var(--anarchy-orange);
+}
+
+/* Links (Bootstrap colours them through RGB variables, which the hex tokens can't feed) */
+a {
+  color: var(--anarchy-content-link);
+}
+
+a:hover {
+  color: var(--anarchy-content-link-hover);
+}
+
+/* Header: the dark masthead with the gradient underline, as on the Jekyll site */
+header.bg-body {
+  background-color: var(--anarchy-black) !important;
+  border-bottom: var(--anarchy-accent-width) solid transparent !important;
+  border-image: var(--anarchy-gradient) 1;
+}
+
+header .navbar {
+  --bs-navbar-color: var(--anarchy-white);
+  --bs-navbar-hover-color: var(--anarchy-orange);
+  --bs-navbar-active-color: var(--anarchy-white);
+  --bs-navbar-brand-color: var(--anarchy-white);
+  --bs-navbar-brand-hover-color: var(--anarchy-white);
+  min-height: var(--anarchy-header-height);
+}
+
+header .navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Bounded rather than fixed, so any logo keeps its aspect ratio */
+header .navbar-brand #logo {
+  width: auto;
+  height: auto;
+  max-height: 32px;
+  max-width: min(160px, 40vw);
+  object-fit: contain;
+}
+
+header .navbar-nav .nav-link {
+  position: relative;
+  font-weight: 500;
+}
+
+/* The masthead's hover and current-section underline */
+header .navbar-nav .nav-link::after {
+  content: "";
+  position: absolute;
+  left: var(--bs-navbar-nav-link-padding-x);
+  right: var(--bs-navbar-nav-link-padding-x);
+  bottom: 0;
+  height: 3px;
+  background: var(--anarchy-gradient);
+  transform: scaleX(0);
+  transition: transform 0.2s ease-in-out;
+}
+
+header .navbar-nav .nav-link:hover::after,
+header .navbar-nav .nav-link.active::after {
+  transform: scaleX(1);
+}
+
+header .btn,
+header .btn i {
+  color: var(--anarchy-white);
+}
+
+header .btn:hover,
+header .btn:hover i {
+  color: var(--anarchy-orange);
+}
+
+header #search-query {
+  background-color: var(--anarchy-carbon);
+  border-color: var(--anarchy-carbon);
+  color: var(--anarchy-white);
+}
+
+header #search-query::placeholder {
+  color: var(--anarchy-steel);
+}
+
+header #search-query:focus {
+  border-color: var(--anarchy-orange);
+  box-shadow: none;
+}
+
+header #navbar form > i.bi {
+  color: var(--anarchy-white);
+}
+
+/* Collapsed (mobile) navbar panel */
+@media (max-width: 767.98px) {
+  header #navpanel {
+    background-color: var(--anarchy-black);
+  }
+}
+
+/* Footer: carbon, with the gradient rule on top, as on the Jekyll site */
+footer {
+  margin-top: 3rem;
+  padding: 2rem 0;
+  background-color: var(--anarchy-carbon);
+  color: var(--anarchy-footer-text) !important;
+  border-top: var(--anarchy-accent-width) solid transparent !important;
+  border-image: var(--anarchy-gradient) 1;
+  font-size: 0.875rem;
+}
+
+footer a {
+  color: var(--anarchy-white);
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--anarchy-orange);
+}
+
+footer .anarchy-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+footer .anarchy-footer__links strong {
+  color: var(--anarchy-footer-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Headings, as on the Jekyll site */
+article h1,
+article h2 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Navigation: the current page in the TOC and "In this article" */
+.toc li > a.active,
+.toc li.active > a {
+  color: var(--anarchy-active);
+  font-weight: 600;
+}
+
+.toc li > a {
+  color: var(--bs-body-color);
+}
+
+.toc li > a:hover {
+  color: var(--anarchy-active);
+}
+
+.affix ul li a:hover,
+.affix ul li a.active {
+  color: var(--anarchy-active);
+}
+
+#breadcrumb a {
+  color: var(--bs-secondary-color);
+}
+
+/* Code */
+pre,
+.codewrapper pre {
+  border-radius: var(--anarchy-radius);
+}
+
+[data-bs-theme="light"] pre {
+  background-color: var(--anarchy-cloud);
+}
+
+/* Tables, as on the Jekyll site */
+[data-bs-theme="light"] article table thead {
+  background-color: var(--anarchy-cloud);
+}
