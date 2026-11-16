@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Build.Fallout</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Fallout</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Fallout</RootNamespace>
-    <Version>3.2.0</Version>
+    <Version>3.3.0</Version>
     <Description>Fallout build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, linting, layering checks, NuGet and ECR container release flows and local app runs.</Description>
     <PackageTags>fallout build ci</PackageTags>
     <Nullable>enable</Nullable>
@@ -20,6 +20,13 @@
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="Fallout.Common" />
     <PackageReference Include="System.Security.Cryptography.Xml" />
+    <!-- DocFX ships its site templates as content files: let them flow to the build project's output, where
+         IApiReferenceBuild looks for them. -->
+    <PackageReference Include="Docfx.App" PrivateAssets="none" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Component\Tasks\ApiReference.targets" LogicalName="ApiReference.targets" />
   </ItemGroup>
 
   <ItemGroup>

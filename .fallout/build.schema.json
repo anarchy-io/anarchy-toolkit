@@ -39,6 +39,7 @@
         "DockerWaitHealthy",
         "DockerWaitRunning",
         "EnableGitHook",
+        "GenerateApiReference",
         "GenerateAppSettings",
         "GenerateDependencyMap",
         "GenerateLocalRelease",
@@ -142,6 +143,10 @@
   "allOf": [
     {
       "properties": {
+        "ApiReferenceConfig": {
+          "type": "string",
+          "description": "DocFX configuration of the API reference site; defaults to docs-api/docfx.json"
+        },
         "AppName": {
           "type": "string",
           "description": "Runnable app name to execute (any src/** project with OutputType=Exe)"
