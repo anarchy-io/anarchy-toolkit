@@ -4,8 +4,12 @@ using System.Reflection;
 
 namespace Anarchy.Toolkit.Web.GraphQL.Extension.DependencyInjection;
 
+/// <summary>
+/// <see cref="IServiceCollection"/> extensions that register the toolkit GraphQL server.
+/// </summary>
 public static partial class ServiceCollectionExtension
 {
+    /// <param name="services">The service collection to register into.</param>
     extension(IServiceCollection services)
     {
         /// <summary>
@@ -15,6 +19,14 @@ public static partial class ServiceCollectionExtension
         /// </summary>
         /// <typeparam name="TSchema">The schema exposed by the API.</typeparam>
         /// <param name="graphTypesAssembly">Assembly scanned for graph type registrations.</param>
+        /// <returns>The same <see cref="IServiceCollection"/>, for chaining.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// builder.Services
+        ///     .AddSingleton&lt;OrderQuery&gt;()
+        ///     .AddToolkitGraphQl&lt;ApiSchema&gt;(typeof(ApiSchema).Assembly);
+        /// </code>
+        /// </example>
         public IServiceCollection AddToolkitGraphQl<TSchema>(Assembly graphTypesAssembly)
             where TSchema : class, ISchema
         {

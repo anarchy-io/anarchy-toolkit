@@ -5,8 +5,12 @@ using GraphQL.Types;
 
 namespace Anarchy.Toolkit.Web.GraphQL.Extension.Service.Builder;
 
+/// <summary>
+/// <see cref="IApplicationBuilder"/> extensions that expose a toolkit GraphQL API.
+/// </summary>
 public static partial class ApplicationBuilderExtension
 {
+    /// <param name="app">The application builder.</param>
     extension(IApplicationBuilder app)
     {
         /// <summary>
@@ -18,6 +22,27 @@ public static partial class ApplicationBuilderExtension
         /// <param name="authorizationPolicy">Authorization policy required to call the GraphQL endpoint.</param>
         /// <param name="path">The GraphQL endpoint path.</param>
         /// <param name="uiPath">The GraphiQL UI path.</param>
+        /// <returns>The same <see cref="IApplicationBuilder"/>, for chaining.</returns>
+        /// <remarks>
+        /// <para>
+        /// A leading <c>/</c> is added to <paramref name="path"/> and <paramref name="uiPath"/> when missing. Defaults
+        /// are <see cref="GraphQlRoutes.RouteBaseGraphQl"/> (<c>/graphql</c>) and
+        /// <see cref="GraphQlRoutes.RouteBaseGraphQlUi"/> (<c>/ui/graphql</c>).
+        /// </para>
+        /// <para>
+        /// Only the GraphQL endpoint requires authorization; the GraphiQL UI is served without it. Call after
+        /// authentication/authorization middleware and register the schema with <c>AddToolkitGraphQl</c>.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code language="csharp">
+        /// builder.Services.AddToolkitGraphQl&lt;ApiSchema&gt;(typeof(ApiSchema).Assembly);
+        /// var app = builder.Build();
+        /// app.UseAuthentication();
+        /// app.UseAuthorization();
+        /// app.UseToolkitGraphQl&lt;ApiSchema&gt;("ApiPolicy");
+        /// </code>
+        /// </example>
         public IApplicationBuilder UseToolkitGraphQl<TSchema>(string authorizationPolicy,
                                                               string path = GraphQlRoutes.RouteBaseGraphQl,
                                                               string uiPath = GraphQlRoutes.RouteBaseGraphQlUi)
