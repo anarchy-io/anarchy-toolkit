@@ -9,14 +9,47 @@ using System.Diagnostics;
 
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher;
 
+/// <summary>
+/// AWS-specific <see cref="IMessageBrokerPublisher"/>, parameterised by the SDK request type so SNS and SQS
+/// publishers can be resolved independently from the container.
+/// </summary>
+/// <typeparam name="TRequest">The AWS single-message request type that identifies the transport.</typeparam>
 public interface IAwsMessageBrokerPublisher<TRequest> : IMessageBrokerPublisher;
 
+/// <summary>
+/// Base class for AWS message-broker publishers. Builds SDK requests via an
+/// <see cref="IAwsPublisherRequestBuilder{TRequest, TBatchRequest}"/>, sends them through the transport-specific
+/// <see cref="SendRequestAsync"/>/<see cref="SendBatchRequestAsync"/>, and records logs and metrics through the
+/// <see cref="Observer"/>.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Batch publishing splits the messages into chunks of 10 (the AWS batch limit) and sends them sequentially. The
+/// optional "before" callback runs before each chunk is sent, and the "after" callback runs after each chunk with a
+/// success flag. Duration and count metrics are recorded per chunk (suffix <c>.chunk</c>) and for the whole call.
+/// </para>
+/// <para>
+/// When <c>continueOnFailure</c> is <see langword="false"/>, the first failing chunk stops publishing; otherwise the
+/// remaining chunks are still sent and a single exception is raised at the end. A warning is logged when
+/// <c>continueOnFailure</c> is used with FIFO destinations, since ordering may be broken.
+/// </para>
+/// <para>
+/// Note: only the request-level call is checked; partial failures reported inside a successful AWS batch response
+/// are not inspected.
+/// </para>
+/// </remarks>
+/// <typeparam name="TRequest">The AWS single-message request type.</typeparam>
+/// <typeparam name="TBatchRequest">The AWS batch request type.</typeparam>
+/// <param name="builderPublisherRequest">Builds AWS requests from outbound messages.</param>
+/// <param name="observer">The observer used for logging and metrics.</param>
 public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     IAwsPublisherRequestBuilder<TRequest, TBatchRequest> builderPublisherRequest,
     Observer observer) : IAwsMessageBrokerPublisher<TRequest>
 {
     private const int MaxBatchSize = 10; // AWS limit for batch operations
 
+    /// <inheritdoc/>
+    /// <exception cref="MessagePublishException">Building or sending the request failed; wraps the original exception.</exception>
     public async Task PublishAsync(OutboundMessageEntity outboundMessage,
                                    CancellationToken? cancellationToken = null)
     {
@@ -61,6 +94,8 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
         }
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="MessageBatchPublishException">One or more chunks failed to publish.</exception>
     public async Task PublishAsync(
         IReadOnlyCollection<OutboundMessageEntity> outboundMessages,
         bool continueOnFailure = false,
@@ -74,6 +109,8 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
             cancellationToken);
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="MessageBatchPublishException">One or more chunks failed to publish.</exception>
     public async Task PublishAsync(
         IReadOnlyCollection<OutboundMessageEntity> outboundMessages,
         IMessageBrokerPublisher.PublishBatchCallbackBeforeAsync? chunkCallbackBeforeAsync,
@@ -228,6 +265,19 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
         }
     }
 
+    /// <summary>
+    /// Sends a single-message request through the AWS SDK client.
+    /// </summary>
+    /// <param name="request">The request built from the outbound message.</param>
+    /// <param name="cancellationToken">Token to cancel the call.</param>
+    /// <returns>A task that completes when AWS has accepted the request.</returns>
     protected abstract Task SendRequestAsync(TRequest request, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sends a batch request (up to 10 entries) through the AWS SDK client.
+    /// </summary>
+    /// <param name="batchRequest">The batch request built from a chunk of outbound messages.</param>
+    /// <param name="cancellationToken">Token to cancel the call.</param>
+    /// <returns>A task that completes when AWS has responded to the batch request.</returns>
     protected abstract Task SendBatchRequestAsync(TBatchRequest batchRequest, CancellationToken cancellationToken);
 }

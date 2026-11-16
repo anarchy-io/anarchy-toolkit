@@ -5,8 +5,10 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws
 /// <summary>
 /// Thrown when a message exceeds the broker size limit and compression was disabled for it.
 /// </summary>
+/// <param name="maxSizeBytes">The size limit, in bytes, that the message exceeded.</param>
 public class UncompressedMessageTooLargeException(long maxSizeBytes)
     : InvalidArgumentException($"Message body is too large to be sent without compression (limit: {maxSizeBytes} bytes)")
 {
+    /// <summary>Gets the size limit, in bytes, that the message exceeded.</summary>
     public long MaxSizeBytes { get; } = maxSizeBytes;
 }

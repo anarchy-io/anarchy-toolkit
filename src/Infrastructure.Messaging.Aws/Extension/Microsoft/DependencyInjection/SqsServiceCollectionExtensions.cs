@@ -20,6 +20,19 @@ public static class SqsServiceCollectionExtensions
     /// <param name="services">The service collection to add registrations to.</param>
     /// <param name="options">The AWS account/region context used to build queue URLs.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    /// <remarks>
+    /// Registers <paramref name="options"/> as a singleton, a scoped <see cref="AmazonSQSClient"/> using the default
+    /// AWS credential and region resolution, a scoped <see cref="SqsAwsPublisherRequestBuilder"/> (gzip compression
+    /// for oversized messages), a scoped <see cref="SqsMessageBrokerPublisher"/> and a keyed (<c>"queue"</c>)
+    /// <see cref="IMessageBrokerPublisher"/>.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// services.AddSqsMessageBroker(new AwsMessagingOptions("eu-west-1", "123456789012"));
+    ///
+    /// public class OrderSender([FromKeyedServices("queue")] IMessageBrokerPublisher publisher) { }
+    /// </code>
+    /// </example>
     public static IServiceCollection AddSqsMessageBroker(this IServiceCollection services, AwsMessagingOptions options)
     {
         services.AddSingleton(options);

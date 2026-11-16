@@ -8,6 +8,16 @@ using Anarchy.Toolkit.Infrastructure.Messaging.Aws.ValueSet.MessageBroker;
 
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher.RequestBuilder;
 
+/// <summary>
+/// SNS implementation of <see cref="AwsPublisherRequestBuilderBase{TRequest, TBatchRequest, TAttr}"/>: builds
+/// SNS requests whose destination is the topic ARN <c>arn:aws:sns:{region}:{accountId}:{name}</c>.
+/// </summary>
+/// <remarks>
+/// Batch requests take their destination from the first message; FIFO group/deduplication ids are set per entry when
+/// the destination is FIFO. Entry ids are the zero-based index of the message in the batch.
+/// </remarks>
+/// <param name="options">The AWS region and account used to build destination addresses.</param>
+/// <param name="compressionMethod">Compression applied to oversized messages. Defaults to <see cref="CompressionType.Gzip"/>.</param>
 public sealed class SnsAwsPublisherRequestBuilder(
     AwsMessagingOptions options,
     CompressionType compressionMethod = CompressionType.Gzip)
@@ -16,27 +26,36 @@ public sealed class SnsAwsPublisherRequestBuilder(
 {
     private const string TemplateDestinationAddress = "arn:aws:sns:{0}:{1}:{2}";
 
+    /// <inheritdoc/>
     protected override PublishRequest CreateEmptyRequest() => new();
 
+    /// <inheritdoc/>
     protected override MessageAttributeValue AwsAttribute(string value) => new() { DataType = "String", StringValue = value };
 
+    /// <inheritdoc/>
     protected override MessageAttributeValue AwsAttribute(byte[] value) =>
         new() { DataType = "Binary", BinaryValue = new MemoryStream(value) };
 
+    /// <inheritdoc/>
     protected override string BuildDestinationAddress(string destinationName) => string.Format(
         TemplateDestinationAddress, options.Region, options.AccountId, destinationName);
 
+    /// <inheritdoc/>
     protected override void SetDestination(PublishRequest request, string destinationAddress) =>
         request.SetDestination(destinationAddress);
 
+    /// <inheritdoc/>
     protected override void SetMessage(PublishRequest request, string body) => request.SetMessage(body);
 
+    /// <inheritdoc/>
     protected override void SetFifoProps(PublishRequest request, string? groupId, string? deduplicationId) =>
         request.SetFifoInfo(groupId, deduplicationId);
 
+    /// <inheritdoc/>
     protected override void SetAttributes(PublishRequest request, Dictionary<string, MessageAttributeValue> attrs) =>
         request.SetAttributes(attrs);
 
+    /// <inheritdoc/>
     protected override long AttributeByteSize(string key, MessageAttributeValue value)
     {
         var size = key.Utf8ByteCount()
@@ -48,6 +67,8 @@ public sealed class SnsAwsPublisherRequestBuilder(
         return size;
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="EmptyArgumentException"><paramref name="messages"/> is empty.</exception>
     protected override PublishBatchRequest CreateBatchRequest(OutboundMessageEntity[] messages)
     {
         if (messages.Length == 0)
