@@ -8,9 +8,27 @@ namespace Anarchy.Toolkit.Core.Events.Service.MessageBroker;
 /// <summary>
 /// Deserializes an inbound broker message body into a typed event envelope using Newtonsoft.Json.
 /// </summary>
+/// <remarks>
+/// Newtonsoft.Json is used deliberately because it can bind the primary constructors of
+/// <see cref="Entity.Event.Domain.Event"/> and <see cref="Entity.Event.Domain.PersistedEvent"/>. The parser is
+/// stateless and thread-safe.
+/// </remarks>
+/// <typeparam name="TInboundMessage">The broker-specific inbound message type.</typeparam>
+/// <typeparam name="TEventEnvelope">The envelope type to produce.</typeparam>
+/// <example>
+/// <code language="csharp">
+/// var parser = new EventEnvelopeParser&lt;InboundMessageEntity, Event&gt;();
+/// var envelope = await parser.FromInboundMessage(message, cancellationToken);
+/// </code>
+/// </example>
 public class EventEnvelopeParser<TInboundMessage, TEventEnvelope> : IEventEnvelopeParser<TInboundMessage, TEventEnvelope>
     where TInboundMessage : InboundMessageEntity where TEventEnvelope : class, IEventEnvelope
 {
+    /// <inheritdoc/>
+    /// <exception cref="EventEnvelopeParsingException">
+    /// The message body is not valid JSON, cannot be bound to <typeparamref name="TEventEnvelope"/>, or deserializes
+    /// to <see langword="null"/>.
+    /// </exception>
     public Task<TEventEnvelope> FromInboundMessage(TInboundMessage inboundMessage,
                                                    CancellationToken? cancellationToken = null)
     {

@@ -13,11 +13,57 @@ using Event = Entity.Event.Domain.Event;
 /// Orchestrates processing of a batch of events: hydrates the affected state, dispatches each event
 /// through the <see cref="EventHandlerBus{T}"/>, and persists the resulting state.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Lifecycle of <see cref="ExecuteAsync"/>: (1) <see cref="HydrateStateEntitiesAsync"/> loads the current state of
+/// every aggregate referenced by the batch; (2) events are processed sequentially in batch order, each inside a log
+/// context carrying the event identity; (3) after each successfully handled event the new state is persisted through
+/// <see cref="StoreStateEntity"/> and becomes the input for the next event of the same aggregate.
+/// </para>
+/// <para>
+/// When the bus throws <see cref="EmptyStateAfterHandlerBusException"/>, a warning and the
+/// <c>empty_state_after_handler_bus</c> counter are emitted and the event is skipped. When it throws
+/// <see cref="NoHandlersForEventException"/>, a warning and a counter are emitted and the exception is rethrown,
+/// aborting the batch. Any other exception propagates.
+/// </para>
+/// </remarks>
+/// <typeparam name="T">The aggregate state type.</typeparam>
+/// <param name="eventHandlerBus">The bus that applies events to state.</param>
+/// <param name="observer">The observer used for logging and metrics; exposed to subclasses as <see cref="Observer"/>.</param>
+/// <example>
+/// <code language="csharp">
+/// public sealed class OrderEventProcessor(EventHandlerBus&lt;Order&gt; bus, Observer observer, IOrderRepository repository)
+///     : EventProcessorBase&lt;Order&gt;(bus, observer)
+/// {
+///     protected override async Task&lt;Dictionary&lt;string, Order&gt;&gt; HydrateStateEntitiesAsync(
+///         string[] aggregateIds, CancellationToken? cancellationToken = null)
+///         =&gt; (await repository.GetByIdsAsync(aggregateIds)).ToDictionary(o =&gt; o.Id);
+///
+///     protected override Task&lt;Order&gt; StoreStateEntity(Order updatedStateEntity,
+///                                                   CancellationToken? cancellationToken = null)
+///         =&gt; repository.SaveAsync(updatedStateEntity);
+/// }
+/// </code>
+/// </example>
 public abstract class EventProcessorBase<T>(EventHandlerBus<T> eventHandlerBus, Observer observer)
     where T : IEntity
 {
+    /// <summary>
+    /// The observer used for logging and metrics.
+    /// </summary>
     protected readonly Observer Observer = observer;
 
+    /// <summary>
+    /// Processes <paramref name="domainEvents"/> in order and persists the resulting state of each affected aggregate.
+    /// </summary>
+    /// <param name="domainEvents">The events to process, in the order they must be applied.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>
+    /// The final state of every hydrated or updated aggregate (including hydrated aggregates whose events were
+    /// skipped).
+    /// </returns>
+    /// <exception cref="NoHandlersForEventException">An event has no matching handler.</exception>
+    /// <exception cref="EventHandlerExecutionException">A handler failed.</exception>
     public async Task<ImmutableArray<T>> ExecuteAsync(ImmutableArray<Event> domainEvents,
                                                       CancellationToken? cancellationToken = null)
     {
@@ -43,9 +89,26 @@ public abstract class EventProcessorBase<T>(EventHandlerBus<T> eventHandlerBus, 
         return [.. stateEntities.Values];
     }
 
+    /// <summary>
+    /// Loads the current state of the given aggregates.
+    /// </summary>
+    /// <param name="aggregateIds">
+    /// The aggregate identifiers referenced by the batch, in event order (may contain duplicates).
+    /// </param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>
+    /// A mutable dictionary keyed by aggregate id; aggregates without state should simply be absent. The processor
+    /// updates this dictionary as events are applied.
+    /// </returns>
     protected abstract Task<Dictionary<string, T>> HydrateStateEntitiesAsync(string[] aggregateIds,
                                                                              CancellationToken? cancellationToken = null);
 
+    /// <summary>
+    /// Persists the state produced by handling an event.
+    /// </summary>
+    /// <param name="updatedStateEntity">The state to persist.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The persisted state (e.g. with storage-assigned values), used for subsequent events.</returns>
     protected abstract Task<T> StoreStateEntity(T updatedStateEntity, CancellationToken? cancellationToken = null);
 
     private async Task<T?> HandleEventAsync(Event domainEvent, T? entityState, CancellationToken? cancellationToken)

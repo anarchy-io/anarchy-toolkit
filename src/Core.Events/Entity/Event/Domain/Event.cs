@@ -10,6 +10,22 @@ namespace Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
 /// concrete enum. Convenience constructor overloads accept arbitrary <see cref="Enum"/> values and
 /// convert them to their description strings.
 /// </summary>
+/// <remarks>
+/// This is the event type consumed by <see cref="Service.Event.Domain.IDomainEventHandler{T}"/>,
+/// <see cref="Service.Event.Domain.EventHandlerBus{T}"/> and <see cref="Service.Event.Domain.EventProcessorBase{T}"/>.
+/// The primary constructor is the Newtonsoft.Json deserialization constructor.
+/// </remarks>
+/// <param name="typeAggregate">The aggregate type identifier. Required.</param>
+/// <param name="aggregateId">The identifier of the aggregate instance. Required.</param>
+/// <param name="typeEvent">The event type identifier. Required.</param>
+/// <param name="payload">The event payload: a JSON string, an object, or <see langword="null"/>.</param>
+/// <param name="moment">When the event happened. Defaults to the current UTC time.</param>
+/// <example>
+/// <code language="csharp">
+/// var created = Event.Create(Aggregate.Order, orderId, OrderEvent.Created, new { Total = 10m });
+/// var raw = new Event("order", orderId, "order-created", "{\"Total\":10}");
+/// </code>
+/// </example>
 [method: JsonConstructor]
 public class Event(
     string typeAggregate,
@@ -25,6 +41,17 @@ public class Event(
     /// description strings. C# constructors cannot be generic, so this is exposed as a static
     /// factory equivalent to the requested generic enum constructor overload.
     /// </summary>
+    /// <typeparam name="TAggregate">The aggregate type enum.</typeparam>
+    /// <typeparam name="TEvent">The event type enum.</typeparam>
+    /// <param name="typeAggregate">The aggregate type; must have a <see cref="System.ComponentModel.DescriptionAttribute"/>.</param>
+    /// <param name="aggregateId">The identifier of the aggregate instance.</param>
+    /// <param name="typeEvent">The event type; must have a <see cref="System.ComponentModel.DescriptionAttribute"/>.</param>
+    /// <param name="payload">The event payload: a JSON string, an object, or <see langword="null"/>.</param>
+    /// <param name="moment">When the event happened. Defaults to the current UTC time.</param>
+    /// <returns>The new event.</returns>
+    /// <exception cref="Core.Extension.Exceptions.MissingEnumDescriptionException">
+    /// An enum value has no description.
+    /// </exception>
     public static Event Create<TAggregate, TEvent>(
         TAggregate typeAggregate,
         string aggregateId,
@@ -35,6 +62,8 @@ public class Event(
         where TEvent : Enum
         => new(typeAggregate.ToDescription(), aggregateId, typeEvent.ToDescription(), payload, moment);
 
+    /// <inheritdoc/>
+    /// <remarks>The payload reference is shared with the clone, not deep-copied.</remarks>
     public override Event DeepClone()
     {
         // Clone from raw strings: the concrete enum types are unknown at this level.

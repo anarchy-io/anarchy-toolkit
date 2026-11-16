@@ -7,6 +7,12 @@ namespace Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
 /// Generic persisted event envelope replacing the domain-specific <c>PersistedDomainEvent</c>/
 /// <c>PersistedTaskEvent</c>. Adds the storage identity from <see cref="IPersistedEntity"/>.
 /// </summary>
+/// <param name="id">The storage-assigned identifier.</param>
+/// <param name="typeAggregate">The aggregate type identifier. Required.</param>
+/// <param name="aggregateId">The identifier of the aggregate instance. Required.</param>
+/// <param name="typeEvent">The event type identifier. Required.</param>
+/// <param name="payload">The event payload: a JSON string, an object, or <see langword="null"/>.</param>
+/// <param name="moment">When the event happened. Defaults to the current UTC time.</param>
 public class PersistedEvent(
     long id,
     string typeAggregate,
@@ -17,6 +23,7 @@ public class PersistedEvent(
     : Event(typeAggregate, aggregateId, typeEvent, payload, moment),
       IDeepCloneableEntity<PersistedEvent>, IPersistedEventEnvelope
 {
+    /// <inheritdoc/>
     public long Id { get; } = id;
 
     /// <summary>
@@ -24,6 +31,18 @@ public class PersistedEvent(
     /// their description strings. C# constructors cannot be generic, so this is exposed as a static
     /// factory equivalent to the requested generic enum constructor overload.
     /// </summary>
+    /// <typeparam name="TAggregate">The aggregate type enum.</typeparam>
+    /// <typeparam name="TEvent">The event type enum.</typeparam>
+    /// <param name="id">The storage-assigned identifier.</param>
+    /// <param name="typeAggregate">The aggregate type; must have a <see cref="System.ComponentModel.DescriptionAttribute"/>.</param>
+    /// <param name="aggregateId">The identifier of the aggregate instance.</param>
+    /// <param name="typeEvent">The event type; must have a <see cref="System.ComponentModel.DescriptionAttribute"/>.</param>
+    /// <param name="payload">The event payload: a JSON string, an object, or <see langword="null"/>.</param>
+    /// <param name="moment">When the event happened. Defaults to the current UTC time.</param>
+    /// <returns>The new persisted event.</returns>
+    /// <exception cref="Core.Extension.Exceptions.MissingEnumDescriptionException">
+    /// An enum value has no description.
+    /// </exception>
     public static PersistedEvent Create<TAggregate, TEvent>(
         long id,
         TAggregate typeAggregate,
@@ -35,6 +54,8 @@ public class PersistedEvent(
         where TEvent : Enum
         => new(id, typeAggregate.ToDescription(), aggregateId, typeEvent.ToDescription(), payload, moment);
 
+    /// <inheritdoc/>
+    /// <remarks>The payload reference is shared with the clone, not deep-copied.</remarks>
     public override PersistedEvent DeepClone()
     {
         // Clone from raw strings: the concrete enum types are unknown at this level.
