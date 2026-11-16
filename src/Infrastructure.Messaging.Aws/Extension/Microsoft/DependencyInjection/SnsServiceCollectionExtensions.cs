@@ -22,6 +22,22 @@ public static class SnsServiceCollectionExtensions
     /// <param name="options">
     /// The AWS account/region context used to build topic ARNs.
     /// </param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// Registers <paramref name="options"/> as a singleton, a scoped <see cref="AmazonSimpleNotificationServiceClient"/>
+    /// using the default AWS credential and region resolution, a scoped
+    /// <see cref="SnsAwsPublisherRequestBuilder"/> (gzip compression for oversized messages), a scoped
+    /// <see cref="SnsMessageBrokerPublisher"/> and a keyed (<c>"topic"</c>) <see cref="IMessageBrokerPublisher"/>.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// services.AddSnsMessageBroker(new AwsMessagingOptions("eu-west-1", "123456789012"));
+    ///
+    /// public class OrderNotifier([FromKeyedServices("topic")] IMessageBrokerPublisher publisher) { }
+    /// </code>
+    /// </example>
     public static IServiceCollection AddSnsMessageBroker(this IServiceCollection services, AwsMessagingOptions options)
     {
         services.AddSingleton(options);

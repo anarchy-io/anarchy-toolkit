@@ -4,11 +4,25 @@ using System.Text;
 
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper;
 
+/// <summary>
+/// Compresses and decompresses UTF-8 text with the algorithms of <see cref="CompressionType"/>.
+/// </summary>
+/// <remarks>
+/// Uses strict UTF-8 (no BOM, throws on invalid bytes). Used by the AWS request builders to compress oversized
+/// messages and by the inbound mapper to restore them.
+/// </remarks>
 public static class CompressionHelper
 {
     private static readonly UTF8Encoding StrictUtf8 =
         new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
+    /// <summary>
+    /// Decompresses <paramref name="input"/> and decodes it as UTF-8.
+    /// </summary>
+    /// <param name="input">The compressed stream. It is read to the end but not disposed.</param>
+    /// <param name="compressionType">The algorithm used; <see cref="CompressionType.Uncompressed"/> reads the stream as is.</param>
+    /// <returns>The decoded text.</returns>
+    /// <exception cref="DecoderFallbackException">The decompressed bytes are not valid UTF-8.</exception>
     public static string DecompressToUtf8(Stream input, CompressionType compressionType)
     {
         return compressionType switch {
@@ -22,6 +36,14 @@ public static class CompressionHelper
         };
     }
 
+    /// <summary>
+    /// Encodes <paramref name="text"/> as UTF-8 and compresses it.
+    /// </summary>
+    /// <param name="text">The text to compress.</param>
+    /// <param name="compressionType">The algorithm; <see cref="CompressionType.Uncompressed"/> returns the raw UTF-8 bytes.</param>
+    /// <param name="level">The compression level. Defaults to <see cref="CompressionLevel.Fastest"/>.</param>
+    /// <returns>The compressed bytes.</returns>
+    /// <exception cref="EncoderFallbackException"><paramref name="text"/> contains invalid UTF-16 (e.g. lone surrogates).</exception>
     public static byte[] CompressFromUtf8(string text, CompressionType compressionType,
                                           CompressionLevel level = CompressionLevel.Fastest)
     {
