@@ -9,11 +9,15 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Health.Middleware;
 /// another container per request. Lets a self-hosted health API run the scoped service health reports
 /// registered in the worker's own container.
 /// </summary>
+/// <remarks>See <see cref="ApplicationHealthMiddlewareBase"/> for the endpoint behavior.</remarks>
 public class ApplicationHealthMiddlewareWithScopedServices : ApplicationHealthMiddlewareBase
 {
     /// <summary>
     /// Create a new instance of <see cref="ApplicationHealthMiddlewareWithScopedServices"/>.
     /// </summary>
+    /// <param name="next">The next middleware in the pipeline.</param>
+    /// <param name="scopeFactory">Creates a scope per request in the container that registers <see cref="ApplicationHealthApi"/>.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="scopeFactory"/> is <see langword="null"/>.</exception>
     public ApplicationHealthMiddlewareWithScopedServices(
         RequestDelegate next,
         IServiceScopeFactory scopeFactory) : base(next)
@@ -24,6 +28,8 @@ public class ApplicationHealthMiddlewareWithScopedServices : ApplicationHealthMi
     /// <summary>
     /// Handle a HTTP request with the services of a new scope.
     /// </summary>
+    /// <param name="context">The HTTP context.</param>
+    /// <returns>A task that completes when the request has been handled.</returns>
     public async Task Invoke(HttpContext context)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();

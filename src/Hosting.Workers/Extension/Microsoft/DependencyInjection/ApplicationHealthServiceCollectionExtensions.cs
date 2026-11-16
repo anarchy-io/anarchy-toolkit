@@ -7,13 +7,28 @@ using System.Reflection;
 
 namespace Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.DependencyInjection;
 
+/// <summary>
+/// Registers the services behind the application health endpoints and the worker health-check host.
+/// </summary>
+/// <remarks>
+/// Besides <see cref="IBuildMetadata"/>, the required services are added only if not yet registered: an empty
+/// <c>IReadOnlyCollection&lt;IServiceHealthReport&gt;</c>, a singleton <see cref="ApplicationInformation"/> and a
+/// transient <see cref="ApplicationHealthApi"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// services.AddServiceHealthCheckWorker(typeof(Program).Assembly);
+/// </code>
+/// </example>
 public static class ApplicationHealthServiceCollectionExtensions
 {
+    /// <param name="services">The service collection.</param>
     extension(IServiceCollection services)
     {
         /// <summary>
         /// Inject a singleton instance of <see cref="IBuildMetadata"/> and the required services to Health check service
         /// </summary>
+        /// <typeparam name="TImplementation">The <see cref="IBuildMetadata"/> implementation.</typeparam>
         public void AddApplicationHealthEndpoints<TImplementation>()
             where TImplementation : class, IBuildMetadata
         {
@@ -24,6 +39,8 @@ public static class ApplicationHealthServiceCollectionExtensions
         /// <summary>
         /// Inject a singleton instance of <see cref="IBuildMetadata"/> and the required services to Health check service
         /// </summary>
+        /// <remarks>Uses <see cref="BuildMetadataFromEmbeddedResource"/> for <paramref name="assembly"/>.</remarks>
+        /// <param name="assembly">The assembly containing the embedded build metadata (normally the application's own).</param>
         public void AddApplicationHealthEndpoints(Assembly assembly)
         {
             services.AddSingleton<IBuildMetadata>(_ => new BuildMetadataFromEmbeddedResource(assembly));
@@ -34,6 +51,12 @@ public static class ApplicationHealthServiceCollectionExtensions
         /// Registers the <see cref="ServiceHealthCheckWorker"/> and the health endpoints it serves, reading the build
         /// metadata embedded in <paramref name="assembly"/> (normally the worker application's own assembly).
         /// </summary>
+        /// <remarks>
+        /// The worker reads its port from <see cref="Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Api.IWorkerHealthCheckAppSettings"/>,
+        /// which must be registered.
+        /// </remarks>
+        /// <param name="assembly">The assembly containing the embedded build metadata.</param>
+        /// <returns>The service collection, for chaining.</returns>
         public IServiceCollection AddServiceHealthCheckWorker(Assembly assembly)
         {
             services.AddApplicationHealthEndpoints(assembly);

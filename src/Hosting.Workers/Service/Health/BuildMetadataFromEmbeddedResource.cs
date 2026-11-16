@@ -9,11 +9,21 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Health;
 /// <summary>
 /// Reads build metadata from an assembly-embedded resource in JSON format.
 /// </summary>
+/// <remarks>
+/// <para>The resource is <c>{AssemblyName}.Properties.build.meta.json</c> (dashes in the assembly name replaced by
+/// underscores), with the properties <c>BuildMachine</c>, <c>BuiltBy</c>, <c>BuiltWhen</c>, <c>GitSha1</c> and
+/// <c>BuildNumber</c>. When missing, those values read <c>"build.meta.json not found"</c>.</para>
+/// <para>Application name and version come from the assembly name, the target framework from its
+/// <see cref="TargetFrameworkAttribute"/>, and the runbook URI from
+/// <see cref="ApplicationRunbookUriAttribute"/>. Everything is read once, in the constructor.</para>
+/// </remarks>
 public class BuildMetadataFromEmbeddedResource : IBuildMetadata
 {
     /// <summary>
     /// Creates a new instance of <see cref="BuildMetadataFromEmbeddedResource"/> with the specified assembly.
     /// </summary>
+    /// <param name="assembly">The assembly to read the metadata from.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> is <see langword="null"/>.</exception>
     public BuildMetadataFromEmbeddedResource(Assembly assembly)
     {
         if (assembly is null)
