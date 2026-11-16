@@ -4,14 +4,25 @@ using System.Collections.Concurrent;
 
 namespace Anarchy.Toolkit.Testing.Helper.Observability.Monitoring;
 
+/// <summary>
+/// A Serilog <see cref="ILogEventSink"/> that keeps every emitted <see cref="LogEvent"/> in memory for assertions.
+/// </summary>
+/// <remarks>
+/// Thread-safe. Property values are rendered on emit so deferred values are captured. Register it with
+/// <see cref="LoggerConfigurationExtensions.InMemory"/>, or use <see cref="Anarchy.Toolkit.Testing.Helper.InMemoryObserver"/>.
+/// Assert on it via <see cref="Anarchy.Toolkit.Testing.Helper.Observability.Monitoring.Assertions.InMemorySinkExtensions.Should(InMemorySink)"/>.
+/// </remarks>
 public class InMemorySink : ILogEventSink
 {
     private readonly ConcurrentQueue<LogEvent> _messages = new();
 
+    /// <summary>All captured log events, in emission order.</summary>
     public IReadOnlyCollection<LogEvent> Messages => _messages;
 
+    /// <summary>The most recently captured log event, or <see langword="null"/> if none.</summary>
     public LogEvent? Last => Messages.LastOrDefault();
 
+    /// <inheritdoc/>
     public void Emit(LogEvent logEvent)
     {
         // Materialize the properties to avoid issues with deferred rendering.

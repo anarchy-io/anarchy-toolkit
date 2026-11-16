@@ -10,7 +10,7 @@ public static class InMemoryMeasurerExtensions
     /// <summary>
     /// Returns an <see cref="InMemoryMeasurerAssertions"/> object that can be used to assert InMemoryMeasurer
     /// </summary>
-    /// <param name="instance"></param>
+    /// <param name="instance">The measurer under test.</param>
     /// <returns><see cref="InMemoryMeasurerAssertions"/></returns>
     public static InMemoryMeasurerAssertions Should(this InMemoryMeasurer instance) =>
         new(instance, AssertionChain.GetOrCreate());

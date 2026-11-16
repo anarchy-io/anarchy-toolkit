@@ -6,7 +6,12 @@ namespace Anarchy.Toolkit.Testing.Helper.Observability.Monitoring;
 /// <summary>
 /// Implementation of metrics with memory backed storage
 /// </summary>
-/// <inheritdoc />
+/// <remarks>
+/// Samples are grouped per metric name and type, then per tag. Every sample is also recorded under an empty-named tag
+/// (<c>""</c>) so the untagged aggregate can be asserted. Thread-safe. Use
+/// <see cref="Anarchy.Toolkit.Testing.Helper.Observability.Monitoring.Assertions.InMemoryMeasurerExtensions.Should(InMemoryMeasurer)"/>
+/// to assert on it.
+/// </remarks>
 public class InMemoryMeasurer : MeasurerBase
 {
     internal const string MetricTypeCounter = "counter";

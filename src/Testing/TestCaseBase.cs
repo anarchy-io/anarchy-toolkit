@@ -5,12 +5,33 @@ using System.Runtime.CompilerServices;
 
 namespace Anarchy.Toolkit.Testing;
 
+/// <summary>
+/// Base class for toolkit-based test cases, providing a test host environment, an in-memory observer for
+/// asserting on logs and metrics, and small helpers.
+/// </summary>
+/// <remarks>
+/// A new <see cref="FixtureObserver"/> is created per test class instance (i.e. per test in xUnit).
+/// Use <see cref="TestCaseBase{TAppSettings}"/> when test settings are needed.
+/// </remarks>
 public abstract class TestCaseBase
 {
+    /// <summary>
+    /// Gets the test host environment (see <see cref="TestHelper.TestHostEnvironment"/>).
+    /// </summary>
+    /// <returns>An <see cref="IHostEnvironment"/> configured for tests.</returns>
     protected static IHostEnvironment TestEnvironment() => TestHelper.TestHostEnvironment();
 
+    /// <summary>
+    /// An <see cref="InMemoryObserver"/> capturing logs and metrics in memory, to be passed to the code under test
+    /// and asserted upon afterwards.
+    /// </summary>
     protected readonly InMemoryObserver FixtureObserver = InMemoryObserver.Create();
 
+    /// <summary>
+    /// Returns the name of the calling member, useful to derive unique, test-specific names (e.g. queues or ids).
+    /// </summary>
+    /// <param name="caller">Filled in by the compiler via <see cref="CallerMemberNameAttribute"/>; do not pass explicitly.</param>
+    /// <returns>The caller member name.</returns>
     protected static string? GetCallerName([CallerMemberName] string? caller = null)
     {
         return caller;
@@ -25,5 +46,9 @@ public abstract class TestCaseBase
 public abstract class TestCaseBase<TAppSettings> : TestCaseBase
     where TAppSettings : class, IAppSettings
 {
+    /// <summary>
+    /// Gets the test settings bound to <typeparamref name="TAppSettings"/> (see <see cref="TestHelper.TestSettings{TAppSettings}"/>).
+    /// </summary>
+    /// <returns>The bound settings instance.</returns>
     protected static TAppSettings TestSettings() => TestHelper.TestSettings<TAppSettings>();
 }

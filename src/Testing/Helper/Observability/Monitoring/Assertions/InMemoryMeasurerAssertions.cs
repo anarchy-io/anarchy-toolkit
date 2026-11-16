@@ -4,12 +4,22 @@ using AwesomeAssertions.Primitives;
 
 namespace Anarchy.Toolkit.Testing.Helper.Observability.Monitoring.Assertions;
 
-/// <inheritdoc />
+/// <summary>
+/// AwesomeAssertions assertions for an <see cref="InMemoryMeasurer"/>, checking whether metrics of a given type and name were recorded.
+/// </summary>
+/// <remarks>Obtain via <see cref="InMemoryMeasurerExtensions.Should(InMemoryMeasurer)"/>. Use <c>.Which</c> on the result to continue with <see cref="MetricAssertions{TValue}"/>.</remarks>
+/// <example>
+/// <code language="csharp">
+/// observer.InMemoryMeasurer.Should().HaveCounter("orders.created").Which.HasValue(1);
+/// </code>
+/// </example>
 public class InMemoryMeasurerAssertions : ReferenceTypeAssertions<InMemoryMeasurer, InMemoryMeasurerAssertions>
 {
     private readonly AssertionChain _assertionChain;
 
-    /// <inheritdoc />
+    /// <summary>Initializes a new instance of the <see cref="InMemoryMeasurerAssertions"/> class.</summary>
+    /// <param name="subject">The measurer under test.</param>
+    /// <param name="assertionChain">The assertion chain used to report failures.</param>
     public InMemoryMeasurerAssertions(InMemoryMeasurer subject, AssertionChain assertionChain) : base(subject, assertionChain)
     {
         _assertionChain = assertionChain;
@@ -19,12 +29,12 @@ public class InMemoryMeasurerAssertions : ReferenceTypeAssertions<InMemoryMeasur
     protected override string Identifier { get; } = "metrics";
 
     /// <summary>
-    /// Asserts that the <see cref="InMemoryMeasurer"/> has a counter with the given name
+    /// Asserts that the <see cref="InMemoryMeasurer"/> does not have a counter with the given name
     /// </summary>
     /// <param name="name">The name of the counter</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint for chaining further assertions on the measurer.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<double>> NotHaveCounter(string name, string because = "", params object[] becauseArgs) =>
         NotHaveMetricOfType<double>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeCounter);
 
@@ -34,7 +44,7 @@ public class InMemoryMeasurerAssertions : ReferenceTypeAssertions<InMemoryMeasur
     /// <param name="name">The name of the counter</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint whose <c>Which</c> exposes <see cref="MetricAssertions{TValue}"/> for the found metric.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<double>> HaveCounter(string name, string because = "", params object[] becauseArgs) =>
         HaveMetricOfType<double>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeCounter);
 
@@ -44,29 +54,19 @@ public class InMemoryMeasurerAssertions : ReferenceTypeAssertions<InMemoryMeasur
     /// <param name="name">The name of the gauge</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint whose <c>Which</c> exposes <see cref="MetricAssertions{TValue}"/> for the found metric.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<double>> HaveGauge(string name, string because = "", params object[] becauseArgs) =>
         HaveMetricOfType<double>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeGauge);
 
     /// <summary>
-    /// Asserts that the <see cref="InMemoryMeasurer"/> has a gauge with the given name
+    /// Asserts that the <see cref="InMemoryMeasurer"/> does not have a gauge with the given name
     /// </summary>
     /// <param name="name">The name of the gauge</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint for chaining further assertions on the measurer.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<double>> NotHaveGauge(string name, string because = "", params object[] becauseArgs) =>
         NotHaveMetricOfType<double>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeGauge);
-
-    /// <summary>
-    /// Asserts that the <see cref="InMemoryMeasurer"/> has an event with the given name
-    /// </summary>
-    /// <param name="name">The name of the counter</param>
-    /// <param name="because">A formatted event explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
-    /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
-    public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<string>> HaveEvent(string name, string because = "", params object[] becauseArgs) =>
-        HaveMetricOfType<string>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeEvent);
 
     /// <summary>
     /// Asserts that the <see cref="InMemoryMeasurer"/> has an event with the given name
@@ -74,7 +74,17 @@ public class InMemoryMeasurerAssertions : ReferenceTypeAssertions<InMemoryMeasur
     /// <param name="name">The name of the event</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint whose <c>Which</c> exposes <see cref="MetricAssertions{TValue}"/> for the found metric.</returns>
+    public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<string>> HaveEvent(string name, string because = "", params object[] becauseArgs) =>
+        HaveMetricOfType<string>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeEvent);
+
+    /// <summary>
+    /// Asserts that the <see cref="InMemoryMeasurer"/> does not have an event with the given name
+    /// </summary>
+    /// <param name="name">The name of the event</param>
+    /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
+    /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
+    /// <returns>A constraint for chaining further assertions on the measurer.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<string>> NotHaveEvent(string name, string because = "", params object[] becauseArgs) =>
         NotHaveMetricOfType<string>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeEvent);
 
@@ -84,17 +94,17 @@ public class InMemoryMeasurerAssertions : ReferenceTypeAssertions<InMemoryMeasur
     /// <param name="name">The name of the timer</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint whose <c>Which</c> exposes <see cref="MetricAssertions{TValue}"/> for the found metric.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<TimeSpan>> HaveTimer(string name, string because = "", params object[] becauseArgs) =>
         HaveMetricOfType<TimeSpan>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeTimer);
 
     /// <summary>
-    /// Asserts that the <see cref="InMemoryMeasurer"/> has a timer with the given name
+    /// Asserts that the <see cref="InMemoryMeasurer"/> does not have a timer with the given name
     /// </summary>
     /// <param name="name">The name of the timer</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint for chaining further assertions on the measurer.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<TimeSpan>> NotHaveTimer(string name, string because = "", params object[] becauseArgs) =>
         NotHaveMetricOfType<TimeSpan>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeTimer);
 
@@ -104,17 +114,17 @@ public class InMemoryMeasurerAssertions : ReferenceTypeAssertions<InMemoryMeasur
     /// <param name="name">The name of the histogram</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint whose <c>Which</c> exposes <see cref="MetricAssertions{TValue}"/> for the found metric.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<double>> HaveHistogram(string name, string because = "", params object[] becauseArgs) =>
         HaveMetricOfType<double>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeHistogram);
 
     /// <summary>
-    /// Asserts that the <see cref="InMemoryMeasurer"/> has a histogram with the given name
+    /// Asserts that the <see cref="InMemoryMeasurer"/> does not have a histogram with the given name
     /// </summary>
     /// <param name="name">The name of the histogram</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint for chaining further assertions on the measurer.</returns>
     public AndWhichConstraint<InMemoryMeasurerAssertions, MetricAssertions<double>> NotHaveHistogram(string name, string because = "", params object[] becauseArgs) =>
         NotHaveMetricOfType<double>(name, because, becauseArgs, InMemoryMeasurer.MetricTypeHistogram);
 

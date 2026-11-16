@@ -6,15 +6,39 @@ using Serilog.Events;
 
 namespace Anarchy.Toolkit.Testing.Helper.Observability.Monitoring.Assertions;
 
+/// <summary>
+/// AwesomeAssertions assertions for an <see cref="InMemorySink"/>, finding captured log events by message template.
+/// </summary>
+/// <remarks>
+/// Matching is done against the raw message template text (e.g. <c>"Order {OrderId} created"</c>), not the rendered message.
+/// Obtain via <see cref="InMemorySinkExtensions.Should(InMemorySink)"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// observer.SinkLogs.Should()
+///     .HaveMessage("Order {OrderId} created")
+///     .And.HaveNumericProperty&lt;int&gt;("OrderId").Which.Should().Be(42);
+/// </code>
+/// </example>
 public class InMemorySinkAssertions : ReferenceTypeAssertions<InMemorySink, InMemorySinkAssertions>
 {
     private readonly AssertionChain _assertionChain;
 
+    /// <summary>Initializes a new instance of the <see cref="InMemorySinkAssertions"/> class.</summary>
+    /// <param name="subject">The sink under test.</param>
+    /// <param name="assertionChain">The assertion chain used to report failures.</param>
     public InMemorySinkAssertions(InMemorySink subject, AssertionChain assertionChain) : base(subject, assertionChain)
     {
         _assertionChain = assertionChain;
     }
 
+    /// <summary>
+    /// Asserts that exactly one captured log event has the given message template.
+    /// </summary>
+    /// <param name="messageTemplate">The exact message template text.</param>
+    /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
+    /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
+    /// <returns>A constraint exposing <see cref="LogEventAssertions"/> via <c>And</c> and the matched <see cref="LogEvent"/> via <c>Which</c>.</returns>
     public AndWhichConstraint<LogEventAssertions, LogEvent> HaveMessage(
         string messageTemplate,
         string because = "",
@@ -53,6 +77,13 @@ public class InMemorySinkAssertions : ReferenceTypeAssertions<InMemorySink, InMe
         );
     }
 
+    /// <summary>
+    /// Asserts that at least one captured log event has the given message template.
+    /// </summary>
+    /// <param name="messageTemplate">The exact message template text.</param>
+    /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
+    /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
+    /// <returns>A constraint exposing collection assertions and the matched events.</returns>
     public AndWhichConstraint<GenericCollectionAssertions<LogEvent>, IEnumerable<LogEvent>> HaveMessages(
         string messageTemplate,
         string because = "",
@@ -77,6 +108,13 @@ public class InMemorySinkAssertions : ReferenceTypeAssertions<InMemorySink, InMe
         );
     }
 
+    /// <summary>
+    /// Asserts that exactly one captured log event has a message template matching the wildcard pattern.
+    /// </summary>
+    /// <param name="wildcardPattern">A pattern where <c>*</c> matches any characters and <c>?</c> a single character.</param>
+    /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
+    /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
+    /// <returns>A constraint exposing <see cref="LogEventAssertions"/> via <c>And</c> and the matched <see cref="LogEvent"/> via <c>Which</c>.</returns>
     public AndWhichConstraint<LogEventAssertions, LogEvent> HaveMatch(
         string wildcardPattern,
         string because = "",
@@ -115,6 +153,13 @@ public class InMemorySinkAssertions : ReferenceTypeAssertions<InMemorySink, InMe
         );
     }
 
+    /// <summary>
+    /// Asserts that at least one captured log event has a message template matching the wildcard pattern.
+    /// </summary>
+    /// <param name="wildcardPattern">A pattern where <c>*</c> matches any characters and <c>?</c> a single character.</param>
+    /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
+    /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
+    /// <returns>A constraint exposing collection assertions and the matched events.</returns>
     public AndWhichConstraint<GenericCollectionAssertions<LogEvent>, IEnumerable<LogEvent>> HaveMatches(
         string wildcardPattern,
         string because = "",
@@ -153,5 +198,6 @@ public class InMemorySinkAssertions : ReferenceTypeAssertions<InMemorySink, InMe
         });
     }
 
+    /// <inheritdoc/>
     protected override string Identifier { get; } = "InMemorySink";
 }
