@@ -9,7 +9,17 @@ namespace Anarchy.Toolkit.Core.Observability.Service.Observability;
 /// </summary>
 /// <remarks>
 /// Remember to add `.Enrich.FromLogContext()` when creating logger for the context properties to work.
+/// Properties are stored in Serilog's async-local context, so they flow across <c>await</c> and are scoped to the
+/// current async flow. Exposed through <see cref="Observer.LogContext"/>.
 /// </remarks>
+/// <example>
+/// <code language="csharp">
+/// using (observer.LogContext.PushProperty(new LogContextProperty("OrderId", order.Id)))
+/// {
+///     observer.Logger.Information("Order received"); // event carries OrderId
+/// }
+/// </code>
+/// </example>
 public class LogContext
 {
     /// <summary>
@@ -19,6 +29,9 @@ public class LogContext
     /// <remarks>
     /// Remember to add `.Enrich.FromLogContext()` when creating logger for the context properties to work.
     /// </remarks>
+    /// <param name="properties">The properties to push.</param>
+    /// <returns>A handle that removes the pushed properties when disposed.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if any element of <paramref name="properties"/> is <see langword="null"/>.</exception>
     public virtual IDisposable PushProperties(params LogContextProperty[] properties)
     {
         var serilogNativeProperties = ConvertPropertiesToEnrichers(properties);
@@ -48,6 +61,9 @@ public class LogContext
     /// <remarks>
     /// Remember to add `.Enrich.FromLogContext()` when creating logger for the context properties to work.
     /// </remarks>
+    /// <param name="property">The property to push.</param>
+    /// <returns>A handle that removes the pushed property when disposed.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="property"/> is <see langword="null"/>.</exception>
     public IDisposable PushProperty(LogContextProperty property)
     {
         if (property == null)

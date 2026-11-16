@@ -28,6 +28,13 @@ public class LogContextProperty
     /// <summary>
     /// Creates a new instance of the <see cref="LogContextProperty"/> class.
     /// </summary>
+    /// <param name="name">The property name. Must not be <see langword="null"/> or empty.</param>
+    /// <param name="value">The property value.</param>
+    /// <param name="destructureObjects">
+    /// <see langword="true"/> to destructure <paramref name="value"/> into a structured object when logged.
+    /// </param>
+    /// <exception cref="Anarchy.Toolkit.Core.Exceptions.EmptyArgumentException">Thrown if <paramref name="name"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
     public LogContextProperty(string name, object value, bool destructureObjects = false)
     {
         if (name == "")
