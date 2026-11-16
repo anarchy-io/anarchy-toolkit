@@ -1,11 +1,18 @@
 namespace Anarchy.Toolkit.Core.Extension;
 
+/// <summary>
+/// Extension methods for <see cref="Exception"/>.
+/// </summary>
 public static class ExceptionExtensions
 {
     /// <summary>
     /// Returns the fully qualified name of the exception type if available,
     /// otherwise falls back to the Source property, and finally to null.
     /// </summary>
+    /// <param name="ex">The exception to inspect.</param>
+    /// <returns>
+    /// The exception's type full name, its <see cref="Exception.Source"/>, or <see langword="null"/>. Never throws.
+    /// </returns>
     public static string? GetQualifiedSource(this Exception ex)
     {
         try

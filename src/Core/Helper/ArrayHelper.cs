@@ -2,8 +2,16 @@ using Anarchy.Toolkit.Core.Entity;
 
 namespace Anarchy.Toolkit.Core.Helper;
 
+/// <summary>
+/// Array utilities parameterised by element type.
+/// </summary>
+/// <typeparam name="T">The array element type.</typeparam>
 public static class ArrayHelper<T>
 {
+    /// <summary>
+    /// Creates a copy of <paramref name="array"/>, deep-cloning elements when possible.
+    /// </summary>
+    /// <param name="array">The array to copy; may be <see langword="null"/>.</param>
     /// <returns>
     ///     Returns an empty array in case <paramref name="array" /> is null. Otherwise, returns a new array with
     ///     elements that are copied from <paramref name="array" />.

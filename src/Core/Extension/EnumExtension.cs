@@ -4,15 +4,48 @@ using System.ComponentModel;
 
 namespace Anarchy.Toolkit.Core.Extension;
 
+/// <summary>
+/// Converts enum values to and from the text of their <see cref="DescriptionAttribute"/>.
+/// </summary>
+/// <remarks>
+/// Values without a <see cref="DescriptionAttribute"/> are ignored when parsing and cause
+/// <see cref="MissingEnumDescriptionException"/> when formatting. See also
+/// <see cref="Helper.System.Text.Json.Serialization.DescriptionEnumJsonConverter{TEnum}"/> for JSON support.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// public enum Status
+/// {
+///     [Description("active")] Active,
+///     [Description("inactive")] Inactive
+/// }
+///
+/// var text = Status.Active.ToDescription();          // "active"
+/// var status = "inactive".ToEnumValue&lt;Status&gt;(); // Status.Inactive
+/// </code>
+/// </example>
 public static class EnumExtension
 {
+    /// <summary>
+    /// Gets the descriptions of all values of <typeparamref name="T"/> that declare a <see cref="DescriptionAttribute"/>.
+    /// </summary>
+    /// <typeparam name="T">The enum type.</typeparam>
+    /// <returns>The descriptions, in declaration order.</returns>
     public static IReadOnlyCollection<string> GetAllDescriptions<T>() where T : Enum
     {
         return [.. GetAllEnumDescriptions<T>()];
     }
 
+    /// <param name="enumDescription">The description text to convert.</param>
     extension(string enumDescription)
     {
+        /// <summary>
+        /// Tries to convert the description into a value of <typeparamref name="T"/> (case-sensitive), without
+        /// throwing.
+        /// </summary>
+        /// <typeparam name="T">The enum type.</typeparam>
+        /// <param name="result">The parsed value, or <see langword="default"/> on failure.</param>
+        /// <returns><see langword="true"/> when the conversion succeeded.</returns>
         public bool TryToEnumValue<T>(out T? result) where T : Enum
         {
             result = default;
@@ -28,6 +61,14 @@ public static class EnumExtension
             }
         }
 
+        /// <summary>
+        /// Converts the description into a value of <typeparamref name="T"/>, falling back to
+        /// <paramref name="defaultValue"/> on any failure.
+        /// </summary>
+        /// <typeparam name="T">The enum type.</typeparam>
+        /// <param name="defaultValue">The value returned when the description cannot be converted.</param>
+        /// <param name="caseSensitiveSearch">Whether the description must match case-sensitively.</param>
+        /// <returns>The matching enum value or <paramref name="defaultValue"/>.</returns>
         public T ToEnumValue<T>(T defaultValue, bool caseSensitiveSearch = true)
             where T : Enum
         {
@@ -41,6 +82,15 @@ public static class EnumExtension
             }
         }
 
+        /// <summary>
+        /// Converts the description into the value of <typeparamref name="T"/> whose
+        /// <see cref="DescriptionAttribute"/> matches it.
+        /// </summary>
+        /// <typeparam name="T">The enum type.</typeparam>
+        /// <param name="caseSensitiveSearch">Whether the description must match case-sensitively.</param>
+        /// <returns>The matching enum value.</returns>
+        /// <exception cref="EmptyArgumentException">The description is null or empty.</exception>
+        /// <exception cref="InvalidEnumDescriptionException">No value of <typeparamref name="T"/> has the description.</exception>
         public T ToEnumValue<T>(bool caseSensitiveSearch = true) where T : Enum
         {
             if (enumDescription.IsNullOrEmpty())
@@ -65,6 +115,13 @@ public static class EnumExtension
         }
     }
 
+    /// <summary>
+    /// Gets the description of an enum value without throwing.
+    /// </summary>
+    /// <typeparam name="T">The enum type.</typeparam>
+    /// <param name="valueToConvert">The enum value.</param>
+    /// <param name="enumDescription">The description, or <paramref name="defaultDescription"/> on failure.</param>
+    /// <param name="defaultDescription">The fallback description. Defaults to <c>"Unknown"</c>.</param>
     public static void TryDescription<T>(this T valueToConvert, out string enumDescription,
                                          string defaultDescription = "Unknown") where T : Enum
     {
@@ -78,6 +135,14 @@ public static class EnumExtension
         }
     }
 
+    /// <summary>
+    /// Gets the text of the <see cref="DescriptionAttribute"/> applied to an enum value.
+    /// </summary>
+    /// <typeparam name="T">The enum type.</typeparam>
+    /// <param name="valueToConvert">The enum value.</param>
+    /// <returns>The description text.</returns>
+    /// <exception cref="MissingEnumDescriptionException">The value has no <see cref="DescriptionAttribute"/>.</exception>
+    /// <exception cref="UndefinedEnumValueException">The value is not defined in <typeparamref name="T"/>.</exception>
     public static string ToDescription<T>(this T valueToConvert) where T : Enum
     {
         foreach (T enumValue in Enum.GetValues(typeof(T)))
