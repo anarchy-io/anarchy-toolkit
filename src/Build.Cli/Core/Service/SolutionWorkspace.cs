@@ -8,6 +8,12 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// An existing Anarchy solution: a directory whose <c>.fallout/parameters.json</c> names its solution file, with the
 /// names of the projects under <c>src</c> and the local ports its web hosts already listen on.
 /// </summary>
+/// <remarks>Used by <see cref="ApplicationScaffolder.Add"/> to add applications to a solution that already exists.</remarks>
+/// <param name="Root">The full path of the solution directory.</param>
+/// <param name="SolutionFile">The full path of the solution file.</param>
+/// <param name="Layout">The layout, read from the <c>ILayeringBuild</c> parameters.</param>
+/// <param name="ProjectNames">The names of the projects under <c>src</c>.</param>
+/// <param name="UsedPorts">The local ports already used by <c>RunWebHost</c> calls in the solution's <c>Program.cs</c> files.</param>
 public sealed partial record SolutionWorkspace(
     string Root,
     string SolutionFile,
@@ -18,6 +24,10 @@ public sealed partial record SolutionWorkspace(
     /// <summary>
     /// The workspace containing <paramref name="directory"/>, searching upwards, or null if there is none.
     /// </summary>
+    /// <param name="directory">The directory to start from.</param>
+    /// <returns>
+    /// The nearest workspace whose <c>.fallout/parameters.json</c> defines a <c>Solution</c>, or <see langword="null"/>.
+    /// </returns>
     public static SolutionWorkspace? Find(string directory)
     {
         for (var current = new DirectoryInfo(Path.GetFullPath(directory)); current is not null; current = current.Parent)
@@ -33,7 +43,13 @@ public sealed partial record SolutionWorkspace(
     /// Reads the workspace at <paramref name="root"/>: the layout from the <c>ILayeringBuild</c> parameters, and the
     /// projects and used ports from the files under <c>src</c> (<c>bin</c>/<c>obj</c> excluded).
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when <c>.fallout/parameters.json</c> defines no solution.</exception>
+    /// <remarks>
+    /// Without <c>LayeringByFolder</c> the layout is <see cref="LayeringMode.Prefix"/>, and without
+    /// <c>LayeringLayers</c> its layers are <see cref="SolutionLayout.DefaultLayers"/>, as in <c>ILayeringBuild</c>.
+    /// </remarks>
+    /// <param name="root">The solution directory.</param>
+    /// <returns>The workspace.</returns>
+    /// <exception cref="System.InvalidOperationException">Thrown when <c>.fallout/parameters.json</c> defines no solution.</exception>
     public static SolutionWorkspace Load(string root)
     {
         root = Path.GetFullPath(root);

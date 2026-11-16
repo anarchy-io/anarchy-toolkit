@@ -6,17 +6,26 @@ namespace Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 /// <summary>
 /// Reads and updates Fallout's <c>.fallout/parameters.json</c>; parameter names match case-insensitively.
 /// </summary>
+/// <remarks>
+/// The file is the one Fallout reads parameter defaults from; the scaffolders record the solution
+/// (<c>Solution</c>) and the layering parameters (see
+/// <see cref="Anarchy.Toolkit.Build.Cli.Core.Entity.SolutionLayout.ToFalloutParameters"/>) there.
+/// </remarks>
 public static class FalloutParameters
 {
     /// <summary>
     /// The path of the parameters file under a solution root.
     /// </summary>
+    /// <param name="root">The solution directory.</param>
+    /// <returns>The path of <c>.fallout/parameters.json</c>.</returns>
     public static string PathOf(string root) => Path.Combine(root, ".fallout", "parameters.json");
 
     /// <summary>
     /// The parameters, or an empty object if the file does not exist.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the file does not contain a JSON object.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when the file does not contain a JSON object.</exception>
+    /// <param name="root">The solution directory.</param>
+    /// <returns>The parameters.</returns>
     public static JsonObject Read(string root)
     {
         var path = PathOf(root);
@@ -29,9 +38,11 @@ public static class FalloutParameters
     /// <summary>
     /// Adds parameters, creating the file if needed; existing ones are never replaced.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="System.InvalidOperationException">
     /// Thrown when a parameter is already defined (nothing is written then), or the file does not contain a JSON object.
     /// </exception>
+    /// <param name="root">The solution directory.</param>
+    /// <param name="values">The parameters to add, serialized to JSON.</param>
     public static void Add(string root, IReadOnlyDictionary<string, object> values)
     {
         var parameters = Read(root);
@@ -49,12 +60,18 @@ public static class FalloutParameters
     /// <summary>
     /// A string parameter, or null if it is missing or not a string.
     /// </summary>
+    /// <param name="parameters">The parameters, as returned by <see cref="Read"/>.</param>
+    /// <param name="key">The parameter name.</param>
+    /// <returns>The value, or <see langword="null"/>.</returns>
     public static string? GetString(JsonObject parameters, string key) =>
         Find(parameters, key) is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
 
     /// <summary>
     /// A boolean parameter, also accepted as a <c>"true"</c>/<c>"false"</c> string; null if missing or invalid.
     /// </summary>
+    /// <param name="parameters">The parameters, as returned by <see cref="Read"/>.</param>
+    /// <param name="key">The parameter name.</param>
+    /// <returns>The value, or <see langword="null"/>.</returns>
     public static bool? GetBool(JsonObject parameters, string key) => Find(parameters, key) switch {
         JsonValue value when value.TryGetValue<bool>(out var flag) => flag,
         JsonValue value when value.TryGetValue<string>(out var text) && bool.TryParse(text, out var flag) => flag,
@@ -64,6 +81,9 @@ public static class FalloutParameters
     /// <summary>
     /// A string array parameter; Fallout also accepts a single space-separated string. Null if missing.
     /// </summary>
+    /// <param name="parameters">The parameters, as returned by <see cref="Read"/>.</param>
+    /// <param name="key">The parameter name.</param>
+    /// <returns>The values, or <see langword="null"/>.</returns>
     public static IReadOnlyList<string>? GetStrings(JsonObject parameters, string key) => Find(parameters, key) switch {
         JsonArray array => array.Select(item => item?.GetValue<string>()).OfType<string>().ToArray(),
         JsonValue value when value.TryGetValue<string>(out var text) => text.Split(' ', StringSplitOptions.RemoveEmptyEntries),

@@ -3,11 +3,18 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Entity;
 /// <summary>
 /// Everything needed to bootstrap a solution into an empty directory.
 /// </summary>
+/// <remarks>Consumed by <see cref="Anarchy.Toolkit.Build.Cli.Core.Service.SolutionBootstrapper"/>.</remarks>
+/// <param name="Name">The solution name.</param>
+/// <param name="RootDirectory">The (empty) directory the solution is created in.</param>
+/// <param name="Layout">Where projects go and which layers they are checked against.</param>
+/// <param name="Applications">The applications to add, in order.</param>
 public sealed record SolutionPlan(string Name, string RootDirectory, SolutionLayout Layout, IReadOnlyList<ApplicationSpec> Applications)
 {
     /// <summary>
     /// A plan for the baseline solution, in the default layout and without applications.
     /// </summary>
+    /// <param name="name">The solution name.</param>
+    /// <param name="rootDirectory">The (empty) directory the solution is created in.</param>
     public SolutionPlan(string name, string rootDirectory) : this(name, rootDirectory, SolutionLayout.Default, []) { }
 
     /// <summary>

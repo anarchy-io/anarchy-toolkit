@@ -3,12 +3,22 @@ namespace Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 /// <summary>
 /// An <see cref="IDisposable"/> running an action on its first disposal only.
 /// </summary>
+/// <example>
+/// <code language="csharp">
+/// using (Disposable.Create(() =&gt; Console.WriteLine("done")))
+/// {
+///     // ...
+/// }
+/// </code>
+/// </example>
 public class Disposable : IDisposable
 {
     /// <summary>
     /// A disposable running <paramref name="onDispose"/> once, when first disposed.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="onDispose"/> is null.</exception>
+    /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="onDispose"/> is null.</exception>
+    /// <param name="onDispose">The action to run.</param>
+    /// <returns>The disposable.</returns>
     public static IDisposable Create(Action onDispose) => new Disposable(onDispose);
 
     /// <summary>

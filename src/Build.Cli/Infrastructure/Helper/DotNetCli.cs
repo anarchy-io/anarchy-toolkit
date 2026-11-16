@@ -10,7 +10,9 @@ public static class DotNetCli
     /// <summary>
     /// Runs <c>dotnet</c> with <paramref name="arguments"/> in <paramref name="workingDirectory"/> and waits for it to exit.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the command fails; the message includes its output.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when the command fails; the message includes its output.</exception>
+    /// <param name="workingDirectory">The working directory.</param>
+    /// <param name="arguments">The <c>dotnet</c> arguments, e.g. <c>sln</c>, <c>Shop.sln</c>, <c>add</c>, a project path.</param>
     public static void Run(string workingDirectory, params string[] arguments)
     {
         var start = new ProcessStartInfo("dotnet") {

@@ -12,7 +12,11 @@ public static class LintStagingTasks
     /// Runs <paramref name="lint"/>; with <paramref name="autoStage"/>, then re-stages the fully staged files it
     /// changed. Partially staged files, symbolic links, and files whose index entry changed meanwhile are left alone.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when a <c>git</c> command fails.</exception>
+    /// <remarks>Changes are detected by comparing SHA-256 hashes of each file before and after the lint.</remarks>
+    /// <param name="root">The repository root, where <c>git</c> runs.</param>
+    /// <param name="autoStage">Whether to re-stage the files the lint changed.</param>
+    /// <param name="lint">The lint fix to run.</param>
+    /// <exception cref="System.InvalidOperationException">Thrown when a <c>git</c> command fails.</exception>
     public static void Run(string root, bool autoStage, Action lint)
     {
         if (!autoStage) { lint(); return; }

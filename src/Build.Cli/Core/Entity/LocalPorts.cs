@@ -14,6 +14,9 @@ public static class LocalPorts
     /// Assigns ports to the web hosts among <paramref name="applications"/>, in order, skipping any pair that
     /// overlaps <paramref name="used"/>. Applications that are not web hosts get no entry.
     /// </summary>
+    /// <param name="applications">The applications, in the order they should receive ports.</param>
+    /// <param name="used">Ports already taken (e.g. by existing launch settings) that must not be assigned.</param>
+    /// <returns>The HTTP and HTTPS port of each web host in <paramref name="applications"/>.</returns>
     public static IReadOnlyDictionary<ApplicationSpec, (int Http, int Https)> Assign(
         IEnumerable<ApplicationSpec> applications, IReadOnlyCollection<int> used)
     {

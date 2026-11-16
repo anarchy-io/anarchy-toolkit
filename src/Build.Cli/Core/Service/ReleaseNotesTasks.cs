@@ -6,6 +6,10 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// <summary>
 /// Builds package release notes from the commits affecting each package.
 /// </summary>
+/// <remarks>
+/// Works with <see cref="ReleaseVersionTasks"/>: <see cref="Collect"/> gathers the commit subjects of a release range,
+/// <see cref="Plan"/> turns them into README edits, and <see cref="AddEntry"/> edits a single README.
+/// </remarks>
 public static class ReleaseNotesTasks
 {
     /// <summary>
@@ -13,7 +17,12 @@ public static class ReleaseNotesTasks
     /// path. Each commit is attributed to the packages it affects compared to its first parent; release bump commits
     /// are skipped.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
+    /// <param name="root">The repository root.</param>
+    /// <param name="projects">The packable projects of the solution.</param>
+    /// <param name="baseRef">The Git reference the range starts from (exclusive), e.g. the last release tag.</param>
+    /// <param name="headRef">The Git reference the range ends at (inclusive).</param>
+    /// <returns>The distinct commit subjects, oldest first, keyed by project path (case-insensitive).</returns>
+    /// <exception cref="System.InvalidOperationException">
     /// Thrown when <paramref name="baseRef"/> is not an ancestor of <paramref name="headRef"/>, or Git fails.
     /// </exception>
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> Collect(
@@ -50,6 +59,11 @@ public static class ReleaseNotesTasks
     /// <paramref name="messages"/> gets an entry for its current version in the <c>README.md</c> next to its project
     /// (created when <paramref name="read"/> returns null). READMEs that already list the version are left out.
     /// </summary>
+    /// <param name="projects">The projects, with their current versions.</param>
+    /// <param name="messages">The commit subjects keyed by project path, as returned by <see cref="Collect"/>.</param>
+    /// <param name="read">Reads a README's content, or returns <see langword="null"/> when it does not exist.</param>
+    /// <returns>The new README contents, keyed by README path.</returns>
+    /// <exception cref="System.InvalidOperationException">Thrown when <see cref="AddEntry"/> fails for a README.</exception>
     public static IReadOnlyDictionary<string, string> Plan(
         IReadOnlyCollection<Project> projects, IReadOnlyDictionary<string, IReadOnlyList<string>> messages,
         Func<string, string?> read)
@@ -69,7 +83,11 @@ public static class ReleaseNotesTasks
     /// Adds an entry at the beginning of the <c>## Releases</c> section (appended when missing), unless that version
     /// is already listed. Code fences are ignored, and the README's line endings are kept.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
+    /// <param name="readme">The README content.</param>
+    /// <param name="version">The release version, used as the <c>###</c> heading.</param>
+    /// <param name="subjects">The commit subjects, listed as bullets (trimmed, single-line and deduplicated).</param>
+    /// <returns>The updated content, or <paramref name="readme"/> unchanged when the version is already listed.</returns>
+    /// <exception cref="System.InvalidOperationException">
     /// Thrown when the README has more than one Releases section, or <paramref name="subjects"/> has no non-blank subject.
     /// </exception>
     public static string AddEntry(string readme, string version, IReadOnlyList<string> subjects)

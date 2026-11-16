@@ -10,7 +10,9 @@ public static class ApplicationTemplates
     /// <summary>
     /// The starter files of the context's application, keyed by path relative to the project directory.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when the application kind is unknown.</exception>
+    /// <param name="context">The application to render.</param>
+    /// <returns>The file contents, keyed by path relative to the project directory.</returns>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the application kind is unknown.</exception>
     public static IReadOnlyDictionary<string, string> Render(ApplicationContext context) =>
         context.App.Kind switch {
             ApplicationKind.Api => ApiTemplate.Render(context),
@@ -23,6 +25,8 @@ public static class ApplicationTemplates
     /// A library project of a layer, referencing the layer below it unless <paramref name="lowerLayerReference"/>
     /// (relative to the library's directory) is null.
     /// </summary>
+    /// <param name="lowerLayerReference">The lower layer's project path, or <see langword="null"/> for the innermost layer.</param>
+    /// <returns>The <c>.csproj</c> content.</returns>
     public static string Library(string? lowerLayerReference) => $$"""
         <Project Sdk="Microsoft.NET.Sdk">
           <PropertyGroup>
@@ -58,6 +62,9 @@ public static class ApplicationTemplates
     /// <summary>
     /// A <c>PackageReference</c>, versioned unless <paramref name="version"/> is null (central package management).
     /// </summary>
+    /// <param name="packageId">The package ID.</param>
+    /// <param name="version">The version, or <see langword="null"/> to omit the <c>Version</c> attribute.</param>
+    /// <returns>The <c>PackageReference</c> element.</returns>
     public static string PackageReference(string packageId, string? version) => version is null
         ? $"<PackageReference Include=\"{packageId}\" />"
         : $"<PackageReference Include=\"{packageId}\" Version=\"{version}\" />";
