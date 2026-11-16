@@ -26,6 +26,10 @@ See the [sample tests](https://github.com/anarchy-io/anarchy-toolkit/tree/main/s
 
 ## Releases
 
+### 1.0.8
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 1.0.7
 
 - References `Anarchy.Toolkit.Web` 1.0.7, aligned with the .NET 10 LTS.

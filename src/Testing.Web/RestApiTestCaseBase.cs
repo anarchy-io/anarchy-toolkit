@@ -46,6 +46,27 @@ namespace Anarchy.Toolkit.Testing.Web;
 /// <c>includeAuthorizationToken</c> is <c>true</c>. Consumers supply their own scope strings.
 /// </param>
 /// <param name="controllerRouteBaseUrl">Optional base URL prepended to request routes.</param>
+/// <remarks>
+/// Implements xUnit's <c>IClassFixture</c> for <see cref="WebApplicationFactory{TEntryPoint}"/>, so the factory (and
+/// <see cref="Client"/>'s server) is shared by all tests of a class. Request routes are resolved with
+/// <see cref="HttpRouteHelper.FromTemplate"/> relative to <paramref name="controllerRouteBaseUrl"/>. The Lambda path
+/// uses a <c>TestLambdaContext</c> and converts requests with
+/// <see cref="Anarchy.Toolkit.Testing.Extension.System.Net.Http.HttpRequestMessageExtensions"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// public class OrdersApiTest(WebApplicationFactory&lt;Startup&gt; factory)
+///     : RestApiTestCaseBase&lt;Startup, AppSettings&gt;(
+///         new TestableLambdaEntrypoint&lt;Startup&gt;(), factory, ["orders:read"], "api/orders")
+/// {
+///     [Fact]
+///     public async Task GetOrder_ReturnsOk() =&gt;
+///         await TestEndpointAsync&lt;OrderResponse&gt;(
+///             Get("{id}", 42), HttpStatusCode.OK,
+///             body =&gt; body!.Id.Should().Be(42));
+/// }
+/// </code>
+/// </example>
 public abstract class RestApiTestCaseBase<TStartup, TAppSettings>(
     AwsWebAppEntryPointBase<TStartup> awsWebAppEntryPoint,
     WebApplicationFactory<TStartup> factory,
@@ -55,20 +76,48 @@ public abstract class RestApiTestCaseBase<TStartup, TAppSettings>(
     where TStartup : class, IWebAppStartup
     where TAppSettings : class, IAuthServiceAppSettings
 {
+    /// <summary>
+    /// An <see cref="HttpClient"/> targeting the in-memory test server created by the <see cref="WebApplicationFactory{TEntryPoint}"/>.
+    /// </summary>
     protected readonly HttpClient Client = factory.CreateClient();
 
+    /// <summary>Creates a <c>POST</c> request for the given route template (see <see cref="Request"/>).</summary>
+    /// <param name="route">The route template, relative to the controller base URL unless it starts with <c>/</c>.</param>
+    /// <param name="routeParameters">Values substituted into the route template.</param>
+    /// <returns>A new request message.</returns>
     protected HttpRequestMessage Post(string route, params object[] routeParameters) =>
         Request(HttpMethod.Post, route, routeParameters);
 
+    /// <summary>Creates a <c>GET</c> request for the given route template (see <see cref="Request"/>).</summary>
+    /// <param name="route">The route template, relative to the controller base URL unless it starts with <c>/</c>.</param>
+    /// <param name="routeParameters">Values substituted into the route template.</param>
+    /// <returns>A new request message.</returns>
     protected HttpRequestMessage Get(string route, params object[] routeParameters) =>
         Request(HttpMethod.Get, route, routeParameters);
 
+    /// <summary>Creates a <c>PUT</c> request for the given route template (see <see cref="Request"/>).</summary>
+    /// <param name="route">The route template, relative to the controller base URL unless it starts with <c>/</c>.</param>
+    /// <param name="routeParameters">Values substituted into the route template.</param>
+    /// <returns>A new request message.</returns>
     protected HttpRequestMessage Put(string route, params object[] routeParameters) =>
         Request(HttpMethod.Put, route, routeParameters);
 
+    /// <summary>Creates a <c>PATCH</c> request for the given route template (see <see cref="Request"/>).</summary>
+    /// <param name="route">The route template, relative to the controller base URL unless it starts with <c>/</c>.</param>
+    /// <param name="routeParameters">Values substituted into the route template.</param>
+    /// <returns>A new request message.</returns>
     protected HttpRequestMessage Patch(string route, params object[] routeParameters) =>
         Request(HttpMethod.Patch, route, routeParameters);
 
+    /// <summary>
+    /// Creates a request with the given method, resolving the route with <see cref="HttpRouteHelper.FromTemplate"/>
+    /// against the controller base URL. Add a body with
+    /// <see cref="Anarchy.Toolkit.Testing.Extension.System.Net.Http.HttpRequestMessageExtensions"/> (<c>WithJsonPayload</c>).
+    /// </summary>
+    /// <param name="method">The HTTP method.</param>
+    /// <param name="route">The route template, relative to the controller base URL unless it starts with <c>/</c>.</param>
+    /// <param name="routeParameters">Positional values, or a single object/dictionary of named values, substituted into the route.</param>
+    /// <returns>A new request message.</returns>
     protected HttpRequestMessage Request(HttpMethod method, string route, params object[] routeParameters) =>
         new(method, HttpRouteHelper.FromTemplate(route, controllerRouteBaseUrl, routeParameters));
 
@@ -89,7 +138,7 @@ public abstract class RestApiTestCaseBase<TStartup, TAppSettings>(
     /// <param name="expectedStatusCode">Expected HTTP status code of the response.</param>
     /// <param name="includeAuthorizationToken">Adds an OAuth2 Token to the request's header (default: true)</param>
     /// <param name="cancellationToken">Token used to cancel the request.</param>
-    /// <returns>void</returns>
+    /// <returns>A task that completes when both executions have been asserted.</returns>
     protected async Task TestEndpointAsync(HttpRequestMessage requestFixture, HttpStatusCode expectedStatusCode,
                                            bool includeAuthorizationToken = true,
                                            CancellationToken cancellationToken = default)
@@ -118,7 +167,11 @@ public abstract class RestApiTestCaseBase<TStartup, TAppSettings>(
     /// <param name="bodyAssertions">Optional domain-specific assertions on the deserialized body.</param>
     /// <param name="includeAuthorizationToken">Adds an OAuth2 Token to the request's header (default: true)</param>
     /// <param name="cancellationToken">Token used to cancel the request.</param>
-    /// <returns>The parsed response body (or <c>null</c> if empty).</returns>
+    /// <returns>The parsed response body of the Lambda execution (or <c>null</c> if empty).</returns>
+    /// <remarks>
+    /// The request body is read once and each pipeline receives its own clone. Assertions run inside an
+    /// <see cref="AssertionScope"/>, so failures from both executions are reported together.
+    /// </remarks>
     protected async Task<TParsedOutput?> TestEndpointAsync<TParsedOutput>(
         HttpRequestMessage requestFixture,
         HttpStatusCode expectedStatusCode,
