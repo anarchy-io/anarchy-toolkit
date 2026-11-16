@@ -4,24 +4,60 @@ using System.Collections;
 
 namespace Anarchy.Toolkit.Core.Observability.Service.Observability;
 
+/// <summary>
+/// Severity levels used by <see cref="DevelopmentLogger"/>, ordered from most to least verbose.
+/// </summary>
+/// <remarks>
+/// A message is printed when its level is greater than or equal to the configured minimum level
+/// (see <see cref="DevelopmentLogger.IsLevelOrHigher"/>). The default minimum level is <see cref="Error"/>.
+/// </remarks>
 public enum DevelopmentLoggerLevel
 {
+    /// <summary>Verbose diagnostic output, rendered in magenta on the console.</summary>
     Debug,
+
+    /// <summary>General output, similar to <see cref="Info"/> but printed without color formatting.</summary>
     General, // Similar to info, but with no formatting
+
+    /// <summary>Informational output, rendered in blue on the console.</summary>
     Info,
+
+    /// <summary>Warnings, rendered in yellow on the console.</summary>
     Warning,
+
+    /// <summary>Errors, rendered in red on the console. This is the default minimum level.</summary>
     Error, // Default
+
+    /// <summary>Used as a minimum level to disable all output.</summary>
     Off
 }
 
+/// <summary>
+/// Where <see cref="DevelopmentLogger"/> writes its output when no sink was set via
+/// <see cref="DevelopmentLogger.SetSink"/>.
+/// </summary>
 public enum DevelopmentLoggerOutputMode
 {
+    /// <summary>Writes to standard output with ANSI colors. This is the default.</summary>
     Console,
+
+    /// <summary>
+    /// Appends to a file (path from <c>DEV_LOG_OUTPUT_FILENAME</c>, or <c>logs/runs-{yyyy-MM-dd}.log</c> under the
+    /// current directory). Messages are prefixed with the level name instead of colored.
+    /// </summary>
     File
 }
 
+/// <summary>
+/// Destination for <see cref="DevelopmentLogger"/> output. Implement it to redirect output, e.g. in tests, and register
+/// it with <see cref="DevelopmentLogger.SetSink"/>.
+/// </summary>
 public interface IDevelopmentLogSink
 {
+    /// <summary>
+    /// Writes a single line of text. May be called concurrently from multiple threads.
+    /// </summary>
+    /// <param name="text">The text to write (may contain ANSI escape codes).</param>
     void WriteLine(string text);
 }
 
@@ -75,6 +111,29 @@ internal sealed class FileDevelopmentLogSink : IDevelopmentLogSink, IDisposable
     }
 }
 
+/// <summary>
+/// Lightweight, dependency-free logger meant for local development and early bootstrap diagnostics (e.g. before the
+/// Serilog pipeline of <see cref="Observer"/> is configured).
+/// </summary>
+/// <remarks>
+/// <para>Behavior is controlled by environment variables, read on each call unless stated otherwise:</para>
+/// <list type="bullet">
+/// <item><c>DEV_LOG_LEVEL</c>: minimum <see cref="DevelopmentLoggerLevel"/> (case-insensitive, default
+/// <see cref="DevelopmentLoggerLevel.Error"/>).</item>
+/// <item><c>DEV_LOG_OUTPUT_MODE</c>: <see cref="DevelopmentLoggerOutputMode"/> (default
+/// <see cref="DevelopmentLoggerOutputMode.Console"/>). Read once when the sink is first created.</item>
+/// <item><c>DEV_LOG_OUTPUT_FILENAME</c>: output file path for file mode (default
+/// <c>logs/runs-{yyyy-MM-dd}.log</c> under the current directory).</item>
+/// </list>
+/// <para>The sink is created lazily and thread-safely on the first printed message; use <see cref="SetSink"/> to
+/// override it programmatically.</para>
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// DevelopmentLogger.SetSessionLogLevel(DevelopmentLoggerLevel.Debug);
+/// DevelopmentLogger.Print("Loaded settings", "BOOTSTRAP", DevelopmentLoggerLevel.Info, context: settings);
+/// </code>
+/// </example>
 public static class DevelopmentLogger
 {
     private const string EnvVarNameLevel = "DEV_LOG_LEVEL";
@@ -96,6 +155,14 @@ public static class DevelopmentLogger
     private static bool _sinkInitialized;
     private static bool _ownsSink;
 
+    /// <summary>
+    /// Resolves the minimum log level.
+    /// </summary>
+    /// <param name="logLevel">
+    /// An explicit level name (case-insensitive). When <see langword="null"/>, the <c>DEV_LOG_LEVEL</c> environment
+    /// variable is used.
+    /// </param>
+    /// <returns>The parsed level, or <see cref="DevelopmentLoggerLevel.Error"/> when missing or invalid.</returns>
     public static DevelopmentLoggerLevel GetLogLevel(string? logLevel = null)
     {
         var levelString = logLevel ?? Environment.GetEnvironmentVariable(EnvVarNameLevel);
@@ -109,6 +176,17 @@ public static class DevelopmentLogger
         return DevelopmentLoggerLevel.Error;
     }
 
+    /// <summary>
+    /// Sets the <c>DEV_LOG_OUTPUT_MODE</c> environment variable for the current process.
+    /// </summary>
+    /// <remarks>
+    /// Only affects the sink if called before the first message is printed (the sink is created once) and no sink was
+    /// set via <see cref="SetSink"/>.
+    /// </remarks>
+    /// <param name="outputMode">The output mode to use.</param>
+    /// <param name="overrideCurrent">
+    /// When <see langword="false"/> (default), the variable is only set if it is not already defined.
+    /// </param>
     public static void SetSessionOutputMode(DevelopmentLoggerOutputMode outputMode, bool overrideCurrent = false)
     {
         if (overrideCurrent || Environment.GetEnvironmentVariable(EnvVarNameOutputMode) is null)
@@ -117,6 +195,13 @@ public static class DevelopmentLogger
         }
     }
 
+    /// <summary>
+    /// Sets the <c>DEV_LOG_LEVEL</c> environment variable for the current process.
+    /// </summary>
+    /// <param name="logLevel">The minimum level to print.</param>
+    /// <param name="overrideCurrent">
+    /// When <see langword="false"/> (default), the variable is only set if it is not already defined.
+    /// </param>
     public static void SetSessionLogLevel(DevelopmentLoggerLevel logLevel, bool overrideCurrent = false)
     {
         if (overrideCurrent || Environment.GetEnvironmentVariable(EnvVarNameLevel) is null)
@@ -125,6 +210,14 @@ public static class DevelopmentLogger
         }
     }
 
+    /// <summary>
+    /// Determines whether a message of <paramref name="receivedLevel"/> passes the minimum level.
+    /// </summary>
+    /// <param name="receivedLevel">The level of the message.</param>
+    /// <param name="minimumLevel">
+    /// An explicit minimum level name; when <see langword="null"/>, resolved via <see cref="GetLogLevel"/>.
+    /// </param>
+    /// <returns><see langword="true"/> if the message should be printed.</returns>
     public static bool IsLevelOrHigher(
         DevelopmentLoggerLevel receivedLevel,
         string? minimumLevel = null)
@@ -143,6 +236,8 @@ public static class DevelopmentLogger
     /// A sink created from environment variables is disposed when replaced; a sink provided here stays owned by the
     /// caller.
     /// </summary>
+    /// <param name="sink">The sink that receives all subsequent output.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="sink"/> is <see langword="null"/>.</exception>
     public static void SetSink(IDevelopmentLogSink sink)
     {
         if (sink is null) throw new ArgumentNullException(nameof(sink));
@@ -160,6 +255,11 @@ public static class DevelopmentLogger
         }
     }
 
+    /// <summary>
+    /// Prints the command line arguments and all environment variables (sorted) at
+    /// <see cref="DevelopmentLoggerLevel.Debug"/> level.
+    /// </summary>
+    /// <remarks>Environment variables may contain secrets; use only in local development.</remarks>
     public static void PrintEnvironment()
     {
         Print("Command Line Args", "DEVELOPMENT LOGGER", DevelopmentLoggerLevel.Debug,
@@ -169,6 +269,23 @@ public static class DevelopmentLogger
             new SortedList(Environment.GetEnvironmentVariables()));
     }
 
+    /// <summary>
+    /// Prints a message (with UTC timestamp and optional prefix header) followed by an optional context block and a
+    /// blank line, if <paramref name="messageLevel"/> passes the minimum level.
+    /// </summary>
+    /// <param name="message">The message to print.</param>
+    /// <param name="prefix">Optional text appended to the timestamp header.</param>
+    /// <param name="messageLevel">The message level. Defaults to <see cref="DevelopmentLoggerLevel.General"/>.</param>
+    /// <param name="context">
+    /// Optional context. Strings are printed as-is; other objects are serialized to indented JSON.
+    /// </param>
+    /// <param name="spreadContext">
+    /// When <see langword="true"/> and <paramref name="context"/> is a dictionary or a sequence of key/value pairs,
+    /// prints one <c>key: json-value</c> line per entry instead of a single JSON document.
+    /// </param>
+    /// <param name="minimumLevelOverride">
+    /// Optional minimum level name that overrides <c>DEV_LOG_LEVEL</c> for this call.
+    /// </param>
     public static void Print(
         string message,
         string? prefix = null,
