@@ -25,6 +25,9 @@
   --anarchy-link-visited: #A51414;
   --anarchy-link-hover: #FF751F;
 
+  /* Inline code: Bootstrap's light --bs-code-color, as DocFX uses */
+  --anarchy-code: #D63384;
+
   /* Typography: Inter for text, JetBrains Mono for code */
   --anarchy-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --anarchy-font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;

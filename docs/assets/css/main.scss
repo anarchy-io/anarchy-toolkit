@@ -161,6 +161,11 @@ thead {
   background: $anarchy-cloud;
 }
 
+/* Inline code: same colour as the DocFX API reference */
+:not(pre) > code {
+  color: $anarchy-code;
+}
+
 div.highlighter-rouge,
 figure.highlight {
   border-radius: $border-radius;

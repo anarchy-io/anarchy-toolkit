@@ -21,6 +21,7 @@
   --bs-secondary-color: var(--anarchy-muted);
   --bs-border-color: var(--anarchy-border);
   --bs-tertiary-bg: var(--anarchy-cloud);
+  --bs-code-color: var(--anarchy-code);
   --anarchy-content-link: var(--anarchy-link);
   --anarchy-content-link-hover: var(--anarchy-link-hover);
   --anarchy-active: var(--anarchy-red);
