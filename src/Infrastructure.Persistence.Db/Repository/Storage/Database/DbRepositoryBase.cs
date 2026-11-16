@@ -23,15 +23,29 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </para>
 /// </summary>
 /// <typeparam name="TDbConnection">The type of database connection (e.g. <c>NpgsqlConnection</c>).</typeparam>
+/// <remarks>
+/// Loaded SQL is cached in a static dictionary keyed only by the query name, shared by every repository using the
+/// same <typeparamref name="TDbConnection"/>. The first repository to load a given name determines its text for the
+/// process lifetime, so query names should be unique across repositories that override each other's queries
+/// differently.
+/// </remarks>
 public abstract class DbRepositoryBase<TDbConnection>
 {
     private static readonly ConcurrentDictionary<string, string> QueryCache = new();
 
     private readonly IReadOnlyCollection<(string Namespace, Assembly Assembly)> _namespaceAssemblies;
 
+    /// <summary>Policy used to obtain a connection (pooled or from the active unit of work) and execute queries.</summary>
     protected readonly IStoragePolicy<TDbConnection> DbPolicy;
+
+    /// <summary>Observer used for logging and metrics.</summary>
     protected readonly Observer Observer;
 
+    /// <summary>
+    /// Initializes the repository and captures the namespaces and assemblies of its inheritance chain for SQL lookup.
+    /// </summary>
+    /// <param name="dbPolicy">Policy used to execute database operations.</param>
+    /// <param name="observer">Observer used for logging and metrics.</param>
     protected DbRepositoryBase(IStoragePolicy<TDbConnection> dbPolicy, Observer observer)
     {
         DbPolicy = dbPolicy;
@@ -63,7 +77,7 @@ public abstract class DbRepositoryBase<TDbConnection>
     /// <c>Namespace.Queries.Common.MyQuery.sql</c>.
     /// </param>
     /// <returns>The full text of the SQL file as a string.</returns>
-    /// <exception cref="FileNotFoundException">
+    /// <exception cref="EmbeddedSqlNotFoundException">
     /// Thrown if the SQL file cannot be found in any of the applicable namespaces.
     /// </exception>
     protected string LoadSql(string sqlFileName)

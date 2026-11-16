@@ -11,6 +11,27 @@ using System.Data.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.Event;
 
+/// <summary>
+/// Base for event envelope batch writers, adding resolution of the auxiliary type-table identifiers
+/// (<see cref="GetIdForTypeAsync"/>) on top of <see cref="DbBatchWriterRepositoryBase{TDbConnection, TDialect, TNewEntity}"/>.
+/// </summary>
+/// <typeparam name="TDbConnection">The type of database connection.</typeparam>
+/// <typeparam name="TDialect">The provider dialect; <see cref="IDbDialect.CanSelectFromInsert"/> selects the get-or-insert strategy.</typeparam>
+/// <typeparam name="TEventEnvelope">The event envelope type persisted by the repository.</typeparam>
+/// <param name="dbPolicy">Policy used to execute database operations.</param>
+/// <param name="observer">Observer used for logging and metrics.</param>
+/// <remarks>
+/// <para>
+/// Type identifiers are cached process-wide in <see cref="EventWriterMultiAttributeIdCache"/>. On the first lookup
+/// of a type table the cache is hydrated with <c>Common.{EventTypeTable}.Get.All</c>; missing names are then inserted
+/// with <c>Common.{EventTypeTable}.Get.OrInsert</c> when the dialect can select from an insert, or with
+/// <c>Common.{EventTypeTable}.Insert.IfMissing</c> followed by <c>Common.{EventTypeTable}.Get.ByName</c> otherwise.
+/// </para>
+/// <para>
+/// Because an inserted type may be rolled back with its transaction, register
+/// <see cref="LocalEventHandlers.RolledBackTransactionEventHandler"/> so the cache is cleared on rollback.
+/// </para>
+/// </remarks>
 public abstract class DbEventWriterRepositoryBase<TDbConnection, TDialect, TEventEnvelope>(
     IStoragePolicy<TDbConnection> dbPolicy,
     Observer observer) :
@@ -80,6 +101,10 @@ public abstract class DbEventWriterRepositoryBase<TDbConnection, TDialect, TEven
             cancellationToken);
     }
 
+    /// <inheritdoc />
+    /// <exception cref="EmptyArgumentException">
+    /// Thrown when <paramref name="typeName"/> is <see langword="null"/> or empty and has to be inserted.
+    /// </exception>
     public async Task<int> GetIdForTypeAsync(EventTypeTable typeTable, string typeName,
                                              CancellationToken? cancellationToken = null)
     {

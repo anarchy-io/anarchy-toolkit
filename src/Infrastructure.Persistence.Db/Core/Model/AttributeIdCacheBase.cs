@@ -19,15 +19,15 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
 /// <remarks>
 /// <para>
 /// This cache is **static per closed generic type**:
-/// <c>IdentifiableMultiAttributeCache&lt;FooAttribute, int&gt;</c> has its own independent
-/// cache, separate from <c>IdentifiableMultiAttributeCache&lt;BarAttribute, int&gt;</c>
-/// or <c>IdentifiableMultiAttributeCache&lt;FooAttribute, long&gt;</c>. All consumers that
+/// <c>AttributeIdCacheBase&lt;FooAttribute, int&gt;</c> has its own independent
+/// cache, separate from <c>AttributeIdCacheBase&lt;BarAttribute, int&gt;</c>
+/// or <c>AttributeIdCacheBase&lt;FooAttribute, long&gt;</c>. All consumers that
 /// use the same <typeparamref name="TAttributeTypes"/> and <typeparamref name="TId"/>
 /// share the same underlying cache container for the lifetime of the application.
 /// </para>
 /// <para>
 /// The cache is organized as:
-/// <c>TTypeAttribute → (string name → TId id)</c>. Within a given
+/// <c>TAttributeTypes → (string name → TId id)</c>. Within a given
 /// <typeparamref name="TAttributeTypes"/> value, the first access can hydrate the entire
 /// set of known values from a backing store. Subsequent lookups will use the in-memory
 /// dictionary and only fall back to inserting a missing single value when necessary.
@@ -37,7 +37,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
 /// <code>
 /// public enum FooAttribute { TypeAggregate, TypeEvent, TypeTask }
 ///
-/// public sealed class BarMultiAttributeCache : IdentifiableMultiAttributeCache&lt;FooAttribute, int&gt;;
+/// public sealed class BarMultiAttributeCache : AttributeIdCacheBase&lt;FooAttribute, int&gt;;
 /// </code>
 /// and then call <see cref="GetOrAddAsync"/> from repositories or services,
 /// passing delegates that know how to hydrate and/or insert into the backing store.
@@ -71,11 +71,28 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
 public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
     where TAttributeTypes : Enum where TId : IBinaryNumber<TId>
 {
+    /// <summary>A single cached row: the identifier of a named attribute value.</summary>
+    /// <param name="Id">Identifier of the row in the backing store.</param>
+    /// <param name="Name">The attribute value (cache key) the identifier belongs to.</param>
     public record Dto(TId Id, string Name);
 
+    /// <summary>
+    /// Loads every known row for <paramref name="attribute"/> from the backing store, used to hydrate an empty
+    /// partition of the cache.
+    /// </summary>
+    /// <param name="attribute">The attribute partition being hydrated.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>All known rows for the attribute.</returns>
     public delegate Task<IReadOnlyCollection<Dto>> HydrateAllAsync(TAttributeTypes attribute,
                                                                    CancellationToken? cancellationToken = null);
 
+    /// <summary>
+    /// Inserts (or gets) a single value missing from the cache in the backing store and returns its identifier.
+    /// </summary>
+    /// <param name="attribute">The attribute partition the value belongs to.</param>
+    /// <param name="stringValue">The value to insert.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The identifier of the (possibly pre-existing) row.</returns>
     public delegate Task<TId> InsertMissingAsync(TAttributeTypes attribute, string stringValue,
                                                  CancellationToken? cancellationToken = null);
 
@@ -88,7 +105,7 @@ public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
     /// <remarks>
     /// <para>
     /// This affects only the cache of the current closed generic type
-    /// <c>IdentifiableMultiAttributeCache&lt;TTypeAttribute, TId&gt;</c>. Other generic
+    /// <c>AttributeIdCacheBase&lt;TAttributeTypes, TId&gt;</c>. Other generic
     /// instantiations (for example, different attribute enums or ID types) are not
     /// impacted.
     /// </para>
@@ -161,8 +178,8 @@ public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
     /// var id = await BarMultiAttributeCache.GetOrAddAsync(
     ///     FooAttribute.TypeA,
     ///     attributeName,
-    ///     hydrateAll: (attribute, ct) => fooBarAttributeRepository.GetAllAsync(cancellationToken: ct),
-    ///     insertSingle: (attribute, name, ct) => fooBarAttributeRepository.GetOrInsert(attribute, name, ct),
+    ///     callbackHydrateAll: (attribute, ct) => fooBarAttributeRepository.GetAllAsync(cancellationToken: ct),
+    ///     callbackInsertMissing: (attribute, name, ct) => fooBarAttributeRepository.GetOrInsert(attribute, name, ct),
     ///     cancellationToken);
     /// </code>
     /// </para>

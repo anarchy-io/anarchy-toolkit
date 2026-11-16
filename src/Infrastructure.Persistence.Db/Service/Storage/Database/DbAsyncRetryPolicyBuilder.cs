@@ -13,11 +13,20 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 ///     Builds an exponential back-off retry pipeline that retries the exceptions classified as transient by
 ///     <typeparamref name="TDialect" />.
 /// </summary>
+/// <typeparam name="TDbConnection">The type of database connection the pipeline is used with.</typeparam>
+/// <typeparam name="TDialect">The provider dialect classifying transient exceptions.</typeparam>
+/// <param name="options">Resilience options; <see cref="DbResilienceOptions.RetryCount" /> sets the maximum retries.</param>
+/// <param name="observer">Observer used to log a warning on every retry.</param>
+/// <remarks>
+///     The delay before retry attempt <c>n</c> (zero-based) is <c>2^(n + 1)</c> seconds, i.e. 2s, 4s, 8s, ...
+///     The pipeline is consumed by <see cref="ResilienceDbPolicy{TDbConnection}" />.
+/// </remarks>
 public class DbAsyncRetryPolicyBuilder<TDbConnection, TDialect>(DbResilienceOptions options, Observer observer)
     : IAsyncRetryPolicyBuilder<TDbConnection>
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
 {
+    /// <inheritdoc />
     public ResiliencePipeline Build()
     {
         var caller = this.CalledFrom();

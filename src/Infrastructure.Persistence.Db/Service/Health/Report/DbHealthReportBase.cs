@@ -19,6 +19,16 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Health.Report;
 ///     <see cref="IDbDialect.HealthCheckSql" /> over the supplied storage policy. The test is named
 ///     <c>{dialect}_connection-{instance type}</c>, for example <c>postgres_connection-reader</c>.
 /// </summary>
+/// <typeparam name="TDbConnection">The type of database connection.</typeparam>
+/// <typeparam name="TDialect">The provider dialect supplying the health check SQL and name.</typeparam>
+/// <param name="dbPolicy">Policy used to execute the health check query; should target the instance being checked.</param>
+/// <param name="observer">Observer used to log failures.</param>
+/// <param name="dbInstanceType">The instance type (reader or writer) being checked, used in the test name.</param>
+/// <remarks>
+///     Failures never throw: the exception is logged and returned in a failed <see cref="HealthCheckEntity" />.
+///     Register reader and writer subclasses with
+///     <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Extension.Microsoft.DependencyInjection.DbHealthServiceCollectionExtensions.AddDbHealthReports{TReaderReport, TWriterReport}" />.
+/// </remarks>
 public abstract class DbHealthReportBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
     Observer observer,

@@ -9,6 +9,31 @@ using System.Data.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database;
 
+/// <summary>
+///     Base for single-entity write repositories: implements
+///     <see cref="IStorageWriterRepository{TNewEntity, TPersistedEntity}" /> by executing an embedded SQL file that
+///     inserts the entity and returns the persisted row.
+/// </summary>
+/// <typeparam name="TDbConnection">The type of database connection.</typeparam>
+/// <typeparam name="TDialect">The provider dialect.</typeparam>
+/// <typeparam name="TNewEntity">The entity type accepted for saving.</typeparam>
+/// <typeparam name="TPersistedEntity">The persisted entity type returned after saving.</typeparam>
+/// <param name="dbPolicy">Policy used to execute database operations.</param>
+/// <param name="observer">Observer used for logging and metrics.</param>
+/// <example>
+///     <code language="csharp">
+///     public sealed class OrderWriterRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, Observer observer)
+///         : DbWriterRepositoryBase&lt;NpgsqlConnection, PostgresDbDialect, NewOrder, PersistedOrder&gt;(dbPolicy, observer)
+///     {
+///         public override Task&lt;long&gt; GetLatestIdAsync(CancellationToken? cancellationToken = null) =>
+///             GetLatestSequenceValueAsync("order_id_seq", cancellationToken);
+///
+///         // The query must return the inserted row, e.g. INSERT ... RETURNING *
+///         public override Task&lt;PersistedOrder&gt; SaveAsync(NewOrder entity, CancellationToken? cancellationToken = null) =>
+///             SaveAsync("Order.Save", entity, cancellationToken);
+///     }
+///     </code>
+/// </example>
 public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity, TPersistedEntity>(
     IStoragePolicy<TDbConnection> dbPolicy,
     Observer observer
@@ -20,6 +45,7 @@ public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity
     where TNewEntity : IEntity
     where TPersistedEntity : IPersistedEntity
 {
+    /// <inheritdoc />
     public abstract Task<TPersistedEntity> SaveAsync(TNewEntity entity,
                                                      CancellationToken? cancellationToken = null);
 
@@ -29,12 +55,15 @@ public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity
     /// </summary>
     /// <param name="entity">Envelope to be transformed before saving</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <returns></returns>
+    /// <returns>The object passed as Dapper parameters to the save query.</returns>
     protected virtual Task<object> ToSaveInput(TNewEntity entity, CancellationToken? cancellationToken = null)
     {
         return Task.FromResult((object)entity);
     }
 
+    /// <summary>Log context properties pushed while saving <paramref name="newEntity" />.</summary>
+    /// <param name="newEntity">The entity being saved.</param>
+    /// <returns>The properties; by default only <c>EntityType</c> with the entity type name.</returns>
     protected virtual LogContextProperty[] ToLogContext(TNewEntity newEntity)
     {
         return [
@@ -42,6 +71,15 @@ public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity
         ];
     }
 
+    /// <summary>
+    ///     Saves <paramref name="entity" /> by executing the named query with the parameters returned by
+    ///     <see cref="ToSaveInput" /> and maps the single returned row onto <typeparamref name="TPersistedEntity" />.
+    /// </summary>
+    /// <param name="sqlFileName">Name of the embedded SQL file; the query must return exactly one row.</param>
+    /// <param name="entity">The entity to save.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The persisted entity.</returns>
+    /// <remarks>Failures are logged and rethrown unchanged.</remarks>
     protected async Task<TPersistedEntity> SaveAsync(string sqlFileName, TNewEntity entity,
                                                      CancellationToken? cancellationToken = null)
     {
