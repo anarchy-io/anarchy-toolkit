@@ -9,19 +9,22 @@
       diagram.textContent = block.textContent;
       (block.closest("div.language-mermaid") || block.parentElement).replaceWith(diagram);
     });
+    // Brand tokens from assets/css/tokens.css
+    const style = getComputedStyle(document.documentElement);
+    const token = (name) => style.getPropertyValue(`--anarchy-${name}`).trim();
     mermaid.initialize({
       startOnLoad: false,
       theme: "base",
       themeVariables: {
-        fontFamily: "Inter, sans-serif",
-        primaryColor: "#F5F5F7",
-        primaryTextColor: "#111114",
-        primaryBorderColor: "#F02020",
-        lineColor: "#85858F",
-        secondaryColor: "#FFFFFF",
-        tertiaryColor: "#F5F5F7",
-        clusterBkg: "#FFFFFF",
-        clusterBorder: "#DCDCE2"
+        fontFamily: token("font-sans"),
+        primaryColor: token("cloud"),
+        primaryTextColor: token("black"),
+        primaryBorderColor: token("red"),
+        lineColor: token("steel"),
+        secondaryColor: token("white"),
+        tertiaryColor: token("cloud"),
+        clusterBkg: token("white"),
+        clusterBorder: token("border")
       }
     });
     await mermaid.run({ querySelector: ".mermaid" });

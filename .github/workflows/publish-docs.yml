@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'docs-api/**'
+      - 'src/**/*.cs'
+      - 'src/**/*.csproj'
+      - 'src/Build.Fallout/**'
       - 'src/*/README.md'
       - 'samples/README.md'
       - '.github/workflows/publish-docs.yml'
@@ -36,6 +40,18 @@ jobs:
         with:
           source: ./docs
           destination: ./_site
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build API reference with DocFX
+        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh GenerateApiReference
+
+      - name: Add API reference to the site
+        run: |
+          sudo mkdir -p _site/api
+          sudo cp -R artifacts/docs-api/. _site/api/
 
       - uses: actions/upload-pages-artifact@v3
 

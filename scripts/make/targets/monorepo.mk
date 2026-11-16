@@ -37,3 +37,18 @@ docs_build: docs_sync docs_install #? Builds the documentation site into docs/_s
 .PHONY: docs_serve
 docs_serve: docs_sync docs_install #? Serves the documentation site locally with live reload
 	@cd "$(DOCS_DIR)" && bundle exec jekyll serve --livereload
+
+.PHONY: docs_api_build
+docs_api_build: #? Builds the DocFX API reference into artifacts/docs-api
+	${MAKE} fallout SKIP_TITLE=true TARGET=GenerateApiReference
+
+DOCS_API_OUTPUT := $(abspath artifacts/docs-api)
+
+.PHONY: docs_api_serve
+docs_api_serve: $(if $(filter true,$(NO_BUILD)),,docs_api_build) #? Serves the DocFX API reference locally on http://localhost:8080
+#+ NO_BUILD|bool|Serve the existing build as is, refreshing only its stylesheets (template and tokens), to check style changes quickly
+	@if [ "$(NO_BUILD)" = "true" ]; then \
+		test -d "$(DOCS_API_OUTPUT)/public" || { echo "No API reference in $(DOCS_API_OUTPUT): run without NO_BUILD first" >&2; exit 1; }; \
+		cp docs-api/template/public/main.css docs/assets/css/tokens.css "$(DOCS_API_OUTPUT)/public/"; \
+	fi
+	@cd "$(DOCS_API_OUTPUT)" && python3 -m http.server 8080

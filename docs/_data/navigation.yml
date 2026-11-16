@@ -1,4 +1,4 @@
-# Masthead links
+# Masthead links, mirrored by the API reference's navbar (docs-api/toc.yml): keep them in sync
 main:
   - title: "Overview"
     url: /overview/
@@ -8,6 +8,8 @@ main:
     url: /packages/
   - title: "Guides"
     url: /guides/
+  - title: "API"
+    url: /api/
   - title: "NuGet"
     url: https://www.nuget.org/profiles/anarchy-io
   - title: "GitHub"

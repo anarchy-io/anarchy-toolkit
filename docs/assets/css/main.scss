@@ -5,37 +5,40 @@ search: false
 
 @charset "utf-8";
 
-/* Anarchy brand palette (see the brand guide): neutral-first, red/orange used sparingly */
-$anarchy-red: #F02020;
-$anarchy-orange: #FF751F;
-$anarchy-black: #111114;
-$anarchy-carbon: #1C1C21;
-$anarchy-steel: #85858F;
-$anarchy-cloud: #F5F5F7;
-$anarchy-border: #DCDCE2;
-$anarchy-gradient: linear-gradient(110deg, $anarchy-red 0%, $anarchy-orange 100%);
+/* Brand tokens from tokens.css (shared with the DocFX API reference), as $anarchy-<name> Sass variables:
+   Minimal Mistakes mixes its colours at compile time, so they must be literal values rather than var(). */
+{% capture tokens %}{% include_relative tokens.css %}{% endcapture %}
+{%- assign lines = tokens | newline_to_br | split: "<br />" -%}
+{%- for line in lines -%}
+  {%- assign declaration = line | strip -%}
+  {%- assign prefix = declaration | slice: 0, 10 -%}
+  {%- if prefix == "--anarchy-" -%}
+    {%- assign name = declaration | split: ":" | first | remove_first: "--" -%}
+    {%- assign value = declaration | remove_first: name | remove_first: "--" | remove_first: ":" | remove: ";" | strip %}
+${{ name }}: {{ value }};
+  {%- endif -%}
+{%- endfor %}
 
-/* Typography: Inter for text, JetBrains Mono for code (loaded in _includes/head/custom.html) */
-$sans-serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-$monospace: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+$sans-serif: $anarchy-font-sans;
+$monospace: $anarchy-font-mono;
 $global-font-family: $sans-serif;
 $header-font-family: $sans-serif;
 
 /* Theme variables, set before the skin so they win over its defaults */
-$background-color: #FFFFFF;
+$background-color: $anarchy-white;
 $text-color: $anarchy-black;
-$muted-text-color: #5C5C66;
+$muted-text-color: $anarchy-muted;
 $primary-color: $anarchy-red;
 $border-color: $anarchy-border;
 $code-background-color: $anarchy-cloud;
-$link-color: #C81818; /* darker than Anarchy Red, for AA contrast on white */
-$link-color-hover: $anarchy-orange;
-$link-color-visited: #A51414;
-$masthead-link-color: #FFFFFF;
+$link-color: $anarchy-link;
+$link-color-hover: $anarchy-link-hover;
+$link-color-visited: $anarchy-link-visited;
+$masthead-link-color: $anarchy-white;
 $masthead-link-color-hover: $anarchy-orange;
 $navicon-link-color-hover: $anarchy-orange;
 $footer-background-color: $anarchy-carbon;
-$border-radius: 8px;
+$border-radius: $anarchy-radius;
 
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
 @import "minimal-mistakes"; // main partials
@@ -43,13 +46,13 @@ $border-radius: 8px;
 /* Dark masthead with the brand accent underline */
 .masthead {
   background: $anarchy-black;
-  border-bottom: 3px solid transparent;
+  border-bottom: $anarchy-accent-width solid transparent;
   border-image: $anarchy-gradient 1;
 
   .site-title,
   .greedy-nav a,
   .site-subtitle {
-    color: #FFFFFF;
+    color: $anarchy-white;
   }
 
   .greedy-nav {
@@ -72,8 +75,8 @@ $border-radius: 8px;
   .greedy-nav__toggle .navicon:before,
   .greedy-nav__toggle .navicon:after,
   .search__toggle {
-    color: #FFFFFF;
-    background-color: #FFFFFF;
+    color: $anarchy-white;
+    background-color: $anarchy-white;
   }
 
   .search__toggle {
@@ -82,12 +85,12 @@ $border-radius: 8px;
 }
 
 .page__footer {
-  color: #A1A1AA;
-  border-top: 3px solid transparent;
+  color: $anarchy-footer-text;
+  border-top: $anarchy-accent-width solid transparent;
   border-image: $anarchy-gradient 1;
 
   a {
-    color: #FFFFFF;
+    color: $anarchy-white;
   }
 }
 
@@ -123,7 +126,7 @@ $border-radius: 8px;
 
     &:hover {
       background: $anarchy-gradient;
-      color: #FFFFFF;
+      color: $anarchy-white;
     }
   }
 }

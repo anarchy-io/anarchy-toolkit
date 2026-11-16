@@ -1,0 +1,51 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "build": {
+    "content": [
+      {
+        "files": [
+          "api/**.yml"
+        ]
+      },
+      {
+        "files": [
+          "toc.yml",
+          "index.md"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      },
+      {
+        "src": "../docs/assets/css",
+        "files": [
+          "tokens.css"
+        ],
+        "dest": "public"
+      }
+    ],
+    "output": "../artifacts/docs-api",
+    "template": [
+      "default",
+      "modern",
+      "template"
+    ],
+    "globalMetadata": {
+      "_appName": "Toolkit",
+      "_appTitle": "Anarchy I/O - Toolkit API",
+      "_appLogoPath": "images/logo.png",
+      "_appFaviconPath": "images/favicon.png",
+      "_enableSearch": true,
+      "_disableContribution": false,
+      "_appFooter": "<ul class=\"anarchy-footer__links\"><li><strong>Follow:</strong></li><li><a href=\"https://www.nuget.org/profiles/anarchy-io\" rel=\"nofollow noopener noreferrer\"><i class=\"bi bi-box-seam\" aria-hidden=\"true\"></i> NuGet.org</a></li><li><a href=\"https://github.com/anarchy-io/anarchy-toolkit\" rel=\"nofollow noopener noreferrer\"><i class=\"bi bi-github\" aria-hidden=\"true\"></i> GitHub</a></li></ul><div>&copy; <a href=\"https://anarchy-io.github.io/anarchy-toolkit/\">Anarchy I/O Toolkit</a>. Powered by <a href=\"https://dotnet.github.io/docfx/\" rel=\"nofollow\">DocFX</a>.</div>",
+      "_appLogoUrl": "https://anarchy-io.github.io/anarchy-toolkit/"
+    },
+    "sitemap": {
+      "baseUrl": "https://anarchy-io.github.io/anarchy-toolkit/api/"
+    }
+  }
+}
