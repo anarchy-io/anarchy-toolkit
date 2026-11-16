@@ -11,16 +11,38 @@ namespace Anarchy.Toolkit.Testing.Aws.Fixture;
 /// Fixture for building <see cref="SQSEvent.SQSMessage"/> instances with optional
 /// compressed bodies (gzip/zlib) and random message attributes for testing.
 /// </summary>
+/// <remarks>
+/// Compressed variants follow the convention read by the toolkit's AWS messaging infrastructure: the body is left
+/// empty and the compressed JSON payload is carried in the binary <c>CompressionData</c> message attribute, with
+/// the algorithm in the <c>CompressionType</c> attribute.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// var sqsEvent = new SQSEvent { Records = [SqsMessageFixture.WithGzipBody(new { OrderId = 42 }, groupId: "orders")] };
+/// await handler.FunctionHandler(sqsEvent, new LambdaContextFixture());
+/// </code>
+/// </example>
 public class SqsMessageFixture
 {
+    /// <summary>The AWS region assigned to fixture messages.</summary>
     public const string DefaultAwsRegion = "eu-west-1";
+    /// <summary>The event source assigned to fixture messages.</summary>
     public const string DefaultEventSource = "aws:sqs";
+    /// <summary>The fake AWS account id used in <see cref="DefaultEventSourceArn"/>.</summary>
     public const string DefaultAccount = "123456789012";
+    /// <summary>The fake FIFO queue name used in <see cref="DefaultEventSourceArn"/>.</summary>
     public const string DefaultQueueName = "fixture-queue.fifo";
 
+    /// <summary>The event source ARN assigned to fixture messages.</summary>
     public const string DefaultEventSourceArn =
         $"arn:{DefaultEventSource}:{DefaultAwsRegion}:{DefaultAccount}:{DefaultQueueName}";
 
+    /// <summary>
+    /// Builds a message without body, with random message and receipt ids and the default source, ARN and region.
+    /// </summary>
+    /// <param name="groupId">Optional FIFO <c>MessageGroupId</c> attribute; when <see langword="null"/>, <see cref="SQSEvent.SQSMessage.Attributes"/> is <see langword="null"/>.</param>
+    /// <param name="withRandomAttributes">Whether to add sample message attributes (random, empty, null string and binary values).</param>
+    /// <returns>A new message.</returns>
     public static SQSEvent.SQSMessage BaseMessage(string? groupId = null, bool withRandomAttributes = true)
     {
         return new SQSEvent.SQSMessage {
@@ -34,6 +56,14 @@ public class SqsMessageFixture
         };
     }
 
+    /// <summary>
+    /// Builds a message (see <see cref="BaseMessage"/>) whose body is <paramref name="payload"/> serialized as JSON,
+    /// with the corresponding MD5 of body.
+    /// </summary>
+    /// <param name="payload">The payload to serialize, or <see langword="null"/> for no body.</param>
+    /// <param name="groupId">Optional FIFO <c>MessageGroupId</c> attribute.</param>
+    /// <param name="withRandomAttributes">Whether to add sample message attributes.</param>
+    /// <returns>A new message.</returns>
     public static SQSEvent.SQSMessage WithUncompressedBody(object? payload = null, string? groupId = null,
                                                            bool withRandomAttributes = true)
     {
@@ -45,6 +75,14 @@ public class SqsMessageFixture
         return result;
     }
 
+    /// <summary>
+    /// Builds a message (see <see cref="BaseMessage"/>) carrying <paramref name="payload"/> as gzip-compressed JSON in the
+    /// <c>CompressionData</c> attribute.
+    /// </summary>
+    /// <param name="payload">The payload to compress, or <see langword="null"/> to return the base message unchanged.</param>
+    /// <param name="groupId">Optional FIFO <c>MessageGroupId</c> attribute.</param>
+    /// <param name="withRandomAttributes">Whether to add sample message attributes.</param>
+    /// <returns>A new message.</returns>
     public static SQSEvent.SQSMessage WithGzipBody(object? payload = null, string? groupId = null,
                                                    bool withRandomAttributes = true)
     {
@@ -66,6 +104,14 @@ public class SqsMessageFixture
         return result;
     }
 
+    /// <summary>
+    /// Builds a message (see <see cref="BaseMessage"/>) carrying <paramref name="payload"/> as zlib-compressed JSON in the
+    /// <c>CompressionData</c> attribute.
+    /// </summary>
+    /// <param name="payload">The payload to compress, or <see langword="null"/> to return the base message unchanged.</param>
+    /// <param name="groupId">Optional FIFO <c>MessageGroupId</c> attribute.</param>
+    /// <param name="withRandomAttributes">Whether to add sample message attributes.</param>
+    /// <returns>A new message.</returns>
     public static SQSEvent.SQSMessage WithZlibBody(object? payload = null, string? groupId = null,
                                                    bool withRandomAttributes = true)
     {
