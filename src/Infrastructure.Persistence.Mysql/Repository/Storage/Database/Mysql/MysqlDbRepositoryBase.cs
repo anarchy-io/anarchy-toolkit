@@ -6,5 +6,15 @@ using MySqlConnector;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Repository.Storage.Database.Mysql;
 
+/// <summary>
+/// MySQL flavour of <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.DbStorageRepositoryBase{TDbConnection, TDialect}"/>,
+/// binding the connection type to <see cref="MySqlConnection"/> and the dialect to <see cref="MysqlDbDialect"/>.
+/// </summary>
+/// <remarks>
+/// Derive from it for custom MySQL repositories that need embedded SQL loading, sequence lookups and savepoints but none
+/// of the reader/writer contracts.
+/// </remarks>
+/// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
+/// <param name="observer">Observer used for logging and metrics.</param>
 public abstract class MysqlDbRepositoryBase(IStoragePolicy<MySqlConnection> dbPolicy, Observer observer)
     : DbStorageRepositoryBase<MySqlConnection, MysqlDbDialect>(dbPolicy, observer);

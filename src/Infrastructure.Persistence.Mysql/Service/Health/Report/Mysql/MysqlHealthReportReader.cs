@@ -6,5 +6,10 @@ using MySqlConnector;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Service.Health.Report.Mysql;
 
+/// <summary>
+/// Health report that verifies connectivity to the MySQL reader instance.
+/// </summary>
+/// <param name="dbPolicy">The keyed <c>"reader"</c> storage policy.</param>
+/// <param name="observer">Observer used to log failures.</param>
 public class MysqlHealthReportReader([FromKeyedServices("reader")] IStoragePolicy<MySqlConnection> dbPolicy, Observer observer)
     : MysqlHealthReportBase(dbPolicy, observer, DataStorageInstanceType.Reader);
