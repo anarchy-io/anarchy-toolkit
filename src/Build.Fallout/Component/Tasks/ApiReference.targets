@@ -1,0 +1,15 @@
+<Project>
+
+  <!--
+    Imported into every project ApiReferenceTasks documents (as CustomAfterMicrosoftCommonTargets): writes the
+    compiled assembly followed by its resolved references, one path per line, without building anything.
+    Framework references are left out: DocFX resolves those from the installed runtime, and both together conflict.
+  -->
+  <Target Name="AnarchyToolkitCollectApiReference" DependsOnTargets="ResolveReferences">
+    <ItemGroup>
+      <_AnarchyToolkitApiReference Include="@(ReferencePath)" Condition="'%(ReferencePath.FrameworkReferenceName)' == ''" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(AnarchyToolkitApiReferenceManifest)" Lines="$(TargetPath);@(_AnarchyToolkitApiReference)" Overwrite="true" />
+  </Target>
+
+</Project>

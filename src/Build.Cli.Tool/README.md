@@ -75,6 +75,10 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 
 ## Releases
 
+### 2.3.0
+
+- feat(Build.Fallout): add IApiReferenceBuild generating a DocFX API reference from the compiled assemblies
+
 ### 2.2.0
 
 - Generated solutions reference `Anarchy.Toolkit.Build.Fallout` 3.2.0 and `Anarchy.Toolkit.Web`/`Anarchy.Toolkit.Web.Ui` 1.0.7, and get the `Anarchy.Toolkit.Build.Cli` 1.2.1 SDK installation and `DOTNET_EXE` fixes in their scripts.

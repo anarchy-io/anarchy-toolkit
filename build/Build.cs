@@ -14,7 +14,8 @@ namespace Build;
 [ShutdownDotNetAfterServerBuild]
 [DotNetVerbosityMapping]
 internal sealed partial class Build : FalloutBuild, INuGetBuild, IDependencyMapBuild, ILayeringBuild,
-                                      IDependencyUpgradeBuild, IGitHooksBuild, IDockerBuild
+                                      IDependencyUpgradeBuild, IGitHooksBuild, IDockerBuild,
+                                      IApiReferenceBuild
 {
     /// <summary>The toolkit ships packages only; nothing is deployed.</summary>
     public IReadOnlyCollection<Artifact> Artifacts => [];

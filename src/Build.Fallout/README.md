@@ -6,7 +6,7 @@ Reusable [Fallout](https://fallout.build/) build components for .NET repositorie
 dotnet add build/_build.csproj package Anarchy.Toolkit.Build.Fallout
 ```
 
-Implement the components appropriate to your repository on a `FalloutBuild` class. For example, a package-only build can implement `INuGetBuild`, `ILayeringBuild`, `IDependencyMapBuild`, `IDependencyUpgradeBuild` and `IGitHooksBuild`, with an empty `Artifacts` collection. Use `IBoilerplateBuild` for scaffolding, or add the container (`IContainerBuild`, `IDockerBuild`) components as needed. External deployment and publication targets require their respective tools and credentials.
+Implement the components appropriate to your repository on a `FalloutBuild` class. For example, a package-only build can implement `INuGetBuild`, `ILayeringBuild`, `IDependencyMapBuild`, `IDependencyUpgradeBuild` and `IGitHooksBuild`, with an empty `Artifacts` collection. Use `IBoilerplateBuild` for scaffolding, add `IApiReferenceBuild` for a DocFX API reference site, or add the container (`IContainerBuild`, `IDockerBuild`) components as needed. External deployment and publication targets require their respective tools and credentials.
 
 ```csharp
 using Anarchy.Toolkit.Build.Fallout.Component;
@@ -93,6 +93,10 @@ Use `--boilerplate-items` for a comma-separated allowlist and `--boilerplate-exc
 Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-existing` (or `--apend-existing`) is supplied; packaged content is then appended at most once. Review the result because later rules can change earlier ones. The same option adds the packaged `test` section (`"runner": "Microsoft.Testing.Platform"`, which `dotnet test` needs to run xUnit.net v3 projects) to an existing `global.json` that does not have one; the rest of the file is kept, and a file with comments is left alone. Existing `nuget.config` and `Directory.Build.props` are always preserved, as is `global.json` otherwise. The target refuses to overwrite a solution, selected script, Makefile, starter project, `.gitkeep` or existing `Solution` parameter. If an operation fails partway through, inspect the output before retrying.
 
 ## Releases
+
+### 3.3.0
+
+- feat(Build.Fallout): add IApiReferenceBuild generating a DocFX API reference from the compiled assemblies
 
 ### 3.2.0
 
