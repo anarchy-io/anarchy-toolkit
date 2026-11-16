@@ -12,6 +12,18 @@ namespace Anarchy.Toolkit.Build.Fallout.Component;
 /// to the project's own or a lower layer. The <c>Testing</c> kits may reference anything, but nothing in a layer may
 /// reference them. See <see cref="LayeringTasks"/> for the exact rules.
 /// </summary>
+/// <remarks>
+/// <see cref="IStandardBuild.PullRequest"/> runs <see cref="CheckLayering"/> when the build implements this interface.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// partial class Build : FalloutBuild, ILayeringBuild
+/// {
+///     string[] ILayeringBuild.LayeringLayers => ["Domain", "Application", "Infrastructure", "Web"];
+/// }
+/// </code>
+/// Or, without code: <c>fallout check-layering --layering-by-folder</c>.
+/// </example>
 public interface ILayeringBuild : IStandardBuild
 {
     /// <summary>
@@ -45,12 +57,18 @@ public interface ILayeringBuild : IStandardBuild
     /// one of the <see cref="LayeringApplicationFolders"/> get that folder's layer.
     /// An unknown layer is a violation.
     /// </summary>
+    /// <param name="project">The solution project.</param>
+    /// <returns>The project's layer, or <see langword="null"/> to leave it out.</returns>
     string? GetLayer(Project project)
     {
         var root = Path.GetRelativePath(Solution.Directory, Path.GetFullPath(LayeringRoot, Solution.Directory));
         return LayeringTasks.GetLayer(project.Name, RelativePath(project), root, LayeringByFolder, LayeringApplicationFolders);
     }
 
+    /// <summary>
+    /// Checks project references, file imports and layer folders against <see cref="LayeringLayers"/>, logging every
+    /// violation and failing the build when there is any.
+    /// </summary>
     Target CheckLayering => d => d
         .Description("Verifies the layered architecture: project references, file imports and layer folders")
         .Executes(() => {

@@ -14,6 +14,10 @@ namespace Anarchy.Toolkit.Build.Fallout.Component;
 /// </summary>
 public interface IDependencyMapBuild : IStandardBuild
 {
+    /// <summary>
+    /// Where <see cref="GenerateDependencyMap"/> writes the HTML page (<c>--dependency-map-output</c>); defaults to
+    /// <c>docs/dependency-map.html</c>.
+    /// </summary>
     [Parameter("Where GenerateDependencyMap writes the HTML page; defaults to docs/dependency-map.html")]
     AbsolutePath DependencyMapOutput => TryGetValue(() => DependencyMapOutput) ?? RootDirectory / "docs" / "dependency-map.html";
 
@@ -27,9 +31,15 @@ public interface IDependencyMapBuild : IStandardBuild
     /// is one of the <see cref="DependencyMapLayers"/> or <c>Testing</c>; otherwise <c>Tests</c>, <c>Samples</c>
     /// or <c>Other</c> by location. The build project itself is left out.
     /// </summary>
+    /// <param name="project">The solution project to group.</param>
+    /// <returns>The group name, or <see langword="null"/> to leave the project off the map.</returns>
     string? GetDependencyMapGroup(Project project) =>
         DependencyMapTasks.GetDefaultGroup(project.Name, RelativePath(project), DependencyMapLayers);
 
+    /// <summary>
+    /// Writes the dependency map of the solution to <see cref="DependencyMapOutput"/>, warning (without failing) about
+    /// references that break the layering; they are highlighted on the map.
+    /// </summary>
     Target GenerateDependencyMap => d => d
         .Description("Generates an HTML map of the solution's project dependencies by layer")
         .Executes(() => {

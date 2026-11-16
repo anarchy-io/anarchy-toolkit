@@ -12,6 +12,9 @@ namespace Anarchy.Toolkit.Build.Fallout.Component;
 
 public partial interface IStandardBuild
 {
+    /// <summary>
+    /// Lists the solution's projects with their path, marking test, build, runnable and library projects.
+    /// </summary>
     Target ListProjects => d => d
         .Description("Lists all valid projects within the solution")
         .Executes(() => {
@@ -30,11 +33,26 @@ public partial interface IStandardBuild
     /// </summary>
     static class TestKind
     {
+        /// <summary>
+        /// Unit tests.
+        /// </summary>
         public const string Unit = nameof(Unit);
+        /// <summary>
+        /// Integration tests.
+        /// </summary>
         public const string Integration = nameof(Integration);
+        /// <summary>
+        /// End-to-end tests.
+        /// </summary>
         public const string EndToEnd = nameof(EndToEnd);
     }
 
+    /// <summary>
+    /// Returns the icon <see cref="ListProjects"/> shows for a project: test, build, runnable app or library.
+    /// </summary>
+    /// <param name="project">The solution project.</param>
+    /// <param name="relativePath">The project's path relative to the solution (see <see cref="IStandardBuild.RelativePath(Project)"/>).</param>
+    /// <returns>An emoji.</returns>
     string GetProjectIcon(Project project, string relativePath)
     {
         if (IsTestProject(project) || relativePath.StartsWith("tests"))
@@ -54,6 +72,7 @@ public partial interface IStandardBuild
     /// Runs every test project of the given kind (see <see cref="IsTestProjectOfKind"/>), skipping the build
     /// when <see cref="Compile"/> already ran.
     /// </summary>
+    /// <param name="kind">The kind of tests, one of the <see cref="TestKind"/> constants.</param>
     void RunTestsOfKind(string kind)
     {
         var projects = Solution.AllProjects
@@ -76,6 +95,9 @@ public partial interface IStandardBuild
     /// Whether the test project holds tests of the given kind (<c>Unit</c>, <c>Integration</c> or
     /// <c>EndToEnd</c>). By default, see <see cref="MatchesTestKind"/>.
     /// </summary>
+    /// <param name="project">The test project.</param>
+    /// <param name="kind">The kind of tests, one of the <see cref="TestKind"/> constants.</param>
+    /// <returns><see langword="true"/> if the project holds tests of that kind; otherwise <see langword="false"/>.</returns>
     bool IsTestProjectOfKind(Project project, string kind) => MatchesTestKind(project.Name, kind);
 
     /// <summary>
@@ -99,6 +121,7 @@ public partial interface IStandardBuild
     /// <summary>
     /// The solution's runnable projects (see <see cref="IsRunnableProject"/>), ordered by name.
     /// </summary>
+    /// <returns>The runnable projects.</returns>
     IReadOnlyCollection<Project> GetRunnableProjects() => Solution.AllProjects
         .Where(project => IsRunnableProject(project.Path))
         .OrderBy(project => project.Name)
@@ -107,6 +130,8 @@ public partial interface IStandardBuild
     /// <summary>
     /// Whether the project lives under a <c>src</c> directory.
     /// </summary>
+    /// <param name="projectPath">The project file.</param>
+    /// <returns><see langword="true"/> if a segment of the path is <c>src</c>; otherwise <see langword="false"/>.</returns>
     static bool IsInSourceDirectory(AbsolutePath projectPath)
     {
         var path = projectPath.ToString().Replace('\\', '/');
@@ -118,6 +143,8 @@ public partial interface IStandardBuild
     /// <summary>
     /// Whether the project lives under a <c>src</c> directory and has <c>OutputType</c> <c>Exe</c>.
     /// </summary>
+    /// <param name="projectPath">The project file, read as XML.</param>
+    /// <returns><see langword="true"/> if the project is runnable; otherwise <see langword="false"/>.</returns>
     static bool IsRunnableProject(AbsolutePath projectPath)
     {
         if (!IsInSourceDirectory(projectPath))
@@ -137,6 +164,8 @@ public partial interface IStandardBuild
     /// Finds the runnable project named <paramref name="appName"/> (case-insensitive), logging the available
     /// apps when there is none.
     /// </summary>
+    /// <param name="appName">The app name.</param>
+    /// <returns>The runnable project.</returns>
     /// <exception cref="Exception">Thrown when no runnable project has that name.</exception>
     Project ResolveRunnableProjectOrFail(string appName)
     {
@@ -154,12 +183,23 @@ public partial interface IStandardBuild
         throw new Exception($"Unknown app '{appName}'. Available options: {runnableProjects.Select(p => p.Name).Join(", ")}");
     }
 
+    /// <summary>
+    /// Finds the runnable projects named <paramref name="appNames"/> (see <see cref="ResolveRunnableProjectOrFail"/>),
+    /// without duplicates.
+    /// </summary>
+    /// <param name="appNames">The app names, case-insensitive.</param>
+    /// <returns>The matching projects.</returns>
+    /// <exception cref="Exception">Thrown when any name matches no runnable project.</exception>
     IReadOnlyCollection<Project> ResolveRunnableProjectsOrFail(IEnumerable<string> appNames) =>
         appNames
             .Select(ResolveRunnableProjectOrFail)
             .DistinctBy(p => p.Path)
             .ToArray();
 
+    /// <summary>
+    /// Shows the runnable apps in a table, or warns when there are none.
+    /// </summary>
+    /// <param name="runnableProjects">The apps to show, or <see langword="null"/> for <see cref="GetRunnableProjects"/>.</param>
     void LogRunnableApps(IReadOnlyCollection<Project>? runnableProjects = null)
     {
         var projects = runnableProjects ?? GetRunnableProjects();
@@ -181,6 +221,8 @@ public partial interface IStandardBuild
     /// <summary>
     /// Splits a comma-separated list of app names, trimming them and dropping empty and duplicate ones.
     /// </summary>
+    /// <param name="raw">The comma-separated names.</param>
+    /// <returns>The distinct names, compared case-insensitively.</returns>
     static IReadOnlyCollection<string> ParseAppNames(string raw) =>
         raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Distinct(StringComparer.OrdinalIgnoreCase)

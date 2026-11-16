@@ -22,5 +22,10 @@ public class Runtime : Enumeration
     /// </summary>
     public static readonly Runtime Linux = new() { Value = "linux-x64" };
 
+    /// <summary>
+    /// Converts the runtime to its runtime identifier (RID).
+    /// </summary>
+    /// <param name="configuration">The runtime to convert.</param>
+    /// <returns>The runtime identifier, e.g. <c>linux-x64</c>.</returns>
     public static implicit operator string(Runtime configuration) => configuration.Value;
 }

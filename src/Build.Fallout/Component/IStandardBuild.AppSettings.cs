@@ -21,6 +21,10 @@ public partial interface IStandardBuild
     /// </summary>
     const string DevelopmentAppSettingsFileName = "appsettings.Development.json";
 
+    /// <summary>
+    /// Whether <see cref="GenerateAppSettings"/> asks again for every template key, offering the current value as the
+    /// default (<c>--reset-app-settings</c>). Defaults to <see langword="false"/>.
+    /// </summary>
     [Parameter("Asks again for every appsettings.json.template key, offering the current value as the default")]
     bool ResetAppSettings => TryGetValue<bool?>(() => ResetAppSettings) ?? false;
 

@@ -65,6 +65,9 @@ public static class TestingPlatformHelper
     /// projects that have not been restored yet as well.
     /// </para>
     /// </summary>
+    /// <param name="solution">The solution to look the project up in, or <see langword="null"/>.</param>
+    /// <param name="projectFile">The test project file.</param>
+    /// <returns><see langword="true"/> if the project runs on Microsoft.Testing.Platform; otherwise <see langword="false"/>.</returns>
     public static bool IsTestingPlatformProject(Solution? solution, AbsolutePath projectFile)
     {
         var project = solution?.AllProjects.FirstOrDefault(p => p.Path == projectFile);
@@ -78,6 +81,11 @@ public static class TestingPlatformHelper
     /// (see <see cref="RunTests"/>) and the ones that run through <c>dotnet test</c>, as determined by
     /// <see cref="IsTestingPlatformProject"/>.
     /// </summary>
+    /// <param name="solution">The solution to look the projects up in, or <see langword="null"/>.</param>
+    /// <param name="projectFiles">The test project files.</param>
+    /// <returns>
+    /// The projects to run through Microsoft.Testing.Platform, and those to run through <c>dotnet test</c> (VSTest).
+    /// </returns>
     public static (IReadOnlyCollection<AbsolutePath> TestingPlatform, IReadOnlyCollection<AbsolutePath> VSTest)
         PartitionByRunner(Solution? solution, IEnumerable<AbsolutePath> projectFiles)
     {

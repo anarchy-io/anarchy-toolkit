@@ -25,8 +25,27 @@ namespace Anarchy.Toolkit.Build.Fallout.Component;
 /// <c>Build.*.cs</c> files for whatever is specific to the repository.
 /// </para>
 /// </summary>
+/// <remarks>
+/// Optional components built on it add more targets: <see cref="ILayeringBuild"/>, <see cref="INuGetBuild"/>,
+/// <see cref="IContainerBuild"/>, <see cref="IApiReferenceBuild"/>, <see cref="IDependencyMapBuild"/> and
+/// <see cref="IDependencyUpgradeBuild"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// partial class Build : FalloutBuild, IStandardBuild, ILayeringBuild
+/// {
+///     public static int Main() => Execute&lt;Build&gt;(x => x.As&lt;IStandardBuild&gt;().Compile);
+///
+///     public IReadOnlyCollection&lt;Artifact&gt; Artifacts => [];
+/// }
+/// </code>
+/// </example>
 public partial interface IStandardBuild : IDefaultBuild
 {
+    /// <summary>
+    /// Whether <see cref="LintFix"/> re-stages its fixes (<c>--auto-stage-lint-fixes</c>), only in files that were staged
+    /// and had no unstaged changes before. Defaults to <see langword="false"/>; used by Git hooks.
+    /// </summary>
     [Parameter("Re-stage lint fixes only in previously staged files without unstaged changes")]
     bool AutoStageLintFixes => TryGetValue<bool?>(() => AutoStageLintFixes) ?? false;
 
@@ -57,6 +76,8 @@ public partial interface IStandardBuild : IDefaultBuild
     /// <summary>
     /// Returns the path of the project relative to the solution, with forward slashes.
     /// </summary>
+    /// <param name="project">The solution project.</param>
+    /// <returns>The path, e.g. <c>src/Core/Core.csproj</c>.</returns>
     string RelativePath(Project project) =>
         Solution.Directory.GetRelativePathTo(project.Path).ToString().Replace('\\', '/');
 

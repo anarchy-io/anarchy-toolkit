@@ -18,12 +18,42 @@ using Configuration = Anarchy.Toolkit.Build.Fallout.Core.ValueSet.Build.Configur
 /// The base build: configuration, environment, solution and directory conventions, plus the unlisted
 /// <see cref="Clean"/> and <see cref="Build"/> targets and the test options shared by every test runner.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Fallout build components are interfaces with default members: a build class implements the ones it needs and
+/// overrides members (explicitly, e.g. <c>AbsolutePath IDefaultBuild.SourceDirectory =&gt; ...</c>) to change
+/// conventions. Most builds implement <see cref="IStandardBuild"/>, which extends this one.
+/// </para>
+/// <para>
+/// <see cref="Artifacts"/> is the only member without a default and must be implemented.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// partial class Build : FalloutBuild, IDefaultBuild
+/// {
+///     public static int Main() => Execute&lt;Build&gt;(x => x.As&lt;IDefaultBuild&gt;().Build);
+///
+///     public IReadOnlyCollection&lt;Artifact&gt; Artifacts => [];
+///
+///     string? IDefaultBuild.TestingPlatformCommandLineArguments => "--filter-not-trait Category=NoCI";
+/// }
+/// </code>
+/// </example>
 public interface IDefaultBuild : IFalloutBuild
 {
+    /// <summary>
+    /// The configuration to build (<c>--configuration</c>): <see cref="Configuration.Debug"/> or
+    /// <see cref="Configuration.Release"/>, the default.
+    /// </summary>
     [Parameter("Configuration to build - (Debug or Release; defaults to Release)")]
     Configuration Configuration => TryGetValue(() => Configuration)
                                    ?? Configuration.Release;
 
+    /// <summary>
+    /// Whether the build runs on CI (<c>--is-ci-build</c>). Defaults to <see langword="false"/>. Raises
+    /// <see cref="ToolVerbosity"/> and disables interactive prompts.
+    /// </summary>
     [Parameter("Indicates whether the build runs on CI")]
     bool IsCiBuild => TryGetValue<bool?>(() => IsCiBuild) ?? false;
 
@@ -40,15 +70,28 @@ public interface IDefaultBuild : IFalloutBuild
     /// </summary>
     Environment? BuildEnvironment => WindowsBuildEnvironment ?? LinuxBuildEnvironment;
 
+    /// <summary>
+    /// The environment from the <c>ASPNETCORE_ENVIRONMENT</c> parameter or environment variable, if any.
+    /// </summary>
     [Parameter("Environment the build is running in (typically configured by environment variable)", Name = "ASPNETCORE_ENVIRONMENT")]
     Environment? WindowsBuildEnvironment => TryGetValue(() => WindowsBuildEnvironment);
 
+    /// <summary>
+    /// The environment from the <c>DOTNET_ENVIRONMENT</c> parameter or environment variable, if any.
+    /// </summary>
     [Parameter("Environment the build is running in (typically configured by environment variable)", Name = "DOTNET_ENVIRONMENT")]
     Environment? LinuxBuildEnvironment => TryGetValue(() => LinuxBuildEnvironment);
 
+    /// <summary>
+    /// The solution the build works on, as injected by Fallout's <c>[Solution]</c> attribute (typically configured in
+    /// <c>.fallout/parameters.json</c>).
+    /// </summary>
     [Solution]
     Solution Solution => TryGetValue(() => Solution);
 
+    /// <summary>
+    /// The Git repository the build runs in, or <see langword="null"/> outside one.
+    /// </summary>
     [GitRepository]
     GitRepository? GitRepository => TryGetValue(() => GitRepository);
 
@@ -156,6 +199,8 @@ public interface IDefaultBuild : IFalloutBuild
     /// <c>true</c> if the project references any of <see cref="TestTasks.DefaultTestPackages"/>
     /// (<c>Microsoft.NET.Test.Sdk</c>, <c>xunit.runner.visualstudio</c>, <c>NUnit3TestAdapter</c> or <c>xunit.v3</c>).
     /// </summary>
+    /// <param name="project">The solution project to consider.</param>
+    /// <returns><see langword="true"/> if the project holds tests; otherwise <see langword="false"/>.</returns>
     bool IsTestProject(Project project) =>
         project.ContainsPackageReferenceToAny(TestTasks.DefaultTestPackages);
 }

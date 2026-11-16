@@ -14,26 +14,60 @@ namespace Anarchy.Toolkit.Build.Fallout.Component;
 /// <summary>
 /// Packs source projects and publishes their NuGet packages in dependency order.
 /// </summary>
+/// <remarks>
+/// Besides packing and publishing, it maintains package versions: <see cref="GenerateLocalRelease"/>,
+/// <see cref="GenerateReleaseFromChanges"/>, <see cref="GenerateReleaseNotes"/> and <see cref="ValidateLocalRelease"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// partial class Build : FalloutBuild, INuGetBuild;
+/// </code>
+/// Then run <c>fallout publish --nu-get-source https://api.nuget.org/v3/index.json --nu-get-api-key $KEY</c>.
+/// </example>
 public interface INuGetBuild : IStandardBuild
 {
+    /// <summary>
+    /// The NuGet feed URL or local directory <see cref="Publish"/> pushes to (<c>--nu-get-source</c>); required by it.
+    /// </summary>
     [Parameter("NuGet feed URL or local directory to push packages to")]
     string? NuGetSource => TryGetValue(() => NuGetSource);
 
+    /// <summary>
+    /// The API key for <see cref="NuGetSource"/> (<c>--nu-get-api-key</c>); optional when configured credentials are used.
+    /// </summary>
     [Parameter("API key for the NuGet feed (optional when using configured credentials)")]
     string? NuGetApiKey => TryGetValue(() => NuGetApiKey);
 
+    /// <summary>
+    /// Whether package versions already on the feed are skipped rather than failing the push (<c>--skip-duplicate</c>).
+    /// Defaults to <see langword="true"/>.
+    /// </summary>
     [Parameter("Skip package versions already present on the feed")]
     bool SkipDuplicate => TryGetValue<bool?>(() => SkipDuplicate) ?? true;
 
+    /// <summary>
+    /// The project <see cref="GenerateLocalRelease"/> bumps (<c>--release-project</c>), e.g. <c>Core.Events</c>.
+    /// </summary>
     [Parameter("Project name to release (for example Core.Events)")]
     string? ReleaseProject => TryGetValue(() => ReleaseProject);
 
+    /// <summary>
+    /// The semantic version increment (<c>--release-bump</c>): <c>major</c>, <c>minor</c> or <c>patch</c>. Required by
+    /// <see cref="GenerateLocalRelease"/>; <see cref="GenerateReleaseFromChanges"/> defaults to <c>patch</c>.
+    /// </summary>
     [Parameter("Semantic version increment: major, minor or patch")]
     string? ReleaseBump => TryGetValue(() => ReleaseBump);
 
+    /// <summary>
+    /// The Git commit or ref to compare against (<c>--release-base</c>), e.g. the last released tag. Required by
+    /// <see cref="GenerateReleaseFromChanges"/>, <see cref="GenerateReleaseNotes"/> and <see cref="ValidateLocalRelease"/>.
+    /// </summary>
     [Parameter("Git commit or ref to compare package versions against")]
     string? ReleaseBase => TryGetValue(() => ReleaseBase);
 
+    /// <summary>
+    /// The Git commit or ref of the head of the changes (<c>--release-head</c>); defaults to <c>HEAD</c>.
+    /// </summary>
     [Parameter("Git commit or ref for head of changes (defaults to HEAD)")]
     string? ReleaseHead => TryGetValue(() => ReleaseHead);
 
@@ -52,6 +86,9 @@ public interface INuGetBuild : IStandardBuild
         .Order(StringComparer.Ordinal)
         .Select(AbsolutePath.Create);
 
+    /// <summary>
+    /// Lists the projects selected by <see cref="NuGetProjects"/> with their package ID and version.
+    /// </summary>
     Target ListPackages => d => d
         .Description("Lists source projects selected for NuGet packing")
         .Executes(() => {
@@ -68,6 +105,10 @@ public interface INuGetBuild : IStandardBuild
             BuildConsole.Write(table);
         });
 
+    /// <summary>
+    /// Bumps the version of <see cref="ReleaseProject"/> by <see cref="ReleaseBump"/>, and the versions of all its
+    /// transitive package dependents, editing the project files.
+    /// </summary>
     Target GenerateLocalRelease => d => d
         .Description("Bumps a project's version and all its transitive package dependents")
         .Requires(() => ReleaseProject)
@@ -82,6 +123,11 @@ public interface INuGetBuild : IStandardBuild
             ShowReleaseSummary(projects, edits, [ReleaseProject!]);
         });
 
+    /// <summary>
+    /// Detects the projects changed between <see cref="ReleaseBase"/> and <see cref="ReleaseHead"/>, and bumps their
+    /// versions and those of their transitive dependents by <see cref="ReleaseBump"/> (<c>patch</c> by default). The
+    /// working tree must match the head; the result is validated against the baseline before any file is written.
+    /// </summary>
     Target GenerateReleaseFromChanges => d => d
         .Description("Detects changed projects between two commits and bumps their versions and transitive dependents")
         .Requires(() => ReleaseBase)
@@ -125,6 +171,10 @@ public interface INuGetBuild : IStandardBuild
             ShowReleaseSummary(projects, edits, direct.Select(p => p.Name));
         });
 
+    /// <summary>
+    /// Adds missing package release notes from the commits between <see cref="ReleaseBase"/> and the checked-out
+    /// <c>HEAD</c> that affect each package.
+    /// </summary>
     Target GenerateReleaseNotes => d => d
         .Description("Adds missing package release notes from commits affecting each package")
         .Requires(() => ReleaseBase)
@@ -155,6 +205,10 @@ public interface INuGetBuild : IStandardBuild
             BuildConsole.Write(table);
         });
 
+    /// <summary>
+    /// Checks that the versions of packages and their dependents were bumped consistently against
+    /// <see cref="ReleaseBase"/>, failing the build on any violation.
+    /// </summary>
     Target ValidateLocalRelease => d => d
         .Description("Checks version bumps of package dependents against a Git baseline")
         .Requires(() => ReleaseBase)
@@ -167,6 +221,11 @@ public interface INuGetBuild : IStandardBuild
             Log.Information("Release versions validated against {Base}", ReleaseBase);
         });
 
+    /// <summary>
+    /// Packs every project of <see cref="NuGetProjects"/> into <see cref="PackagesDirectory"/>, each in its own
+    /// subdirectory, reusing the build of solution projects when <see cref="IStandardBuild.Compile"/> ran. Fails when no
+    /// project is selected, no package is produced, or the packages cannot be ordered for publishing.
+    /// </summary>
     Target Pack => d => d
         .Description("Packs source projects into a fresh artifacts/packages directory")
         .DependsOn(Compile)
@@ -195,6 +254,11 @@ public interface INuGetBuild : IStandardBuild
             Log.Information("Packed {Count} packages into {Directory}", packages.Count, PackagesDirectory);
         });
 
+    /// <summary>
+    /// Pushes the packages of <see cref="Pack"/> to <see cref="NuGetSource"/>, each after the packages of the batch it
+    /// depends on (see <see cref="Tasks.NuGetPackageTasks.OrderForPublish"/>), stopping at the first failure. A summary
+    /// table shows which packages were pushed, failed or not attempted.
+    /// </summary>
     Target Publish => d => d
         .Description("Publishes NuGet packages after their packaged dependencies")
         .DependsOn(Pack)

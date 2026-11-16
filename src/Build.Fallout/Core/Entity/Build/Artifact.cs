@@ -5,6 +5,17 @@ namespace Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
 /// <summary>
 /// Represents a deployable application.
 /// </summary>
+/// <remarks>
+/// Builds list their artifacts through <see cref="Anarchy.Toolkit.Build.Fallout.Component.IDefaultBuild.Artifacts"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// IReadOnlyCollection&lt;Artifact&gt; IDefaultBuild.Artifacts =>
+/// [
+///     new Artifact { ProjectFile = RootDirectory / "src" / "Api" / "Api.csproj" }
+/// ];
+/// </code>
+/// </example>
 public sealed class Artifact
 {
     /// <summary>

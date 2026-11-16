@@ -14,6 +14,7 @@ public static class TestTasks
     /// <summary>
     /// Default packages that mark a project as a test project.
     /// </summary>
+    /// <remarks>Used by <see cref="IDefaultBuild.IsTestProject"/>.</remarks>
     public static readonly string[] DefaultTestPackages =
     {
         "Microsoft.NET.Test.Sdk",
@@ -35,6 +36,16 @@ public static class TestTasks
     /// <param name="noBuild">
     /// Whether the projects have already been restored and built (for example by a <c>Compile</c> target).
     /// </param>
+    /// <remarks>
+    /// Microsoft.Testing.Platform projects run one at a time, before the <c>dotnet test</c> ones, which run in a single
+    /// combined invocation. Fails the build when <see cref="IDefaultBuild.TestFilter"/> is set for platform projects
+    /// without <see cref="IDefaultBuild.TestingPlatformCommandLineArguments"/>.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// this.As&lt;IDefaultBuild&gt;().RunTests(testProjects.Select(p => p.Path), noBuild: true);
+    /// </code>
+    /// </example>
     public static void RunTests(this IDefaultBuild build, IEnumerable<AbsolutePath> projectFiles, bool noBuild)
     {
         var (testingPlatformProjects, vsTestProjects) =
