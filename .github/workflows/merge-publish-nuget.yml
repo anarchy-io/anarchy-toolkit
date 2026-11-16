@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   publish:
-    name: Test and publish
+    name: "[Push] Validate and publish main"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -44,26 +44,26 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Determine release baseline
-        id: baseline
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          EVENT_BEFORE: ${{ github.event.before }}
-          MANUAL_BASE: ${{ inputs.release_base }}
-        run: |
-          set -euo pipefail
-          previous=$(git log --first-parent -1 --format=%H --fixed-strings \
-            --author='41898282+github-actions' --grep='chore(release): bump affected packages')
-          if [[ "$EVENT_NAME" == push ]]; then
-            base=${previous:-$EVENT_BEFORE}
-          else
-            base=$MANUAL_BASE
-          fi
-          if [[ -n "$base" ]]; then
-            git rev-parse --verify --end-of-options "${base}^{commit}" >/dev/null
-            git merge-base --is-ancestor "$base" HEAD || { echo 'Release baseline is not an ancestor of main.'; exit 1; }
-          fi
-          echo "base=$base" >> "$GITHUB_OUTPUT"
+#      - name: Determine release baseline
+#        id: baseline
+#        env:
+#          EVENT_NAME: ${{ github.event_name }}
+#          EVENT_BEFORE: ${{ github.event.before }}
+#          MANUAL_BASE: ${{ inputs.release_base }}
+#        run: |
+#          set -euo pipefail
+#          previous=$(git log --first-parent -1 --format=%H --fixed-strings \
+#            --author='41898282+github-actions' --grep='chore(release): bump affected packages')
+#          if [[ "$EVENT_NAME" == push ]]; then
+#            base=${previous:-$EVENT_BEFORE}
+#          else
+#            base=$MANUAL_BASE
+#          fi
+#          if [[ -n "$base" ]]; then
+#            git rev-parse --verify --end-of-options "${base}^{commit}" >/dev/null
+#            git merge-base --is-ancestor "$base" HEAD || { echo 'Release baseline is not an ancestor of main.'; exit 1; }
+#          fi
+#          echo "base=$base" >> "$GITHUB_OUTPUT"
 
       # Disabled while versions are bumped manually: these steps bumped versions and notes at publish time without
       # committing them back (see the commit step below), leaving the repository behind NuGet.

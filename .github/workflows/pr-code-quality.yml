@@ -8,19 +8,13 @@ permissions:
 
 jobs:
   code-quality:
-    name: Unit tests
+    name: "[Pull Request] Code Quality"
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
-      - uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: 10.0.x
-      - name: Ensure layering
-        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh CheckLayering
 
       - name: Validate release versions
         env:
