@@ -9,6 +9,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Health.Rep
 /// <summary>
 ///     Health report that verifies connectivity to the PostgreSQL reader instance.
 /// </summary>
+/// <param name="dbPolicy">The keyed <c>"reader"</c> storage policy.</param>
+/// <param name="observer">Observer used to log failures.</param>
 public class PostgresHealthReportReader(
     [FromKeyedServices("reader")] IStoragePolicy<NpgsqlConnection> dbPolicy,
     Observer observer) : PostgresHealthReportBase(dbPolicy, observer, DataStorageInstanceType.Reader);
