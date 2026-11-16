@@ -9,6 +9,9 @@ namespace Anarchy.Toolkit.Web.Ui.Core.Entity.Ui;
 /// <param name="ApiBaseUrls">Downstream API base URLs, keyed by API name.</param>
 public sealed record UiEnvironment(string Name, Uri AuthServiceBaseUrl, IReadOnlyDictionary<string, Uri> ApiBaseUrls)
 {
+    /// <summary>Creates an environment without downstream APIs.</summary>
+    /// <param name="name">Environment name; matched case-insensitively.</param>
+    /// <param name="authServiceBaseUrl">Base URL of the OAuth server.</param>
     public UiEnvironment(string name, Uri authServiceBaseUrl)
         : this(name, authServiceBaseUrl, new Dictionary<string, Uri>())
     {
@@ -17,6 +20,8 @@ public sealed record UiEnvironment(string Name, Uri AuthServiceBaseUrl, IReadOnl
     /// <summary>
     /// Returns the base URL of the given downstream API (matched case-insensitively).
     /// </summary>
+    /// <param name="apiName">The API name used as key in <see cref="ApiBaseUrls"/>.</param>
+    /// <returns>The API base URL.</returns>
     /// <exception cref="KeyNotFoundException">When the API is not configured for this environment.</exception>
     public Uri GetApiBaseUrl(string apiName)
     {

@@ -19,7 +19,9 @@
 </div>
 
 @code {
+    /// <summary>The pagination state to display and update.</summary>
     [Parameter, EditorRequired] public PaginationState State { get; set; } = null!;
+    /// <summary>Invoked after the page changes, so the parent can re-render.</summary>
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private Task GoToPageAsync(int pageNumber) => ChangeAsync(() => State.GoToPage(pageNumber));

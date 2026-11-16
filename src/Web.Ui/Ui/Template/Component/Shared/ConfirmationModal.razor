@@ -14,12 +14,19 @@
 }
 
 @code {
+    /// <summary>Whether the modal is visible.</summary>
     [Parameter] public bool IsOpen { get; set; }
+    /// <summary>The modal heading.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    /// <summary>Text of the confirm button.</summary>
     [Parameter, EditorRequired] public string ConfirmButtonLabel { get; set; } = string.Empty;
+    /// <summary>CSS class of the confirm button. Defaults to <c>btn-danger</c>.</summary>
     [Parameter] public string ConfirmButtonClass { get; set; } = "btn-danger";
+    /// <summary>The modal body.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    /// <summary>Invoked when the confirm button is clicked. The parent is responsible for closing the modal.</summary>
     [Parameter] public EventCallback OnConfirm { get; set; }
+    /// <summary>Invoked when the modal is cancelled or closed (overlay, close or cancel button).</summary>
     [Parameter] public EventCallback OnClose { get; set; }
 
     private Task CloseAsync() => OnClose.InvokeAsync();

@@ -51,11 +51,13 @@
 }
 
 @code {
+    /// <summary>Subscribes to <c>JsonModalState.Changed</c> to re-render.</summary>
     protected override void OnInitialized() => JsonModalState.Changed += HandleChanged;
 
     private void Close() => JsonModalState.Close();
 
     private void HandleChanged() => _ = InvokeAsync(StateHasChanged);
 
+    /// <summary>Unsubscribes from <c>JsonModalState.Changed</c>.</summary>
     public void Dispose() => JsonModalState.Changed -= HandleChanged;
 }

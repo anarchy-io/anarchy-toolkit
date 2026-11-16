@@ -12,12 +12,33 @@ namespace Anarchy.Toolkit.Web.Ui.Service.Host.Ui.Session;
 /// Handles the login and logout HTTP endpoints: exchanges the posted client credentials for an access token and
 /// stores it, with the selected environment, in the auth cookie.
 /// </summary>
+/// <remarks>
+/// Registered as a scoped service by <c>AddToolkitUiAuthentication</c> and invoked by the endpoints mapped with
+/// <c>MapToolkitUiSessionEndpoints</c>.
+/// </remarks>
+/// <param name="authHandler">Exchanges the credentials for an access token.</param>
+/// <param name="environmentCatalog">Resolves the target environment.</param>
+/// <param name="hostEnvironment">The host environment.</param>
+/// <param name="options">The UI authentication options (paths, scope).</param>
 public class UiSessionHandler(
     UiAuthHandler authHandler,
     IUiEnvironmentCatalog environmentCatalog,
     IHostEnvironment hostEnvironment,
     UiAuthenticationOptions options)
 {
+    /// <summary>
+    /// Validates the request, exchanges the credentials for a token against the target environment's auth service
+    /// and signs the user in with a non-persistent cookie expiring with the token.
+    /// </summary>
+    /// <remarks>
+    /// Only local hosts honour <see cref="UiLoginRequest.TargetEnvironment"/>; deployed hosts always use their own
+    /// environment. On missing credentials or a failed exchange the user is redirected to the login page with a
+    /// <see cref="UiLoginErrors"/> code.
+    /// </remarks>
+    /// <param name="context">The current HTTP context.</param>
+    /// <param name="request">The posted login request.</param>
+    /// <returns>A redirect to <see cref="UiAuthenticationOptions.HomePath"/> on success, or to the login page on failure.</returns>
+    /// <exception cref="KeyNotFoundException">The target environment is not configured.</exception>
     public async Task<IResult> HandleLoginAsync(
         HttpContext context,
         UiLoginRequest request)
@@ -66,6 +87,9 @@ public class UiSessionHandler(
         return Results.Redirect(context.Request.PathBase + options.HomePath);
     }
 
+    /// <summary>Signs the user out (clears the auth cookie) and redirects to the login page.</summary>
+    /// <param name="context">The current HTTP context.</param>
+    /// <returns>A redirect to <see cref="UiAuthenticationOptions.LoginPath"/>.</returns>
     public async Task<IResult> HandleLogoutAsync(HttpContext context)
     {
         await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

@@ -13,6 +13,8 @@ public interface IUiEnvironmentCatalog
     /// <summary>
     /// Returns the environment with the given name, or the host's own environment when the name is empty.
     /// </summary>
+    /// <param name="environmentName">The environment name (case-insensitive), or <see langword="null"/>/empty for the host's environment.</param>
+    /// <returns>The environment.</returns>
     /// <exception cref="KeyNotFoundException">When the environment is not configured.</exception>
     UiEnvironment GetByName(string? environmentName);
 }

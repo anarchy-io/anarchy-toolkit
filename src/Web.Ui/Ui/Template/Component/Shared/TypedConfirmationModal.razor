@@ -18,17 +18,26 @@
     private readonly string _inputId = $"typedConfirmation-{Guid.NewGuid():N}";
     private string _input = string.Empty;
 
+    /// <summary>Whether the modal is visible. Closing it clears the typed text.</summary>
     [Parameter] public bool IsOpen { get; set; }
+    /// <summary>The modal heading.</summary>
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    /// <summary>The exact (case-sensitive) text the user must type to enable confirmation; surrounding whitespace is ignored.</summary>
     [Parameter, EditorRequired] public string Keyword { get; set; } = string.Empty;
+    /// <summary>Text of the confirm button.</summary>
     [Parameter, EditorRequired] public string ConfirmButtonLabel { get; set; } = string.Empty;
+    /// <summary>CSS class of the confirm button. Defaults to <c>btn-danger</c>.</summary>
     [Parameter] public string ConfirmButtonClass { get; set; } = "btn-danger";
+    /// <summary>The modal body.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    /// <summary>Invoked when the form is submitted with the correct keyword. The parent is responsible for closing the modal.</summary>
     [Parameter] public EventCallback OnConfirm { get; set; }
+    /// <summary>Invoked when the modal is cancelled or closed.</summary>
     [Parameter] public EventCallback OnClose { get; set; }
 
     private bool IsValid => string.Equals(_input.Trim(), Keyword, StringComparison.Ordinal);
 
+    /// <summary>Clears the typed text when the modal is closed.</summary>
     protected override void OnParametersSet()
     {
         if (!IsOpen)

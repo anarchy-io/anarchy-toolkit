@@ -20,6 +20,7 @@
 </div>
 
 @code {
+    /// <summary>Subscribes to <c>NotificationService.Changed</c> to re-render.</summary>
     protected override void OnInitialized() => Notifications.Changed += HandleChanged;
 
     private void HandleChanged() => _ = InvokeAsync(StateHasChanged);
@@ -31,5 +32,6 @@
         _ => "alert-info"
     };
 
+    /// <summary>Unsubscribes from <c>NotificationService.Changed</c>.</summary>
     public void Dispose() => Notifications.Changed -= HandleChanged;
 }

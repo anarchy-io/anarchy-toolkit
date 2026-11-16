@@ -3,6 +3,7 @@
 @inject UiAuthenticationOptions AuthenticationOptions
 
 @code {
+    /// <summary>Navigates (full page load) to the login page.</summary>
     protected override void OnInitialized()
     {
         Navigation.NavigateTo(Presenter.GetRoute(AuthenticationOptions.LoginPath), forceLoad: true);

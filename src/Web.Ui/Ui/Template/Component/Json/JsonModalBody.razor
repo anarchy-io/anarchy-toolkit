@@ -12,13 +12,17 @@ else
 }
 
 @code {
+    /// <summary>The JSON (or raw text) to render.</summary>
     [Parameter, EditorRequired] public string JsonContent { get; set; } = string.Empty;
+    /// <summary>Name used for a top-level array rendered as a table. Defaults to <c>Payload</c>.</summary>
     [Parameter] public string Title { get; set; } = "Payload";
+    /// <summary>Render <see cref="JsonContent"/> as preformatted text instead of the structured view. Invalid JSON is always shown preformatted.</summary>
     [Parameter] public bool UsePreformattedView { get; set; }
 
     private bool HasParsedJson { get; set; }
     private JsonElement ParsedJsonValue { get; set; }
 
+    /// <summary>Parses <see cref="JsonContent"/> unless the preformatted view is requested.</summary>
     protected override void OnParametersSet()
     {
         HasParsedJson = false;

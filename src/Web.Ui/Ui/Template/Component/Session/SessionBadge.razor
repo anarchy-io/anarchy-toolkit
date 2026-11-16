@@ -18,6 +18,7 @@
     private string? _clientName;
     private string? _targetEnvironment;
 
+    /// <summary>Loads the client name and target environment of the session.</summary>
     protected override async Task OnInitializedAsync()
     {
         _clientName = await SessionContext.GetClientNameAsync();
