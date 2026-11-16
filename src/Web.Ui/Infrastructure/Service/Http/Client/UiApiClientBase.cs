@@ -12,6 +12,33 @@ namespace Anarchy.Toolkit.Web.Ui.Infrastructure.Service.Http.Client;
 /// Base class for UI clients of downstream APIs. Calls are authenticated with the access token of the signed-in
 /// UI session and routed to the API base URL of the environment selected at login.
 /// </summary>
+/// <remarks>
+/// Requires <c>AddToolkitUiApiHttpClient</c> (named HTTP client) and <c>AddToolkitUiAuthentication</c> (session
+/// context and environment catalog). Every call is monitored through the <see cref="Observer"/>; unsuccessful
+/// responses throw <see cref="DownstreamHttpRequestException"/>, which <c>NotificationService.Error(Exception)</c>
+/// can display with the response body.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// public class OrdersClient(
+///     IHttpClientFactory httpClientFactory,
+///     IUiSessionContext sessionContext,
+///     IUiEnvironmentCatalog environmentCatalog,
+///     Observer observer) : UiApiClientBase(httpClientFactory, sessionContext, environmentCatalog, observer)
+/// {
+///     public async Task&lt;JsonElement&gt; GetOrderAsync(long id, CancellationToken cancellationToken = default)
+///     {
+///         var baseUri = await GetApiBaseUriAsync("orders");
+///         var route = BindRoute("orders/{id:long}", ("id", id.ToString()));
+///         return await SendAsync&lt;JsonElement&gt;(HttpMethod.Get, baseUri, route, cancellationToken: cancellationToken);
+///     }
+/// }
+/// </code>
+/// </example>
+/// <param name="httpClientFactory">Creates the named HTTP client (<see cref="HttpClientName"/>).</param>
+/// <param name="sessionContext">Provides the access token and target environment of the signed-in session.</param>
+/// <param name="environmentCatalog">Resolves the downstream API base URLs.</param>
+/// <param name="observer">The observer used for logging and monitoring.</param>
 public abstract class UiApiClientBase(
     IHttpClientFactory httpClientFactory,
     IUiSessionContext sessionContext,
@@ -29,6 +56,9 @@ public abstract class UiApiClientBase(
     /// <summary>
     /// Resolves the base URL of the given downstream API for the session's target environment.
     /// </summary>
+    /// <param name="apiName">The API name, as configured in <c>UiEnvironment.ApiBaseUrls</c>.</param>
+    /// <returns>The API base URL.</returns>
+    /// <exception cref="KeyNotFoundException">The environment or the API is not configured.</exception>
     protected async Task<Uri> GetApiBaseUriAsync(string apiName)
     {
         var env = await sessionContext.GetTargetEnvironmentAsync();
@@ -39,6 +69,15 @@ public abstract class UiApiClientBase(
     /// <summary>
     /// Sends a request (optionally with a JSON body) and discards the response body.
     /// </summary>
+    /// <param name="method">The HTTP method.</param>
+    /// <param name="baseUri">The API base URL (see <see cref="GetApiBaseUriAsync"/>).</param>
+    /// <param name="endpoint">The endpoint, relative to <paramref name="baseUri"/>.</param>
+    /// <param name="body">Optional body, serialized as JSON.</param>
+    /// <param name="accessToken">Bearer token to use; defaults to the session's access token.</param>
+    /// <param name="cancellationToken">Token to cancel the request.</param>
+    /// <returns>A task that completes when the call succeeds.</returns>
+    /// <exception cref="InvalidOperationException">No access token is available.</exception>
+    /// <exception cref="DownstreamHttpRequestException">The response status code is not successful.</exception>
     protected Task SendAsync(
         HttpMethod method,
         Uri baseUri,
@@ -53,6 +92,16 @@ public abstract class UiApiClientBase(
     /// Sends a request (optionally with a JSON body) and deserializes the JSON response into <typeparamref name="TResponse"/>.
     /// Use <see cref="JsonElement"/> to get the raw JSON tree.
     /// </summary>
+    /// <typeparam name="TResponse">The response type.</typeparam>
+    /// <param name="method">The HTTP method.</param>
+    /// <param name="baseUri">The API base URL (see <see cref="GetApiBaseUriAsync"/>).</param>
+    /// <param name="endpoint">The endpoint, relative to <paramref name="baseUri"/>.</param>
+    /// <param name="body">Optional body, serialized as JSON.</param>
+    /// <param name="accessToken">Bearer token to use; defaults to the session's access token.</param>
+    /// <param name="cancellationToken">Token to cancel the request.</param>
+    /// <returns>The deserialized response.</returns>
+    /// <exception cref="InvalidOperationException">No access token is available, or the response body is JSON <c>null</c>.</exception>
+    /// <exception cref="DownstreamHttpRequestException">The response status code is not successful.</exception>
     protected Task<TResponse> SendAsync<TResponse>(
         HttpMethod method,
         Uri baseUri,
@@ -70,6 +119,16 @@ public abstract class UiApiClientBase(
     /// Posts a GraphQL query (with optional variables) and returns the parsed response body
     /// (the full envelope, including the top-level "data"/"errors" nodes).
     /// </summary>
+    /// <remarks>GraphQL errors returned with a successful status code are not turned into exceptions.</remarks>
+    /// <param name="baseUri">The API base URL (see <see cref="GetApiBaseUriAsync"/>).</param>
+    /// <param name="endpoint">The GraphQL endpoint, relative to <paramref name="baseUri"/>.</param>
+    /// <param name="query">The GraphQL query document.</param>
+    /// <param name="variables">Optional query variables.</param>
+    /// <param name="accessToken">Bearer token to use; defaults to the session's access token.</param>
+    /// <param name="cancellationToken">Token to cancel the request.</param>
+    /// <returns>The parsed response envelope.</returns>
+    /// <exception cref="InvalidOperationException">No access token is available.</exception>
+    /// <exception cref="DownstreamHttpRequestException">The response status code is not successful.</exception>
     protected Task<JsonElement> PostGraphQlAsync(
         Uri baseUri,
         string endpoint,
@@ -123,6 +182,9 @@ public abstract class UiApiClientBase(
     /// <summary>
     /// Replaces <c>{name}</c> (and <c>{name:long}</c>) placeholders in a route template with URL-encoded values.
     /// </summary>
+    /// <param name="routeTemplate">The route template.</param>
+    /// <param name="parameters">The placeholder names and their (unencoded) values.</param>
+    /// <returns>The bound route; unknown placeholders are left untouched.</returns>
     protected static string BindRoute(string routeTemplate, params (string name, string value)[] parameters)
     {
         var route = routeTemplate;

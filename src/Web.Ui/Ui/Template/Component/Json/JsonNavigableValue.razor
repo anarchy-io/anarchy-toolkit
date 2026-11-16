@@ -34,7 +34,9 @@ else
 }
 
 @code {
+    /// <summary>The JSON value to render: objects as property columns, arrays as lists or tables, scalars as code.</summary>
     [Parameter, EditorRequired] public JsonElement Value { get; set; }
+    /// <summary>Name used as heading when <see cref="Value"/> is an array of objects. Defaults to <c>Items</c>.</summary>
     [Parameter] public string ArrayName { get; set; } = "Items";
 }
 

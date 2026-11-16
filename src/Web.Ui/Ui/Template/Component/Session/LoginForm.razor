@@ -76,11 +76,13 @@
     /// <summary>Route of the logo image (e.g. "logo.png"), resolved against the UI base path.</summary>
     [Parameter] public string? LogoPath { get; set; }
 
+    /// <summary>Optional subtitle shown under the heading.</summary>
     [Parameter] public string? Subtitle { get; set; }
 
     /// <summary>Optional info shown under the form.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Initializes the presenter, redirects authenticated users to the home page and maps the <c>error</c> query parameter to a message.</summary>
     protected override async Task OnInitializedAsync()
     {
         Presenter.Initialize();

@@ -5,6 +5,11 @@ namespace Anarchy.Toolkit.Web.Ui.Entity.Ui;
 /// <summary>
 /// Cookie session and OAuth login settings of a UI application.
 /// </summary>
+/// <remarks>
+/// Passed to <c>AddToolkitUiAuthentication</c> (typically by overriding
+/// <c>UiWebAppStartupBase.GetUiAuthenticationOptions</c>) and registered as a singleton. The paths must agree with
+/// <see cref="UiRoutingOptions"/> prefixes and the login page route.
+/// </remarks>
 public record UiAuthenticationOptions
 {
     /// <summary>
@@ -45,7 +50,7 @@ public record UiAuthenticationOptions
     public TimeSpan AuthServiceTimeout { get; init; } = TimeSpan.FromSeconds(30);
 
     /// <summary>
-    /// Whether to use HTTPS-only cookies.
+    /// Whether the auth cookie is HttpOnly (not accessible from client-side scripts).
     /// </summary>
     public bool HttpOnly { get; init; } = true;
 

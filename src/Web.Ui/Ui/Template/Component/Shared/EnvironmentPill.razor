@@ -1,6 +1,7 @@
 <span class="ui-environment-pill @GetEnvironmentPillClass(Environment)">@Environment</span>
 
 @code {
+    /// <summary>The environment name to display; development, production and other environments get distinct styles.</summary>
     [Parameter, EditorRequired] public string Environment { get; set; } = string.Empty;
 
     private static string GetEnvironmentPillClass(string environment)

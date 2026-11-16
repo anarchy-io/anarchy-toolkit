@@ -16,6 +16,7 @@ public static class ApplicationBuilderExtension
         /// <summary>
         /// Serves the UI assets embedded in this package (<c>toolkit-ui.css</c>, <c>toolkit-ui.js</c>).
         /// </summary>
+        /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseToolkitUiStaticFiles()
         {
             return app.UseStaticFiles(new StaticFileOptions {
@@ -31,7 +32,13 @@ public static class ApplicationBuilderExtension
         /// Includes static files, routing, authentication and antiforgery, but NOT endpoints.
         /// Call UseEndpoints afterwards to map the UI's endpoints.
         /// </summary>
+        /// <remarks>
+        /// Order: the shared toolkit static files, <c>UseToolkitUiStaticFiles</c>, the common toolkit middlewares
+        /// (trace/correlation id, HTTPS redirection, compression, routing, authentication, authorization) and
+        /// antiforgery.
+        /// </remarks>
         /// <param name="environment">The hosting environment.</param>
+        /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseToolkitHostUi(IHostEnvironment environment)
         {
             return app

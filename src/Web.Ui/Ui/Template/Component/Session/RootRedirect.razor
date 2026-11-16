@@ -4,6 +4,7 @@
 @inject UiAuthenticationOptions AuthenticationOptions
 
 @code {
+    /// <summary>Navigates (full page load) to the home page when authenticated, otherwise to the login page.</summary>
     protected override async Task OnInitializedAsync()
     {
         var destination = await SessionContext.IsAuthenticatedAsync()

@@ -10,6 +10,8 @@ namespace Anarchy.Toolkit.Web.Ui.Service.Host.Ui.Session;
 /// Unlike a service-to-service auth client (which uses pre-configured credentials), this exchanges dynamic
 /// credentials provided at runtime by the user on the login page.
 /// </summary>
+/// <param name="httpClientFactory">Creates the <see cref="HttpClientName"/> HTTP client.</param>
+/// <param name="observer">The observer used for logging.</param>
 public class UiAuthHandler(
     IHttpClientFactory httpClientFactory,
     Observer observer
@@ -29,6 +31,11 @@ public class UiAuthHandler(
     /// <param name="clientSecret">The OAuth client secret (typically provided by the user/application)</param>
     /// <param name="cancellationToken">Token used to cancel the token exchange</param>
     /// <returns>An AuthTokenResponse containing the access token, or null if the exchange fails</returns>
+    /// <remarks>
+    /// Posts a <c>client_credentials</c> form to <c>{authServiceBaseUrl}/connect/token</c>. Non-success status codes
+    /// are logged as warnings and yield <see langword="null"/>; transport and deserialization exceptions are logged
+    /// and rethrown.
+    /// </remarks>
     public async Task<AuthTokenResponse?> ExchangeCredentialsAsync(
         Uri authServiceBaseUrl,
         string? scope,

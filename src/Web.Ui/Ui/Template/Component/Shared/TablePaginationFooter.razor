@@ -16,8 +16,11 @@
 @code {
     private readonly string _selectId = $"pageSize-{Guid.NewGuid():N}";
 
+    /// <summary>The pagination state to display and update.</summary>
     [Parameter, EditorRequired] public PaginationState State { get; set; } = null!;
+    /// <summary>The selectable page sizes. Defaults to <see cref="PaginationState.DefaultPageSizeOptions"/>.</summary>
     [Parameter] public IReadOnlyCollection<int> PageSizeOptions { get; set; } = PaginationState.DefaultPageSizeOptions;
+    /// <summary>Invoked after the page size changes, so the parent can re-render.</summary>
     [Parameter] public EventCallback OnChanged { get; set; }
 
     private Task OnPageSizeChangedAsync(ChangeEventArgs args)

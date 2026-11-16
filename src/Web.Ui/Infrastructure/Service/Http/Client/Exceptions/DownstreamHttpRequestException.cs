@@ -37,6 +37,17 @@ public class DownstreamHttpRequestException : HttpRequestException
     /// </summary>
     public JsonElement? ResponseJson { get; }
 
+    /// <summary>
+    /// Builds the exception from a failed response, reading and formatting its body.
+    /// </summary>
+    /// <remarks>
+    /// The message includes the request URI and status line and, when the body is a JSON object, the first
+    /// non-empty string among its <c>detail</c>, <c>message</c>, <c>title</c> or <c>error</c> properties. Failures
+    /// reading the body are captured in <see cref="ResponseContent"/> instead of being thrown.
+    /// </remarks>
+    /// <param name="response">The unsuccessful HTTP response.</param>
+    /// <param name="cancellationToken">Token to cancel reading the body.</param>
+    /// <returns>The exception to throw.</returns>
     public static async Task<DownstreamHttpRequestException> CreateAsync(
         HttpResponseMessage response,
         CancellationToken cancellationToken = default)

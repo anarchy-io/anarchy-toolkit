@@ -42,8 +42,11 @@ else {
 }
 
 @code {
+    /// <summary>Whether to render <see cref="PropertyName"/> as a heading above the table.</summary>
     [Parameter, EditorRequired] public bool RenderLabel { get; set; }
+    /// <summary>Name of the array property, shown (in title sentence case) as the table heading and passed to rows as parent name.</summary>
     [Parameter, EditorRequired] public string PropertyName { get; set; } = string.Empty;
+    /// <summary>The JSON array of objects to render; scalar properties become the first columns, complex properties the last.</summary>
     [Parameter, EditorRequired] public JsonElement Items { get; set; }
 }
 

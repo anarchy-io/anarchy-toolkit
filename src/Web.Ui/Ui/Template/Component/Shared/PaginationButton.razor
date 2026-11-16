@@ -5,8 +5,11 @@
 </button>
 
 @code {
+    /// <summary>The page number of this button.</summary>
     [Parameter, EditorRequired] public int PageNumber { get; set; }
+    /// <summary>The current page; the button is highlighted and disabled when it matches <see cref="PageNumber"/>.</summary>
     [Parameter, EditorRequired] public int CurrentPage { get; set; }
+    /// <summary>Invoked with <see cref="PageNumber"/> when the button is clicked.</summary>
     [Parameter, EditorRequired] public EventCallback<int> OnGoToPage { get; set; }
 
     private Task HandleClick() => OnGoToPage.InvokeAsync(PageNumber);

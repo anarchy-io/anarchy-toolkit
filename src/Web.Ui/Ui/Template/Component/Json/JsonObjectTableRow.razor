@@ -55,9 +55,13 @@
 </tr>
 
 @code {
+    /// <summary>Name of the parent array, used as title of the JSON modal opened from complex cells.</summary>
     [Parameter, EditorRequired] public string ParentName { get; set; } = string.Empty;
+    /// <summary>The JSON object rendered as a row.</summary>
     [Parameter, EditorRequired] public JsonElement Item { get; set; }
+    /// <summary>The scalar property names to render as cells, in order.</summary>
     [Parameter, EditorRequired] public IReadOnlyCollection<string> ScalarColumns { get; set; } = [];
+    /// <summary>The complex (object/array) property names to render as cells, in order.</summary>
     [Parameter, EditorRequired] public IReadOnlyCollection<string> ComplexColumns { get; set; } = [];
 }
 
