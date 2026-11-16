@@ -16,12 +16,32 @@ namespace Anarchy.Toolkit.Testing.Aws.Helper;
 /// Integration-testing helper for creating and wiring up AWS SNS topics and SQS queues
 /// using the real AWS SDK (typically against LocalStack). Dispose it to release the SNS and SQS clients.
 /// </summary>
+/// <remarks>
+/// Every operation sanitizes resource names (invalid characters become <c>-</c>, the <c>.fifo</c> suffix is preserved),
+/// prints progress through <see cref="DevelopmentLogger"/>, and rethrows SDK errors after logging them. Names that are
+/// <see langword="null"/> or whitespace cause an <see cref="EmptyArgumentException"/>. Credentials, endpoint and region
+/// come from <see cref="IAwsAppSettings.Aws"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// using var broker = new AwsMessageBrokerHelper(TestHelper.TestSettings&lt;AppSettings&gt;());
+/// await broker.PrepareTopicAsync("orders.fifo");
+/// await broker.PrepareQueueAsync("orders-consumer.fifo");
+/// await broker.SubscribeSqsQueueToSnsTopicAsync("orders-consumer.fifo", "orders.fifo");
+/// var response = await broker.ReceiveMessagesAsync("orders-consumer.fifo", waitTimeSeconds: 5);
+/// </code>
+/// </example>
 public class AwsMessageBrokerHelper : IDisposable
 {
     private const string DevLogPrefix = "AWS Helper";
     private const string FifoSuffix = ".fifo";
 
+    /// <summary>The SNS client, configured from <see cref="IAwsAppSettings.Aws"/>.</summary>
     public readonly AmazonSimpleNotificationServiceClient ClientSns;
+    /// <summary>
+    /// The SQS client, configured from <see cref="IAwsAppSettings.Aws"/>. Note that it uses the SNS endpoint setting as service URL
+    /// (fine for LocalStack, where both share one endpoint).
+    /// </summary>
     public readonly AmazonSQSClient ClientSqs;
 
     /// <summary>
@@ -50,6 +70,7 @@ public class AwsMessageBrokerHelper : IDisposable
         });
     }
 
+    /// <summary>Disposes the SNS and SQS clients.</summary>
     public void Dispose()
     {
         ClientSns.Dispose();
@@ -63,6 +84,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// </summary>
     /// <param name="topicName">The (possibly unsanitized) topic name.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task PrepareTopicAsync(string topicName, CancellationToken cancellationToken = default)
     {
         var sanitizedTopicName = SanitizeResourceName(topicName);
@@ -100,6 +122,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// </summary>
     /// <param name="topicName">The (possibly unsanitized) topic name.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task DeleteTopicAsync(string topicName, CancellationToken cancellationToken = default)
     {
         try
@@ -147,6 +170,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// </summary>
     /// <param name="topicName">The (possibly unsanitized) topic name.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task CreateTopicAsync(string topicName, CancellationToken cancellationToken = default)
     {
         var sanitizedTopicName = SanitizeResourceName(topicName);
@@ -193,6 +217,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// <param name="queueName">The (possibly unsanitized) queue name.</param>
     /// <param name="topicName">The (possibly unsanitized) topic name.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task SubscribeSqsQueueToSnsTopicAsync(string queueName, string topicName, CancellationToken cancellationToken = default)
     {
         var sanitizedQueueName = SanitizeResourceName(queueName);
@@ -249,8 +274,8 @@ public class AwsMessageBrokerHelper : IDisposable
     /// Resolves the URL of the given SQS queue, after sanitizing its name.
     /// </summary>
     /// <param name="queueName">The (possibly unsanitized) queue name.</param>
-    /// <returns>The resolved SQS queue URL.</returns>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The resolved SQS queue URL.</returns>
     private async Task<string> GetQueueUrlAsync(string queueName, CancellationToken cancellationToken = default)
     {
         var sanitizedQueueName = SanitizeResourceName(queueName);
@@ -267,6 +292,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// When <c>true</c> and the queue is FIFO, <c>ContentBasedDeduplication</c> is enabled.
     /// </param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task CreateQueueAsync(string queueName, bool contentBasedDeduplication = true, CancellationToken cancellationToken = default)
     {
         var sanitizedQueueName = SanitizeResourceName(queueName);
@@ -317,6 +343,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// </summary>
     /// <param name="queueName">The (possibly unsanitized) queue name.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task PurgeQueueAsync(string queueName, CancellationToken cancellationToken = default)
     {
         DevelopmentLogger.Print(
@@ -357,6 +384,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// </summary>
     /// <param name="queueName">The (possibly unsanitized) queue name.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task DeleteQueueAsync(string queueName, CancellationToken cancellationToken = default)
     {
         DevelopmentLogger.Print(
@@ -396,8 +424,8 @@ public class AwsMessageBrokerHelper : IDisposable
     /// Checks whether the specified SQS queue exists.
     /// </summary>
     /// <param name="queueName">The (possibly unsanitized) queue name.</param>
-    /// <returns><c>true</c> when the queue exists; otherwise <c>false</c>.</returns>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns><c>true</c> when the queue exists; otherwise <c>false</c>.</returns>
     public async Task<bool> QueueExistsAsync(string queueName, CancellationToken cancellationToken = default)
     {
         try
@@ -443,8 +471,8 @@ public class AwsMessageBrokerHelper : IDisposable
     /// <param name="waitTimeSeconds">
     /// Long-poll wait time in seconds; capped at 20 seconds and defaults to 0.
     /// </param>
-    /// <returns>The <see cref="ReceiveMessageResponse"/> from SQS.</returns>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The <see cref="ReceiveMessageResponse"/> from SQS.</returns>
     public async Task<ReceiveMessageResponse> ReceiveMessagesAsync(string queueName, int waitTimeSeconds = 0, CancellationToken cancellationToken = default)
     {
         DevelopmentLogger.Print(
@@ -488,6 +516,8 @@ public class AwsMessageBrokerHelper : IDisposable
     /// Optional partition key used as <c>MessageGroupId</c> for FIFO queues; defaults to "default".
     /// </param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the batch has been sent.</returns>
+    /// <exception cref="MessageBatchPublishException">One or more messages in the batch failed to be sent.</exception>
     public async Task SendMessages(string queueName, IEnumerable<object> messages, string? partitionKey = null, CancellationToken cancellationToken = default)
     {
         try
@@ -537,6 +567,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// </summary>
     /// <param name="queueName">The (possibly unsanitized) queue name.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the operation has finished.</returns>
     public async Task PrepareQueueAsync(string queueName, CancellationToken cancellationToken = default)
     {
         try

@@ -14,9 +14,25 @@ namespace Anarchy.Toolkit.Testing.Aws.Helper;
 /// <typeparam name="TAppSettings">
 /// The consumer's concrete application settings type, whose test settings provide the SQS endpoint.
 /// </typeparam>
+/// <remarks>
+/// The client uses dummy <c>test</c>/<c>test</c> credentials, region <c>eu-west-1</c>, and the
+/// <c>Aws.EndpointSqs</c> setting from <see cref="Anarchy.Toolkit.Testing.Helper.TestHelper.TestSettings{TAppSettings}"/>.
+/// Queue URLs are cached in a static, non-thread-safe dictionary per <typeparamref name="TAppSettings"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// await SqsHelper&lt;AppSettings&gt;.PurgeQueue("orders-queue");
+/// // ... run code that publishes to the queue ...
+/// var received = await SqsHelper&lt;AppSettings&gt;.ReceiveMessagesFromQueue("orders-queue");
+/// var sqsEvent = SqsHelper&lt;AppSettings&gt;.CreateSqsEvent(received.Messages);
+/// </code>
+/// </example>
 public class SqsHelper<TAppSettings>
     where TAppSettings : class, IAwsAppSettings
 {
+    /// <summary>
+    /// The shared SQS client, pointed at the configured test SQS endpoint (e.g. LocalStack).
+    /// </summary>
     public static readonly AmazonSQSClient SqsClient = new(
         new BasicAWSCredentials("test", "test"),
         new AmazonSQSConfig {
@@ -31,6 +47,10 @@ public class SqsHelper<TAppSettings>
     /// </summary>
     /// <param name="messages">The source SQS messages.</param>
     /// <returns>The constructed <see cref="SQSEvent"/>.</returns>
+    /// <remarks>
+    /// Useful to feed messages received from a real queue into a Lambda SQS handler under test. The event source ARN is
+    /// the placeholder <c>test-queue-arn</c> and the region <c>eu-west-1</c>.
+    /// </remarks>
     public static SQSEvent CreateSqsEvent(IEnumerable<Message> messages)
     {
         return new SQSEvent {
@@ -61,6 +81,7 @@ public class SqsHelper<TAppSettings>
     /// </summary>
     /// <param name="queueName">The SQS queue name.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The receive response, including all message and system attributes. Long polling waits up to 1 second.</returns>
     public static async Task<ReceiveMessageResponse> ReceiveMessagesFromQueue(
         string queueName, CancellationToken cancellationToken = default)
     {
@@ -83,6 +104,7 @@ public class SqsHelper<TAppSettings>
     /// </summary>
     /// <param name="queueName">The SQS queue name.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A task that completes when the purge request has been accepted.</returns>
     public static async Task PurgeQueue(string queueName, CancellationToken cancellationToken = default)
     {
         if (!QueueUrls.TryGetValue(queueName, out var queueUrl))
@@ -98,6 +120,8 @@ public class SqsHelper<TAppSettings>
     /// </summary>
     /// <param name="queueName">The SQS queue name.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The queue URL.</returns>
+    /// <remarks>Existing queues are matched by URL suffix among the queues listed with <paramref name="queueName"/> as prefix.</remarks>
     public static async Task<string> CreateQueue(string queueName, CancellationToken cancellationToken = default)
     {
         var existingQueues = await SqsClient.ListQueuesAsync(queueName, cancellationToken);
