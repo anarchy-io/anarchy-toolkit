@@ -36,6 +36,10 @@ See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview
 
 ## Releases
 
+### 1.0.6
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 1.0.5
 
 - refactor(src): clean up code style across library packages
