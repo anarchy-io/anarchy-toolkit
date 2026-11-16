@@ -12,6 +12,12 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Health;
 /// An API which runs the service health reports and gathers environment information, formatting both as JSON.
 /// The health report has the same shape as the web API's <c>/health/services</c> response.
 /// </summary>
+/// <remarks>
+/// Backs the health middlewares (see
+/// <see cref="Anarchy.Toolkit.Hosting.Workers.Service.Health.Middleware.ApplicationHealthMiddlewareBase"/>). Registered
+/// as transient by <c>AddApplicationHealthEndpoints</c>, or created with <see cref="WithCustomMetadata"/> /
+/// <see cref="WithMetadataFromAssembly"/>.
+/// </remarks>
 public class ApplicationHealthApi
 {
     internal IReadOnlyCollection<IServiceHealthReport> Reports { get; }
@@ -20,6 +26,11 @@ public class ApplicationHealthApi
     /// <summary>
     /// Create a new instance of <see cref="ApplicationHealthApi" /> with required services injected.
     /// </summary>
+    /// <param name="reports">The service health reports to run.</param>
+    /// <param name="applicationInformation">The application and build information.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="reports"/> or <paramref name="applicationInformation"/> is <see langword="null"/>.
+    /// </exception>
     public ApplicationHealthApi(
         IReadOnlyCollection<IServiceHealthReport> reports,
         ApplicationInformation applicationInformation
@@ -33,6 +44,10 @@ public class ApplicationHealthApi
     /// <summary>
     /// Create a new instance of <see cref="ApplicationHealthApi" /> with a custom build metadata provider.
     /// </summary>
+    /// <param name="reports">The service health reports to run.</param>
+    /// <param name="buildMetadata">The build metadata provider.</param>
+    /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+    /// <returns>The new health API.</returns>
     public static ApplicationHealthApi WithCustomMetadata(
         IReadOnlyCollection<IServiceHealthReport> reports,
         IBuildMetadata buildMetadata,
@@ -47,6 +62,10 @@ public class ApplicationHealthApi
     /// <summary>
     /// Create a new instance of <see cref="ApplicationHealthApi" /> with build metadata from the provided assembly.
     /// </summary>
+    /// <param name="reports">The service health reports to run.</param>
+    /// <param name="assembly">The assembly containing the embedded build metadata.</param>
+    /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+    /// <returns>The new health API.</returns>
     public static ApplicationHealthApi WithMetadataFromAssembly(
         IReadOnlyCollection<IServiceHealthReport> reports,
         Assembly assembly,
@@ -61,6 +80,8 @@ public class ApplicationHealthApi
     /// <summary>
     /// Run all service health reports and aggregate their results.
     /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The aggregated health report.</returns>
     public Task<HealthCheckReport> GetHealthReportAsync(CancellationToken? cancellationToken = null) =>
         HealthCheckReport.RunAsync(Reports, cancellationToken);
 
@@ -68,6 +89,8 @@ public class ApplicationHealthApi
     /// Run all service health reports and return the result formatted as JSON, along with an HTTP status code:
     /// OK when every test passed, InternalServerError otherwise (as the web API's health controller does).
     /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The JSON report and status code.</returns>
     public async Task<ApplicationHealthHttpResponse> GetHealthHttpResponse(
         CancellationToken? cancellationToken = null)
     {
@@ -84,6 +107,11 @@ public class ApplicationHealthApi
     /// <summary>
     /// Construct an overview of an application's environment and build process and return it formatted as JSON.
     /// </summary>
+    /// <remarks>
+    /// Uses snake_case property names such as <c>artifact_id</c>, <c>version</c>, <c>git_sha1</c>, <c>up_since</c>,
+    /// <c>up_duration</c> (seconds) and <c>machine_name</c>.
+    /// </remarks>
+    /// <returns>The application information as JSON.</returns>
     public string GetApplicationInformationAsJson()
     {
         var dto = ConvertToDto(ApplicationInformation);

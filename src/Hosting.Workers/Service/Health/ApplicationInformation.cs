@@ -8,6 +8,10 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Health;
 /// <summary>
 /// Information about the application's environment and build process.
 /// </summary>
+/// <remarks>
+/// Build-related values come from an <see cref="IBuildMetadata"/>; runtime values (machine name, system time,
+/// up-time, OS) are evaluated on each access. Serialized by <see cref="ApplicationHealthApi.GetApplicationInformationAsJson"/>.
+/// </remarks>
 public class ApplicationInformation
 {
     internal Func<DateTimeOffset> Clock { get; set; }
@@ -91,6 +95,8 @@ public class ApplicationInformation
     /// Application information, that reads build metadata. The application start time is the start time of the
     /// current process, so it does not depend on when the container first resolves this instance.
     /// </summary>
+    /// <param name="buildMetadata">The build metadata provider.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="buildMetadata"/> is <see langword="null"/>.</exception>
     public ApplicationInformation(
         IBuildMetadata buildMetadata
     )
@@ -113,6 +119,9 @@ public class ApplicationInformation
     /// Create a new <see cref="ApplicationInformation" />, reading build metadata embedded in the specified
     /// assembly.
     /// </summary>
+    /// <param name="assembly">The assembly containing the embedded build metadata.</param>
+    /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+    /// <returns>The new application information.</returns>
     public static ApplicationInformation WithMetadataFromAssembly(
         Assembly assembly,
         DateTimeOffset applicationStartTime
@@ -126,6 +135,10 @@ public class ApplicationInformation
     /// <summary>
     /// Create a new <see cref="ApplicationInformation" /> with a custom build metadata provider.
     /// </summary>
+    /// <param name="buildMetadata">The build metadata provider.</param>
+    /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+    /// <returns>The new application information.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="buildMetadata"/> is <see langword="null"/>.</exception>
     public static ApplicationInformation WithCustomMetadata(
         IBuildMetadata buildMetadata,
         DateTimeOffset applicationStartTime

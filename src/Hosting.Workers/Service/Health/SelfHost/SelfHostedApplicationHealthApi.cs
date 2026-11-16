@@ -13,6 +13,16 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Health.SelfHost;
 /// choosing and on that port will respond to the known health endpoints (/health/instance, /health/services,
 /// and /health/status). Disposing the instance stops the web server and frees the port.
 /// </summary>
+/// <remarks>
+/// The server listens on <c>http://*:{port}</c>, enables systemd integration, and answers <c>404</c> to any other
+/// path. Used by <see cref="Anarchy.Toolkit.Hosting.Workers.Service.Worker.ServiceHealthCheckWorker"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// using var healthApi = SelfHostedApplicationHealthApi.WithServices(8081, serviceProvider.GetRequiredService&lt;IServiceScopeFactory&gt;());
+/// healthApi.Start();
+/// </code>
+/// </example>
 public class SelfHostedApplicationHealthApi : IDisposable
 {
     private SelfHostedApplicationHealthApi(int portNumber,
@@ -25,6 +35,11 @@ public class SelfHostedApplicationHealthApi : IDisposable
     /// Create a new instance of <see cref="SelfHostedApplicationHealthApi"/> reading build metadata embedded in
     /// the specified assembly, listening on the specified port.
     /// </summary>
+    /// <param name="portNumber">The TCP port to listen on.</param>
+    /// <param name="reports">The service health reports to run.</param>
+    /// <param name="assembly">The assembly containing the embedded build metadata.</param>
+    /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+    /// <returns>A new, not yet started, health API.</returns>
     public static SelfHostedApplicationHealthApi WithMetadataFromAssembly(int portNumber,
                                                                           IReadOnlyCollection<IServiceHealthReport> reports,
                                                                           Assembly assembly,
@@ -40,6 +55,11 @@ public class SelfHostedApplicationHealthApi : IDisposable
     /// Create a new instance of <see cref="SelfHostedApplicationHealthApi"/> with a custom build metadata
     /// provider, listening on the specified port.
     /// </summary>
+    /// <param name="portNumber">The TCP port to listen on.</param>
+    /// <param name="reports">The service health reports to run.</param>
+    /// <param name="buildMetadata">The build metadata provider.</param>
+    /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+    /// <returns>A new, not yet started, health API.</returns>
     public static SelfHostedApplicationHealthApi WithCustomMetadata(int portNumber,
                                                                     IReadOnlyCollection<IServiceHealthReport> reports,
                                                                     IBuildMetadata buildMetadata,
@@ -56,6 +76,10 @@ public class SelfHostedApplicationHealthApi : IDisposable
     /// resolves the <see cref="ApplicationHealthApi"/> (and with it the service health reports) from a new scope
     /// of the given container per request.
     /// </summary>
+    /// <param name="portNumber">The TCP port to listen on.</param>
+    /// <param name="scopeFactory">The scope factory of the container that registers <see cref="ApplicationHealthApi"/>.</param>
+    /// <returns>A new, not yet started, health API.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="scopeFactory"/> is <see langword="null"/>.</exception>
     public static SelfHostedApplicationHealthApi WithServices(int portNumber, IServiceScopeFactory scopeFactory)
     {
         ArgumentNullException.ThrowIfNull(scopeFactory);
@@ -69,6 +93,7 @@ public class SelfHostedApplicationHealthApi : IDisposable
     /// <summary>
     /// Start the web server and start handling requests. This method can only be called once.
     /// </summary>
+    /// <exception cref="HealthApiAlreadyStartedException">Thrown if the server was already started.</exception>
     public void Start()
     {
         ThrowIfAlreadyStarted();
@@ -91,6 +116,9 @@ public class SelfHostedApplicationHealthApi : IDisposable
         _host?.Dispose();
     }
 
+    /// <summary>
+    /// Stops the web server (see <see cref="Stop"/>).
+    /// </summary>
     public void Dispose()
     {
         Stop();

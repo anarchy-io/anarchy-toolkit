@@ -13,14 +13,16 @@ public class ApplicationHealthHttpResponse
     public string Content { get; }
 
     /// <summary>
-    /// The HTTP status code to return. This should be OK or ServiceUnavailable, depending on whether the overall
-    /// application is healthy.
+    /// The HTTP status code to return, depending on whether the overall application is healthy
+    /// (<see cref="Anarchy.Toolkit.Hosting.Workers.Service.Health.ApplicationHealthApi"/> uses OK or InternalServerError).
     /// </summary>
     public HttpStatusCode StatusCode { get; }
 
     /// <summary>
     /// Creates a new instance of <see cref="ApplicationHealthHttpResponse"/>.
     /// </summary>
+    /// <param name="content">The health results formatted as JSON.</param>
+    /// <param name="statusCode">The HTTP status code to return.</param>
     public ApplicationHealthHttpResponse(string content, HttpStatusCode statusCode)
     {
         Content = content;

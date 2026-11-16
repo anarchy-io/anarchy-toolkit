@@ -21,6 +21,13 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly SelfHostedApplicationHealthApi _healthApi;
 
+    /// <summary>
+    /// Creates the worker and prepares (without starting) the self-hosted health API.
+    /// </summary>
+    /// <param name="appSettings">Settings providing <see cref="WorkerHealthCheckSettings.ServicePort"/>.</param>
+    /// <param name="observer">The observer used for logs.</param>
+    /// <param name="scopeFactory">Creates a scope per health request in the worker's container.</param>
+    /// <exception cref="ArgumentNullException">Thrown if any argument is <see langword="null"/>.</exception>
     public ServiceHealthCheckWorker(IWorkerHealthCheckAppSettings appSettings,
                                     Observer observer,
                                     IServiceScopeFactory scopeFactory)
@@ -33,6 +40,15 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
             _scopeFactory);
     }
 
+    /// <summary>
+    /// Verifies that <see cref="ApplicationHealthApi"/> can be resolved and starts the health API.
+    /// </summary>
+    /// <param name="cancellationToken">Not used.</param>
+    /// <returns>A completed task.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if <see cref="ApplicationHealthApi"/> is not registered.</exception>
+    /// <exception cref="Anarchy.Toolkit.Hosting.Workers.Service.Health.SelfHost.Exceptions.HealthApiAlreadyStartedException">
+    /// Thrown if the health API was already started.
+    /// </exception>
     public Task StartAsync(CancellationToken cancellationToken)
     {
         var caller = this.CalledFrom();
@@ -53,12 +69,20 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Stops the health API.
+    /// </summary>
+    /// <param name="cancellationToken">Not used.</param>
+    /// <returns>A completed task.</returns>
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _healthApi.Stop();
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Disposes the health API.
+    /// </summary>
     public void Dispose()
     {
         _healthApi.Dispose();

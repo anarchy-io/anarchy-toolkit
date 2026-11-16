@@ -10,13 +10,28 @@ namespace Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.AspNetCore;
 /// <summary>
 /// Extensions to make it easier to apply <see cref="ApplicationHealthMiddleware"/> to your ASP.NET Core pipeline.
 /// </summary>
+/// <remarks>
+/// All variants serve <c>/health/instance</c>, <c>/health/services</c> and <c>/health/status</c> (see
+/// <see cref="ApplicationHealthMiddlewareBase"/>); they differ in how the <see cref="ApplicationHealthApi"/> is obtained.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// app.UseApplicationHealthEndpoints(); // requires services.AddApplicationHealthEndpoints(typeof(Program).Assembly)
+/// </code>
+/// </example>
 public static class ApplicationBuilderExtensions
 {
+    /// <param name="app">The application builder.</param>
     extension(IApplicationBuilder app)
     {
         /// <summary>
-        /// Applies the <see cref="ApplicationHealthMiddleware"/> to the request pipeline with a custom build metadata provider.
+        /// Applies the <see cref="ApplicationHealthMiddlewareWithCustomMetadata"/> to the request pipeline with a custom
+        /// build metadata provider.
         /// </summary>
+        /// <param name="reports">The service health reports to run.</param>
+        /// <param name="buildMetadata">The build metadata provider.</param>
+        /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+        /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseApplicationHealthEndpointsWithCustomMetadata(IReadOnlyCollection<IServiceHealthReport> reports,
                 IBuildMetadata buildMetadata,
                 DateTimeOffset applicationStartTime
@@ -30,6 +45,7 @@ public static class ApplicationBuilderExtensions
         /// <summary>
         /// Applies the <see cref="ApplicationHealthMiddleware"/> that expects a <see cref="ApplicationHealthApi"/> injected on Invoke method.
         /// </summary>
+        /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseApplicationHealthEndpoints() =>
             app.UseMiddleware<ApplicationHealthMiddleware>();
 
@@ -37,13 +53,19 @@ public static class ApplicationBuilderExtensions
         /// Applies the <see cref="ApplicationHealthMiddlewareWithScopedServices"/>, resolving the
         /// <see cref="ApplicationHealthApi"/> from a new scope of the given container per request.
         /// </summary>
+        /// <param name="scopeFactory">The scope factory of the container that registers <see cref="ApplicationHealthApi"/>.</param>
+        /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseApplicationHealthEndpoints(IServiceScopeFactory scopeFactory) =>
             app.UseMiddleware<ApplicationHealthMiddlewareWithScopedServices>(scopeFactory);
 
         /// <summary>
-        /// Applies the <see cref="ApplicationHealthMiddleware"/> to the request reading build metadata embedded
-        /// in the specified assembly.
+        /// Applies the <see cref="ApplicationHealthMiddlewareWithMetadataFromAssembly"/> to the request pipeline, reading
+        /// build metadata embedded in the specified assembly.
         /// </summary>
+        /// <param name="reports">The service health reports to run.</param>
+        /// <param name="assembly">The assembly containing the embedded build metadata.</param>
+        /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
+        /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseApplicationHealthEndpoints(IReadOnlyCollection<IServiceHealthReport> reports,
                                                                  Assembly assembly,
                                                                  DateTimeOffset applicationStartTime

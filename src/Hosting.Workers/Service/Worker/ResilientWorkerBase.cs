@@ -6,6 +6,30 @@ using Polly.Retry;
 
 namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 
+/// <summary>
+/// <see cref="MonitoredWorkerBase"/> that retries failed work indefinitely with a per-attempt timeout.
+/// </summary>
+/// <remarks>
+/// <para>Each iteration calls <see cref="PerformWorkAsync"/> through a Polly pipeline that retries any exception except
+/// <see cref="OperationCanceledException"/>, without limit, waiting <c>recurringInterval × attempt²</c> seconds
+/// (capped at 120 seconds) between attempts. Every retry is recorded with
+/// <see cref="MonitoredWorkerBase.RecordFailureAction"/>.</para>
+/// <para>Each attempt gets a token cancelled when the host stops or after <c>performWorkTimeoutInSeconds</c>; a
+/// timeout surfaces as an <see cref="Anarchy.Toolkit.Core.Exceptions.OperationTimeoutException"/>, which is retried.</para>
+/// </remarks>
+/// <param name="observer">The observer used for logs and metrics.</param>
+/// <param name="recurringIntervalInSeconds">Delay after an iteration that did work, also the retry back-off base. Defaults to 2 seconds.</param>
+/// <param name="delayedIntervalInSeconds">Delay after an idle iteration. Defaults to 20 seconds.</param>
+/// <param name="performWorkTimeoutInSeconds">Timeout of a single <see cref="PerformWorkAsync"/> attempt. Defaults to 120 seconds.</param>
+/// <example>
+/// <code language="csharp">
+/// public sealed class OrderSyncWorker(Observer observer, IOrderSync sync) : ResilientWorkerBase(observer)
+/// {
+///     protected override async Task&lt;bool&gt; PerformWorkAsync(CancellationToken token) =>
+///         await sync.SyncNextBatchAsync(token) &gt; 0;
+/// }
+/// </code>
+/// </example>
 public abstract class ResilientWorkerBase(
     Observer observer,
     double recurringIntervalInSeconds = 2,
@@ -16,8 +40,17 @@ public abstract class ResilientWorkerBase(
     private ResiliencePipeline? _policy;
     private readonly TimeSpan _performWorkTimeout = TimeSpan.FromSeconds(performWorkTimeoutInSeconds);
 
+    /// <summary>
+    /// Performs one unit of work. Throw to have the attempt retried.
+    /// </summary>
+    /// <param name="token">Cancelled when the host stops or the attempt times out.</param>
+    /// <returns>
+    /// <see langword="true"/> if work was done; <see langword="false"/> when idle (the next iteration is delayed
+    /// longer).
+    /// </returns>
     protected abstract Task<bool> PerformWorkAsync(CancellationToken token);
 
+    /// <inheritdoc />
     protected sealed override Task<bool> RunIterationAsync(CancellationToken stoppingToken)
     {
         var caller = this.CalledFrom();
