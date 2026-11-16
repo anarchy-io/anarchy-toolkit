@@ -3,8 +3,17 @@ using System.Text.Json;
 
 namespace Anarchy.Toolkit.Testing.Helper.Assertions.FailureOutput.ApiGatewayResponse;
 
+/// <summary>
+/// Formats an <see cref="APIGatewayProxyResponse"/> as plain text for assertion failure messages.
+/// </summary>
 public static class ApiGatewayResponsePlainFailureOutput
 {
+    /// <summary>
+    /// Renders the status code, indented JSON headers (or <c>&lt;none&gt;</c>) and the body, pretty-printed when it is
+    /// valid JSON (raw otherwise, <c>&lt;null&gt;</c> when empty).
+    /// </summary>
+    /// <param name="response">The response to format.</param>
+    /// <returns>The formatted dump.</returns>
     public static string Format(APIGatewayProxyResponse response)
     {
         return $@"==== API Gateway Response Dump ====

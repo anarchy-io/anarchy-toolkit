@@ -6,6 +6,19 @@ using System.Text.RegularExpressions;
 
 namespace Anarchy.Toolkit.Testing.Extension.Assertions;
 
+/// <summary>
+/// Assertion extensions for partial, structural comparison of dictionaries (e.g. deserialized JSON) where some
+/// values are matched by regular expression instead of equality.
+/// </summary>
+/// <example>
+/// <code language="csharp">
+/// actual.ShouldContainDictionaryWithRegex(new Dictionary&lt;string, object?&gt;
+/// {
+///     ["id"] = new Regex("^[0-9a-f-]{36}$"),
+///     ["status"] = "Created",
+/// });
+/// </code>
+/// </example>
 public static class DictionaryRegexAssertionExtensions
 {
     /// <summary>
@@ -30,6 +43,11 @@ public static class DictionaryRegexAssertionExtensions
     /// <param name="becauseArgs">
     ///     Zero or more objects to format using the placeholders in <paramref name="because" />.
     /// </param>
+    /// <remarks>
+    ///     Sequence items are matched in any order (each actual item used at most once). Leaf values are compared
+    ///     with <see cref="object.Equals(object, object)" />. All mismatches are collected in an
+    ///     <see cref="AssertionScope" /> and reported together, with JSON-like paths such as <c>$.items</c>.
+    /// </remarks>
     public static void ShouldContainDictionaryWithRegex(
         this IDictionary<string, object?> actual,
         IDictionary<string, object?> expected,

@@ -4,8 +4,16 @@ using System.Text.Json;
 
 namespace Anarchy.Toolkit.Testing.Helper.Assertions.FailureOutput.ApiGatewayResponse;
 
+/// <summary>
+/// Formats an <see cref="APIGatewayProxyResponse"/> as a Spectre.Console table (with ANSI markup) for assertion failure messages.
+/// </summary>
 public static class ApiGatewayResponseRichFailureOutput
 {
+    /// <summary>
+    /// Renders the status code, headers and pretty-printed body into a rounded table, captured as a string rather than written to the console.
+    /// </summary>
+    /// <param name="response">The response to format.</param>
+    /// <returns>The rendered table.</returns>
     public static string Format(APIGatewayProxyResponse response)
     {
         var table = new Table().Border(TableBorder.Rounded).BorderColor(Color.Red);

@@ -13,6 +13,14 @@ using System.Text;
 
 namespace Anarchy.Toolkit.Testing.Helper;
 
+/// <summary>
+/// General-purpose helpers for tests: random data generation, test settings and host environment, waiting,
+/// and reflection-based property overriding.
+/// </summary>
+/// <remarks>
+/// Random values come from a single shared <see cref="Random"/> instance and are not cryptographically secure
+/// nor reproducible across runs.
+/// </remarks>
 public static class TestHelper
 {
     private static readonly Random RandomNumberGenerator = new();
@@ -20,6 +28,11 @@ public static class TestHelper
     private const int IdDefaultMin = 1_000;
     private const int IdDefaultMax = 100_000;
 
+    /// <summary>
+    /// Returns a random numeric id in the range [1,000, 100,000).
+    /// </summary>
+    /// <typeparam name="T">The numeric type of the id (e.g. <see cref="int"/> or <see cref="long"/>).</typeparam>
+    /// <returns>A random id.</returns>
     public static T RandomId<T>() where T : IBinaryNumber<T>
     {
         double range = IdDefaultMax - IdDefaultMin;
@@ -27,6 +40,17 @@ public static class TestHelper
         return T.CreateChecked(IdDefaultMin + value);
     }
 
+    /// <summary>
+    /// Returns a random numeric id greater than or equal to <paramref name="min"/>.
+    /// </summary>
+    /// <remarks>
+    /// When <paramref name="max"/> is greater than <paramref name="min"/>, the value is in [<paramref name="min"/>,
+    /// <paramref name="max"/>); otherwise it is in [<paramref name="min"/>, 2 × <paramref name="min"/>).
+    /// </remarks>
+    /// <typeparam name="T">The numeric type of the id.</typeparam>
+    /// <param name="min">The inclusive lower bound.</param>
+    /// <param name="max">The exclusive upper bound; ignored unless greater than <paramref name="min"/>.</param>
+    /// <returns>A random id.</returns>
     public static T RandomId<T>(T min, T? max = default) where T : IBinaryNumber<T>
     {
         var range = max is not null && max > min ? double.CreateChecked(max - min) : double.CreateChecked(min);
@@ -34,11 +58,28 @@ public static class TestHelper
         return min + T.CreateChecked(value);
     }
 
+    /// <summary>
+    /// Intended to return a random number up to <paramref name="max"/>.
+    /// </summary>
+    /// <remarks>
+    /// Note: the current implementation ignores <paramref name="max"/> and always returns zero.
+    /// Prefer <see cref="RandomId{T}(T, T)"/>.
+    /// </remarks>
+    /// <typeparam name="T">The numeric type.</typeparam>
+    /// <param name="max">The intended upper bound (currently unused).</param>
+    /// <returns>Currently always zero.</returns>
     public static T RandomNumber<T>(T max) where T : IBinaryNumber<T>
     {
         return T.CreateChecked(RandomNumberGenerator.NextDouble() * double.CreateChecked(0));
     }
 
+    /// <summary>
+    /// Returns a random string id in the form <c>{prefix}.{guid}.{suffix}</c>, truncated to <paramref name="maxLength"/> characters.
+    /// </summary>
+    /// <param name="prefix">Prefix to prepend; omitted (with its dot) when <see langword="null"/> or empty.</param>
+    /// <param name="suffix">Suffix to append; omitted (with its dot) when <see langword="null"/> or empty.</param>
+    /// <param name="maxLength">Maximum length of the result.</param>
+    /// <returns>A random string id.</returns>
     public static string RandomId(string prefix = "Test", string? suffix = null, int maxLength = 64)
     {
         prefix = prefix.IsNullOrEmpty() ? string.Empty : $"{prefix}.";
@@ -47,11 +88,19 @@ public static class TestHelper
         return $"{prefix}{Guid.NewGuid()}{suffix}".Left(maxLength)!;
     }
 
+    /// <summary>
+    /// Returns the ASCII bytes of a random string id (see <see cref="RandomId(string, string, int)"/>).
+    /// </summary>
+    /// <returns>A random byte array.</returns>
     public static byte[] RandomBytes()
     {
         return Encoding.ASCII.GetBytes(RandomId());
     }
 
+    /// <summary>
+    /// Returns a <see cref="MemoryStream"/> over <see cref="RandomBytes"/>.
+    /// </summary>
+    /// <returns>A new stream positioned at the start.</returns>
     public static MemoryStream RandomMemoryStream()
     {
         return new MemoryStream(RandomBytes());
@@ -62,7 +111,12 @@ public static class TestHelper
     /// files embedded in the assembly declaring <typeparamref name="TAppSettings"/>. The instance is built once per
     /// settings type and cached.
     /// </summary>
+    /// <remarks>
+    /// Resources are located by name suffix; when not found, <c>{AssemblyName}.{fileName}</c> is assumed. Remember to
+    /// mark the files as <c>EmbeddedResource</c> in the test project.
+    /// </remarks>
     /// <typeparam name="TAppSettings">The consumer's concrete application settings type.</typeparam>
+    /// <returns>The cached settings instance.</returns>
     public static TAppSettings TestSettings<TAppSettings>() where TAppSettings : class, IAppSettings
     {
         return TestSettingsCache<TAppSettings>.Instance;
@@ -87,6 +141,11 @@ public static class TestHelper
                ?? $"{assembly.GetName().Name}.{fileName}";
     }
 
+    /// <summary>
+    /// Creates an <see cref="IHostEnvironment"/> for tests: environment <c>Development</c>, application name <c>Test</c>,
+    /// and content root <see cref="AppContext.BaseDirectory"/>.
+    /// </summary>
+    /// <returns>A new host environment.</returns>
     public static IHostEnvironment TestHostEnvironment()
     {
         return new HostingEnvironment {
@@ -96,6 +155,14 @@ public static class TestHelper
         };
     }
 
+    /// <summary>
+    /// Waits for the given number of seconds, printing a development log line with the optional reason first.
+    /// </summary>
+    /// <remarks>Useful when waiting for eventually consistent resources (e.g. queues). Avoid where polling is possible.</remarks>
+    /// <param name="seconds">Number of seconds to wait.</param>
+    /// <param name="reason">Optional reason included in the log line.</param>
+    /// <param name="cancellationToken">Token used to cancel the wait.</param>
+    /// <returns>A task that completes after the delay.</returns>
     public static async Task WaitAsync(int seconds, string? reason = null,
                                        CancellationToken cancellationToken = default)
     {
@@ -115,6 +182,15 @@ public static class TestHelper
         }
     }
 
+    /// <summary>
+    /// Sets a public or non-public instance property on <paramref name="target"/> via reflection, e.g. to force
+    /// otherwise read-only state in tests.
+    /// </summary>
+    /// <typeparam name="T">The type declaring the property (the compile-time type is used for lookup).</typeparam>
+    /// <param name="target">The object to modify.</param>
+    /// <param name="propertyName">The property name.</param>
+    /// <param name="newValue">The value to assign.</param>
+    /// <exception cref="PropertyNotFoundException">No instance property named <paramref name="propertyName"/> exists on <typeparamref name="T"/>.</exception>
     public static void OverrideProperty<T>(
         T target,
         string propertyName,
@@ -130,6 +206,13 @@ public static class TestHelper
         prop.SetValue(target, newValue);
     }
 
+    /// <summary>
+    /// Returns a random value of <typeparamref name="TEnum"/>, optionally excluding some values.
+    /// </summary>
+    /// <typeparam name="TEnum">The enum type.</typeparam>
+    /// <param name="exclude">Values that must not be returned, or <see langword="null"/>.</param>
+    /// <returns>A random enum value.</returns>
+    /// <exception cref="NoEnumValuesAvailableException">Every value was excluded.</exception>
     public static TEnum RandomEnum<TEnum>(IReadOnlyCollection<TEnum>? exclude = null)
         where TEnum : struct, Enum
     {
@@ -144,11 +227,18 @@ public static class TestHelper
         return values[RandomNumberGenerator.Next(values.Length)];
     }
 
+    /// <summary>Returns a random boolean.</summary>
+    /// <returns><see langword="true"/> or <see langword="false"/> with equal probability.</returns>
     public static bool RandomBool()
     {
         return RandomNumberGenerator.Next(0, 2) == 0;
     }
 
+    /// <summary>
+    /// Returns an anonymous object with random string, integer, long and boolean properties and arrays thereof,
+    /// useful as an arbitrary payload.
+    /// </summary>
+    /// <returns>A new anonymous object.</returns>
     public static object RandomObject()
     {
         return new {
@@ -163,6 +253,11 @@ public static class TestHelper
         };
     }
 
+    /// <summary>
+    /// Returns the current UTC time after a JSON round-trip, so it compares equal to values that went through
+    /// JSON serialization (avoiding precision mismatches).
+    /// </summary>
+    /// <returns>The current time with JSON precision.</returns>
     public static DateTimeOffset LowPrecisionNow()
     {
         return DateTimeOffset.UtcNow.ToJson().FromJson<DateTimeOffset>();

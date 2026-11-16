@@ -6,9 +6,26 @@ using Serilog.Events;
 
 namespace Anarchy.Toolkit.Testing.Helper;
 
+/// <summary>
+/// An <see cref="Observer"/> that records log events and metrics in memory so tests can assert on them.
+/// </summary>
+/// <remarks>
+/// Logs are captured at <see cref="LogEventLevel.Verbose"/> level, enriched from the log context, into <see cref="SinkLogs"/>;
+/// metrics go to <see cref="InMemoryMeasurer"/>. Create instances via <see cref="Create"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// var observer = InMemoryObserver.Create();
+/// // ... run code under test with observer ...
+/// observer.SinkLogs.Should().HaveMessage("Order {OrderId} created");
+/// observer.InMemoryMeasurer.Should().HaveCounter("orders.created");
+/// </code>
+/// </example>
 public class InMemoryObserver : Observer
 {
+    /// <summary>The sink holding every captured log event.</summary>
     public readonly InMemorySink SinkLogs;
+    /// <summary>The measurer holding every recorded metric.</summary>
     public readonly InMemoryMeasurer InMemoryMeasurer;
 
     private InMemoryObserver(Logger logger, InMemorySink sinkLogs, InMemoryMeasurer inMemoryMeasurer) :
@@ -18,6 +35,10 @@ public class InMemoryObserver : Observer
         InMemoryMeasurer = inMemoryMeasurer;
     }
 
+    /// <summary>
+    /// Creates a new observer with a fresh <see cref="Observability.Monitoring.InMemorySink"/> and <see cref="Observability.Monitoring.InMemoryMeasurer"/>.
+    /// </summary>
+    /// <returns>A new <see cref="InMemoryObserver"/>.</returns>
     public static InMemoryObserver Create()
     {
         var logger = new LoggerConfiguration()

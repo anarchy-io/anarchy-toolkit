@@ -5,5 +5,6 @@ namespace Anarchy.Toolkit.Testing.Helper.Exceptions;
 /// <summary>
 /// Thrown when every value of an enum was excluded from a random pick.
 /// </summary>
+/// <param name="enumType">The enum type that had no remaining values.</param>
 public class NoEnumValuesAvailableException(Type enumType)
     : InvalidStateException($"No values available for enum {enumType.Name}.");

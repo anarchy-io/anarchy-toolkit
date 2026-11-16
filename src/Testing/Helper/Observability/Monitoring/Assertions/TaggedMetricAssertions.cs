@@ -4,12 +4,19 @@ using AwesomeAssertions.Primitives;
 
 namespace Anarchy.Toolkit.Testing.Helper.Observability.Monitoring.Assertions;
 
-/// <inheritdoc />
+/// <summary>
+/// AwesomeAssertions assertions for the samples recorded under a single <see cref="Tag"/> of a metric.
+/// </summary>
+/// <remarks>Obtained via <see cref="MetricAssertions{TValue}.HasTag"/>.</remarks>
+/// <typeparam name="TValue">The sample type of the metric.</typeparam>
 public class TaggedMetricAssertions<TValue> : ReferenceTypeAssertions<Tag, TaggedMetricAssertions<TValue>>
 {
     private readonly AssertionChain _assertionChain;
 
-    /// <inheritdoc />
+    /// <summary>Initializes a new instance of the <see cref="TaggedMetricAssertions{TValue}"/> class.</summary>
+    /// <param name="subject">The tag under test.</param>
+    /// <param name="metricAndTag">The identifier used in failure messages, e.g. <c>name[tag]</c>.</param>
+    /// <param name="assertionChain">The assertion chain used to report failures.</param>
     public TaggedMetricAssertions(Tag subject, string metricAndTag, AssertionChain assertionChain) : base(subject, assertionChain)
     {
         Identifier = metricAndTag;
@@ -25,9 +32,9 @@ public class TaggedMetricAssertions<TValue> : ReferenceTypeAssertions<Tag, Tagge
     public TValue WhoseValue => (TValue)Subject.Samples.Last();
 
     /// <summary>
-    ///     Asserts that the metric has a given expected
+    ///     Asserts that the last sample of the tagged metric equals <paramref name="expected"/>
     /// </summary>
-    /// <param name="expected">The expected expected</param>
+    /// <param name="expected">The expected value</param>
     /// <param name="because">
     ///     A formatted phrase explaining why the condition should be satisfied. If the phrase does not start
     ///     with the word because, it is prepended to the message.
@@ -36,7 +43,7 @@ public class TaggedMetricAssertions<TValue> : ReferenceTypeAssertions<Tag, Tagge
     ///     Zero or more values to use for filling in any
     ///     <see cref="string.Format(string,object[])"/> compatible placeholders.
     /// </param>
-    /// <returns></returns>
+    /// <returns>A constraint wrapping the last sample.</returns>
     public AndConstraint<TValue> HasValue(
         TValue expected,
         string because = "",
@@ -56,10 +63,11 @@ public class TaggedMetricAssertions<TValue> : ReferenceTypeAssertions<Tag, Tagge
     /// <summary>
     /// Asserts that the tagged metric contains the samples in the given order.
     /// </summary>
+    /// <remarks>The number of samples must match exactly, and each expected sample must appear after the previous one.</remarks>
     /// <param name="expected">The expected samples</param>
     /// <param name="because">A formatted phrase explaining why the condition should be satisfied. If the phrase does not start with the word because, it is prepended to the message.</param>
     /// <param name="becauseArgs">Zero or more values to use for filling in any <see cref="string.Format(string,object[])"/> compatible placeholders.</param>
-    /// <returns></returns>
+    /// <returns>A constraint wrapping the samples left after the last matched one.</returns>
     public AndConstraint<IEnumerable<TValue>> HasSamples(
         IEnumerable<TValue> expected,
         string because = "",
