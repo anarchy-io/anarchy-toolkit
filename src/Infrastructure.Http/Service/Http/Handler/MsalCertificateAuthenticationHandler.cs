@@ -8,6 +8,13 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Service.Http.Handler;
 /// <summary>
 /// MSAL Authentication Handler using certificate-based OAuth 2.0 client credentials authentication
 /// </summary>
+/// <remarks>
+/// Before each request, acquires an access token for the configured scope via
+/// <see cref="IConfidentialClientApplication.AcquireTokenForClient"/> (MSAL caches tokens) and sets it as the
+/// <c>Authorization: Bearer</c> header. The confidential client application, including certificate loading, is
+/// created lazily on the first request. Usually added via
+/// <see cref="Anarchy.Toolkit.Infrastructure.Http.Entity.Http.Configuration.Common.MsalCertificateHttpClientConfiguration{TClient}"/>.
+/// </remarks>
 public class MsalCertificateAuthenticationHandler : DelegatingHandler
 {
     private readonly Lazy<IConfidentialClientApplication> _app;
@@ -36,6 +43,11 @@ public class MsalCertificateAuthenticationHandler : DelegatingHandler
         );
     }
 
+    /// <inheritdoc/>
+    /// <exception cref="CertificatePrivateKeyMissingException">
+    /// The certificate loaded on first use has no private key.
+    /// </exception>
+    /// <exception cref="AccessTokenAcquisitionException">MSAL failed to acquire an access token.</exception>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
                                                                  CancellationToken cancellationToken)
     {
