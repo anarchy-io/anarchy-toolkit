@@ -16,6 +16,15 @@ public static class PostgresHealthServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection to add the reports to.</param>
     /// <returns>The same service collection, for chaining.</returns>
+    /// <remarks>
+    /// Registers <see cref="PostgresHealthReportReader"/> and <see cref="PostgresHealthReportWriter"/> (scoped). Requires the
+    /// keyed <c>"reader"</c>/<c>"writer"</c> storage policies registered by <c>ModulePostgres</c>, plus an <c>Observer</c>.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// services.AddPostgresHealthReports();
+    /// </code>
+    /// </example>
     public static IServiceCollection AddPostgresHealthReports(this IServiceCollection services)
     {
         return services.AddDbHealthReports<PostgresHealthReportReader, PostgresHealthReportWriter>();

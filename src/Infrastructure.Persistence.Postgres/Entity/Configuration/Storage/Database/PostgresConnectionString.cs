@@ -7,11 +7,20 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Entity.Configurati
 ///     Builds a Postgres connection string from <see cref="PostgresConnectionOptions" />, selecting the
 ///     reader or writer host based on the requested <see cref="DataStorageInstanceType" />.
 /// </summary>
+/// <remarks>
+///     Besides the options, the string fixes: a 10 second connection timeout, pooling with a minimum of 1 connection
+///     and <c>MaximumPoolSize</c> as maximum, 30 second keepalive with TCP keepalive enabled, a 60 second idle lifetime
+///     and a 10 second pruning interval, so half-open connections (e.g. after an AWS Lambda freeze/thaw) are evicted.
+///     The port defaults to 5432 and the command timeout has a minimum of 1 second.
+/// </remarks>
+/// <param name="options">The PostgreSQL connection options.</param>
 public class PostgresConnectionString(PostgresConnectionOptions options)
     : DbConnectionStringBase<PostgresConnectionOptions>(options)
 {
+    /// <inheritdoc/>
     protected override string ConfigError => "Invalid Postgres connection settings";
 
+    /// <inheritdoc/>
     protected override IEnumerable<KeyValuePair<string, object>> ConnectionSettings(Uri host)
     {
         return new Dictionary<string, object> {
