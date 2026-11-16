@@ -12,6 +12,22 @@ namespace Anarchy.Toolkit.Hosting.Host;
 /// Generic startup base for Jobs and Workers. Composes the generic <see cref="DiFactory{TAppSettingsDiModule,TAppSettings}"/> registrations
 /// and exposes a virtual hook for consumers to add their own services and domain modules.
 /// </summary>
+/// <remarks>
+/// Instantiated by the host through its <c>(IHostEnvironment, IConfiguration)</c> constructor (see
+/// <see cref="AppHostBuilder"/>), so derived classes must expose a public constructor with that signature.
+/// </remarks>
+/// <typeparam name="TAppSettingsDiModule">The module that binds and registers <typeparamref name="TAppSettings"/>.</typeparam>
+/// <typeparam name="TAppSettings">The consumer's concrete application settings type.</typeparam>
+/// <example>
+/// <code language="csharp">
+/// public sealed class Startup(IHostEnvironment environment, IConfiguration configuration)
+///     : JobStartupBase&lt;ModuleAppSettings, AppSettings&gt;(environment, configuration)
+/// {
+///     protected override IServiceCollection ConfigureJobCustomServices(IServiceCollection services) =>
+///         services.AddSingleton&lt;IOrderHandler, OrderHandler&gt;();
+/// }
+/// </code>
+/// </example>
 public abstract class JobStartupBase<TAppSettingsDiModule, TAppSettings> : IStartup
     where TAppSettingsDiModule : class, IAppSettingsDiModule<TAppSettings>, new()
     where TAppSettings : class, IAppSettings
