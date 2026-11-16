@@ -18,6 +18,8 @@ public static class DbOptionsMapper
     /// <summary>
     ///     Build <see cref="DbConnectionOptions" /> from a <see cref="DbConnectionSettings" /> section.
     /// </summary>
+    /// <param name="settings">The database connection settings section.</param>
+    /// <returns>The connection options, using <see cref="DefaultCommandTimeoutSeconds" /> as command timeout.</returns>
     public static DbConnectionOptions ConnectionOptions(DbConnectionSettings settings)
     {
         return new DbConnectionOptions(
@@ -33,6 +35,8 @@ public static class DbOptionsMapper
     /// <summary>
     ///     Build <see cref="DbResilienceOptions" /> from <see cref="IResilienceAppSettings.Resilience" />.
     /// </summary>
+    /// <param name="appSettings">Settings exposing the <c>Resilience</c> section.</param>
+    /// <returns>The resilience options, carrying the configured retry count.</returns>
     public static DbResilienceOptions ResilienceOptions(IResilienceAppSettings appSettings)
     {
         return new DbResilienceOptions(appSettings.Resilience.RetryCount);
