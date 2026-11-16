@@ -5,6 +5,9 @@ namespace Anarchy.Toolkit.Web.GraphQL.GraphQL;
 /// </summary>
 public static class GraphQlRoutes
 {
+    /// <summary>Default GraphQL endpoint path: <c>graphql</c>.</summary>
     public const string RouteBaseGraphQl = "graphql";
+
+    /// <summary>Default GraphiQL playground UI path: <c>ui/graphql</c>.</summary>
     public const string RouteBaseGraphQlUi = "ui/graphql";
 }
