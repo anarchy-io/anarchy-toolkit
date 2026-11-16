@@ -7,6 +7,13 @@ using Oracle.ManagedDataAccess.Client;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Repository.Storage.Database.Oracle;
 
+/// <summary>
+/// Oracle flavour of <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.DbBatchWriterRepositoryBase{TDbConnection, TDialect, TNewEntity}"/>
+/// for repositories that save collections of entities.
+/// </summary>
+/// <typeparam name="TNewEntity">The entity type accepted for saving.</typeparam>
+/// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
+/// <param name="observer">Observer used for logging and metrics.</param>
 public abstract class OracleDbBatchWriterRepositoryBase<TNewEntity>(
     IStoragePolicy<OracleConnection> dbPolicy,
     Observer observer)
