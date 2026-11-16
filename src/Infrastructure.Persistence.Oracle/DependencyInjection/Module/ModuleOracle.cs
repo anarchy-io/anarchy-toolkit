@@ -23,10 +23,23 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Oracle.DependencyInjection.
 /// Requires an <see cref="Observer"/> registration. The options are resolved from the application's configuration
 /// through the given factories, so the module makes no assumption about section names or settings types.
 /// </remarks>
+/// <param name="connectionOptions">Factory building the connection options from <see cref="IConfiguration"/>.</param>
+/// <param name="resilienceOptions">Factory building the resilience (retry) options from <see cref="IConfiguration"/>.</param>
+/// <example>
+/// <code language="csharp">
+/// var module = new ModuleOracle(
+///     cfg =&gt; cfg.GetSection("Database").Get&lt;OracleConnectionOptions&gt;()!,
+///     cfg =&gt; new OracleResilienceOptions(RetryCount: 3));
+/// module.RegisterServices(builder.Services, builder.Configuration, builder.Environment);
+///
+/// // In a repository: unkeyed policy = writer; [FromKeyedServices("reader")] = reader.
+/// </code>
+/// </example>
 public sealed class ModuleOracle(
     Func<IConfiguration, OracleConnectionOptions> connectionOptions,
     Func<IConfiguration, OracleResilienceOptions> resilienceOptions) : IDependencyInjectionModule
 {
+    /// <inheritdoc/>
     public IServiceCollection RegisterServices(IServiceCollection services, IConfiguration configuration,
                                                IHostEnvironment environment)
     {

@@ -16,6 +16,15 @@ public static class OracleHealthServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection to add the reports to.</param>
     /// <returns>The same service collection, for chaining.</returns>
+    /// <remarks>
+    /// Registers <see cref="OracleHealthReportReader"/> and <see cref="OracleHealthReportWriter"/> (scoped). Requires the
+    /// keyed <c>"reader"</c>/<c>"writer"</c> storage policies registered by <c>ModuleOracle</c>, plus an <c>Observer</c>.
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// services.AddOracleHealthReports();
+    /// </code>
+    /// </example>
     public static IServiceCollection AddOracleHealthReports(this IServiceCollection services)
     {
         return services.AddDbHealthReports<OracleHealthReportReader, OracleHealthReportWriter>();

@@ -26,6 +26,10 @@ See the [Oracle and persistence notes](https://anarchy-io.github.io/anarchy-tool
 
 ## Releases
 
+### 1.1.6
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 1.1.5
 
 - `System.Security.Cryptography.Pkcs` aligned with the .NET 10 LTS (10.0.15, down from 11.0.0).

@@ -10,20 +10,29 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Entity.Configuration
 /// <remarks>
 ///     ODP.NET has no connection string keys for the command timeout or session time zone; they are exposed through
 ///     <see cref="CommandTimeout" /> and <see cref="SessionTimeZone" /> and applied by the connection pool.
+///     <para>
+///     The data source is a full connect descriptor with <c>EXPIRE_TIME=1</c> (TCP keepalive probes to detect
+///     half-open connections) and <c>CONNECT_TIMEOUT=10</c>. Pooling is enabled with a minimum of 1 connection,
+///     <c>MaximumPoolSize</c> as maximum and a 300 second connection lifetime.
+///     </para>
 /// </remarks>
+/// <param name="options">The Oracle connection options.</param>
 public class OracleConnectionString(OracleConnectionOptions options)
     : DbConnectionStringBase<OracleConnectionOptions>(options)
 {
+    /// <summary>Listener port used when <c>Port</c> is not set: 1521.</summary>
     public const uint DefaultPort = 1521;
 
+    /// <inheritdoc/>
     protected override string ConfigError => "Invalid Oracle connection settings";
 
-    /// <summary>Command timeout (seconds) to set on every connection.</summary>
+    /// <summary>Command timeout (seconds) to set on every connection; the configured value, with a minimum of 1.</summary>
     public int CommandTimeout => Math.Max(1, Options.CommandTimeout);
 
     /// <summary>Session time zone to set on every connection, or <c>null</c> to keep the client default.</summary>
     public string? SessionTimeZone => string.IsNullOrWhiteSpace(Options.TimeZone) ? null : Options.TimeZone;
 
+    /// <inheritdoc/>
     protected override IEnumerable<KeyValuePair<string, object>> ConnectionSettings(Uri host)
     {
         var hostName = host.IsAbsoluteUri ? host.Host : host.OriginalString;

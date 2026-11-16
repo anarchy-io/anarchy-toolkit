@@ -9,6 +9,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Service.Health.Repor
 /// <summary>
 ///     Health report that verifies connectivity to the Oracle reader instance.
 /// </summary>
+/// <param name="dbPolicy">The keyed <c>"reader"</c> storage policy.</param>
+/// <param name="observer">Observer used to log failures.</param>
 public class OracleHealthReportReader(
     [FromKeyedServices("reader")] IStoragePolicy<OracleConnection> dbPolicy,
     Observer observer) : OracleHealthReportBase(dbPolicy, observer, DataStorageInstanceType.Reader);
