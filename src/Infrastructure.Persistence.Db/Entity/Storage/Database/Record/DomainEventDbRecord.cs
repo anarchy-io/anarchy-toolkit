@@ -2,15 +2,32 @@ using Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Storage.Database.Record;
 
+/// <summary>
+/// Row shape returned by the <c>DomainEvent.Get.*</c> queries, mapped to a <see cref="PersistedEvent"/> via
+/// <see cref="ToDomainEntity"/>.
+/// </summary>
 public record DomainEventDbRecord
 {
+    /// <summary>Identifier of the stored event.</summary>
     public required long Id;
+
+    /// <summary>Name of the aggregate type that raised the event.</summary>
     public required string TypeAggregate;
+
+    /// <summary>Identifier of the aggregate instance that raised the event.</summary>
     public required string AggregateId;
+
+    /// <summary>Name of the event type.</summary>
     public required string TypeEvent;
+
+    /// <summary>JSON-serialized event payload, or <see langword="null"/>.</summary>
     public required string? Payload;
+
+    /// <summary>Moment the event occurred, if stored.</summary>
     public required DateTimeOffset? DateTime;
 
+    /// <summary>Maps the record to its domain representation.</summary>
+    /// <returns>A <see cref="PersistedEvent"/> with the record values.</returns>
     public PersistedEvent ToDomainEntity()
     {
         return new PersistedEvent(

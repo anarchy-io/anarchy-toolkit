@@ -14,6 +14,9 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Configuration.Sto
 /// <param name="DbName">Database (catalog / service) name.</param>
 /// <param name="Port">Database port. The provider default is used when null.</param>
 /// <param name="CommandTimeout">Command timeout in seconds.</param>
+/// <remarks>
+///     Consumed by <see cref="DbConnectionStringBase{TOptions}" /> implementations.
+/// </remarks>
 public record DbConnectionOptions(
     Uri HostReader,
     Uri HostWriter,

@@ -9,6 +9,19 @@ using System.Data.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.Event;
 
+/// <summary>
+/// Provider-agnostic implementation of <see cref="ITaskOutboxReaderRepository"/>, reading outbox tasks through the
+/// embedded <c>TaskOutbox.Get.*</c> queries and mapping them via <see cref="TaskOutboxDbRecord"/>.
+/// </summary>
+/// <typeparam name="TDbConnection">The type of database connection.</typeparam>
+/// <typeparam name="TDialect">The provider dialect.</typeparam>
+/// <param name="dbPolicy">Policy used to execute database operations.</param>
+/// <param name="observer">Observer used for logging and metrics.</param>
+/// <remarks>
+/// Providers derive from this class and ship the queries <c>TaskOutbox.Get.ById</c>, <c>TaskOutbox.Get.All</c>,
+/// <c>TaskOutbox.Get.All.Unpublished</c>, <c>TaskOutbox.Get.ByAggregateId</c>, <c>TaskOutbox.Get.ByTypeAggregate</c>,
+/// <c>TaskOutbox.Get.ByTypeTask</c> and <c>Common.LatestSequenceValue.Get</c> as embedded resources.
+/// </remarks>
 public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
     Observer observer)
@@ -20,11 +33,15 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     /// <summary>Name of the database sequence backing the record ids.</summary>
     protected virtual string IdSequenceName => "event_task_outbox_id_seq";
 
+    /// <summary>Returns the latest value of the <see cref="IdSequenceName"/> sequence.</summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The latest generated task identifier.</returns>
     public override async Task<long> GetLatestIdAsync(CancellationToken? cancellationToken = null)
     {
         return await GetLatestSequenceValueAsync(IdSequenceName, cancellationToken);
     }
 
+    /// <inheritdoc />
     public override async Task<PersistedEvent> GetByIdAsync(long id, CancellationToken? cancellationToken = null)
     {
         var record = await DbPolicy.ExecuteAsync(
@@ -37,6 +54,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
         return record.ToDomainEntity();
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<PersistedEvent>> GetAllUnpublishedAsync(
         int? limit = null, int? offset = null, CancellationToken? cancellationToken = null)
     {
@@ -50,6 +68,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
         return records.Select(r => r.ToDomainEntity()).ToArray();
     }
 
+    /// <inheritdoc />
     public override async Task<IReadOnlyCollection<PersistedEvent>> GetAllAsync(
         int? limit = null, int? offset = null, CancellationToken? cancellationToken = null)
     {
@@ -63,6 +82,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
         return records.Select(r => r.ToDomainEntity()).ToArray();
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<PersistedEvent>> GetByAggregateIdAsync(string aggregateId,
                                                                                  CancellationToken? cancellationToken = null)
     {
@@ -76,6 +96,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
         return records.Select(r => r.ToDomainEntity()).ToArray();
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<PersistedEvent>> GetByTypeAggregateAsync(string typeAggregateName,
                                                                                    CancellationToken? cancellationToken = null)
     {
@@ -89,6 +110,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
         return records.Select(r => r.ToDomainEntity()).ToArray();
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyCollection<PersistedEvent>> GetByTypeTaskAsync(string typeTaskName,
                                                                               CancellationToken? cancellationToken = null)
     {

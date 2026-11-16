@@ -13,10 +13,44 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 
 /// <summary>
 ///     Abstract implementation of a unit of work pattern.
-///     A unit of work contains can start a session that will create a connection and transaction.
+///     A unit of work can start a session that will create a connection and transaction.
 ///     Within the lifecycle of the session database actions can be executed.
 ///     When the session ends it will finish the transaction and return the connection back to the pool.
 /// </summary>
+/// <typeparam name="TDbConnection">The type of database connection.</typeparam>
+/// <typeparam name="TDbTransaction">The provider transaction type returned by <see cref="DbConnection.BeginTransactionAsync(System.Threading.CancellationToken)" />.</typeparam>
+/// <param name="dbConnectionPool">Connection pool the session connection is taken from and returned to.</param>
+/// <param name="asyncFlowContext">
+///     Async flow context in which the session connection is stored; it must be the same instance used by the
+///     <see cref="DbPolicyBase{TDbConnection}" /> of the repositories so they join the session.
+/// </param>
+/// <param name="observer">Optional observer used for logging and metrics.</param>
+/// <param name="localEventBus">
+///     Optional bus on which <see cref="StartedUowTransactionLocalEvent" />, <see cref="CommittedUowTransactionLocalEvent" />
+///     and <see cref="RolledBackUowTransactionLocalEvent" /> are published.
+/// </param>
+/// <remarks>
+///     <para>Session flavours:</para>
+///     <list type="bullet">
+///         <item><see cref="RunInManagedSessionAsync{TResult}" />: transaction committed on success, rolled back on failure.</item>
+///         <item><see cref="RunInSessionAsync{TResult}" />: transaction started, but the callback must call <see cref="CommitAsync" /> / <see cref="RollbackAsync" />; anything left pending is rolled back when the session ends.</item>
+///         <item><see cref="RunInAdhocSessionAsync{TResult}" />: shared connection without a transaction.</item>
+///     </list>
+///     <para>
+///     Sessions cannot be nested within the same async flow. The transaction is stored on the instance, so a single
+///     instance must not run concurrent sessions; register it with a scoped (or transient) lifetime.
+///     </para>
+/// </remarks>
+/// <example>
+///     <code language="csharp">
+///     var orderId = await unitOfWork.RunInManagedSessionAsync(async ct =>
+///     {
+///         var order = await orderWriterRepository.SaveAsync(newOrder, ct);
+///         await taskOutboxWriterRepository.SaveAllAsync([orderCreatedEvent], ct);
+///         return order.Id;
+///     }, cancellationToken);
+///     </code>
+/// </example>
 public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     IDbConnectionPool<TDbConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
@@ -25,6 +59,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     : IUnitOfWork
     where TDbConnection : DbConnection where TDbTransaction : DbTransaction
 {
+    /// <summary>The transaction of the active session, or <see langword="null" /> when none is active.</summary>
     protected TDbTransaction? Transaction;
 
     /// <summary><c>IAsyncFlowContext</c> that contains active database connections within a unit of work session</summary>
@@ -44,6 +79,9 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     ///     Begin a new transaction on the active connection
     /// </summary>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the transaction has started.</returns>
+    /// <exception cref="TransactionBeginException">Thrown when the transaction cannot be started.</exception>
+    /// <remarks>Must be called within a session, as it uses the session connection.</remarks>
     public virtual async Task BeginAsync(CancellationToken? cancellationToken = null)
     {
         var connection = ActiveConnectionStorage.Value.DataStorageConnection;
@@ -77,6 +115,11 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     ///     This is useful for defensive commit calls in callback-based flows.
     /// </param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the transaction has been committed.</returns>
+    /// <exception cref="NoActiveTransactionException">
+    ///     Thrown when there is no active transaction and <paramref name="suppressNoActiveTransactionException" /> is <c>false</c>.
+    /// </exception>
+    /// <exception cref="TransactionCommitException">Thrown when the commit fails.</exception>
     public virtual async Task CommitAsync(bool suppressNoActiveTransactionException = false,
                                           CancellationToken? cancellationToken = null)
     {
@@ -118,6 +161,11 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     ///     This is useful for defensive rollback calls in callback-based flows.
     /// </param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the transaction has been rolled back.</returns>
+    /// <exception cref="NoActiveTransactionException">
+    ///     Thrown when there is no active transaction and <paramref name="suppressNoActiveTransactionException" /> is <c>false</c>.
+    /// </exception>
+    /// <exception cref="TransactionRollbackException">Thrown when the rollback fails.</exception>
     public virtual async Task RollbackAsync(Exception? reason = null,
                                             bool suppressNoActiveTransactionException = false,
                                             CancellationToken? cancellationToken = null)
@@ -158,7 +206,10 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// </summary>
     /// <param name="callback">The user provided callback function that will be executed within the scope of the session</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <exception cref="TransactionException">Throws when unable stop the session</exception>
+    /// <typeparam name="TResult">Type of the session result.</typeparam>
+    /// <exception cref="SessionAlreadyActiveException">Thrown when a session is already active in the current async flow.</exception>
+    /// <exception cref="SessionCallbackException">Thrown, wrapping the original exception, when the callback (or the automatic commit) fails.</exception>
+    /// <exception cref="SessionFinishException">Thrown when the connection cannot be released at the end of the session.</exception>
     /// <returns>Optional result from the session</returns>
     public async Task<TResult> RunInAdhocSessionAsync<TResult>(SessionCallback<TResult> callback,
                                                                CancellationToken? cancellationToken = null)
@@ -171,7 +222,10 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// </summary>
     /// <param name="callback">The user provided callback function that will be executed within the scope of the session</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <exception cref="TransactionException">Throws when unable to start the session</exception>
+    /// <typeparam name="TResult">Type of the session result.</typeparam>
+    /// <exception cref="SessionAlreadyActiveException">Thrown when a session is already active in the current async flow.</exception>
+    /// <exception cref="SessionCallbackException">Thrown, wrapping the original exception, when the callback (or the automatic commit) fails.</exception>
+    /// <exception cref="SessionFinishException">Thrown when the connection cannot be released at the end of the session.</exception>
     /// <returns>Optional result from the session</returns>
     public async Task<TResult> RunInManagedSessionAsync<TResult>(SessionCallback<TResult> callback,
                                                                  CancellationToken? cancellationToken = null)
@@ -179,6 +233,16 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
         return await StartAsync(callback, true, true, cancellationToken);
     }
 
+    /// <summary>
+    ///     Start a new session that will manage the transaction scope of the session automatically, for callbacks
+    ///     without a result.
+    /// </summary>
+    /// <param name="callback">The user provided callback function that will be executed within the scope of the session</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <exception cref="SessionAlreadyActiveException">Thrown when a session is already active in the current async flow.</exception>
+    /// <exception cref="SessionCallbackException">Thrown, wrapping the original exception, when the callback (or the automatic commit) fails.</exception>
+    /// <exception cref="SessionFinishException">Thrown when the connection cannot be released at the end of the session.</exception>
+    /// <returns>A task that completes when the session has finished.</returns>
     public async Task RunInManagedSessionAsync(SessionCallback callback, CancellationToken? cancellationToken = null)
     {
         await RunInManagedSessionAsync(async ct => {
@@ -193,8 +257,12 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// </summary>
     /// <param name="callback">The user provided callback function that will be executed within the scope of the session</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <exception cref="TransactionException">Throws when unable to start the session</exception>
+    /// <typeparam name="TResult">Type of the session result.</typeparam>
+    /// <exception cref="SessionAlreadyActiveException">Thrown when a session is already active in the current async flow.</exception>
+    /// <exception cref="SessionCallbackException">Thrown, wrapping the original exception, when the callback (or the automatic commit) fails.</exception>
+    /// <exception cref="SessionFinishException">Thrown when the connection cannot be released at the end of the session.</exception>
     /// <returns>Optional result from the session</returns>
+    /// <remarks>Any transaction neither committed nor rolled back by the callback is rolled back when the session ends.</remarks>
     public async Task<TResult> RunInSessionAsync<TResult>(SessionCallback<TResult> callback,
                                                           CancellationToken? cancellationToken = null)
     {
@@ -202,14 +270,18 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     }
 
     /// <summary>
-    ///     Internal method the Start a new session
+    ///     Starts a new session: acquires a connection, stores it in the async flow context for the duration of
+    ///     <paramref name="callback" />, optionally begins (and auto-commits / auto-rolls back) a transaction, and
+    ///     finally releases the connection.
     /// </summary>
     /// <param name="callback">The user provided callback function that will be executed within the scope of the session</param>
     /// <param name="autoManage">Whether to manage the transaction scope of the session automatically</param>
     /// <param name="enableTransaction">Whether the session should start a transaction</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <exception cref="TransactionException">Throws when unable to start the session</exception>
-    /// <exception cref="UnitOfWorkSessionException">Throws when unable to execute the callback</exception>
+    /// <typeparam name="TResult">Type of the session result.</typeparam>
+    /// <exception cref="SessionAlreadyActiveException">Thrown when a session is already active in the current async flow.</exception>
+    /// <exception cref="SessionCallbackException">Thrown, wrapping the original exception, when the callback (or the automatic commit) fails.</exception>
+    /// <exception cref="SessionFinishException">Thrown when the connection cannot be released at the end of the session.</exception>
     /// <returns>Optional result from the session</returns>
     protected async Task<TResult> StartAsync<TResult>(SessionCallback<TResult> callback,
                                                       bool autoManage,
@@ -285,7 +357,9 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     ///     Any transaction still pending (neither committed nor rolled back) is rolled back by disposing it,
     ///     so the connection never returns to the pool with an open transaction.
     /// </summary>
-    /// <exception cref="TransactionException">Throws when unable to release the connection back to the pool</exception>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the session has been finished.</returns>
+    /// <exception cref="SessionFinishException">Throws when unable to release the connection back to the pool</exception>
     protected async Task FinishSessionAsync(CancellationToken? cancellationToken = null)
     {
         try

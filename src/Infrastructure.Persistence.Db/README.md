@@ -26,6 +26,10 @@ See [adding a database provider](https://anarchy-io.github.io/anarchy-toolkit/gu
 
 ## Releases
 
+### 1.1.5
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 1.1.4
 
 - refactor(src): clean up code style across library packages

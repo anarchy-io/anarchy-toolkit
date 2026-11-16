@@ -7,7 +7,12 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.ValueSet.Storage.Da
 /// </summary>
 public enum EventTypeTable
 {
+    /// <summary>Table holding the aggregate type names (resources <c>Common.TypeAggregate.*</c>).</summary>
     TypeAggregate,
+
+    /// <summary>Table holding the domain event type names (resources <c>Common.TypeEvent.*</c>).</summary>
     TypeEvent,
+
+    /// <summary>Table holding the outbox task type names (resources <c>Common.TypeTask.*</c>).</summary>
     TypeTask
 }

@@ -14,6 +14,12 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 ///     On execute it will retrieve a new connection from the pool. When used in combination with a unit of work session,
 ///     the active connection will be retrieved from the <c>IAsyncFlowContext</c>.
 /// </summary>
+/// <typeparam name="TDbConnection">The type of database connection.</typeparam>
+/// <remarks>
+///     Connections acquired from the pool are released after the callback; connections taken from an active unit of
+///     work session are left to the session. Every execution records its duration through the observer, tagged with
+///     success/failure and the operation name.
+/// </remarks>
 public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection>
     where TDbConnection : DbConnection
 {
@@ -33,7 +39,7 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
     protected readonly Observer? Observer;
 
     /// <summary>
-    ///     Constructor
+    ///     Initializes the policy.
     /// </summary>
     /// <param name="dbConnectionPool">Connection pool of the database</param>
     /// <param name="asyncFlowContext">
@@ -61,8 +67,11 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
     /// <param name="callback">The callback function that is provided by the user that will be executed</param>
     /// <param name="operationName">Optional name of the operation that is executed, that will be used for observability</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <exception cref="DbPolicyExecutionException">Thrown when executing the callback function failed</exception>
+    /// <typeparam name="TDbResult">Type of the callback result.</typeparam>
+    /// <exception cref="DbConnectionAcquisitionException">Thrown when a connection cannot be acquired from the pool.</exception>
+    /// <exception cref="DbConnectionReleaseException">Thrown when the connection cannot be released back to the pool.</exception>
     /// <returns>Database result mapped to the provided type</returns>
+    /// <remarks>Exceptions raised by <paramref name="callback" /> propagate unchanged.</remarks>
     public async Task<TDbResult> ExecuteAsync<TDbResult>(
         StoragePolicyCallback<TDbConnection, TDbResult> callback,
         string? operationName = null,
@@ -120,6 +129,7 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
     /// <param name="callback">The callback function that is provided by the user that will be executed</param>
     /// <param name="connection">The active database connection that can be used to execute a database operation</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <typeparam name="TDbResult">Type of the callback result.</typeparam>
     /// <returns>Database result mapped to the provided type</returns>
     protected abstract Task<TDbResult> ExecuteCallbackAsync<TDbResult>(
         StoragePolicyCallback<TDbConnection, TDbResult> callback,

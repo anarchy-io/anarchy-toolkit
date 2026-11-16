@@ -11,6 +11,29 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 ///     On execute it will retrieve a new connection from the pool. When used in combination with a unit of work session,
 ///     the active connection will be retrieved from the <c>IAsyncFlowContext</c>.
 /// </summary>
+/// <typeparam name="TDbConnection">The type of database connection.</typeparam>
+/// <param name="retryPolicyBuilder">Builder of the retry pipeline; it is built once, in the constructor.</param>
+/// <param name="dbConnectionPool">Connection pool used when no unit of work session is active.</param>
+/// <param name="asyncFlowContext">Async flow context holding the connection of the active unit of work session, if any.</param>
+/// <param name="observer">Optional observer used for logging and metrics.</param>
+/// <remarks>
+///     Retries reuse the same connection, which is acquired once per <see cref="DbPolicyBase{TDbConnection}.ExecuteAsync{TDbResult}" />
+///     call. Inside a transaction a retried statement runs in the same (possibly aborted) transaction, so callbacks
+///     should be safe to repeat.
+/// </remarks>
+/// <example>
+///     <code language="csharp">
+///     var policy = new ResilienceDbPolicy&lt;NpgsqlConnection&gt;(
+///         new DbAsyncRetryPolicyBuilder&lt;NpgsqlConnection, PostgresDbDialect&gt;(new DbResilienceOptions(3), observer),
+///         connectionPool,
+///         new AsyncLocalFlowContext&lt;StorageConnectionEnvelopeBase&lt;NpgsqlConnection&gt;&gt;(),
+///         observer);
+///
+///     var now = await policy.ExecuteAsync(
+///         (envelope, ct) => envelope.DataStorageConnection.QueryFirstAsync&lt;DateTime&gt;("SELECT now()"),
+///         "Clock.Get");
+///     </code>
+/// </example>
 public class ResilienceDbPolicy<TDbConnection>(
     IAsyncRetryPolicyBuilder<TDbConnection> retryPolicyBuilder,
     IDbConnectionPool<TDbConnection> dbConnectionPool,
@@ -21,6 +44,12 @@ public class ResilienceDbPolicy<TDbConnection>(
 {
     private readonly ResiliencePipeline _retryPolicy = retryPolicyBuilder.Build();
 
+    /// <summary>Invokes <paramref name="callback" /> on <paramref name="connection" /> through the retry pipeline.</summary>
+    /// <typeparam name="TDbResult">Type of the callback result.</typeparam>
+    /// <param name="callback">The callback to execute.</param>
+    /// <param name="connection">The connection to execute on.</param>
+    /// <param name="cancellationToken">Token passed to the pipeline, which forwards its own token to the callback.</param>
+    /// <returns>The callback result.</returns>
     protected override async Task<TDbResult> ExecuteCallbackAsync<TDbResult>(
         StoragePolicyCallback<TDbConnection, TDbResult> callback,
         StorageConnectionEnvelopeBase<TDbConnection> connection,

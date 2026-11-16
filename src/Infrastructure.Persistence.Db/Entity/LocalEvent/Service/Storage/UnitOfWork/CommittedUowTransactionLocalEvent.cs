@@ -8,6 +8,11 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.LocalEvent.Servic
 /// </summary>
 public sealed record CommittedUowTransactionLocalEvent : UowTransactionLocalEvent
 {
+    /// <summary>Creates a committed-transaction event describing the given connection envelope.</summary>
+    /// <typeparam name="TDbConnection">Type of the database connection.</typeparam>
+    /// <param name="connectionEnvelope">The connection envelope the transaction ran on.</param>
+    /// <param name="eventSource">Name of the component publishing the event.</param>
+    /// <returns>A new event populated from <paramref name="connectionEnvelope"/>.</returns>
     public new static CommittedUowTransactionLocalEvent FromConnectionEnvelope<TDbConnection>(
         StorageConnectionEnvelopeBase<TDbConnection> connectionEnvelope, string? eventSource = null)
         where TDbConnection : DbConnection
