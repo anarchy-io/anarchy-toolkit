@@ -26,6 +26,10 @@ See [Infrastructure.Persistence.Oracle](https://www.nuget.org/packages/Anarchy.T
 
 ## Releases
 
+### 1.1.7
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 1.1.6
 
 - References `Anarchy.Toolkit.Infrastructure.Persistence.Oracle` 1.1.5, aligned with the .NET 10 LTS.

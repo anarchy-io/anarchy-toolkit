@@ -17,6 +17,23 @@ namespace Anarchy.Toolkit.Testing.Oracle.Helper;
 ///     Singleton-cached Oracle test fixtures. Reuses a single connection pool, retry policy builder and
 ///     resilience policy across tests, and exposes helpers to reset table state.
 /// </summary>
+/// <remarks>
+///     <para>
+///     The instances are cached in static fields shared by every test in the process (without locking), and the
+///     settings passed on later calls are ignored until <c>forceRefresh</c> is used. All fixtures target the writer host.
+///     </para>
+///     <para>
+///     The retry policy builder is never rebuilt, and refreshing only the connection pool does not rebuild an
+///     already cached policy; call <see cref="DbPolicyFixture{TSettings}(TSettings, bool)" /> with
+///     <c>forceRefresh</c> to rebuild both pool and policy.
+///     </para>
+/// </remarks>
+/// <example>
+///     <code language="csharp">
+///     var dbPolicy = SingletonOracleHelper.DbPolicyFixture&lt;MyTestSettings&gt;();
+///     await SingletonOracleHelper.TruncateTableAsync&lt;MyTestSettings&gt;("orders");
+///     </code>
+/// </example>
 public sealed class SingletonOracleHelper
 {
     private static IDbConnectionPool<OracleConnection>? _instanceConnectionPool;
@@ -27,6 +44,7 @@ public sealed class SingletonOracleHelper
     ///     Register a Dapper <see cref="DescriptionEnumTypeHandler{TEnum}" />
     ///     for the given enum type. Consumers call this for each domain enum they need to persist.
     /// </summary>
+    /// <typeparam name="TEnum">The enum type to register.</typeparam>
     public static void RegisterEnumTypeHandler<TEnum>() where TEnum : Enum
     {
         OracleHelper.RegisterEnumTypeHandler<TEnum>();
@@ -35,6 +53,9 @@ public sealed class SingletonOracleHelper
     /// <summary>
     ///     Build a <see cref="OracleConnectionString" /> from the given settings.
     /// </summary>
+    /// <param name="settings">Settings exposing the <c>Oracle</c> section.</param>
+    /// <param name="forceRefresh">Unused; the connection string is never cached.</param>
+    /// <returns>A new connection string builder.</returns>
     public static OracleConnectionString ConnectionStringFixture(IOracleAppSettings settings, bool forceRefresh = false)
     {
         return new OracleConnectionString(
@@ -44,6 +65,9 @@ public sealed class SingletonOracleHelper
     /// <summary>
     ///     Return the cached connection pool, optionally rebuilding it when <paramref name="forceRefresh" /> is set.
     /// </summary>
+    /// <param name="settings">Settings used when the pool has to be created.</param>
+    /// <param name="forceRefresh">When <c>true</c>, disposes the cached pool and creates a new one.</param>
+    /// <returns>The cached connection pool.</returns>
     public static IDbConnectionPool<OracleConnection> ConnectionPoolFixture(IOracleAppSettings settings, bool forceRefresh = false)
     {
         if (_instanceConnectionPool is not null && forceRefresh)
@@ -65,8 +89,11 @@ public sealed class SingletonOracleHelper
     }
 
     /// <summary>
-    ///     Return the cached retry policy builder.
+    ///     Return the cached retry policy builder, creating it on first use.
     /// </summary>
+    /// <param name="settings">Settings used when the builder has to be created.</param>
+    /// <param name="forceRefresh">Currently ignored: the builder is never rebuilt.</param>
+    /// <returns>The cached retry policy builder.</returns>
     public static IAsyncRetryPolicyBuilder<OracleConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false)
     {
         _instanceRetryPolicyBuilder ??= new OracleAsyncRetryPolicyBuilder(
@@ -79,6 +106,9 @@ public sealed class SingletonOracleHelper
     ///     Return the cached resilience policy built from the test settings of <typeparamref name="TAppSettings" />,
     ///     optionally rebuilding it when <paramref name="forceRefresh" /> is set.
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy and the connection pool.</param>
+    /// <returns>The cached policy.</returns>
     public static IStoragePolicy<OracleConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false)
         where TAppSettings : class, IOracleAppSettings, IResilienceAppSettings
     {
@@ -89,6 +119,10 @@ public sealed class SingletonOracleHelper
     ///     Return the cached resilience policy, optionally rebuilding it when <paramref name="forceRefresh" /> is set.
     ///     The settings must expose both the <c>Oracle</c> and <c>Resilience</c> sections.
     /// </summary>
+    /// <typeparam name="TSettings">The settings type.</typeparam>
+    /// <param name="settings">Settings used when the policy has to be created.</param>
+    /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy and the connection pool.</param>
+    /// <returns>The cached policy.</returns>
     public static IStoragePolicy<OracleConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false)
         where TSettings : IOracleAppSettings, IResilienceAppSettings
     {
@@ -110,6 +144,10 @@ public sealed class SingletonOracleHelper
     ///     Truncate the given table using the test settings of <typeparamref name="TAppSettings" />, with <c>TRUNCATE TABLE</c>
     ///     (identity columns are not restarted and dependent tables are not truncated).
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been truncated.</returns>
     public static async Task TruncateTableAsync<TAppSettings>(string tableName,
                                                              CancellationToken cancellationToken = default)
         where TAppSettings : class, IOracleAppSettings, IResilienceAppSettings
@@ -121,6 +159,11 @@ public sealed class SingletonOracleHelper
     ///     Truncate the given table using the given settings, with <c>TRUNCATE TABLE</c>
     ///     (identity columns are not restarted and dependent tables are not truncated).
     /// </summary>
+    /// <typeparam name="TSettings">The settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="appSettings">Settings used to obtain the cached policy.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been truncated.</returns>
     public static async Task TruncateTableAsync<TSettings>(string tableName, TSettings appSettings,
                                                           CancellationToken cancellationToken = default)
         where TSettings : IOracleAppSettings, IResilienceAppSettings
@@ -132,6 +175,10 @@ public sealed class SingletonOracleHelper
     /// <summary>
     ///     Delete all rows from the given table using the test settings of <typeparamref name="TAppSettings" />.
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been cleared.</returns>
     public static async Task ClearTableAsync<TAppSettings>(string tableName,
                                                           CancellationToken cancellationToken = default)
         where TAppSettings : class, IOracleAppSettings, IResilienceAppSettings
@@ -142,6 +189,11 @@ public sealed class SingletonOracleHelper
     /// <summary>
     ///     Delete all rows from the given table using the given settings.
     /// </summary>
+    /// <typeparam name="TSettings">The settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="appSettings">Settings used to obtain the cached policy.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been cleared.</returns>
     public static async Task ClearTableAsync<TSettings>(string tableName, TSettings appSettings,
                                                        CancellationToken cancellationToken = default)
         where TSettings : IOracleAppSettings, IResilienceAppSettings
