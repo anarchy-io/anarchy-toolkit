@@ -4,6 +4,13 @@ using System.Text;
 
 namespace Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
 
+/// <summary>
+/// A broker-agnostic message received from a message broker.
+/// </summary>
+/// <remarks>
+/// Broker adapters map their native messages into this type so consumers (e.g. event envelope parsers) stay
+/// independent of the broker SDK. The message body is always stored as a string; byte buffers are decoded as UTF-8.
+/// </remarks>
 public record InboundMessageEntity : IEntity
 {
     ///<summary>
@@ -36,6 +43,18 @@ public record InboundMessageEntity : IEntity
     ///</summary>
     public readonly IReadOnlyDictionary<string, string> Attributes;
 
+    /// <summary>
+    /// Creates an inbound message from a UTF-8 encoded body.
+    /// </summary>
+    /// <param name="id">Unique identifier of the message. Required.</param>
+    /// <param name="receiptHandle">Broker reference used to acknowledge/delete the message. Required.</param>
+    /// <param name="messageBuffer">The UTF-8 encoded message body. Must not be empty.</param>
+    /// <param name="source">The queue/topic name the message was received from. Required.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="attributes">Optional custom attributes; defaults to an empty dictionary.</param>
+    /// <exception cref="EmptyArgumentException">
+    /// <paramref name="messageBuffer"/> is empty, or any required value is null, empty or whitespace.
+    /// </exception>
     public InboundMessageEntity(
         string id,
         string receiptHandle,
@@ -55,6 +74,19 @@ public record InboundMessageEntity : IEntity
     {
     }
 
+    /// <summary>
+    /// Creates an inbound message.
+    /// </summary>
+    /// <param name="id">Unique identifier of the message. Required.</param>
+    /// <param name="receiptHandle">Broker reference used to acknowledge/delete the message. Required.</param>
+    /// <param name="message">The message body. Required.</param>
+    /// <param name="source">The queue/topic name the message was received from. Required.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="attributes">Optional custom attributes; defaults to an empty dictionary.</param>
+    /// <exception cref="EmptyArgumentException">
+    /// <paramref name="id"/>, <paramref name="receiptHandle"/>, <paramref name="message"/> or
+    /// <paramref name="source"/> is null, empty or whitespace.
+    /// </exception>
     public InboundMessageEntity(
         string id,
         string receiptHandle,

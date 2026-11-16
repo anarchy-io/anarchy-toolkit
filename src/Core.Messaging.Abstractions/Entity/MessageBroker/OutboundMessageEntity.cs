@@ -4,6 +4,14 @@ using System.Text;
 
 namespace Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
 
+/// <summary>
+/// A broker-agnostic message ready to be published through
+/// <see cref="Service.MessageBroker.IMessageBrokerPublisher"/>.
+/// </summary>
+/// <remarks>
+/// Use <see cref="Service.MessageBroker.OutboundMessageBuilder"/> to create instances with generated identifiers.
+/// The message body is always stored as a string; byte buffers are decoded as UTF-8.
+/// </remarks>
 public sealed record OutboundMessageEntity : IEntity
 {
     ///<summary>
@@ -36,6 +44,22 @@ public sealed record OutboundMessageEntity : IEntity
     ///</summary>
     public readonly IReadOnlyDictionary<string, string> Attributes;
 
+    /// <summary>
+    /// Creates an outbound message from a UTF-8 encoded body.
+    /// </summary>
+    /// <param name="id">Unique identifier of the message. Required.</param>
+    /// <param name="destination">The queue/topic name to publish to. Required.</param>
+    /// <param name="messageBuffer">The UTF-8 encoded message body. Must not be empty.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="deduplicationId">
+    /// Deduplication identifier. Despite the default value, it is validated as required (see the
+    /// <see cref="OutboundMessageEntity(string, string, string, string?, string?, IReadOnlyDictionary{string, string}?)"/>
+    /// constructor).
+    /// </param>
+    /// <param name="attributes">Optional custom attributes; defaults to an empty dictionary.</param>
+    /// <exception cref="EmptyArgumentException">
+    /// <paramref name="messageBuffer"/> is empty, or any required value is null, empty or whitespace.
+    /// </exception>
     public OutboundMessageEntity(
         string id,
         string destination,
@@ -55,6 +79,22 @@ public sealed record OutboundMessageEntity : IEntity
     {
     }
 
+    /// <summary>
+    /// Creates an outbound message.
+    /// </summary>
+    /// <param name="id">Unique identifier of the message. Required.</param>
+    /// <param name="destination">The queue/topic name to publish to. Required.</param>
+    /// <param name="message">The message body. Required.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="deduplicationId">
+    /// Deduplication identifier. Despite the default value, it is validated as required: passing
+    /// <see langword="null"/> or whitespace throws.
+    /// </param>
+    /// <param name="attributes">Optional custom attributes; defaults to an empty dictionary.</param>
+    /// <exception cref="EmptyArgumentException">
+    /// <paramref name="id"/>, <paramref name="destination"/>, <paramref name="message"/> or
+    /// <paramref name="deduplicationId"/> is null, empty or whitespace.
+    /// </exception>
     public OutboundMessageEntity(
         string id,
         string destination,
