@@ -5,14 +5,37 @@ using System.Text.Json.Serialization;
 
 namespace Anarchy.Toolkit.Web.Presentation.Converter.Json;
 
+/// <summary>
+/// JSON converter factory that serializes enums (and nullable enums) by their description instead of their numeric
+/// value or name.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Writing uses the toolkit <c>ToDescription()</c> extension, falling back to the enum name when it fails. Reading
+/// accepts only JSON strings and resolves them with <c>TryToEnumValue</c>.
+/// </para>
+/// <para>
+/// For non-nullable enums, a non-string token throws <see cref="Anarchy.Toolkit.Core.Exceptions.UnexpectedJsonTokenException"/>,
+/// an empty string throws <see cref="Anarchy.Toolkit.Core.Exceptions.EmptyJsonValueException"/> and an unknown value throws
+/// <see cref="Anarchy.Toolkit.Core.Exceptions.InvalidJsonValueException"/>. For nullable enums, JSON <c>null</c> and
+/// empty strings read as <see langword="null"/>. Registered globally by <c>WebAppStartupBase</c>.
+/// </para>
+/// </remarks>
 public sealed class DescribableEnumJsonConverter : JsonConverterFactory
 {
+    /// <summary>Determines whether <paramref name="typeToConvert"/> is an enum or a nullable enum.</summary>
+    /// <param name="typeToConvert">The type to check.</param>
+    /// <returns><see langword="true"/> for enum and nullable enum types.</returns>
     public override bool CanConvert(Type typeToConvert)
     {
         var underlying = Nullable.GetUnderlyingType(typeToConvert) ?? typeToConvert;
         return underlying.IsEnum;
     }
 
+    /// <summary>Creates the description-based converter for the given (nullable) enum type.</summary>
+    /// <param name="typeToConvert">The enum or nullable enum type.</param>
+    /// <param name="options">The serializer options.</param>
+    /// <returns>A converter for <paramref name="typeToConvert"/>.</returns>
     public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
         var underlying = Nullable.GetUnderlyingType(typeToConvert);

@@ -13,10 +13,28 @@ namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
 ///     Also, while handling any exceptions the ErrorStack, ErrorMessage and BaseError are being extracted and written
 ///     to the Response Body.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="InvalidOperationException"/> and Newtonsoft <see cref="JsonException"/> map to <c>400 Bad Request</c>;
+/// every other exception maps to <c>500 Internal Server Error</c>. For
+/// <see cref="Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage.Exceptions.UnitOfWorkSessionException"/>
+/// the base exception is used to decide the status code. The error is logged and an <c>ExceptionReport</c> is
+/// written as JSON.
+/// </para>
+/// <para>
+/// Actions decorated with <see cref="Anarchy.Toolkit.Web.Presentation.Attribute.IgnoreExceptionHandlingAttribute"/>
+/// bypass this handling. The middleware must run after routing so the endpoint is known.
+/// </para>
+/// </remarks>
+/// <param name="next">The next delegate in the pipeline.</param>
+/// <param name="observability">The observer used to log errors.</param>
 public class ExceptionMiddleware(
     RequestDelegate next,
     Observer observability)
 {
+    /// <summary>Invokes the rest of the pipeline, converting unhandled exceptions into an error response.</summary>
+    /// <param name="context">The current HTTP context.</param>
+    /// <returns>A task that completes when the request has been processed.</returns>
     public async Task InvokeAsync(HttpContext context)
     {
         if (IsIgnoreExceptionHandlingAttributeApplied(context))

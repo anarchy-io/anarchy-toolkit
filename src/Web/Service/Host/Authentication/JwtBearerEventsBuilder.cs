@@ -4,8 +4,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Authentication;
 
+/// <summary>
+/// Builds the <see cref="JwtBearerEvents"/> used by the toolkit JWT bearer authentication, logging token validation
+/// successes, authentication failures and challenges through the
+/// <see cref="Anarchy.Toolkit.Core.Observability.Service.Observability.Observer"/> resolved from request services.
+/// </summary>
 public static class JwtBearerEventsBuilder
 {
+    /// <summary>Creates a new <see cref="JwtBearerEvents"/> instance with logging handlers.</summary>
+    /// <returns>The configured events.</returns>
     public static JwtBearerEvents Build()
     {
         return new JwtBearerEvents {

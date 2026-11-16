@@ -3,6 +3,20 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Anarchy.Toolkit.Web;
 
+/// <summary>
+/// Entry points that run a toolkit web application as a self-hosted process (local Kestrel or container).
+/// </summary>
+/// <remarks>
+/// For AWS Lambda hosting use <see cref="Anarchy.Toolkit.Web.AwsWebAppEntryPointBase{T}"/> instead.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// public static class Program
+/// {
+///     public static void Main(string[] args) =&gt; WebAppEntryPoint.RunWebHost&lt;Startup&gt;(args);
+/// }
+/// </code>
+/// </example>
 public static class WebAppEntryPoint
 {
     /// <summary>
@@ -29,6 +43,18 @@ public static class WebAppEntryPoint
         });
     }
 
+    /// <summary>
+    /// Builds and runs a generic host with Kestrel listening on <c>localhost</c> over HTTP and HTTPS, using
+    /// <typeparamref name="TStartup"/> as the startup class. Blocks until the host shuts down.
+    /// </summary>
+    /// <remarks>
+    /// Intended for local development. Uses <see cref="Host.CreateDefaultBuilder(string[])"/> with the content root
+    /// set to <see cref="AppContext.BaseDirectory"/>. Ports default to <c>5000</c> (HTTP) and <c>5001</c> (HTTPS).
+    /// </remarks>
+    /// <typeparam name="TStartup">The startup class.</typeparam>
+    /// <param name="args">The process arguments.</param>
+    /// <param name="portInsecure">The HTTP port; defaults to <c>5000</c>.</param>
+    /// <param name="portSecure">The HTTPS port; defaults to <c>5001</c>.</param>
     public static void RunWebHost<TStartup>(
         string[] args,
         int? portInsecure = null,
@@ -55,9 +81,13 @@ public static class WebAppEntryPoint
     /// Systems Manager Parameter Store) added by <paramref name="configureAppConfiguration"/>, followed by
     /// environment variables. The listening port can be
     /// overridden with the <c>PORT</c> environment variable; it defaults to
-    /// <see cref="DefaultContainerPort"/>. A lightweight <see cref="ContainerHealthPath"/>
-    /// endpoint is registered for the container and load-balancer health checks.
+    /// <c>3000</c>. A lightweight <c>/health/instance</c>
+    /// endpoint is registered for the container and load-balancer health checks. Forwarded headers
+    /// (<c>X-Forwarded-For</c>, <c>X-Forwarded-Proto</c>) are honoured from any proxy, since the container is
+    /// expected to run behind a TLS-terminating load balancer in a trusted network. The startup is instantiated
+    /// via its (<see cref="IWebHostEnvironment"/>, <see cref="IConfiguration"/>) constructor. Blocks until shutdown.
     /// </remarks>
+    /// <typeparam name="TStartup">The startup class.</typeparam>
     /// <param name="args">The process arguments.</param>
     /// <param name="configureAppConfiguration">Adds the application's own configuration sources.</param>
     public static void RunContainerWebHost<TStartup>(
