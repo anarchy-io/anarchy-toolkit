@@ -7,6 +7,16 @@ using Serilog.Formatting.Json;
 
 namespace Anarchy.Toolkit.Infrastructure.Observability.Serilog.Extension.Observability;
 
+/// <summary>
+/// Serilog sink extensions for shipping logs to AWS CloudWatch.
+/// </summary>
+/// <example>
+/// <code language="csharp">
+/// Log.Logger = new LoggerConfiguration()
+///     .WriteTo.Ec2CloudWatch("/aws/ec2/my-app", cfg =&gt; cfg.Region = "eu-west-1")
+///     .CreateLogger();
+/// </code>
+/// </example>
 public static class LoggerConfigurationExtensions
 {
     private const bool DisableLogGroupCreation = true;
@@ -25,15 +35,17 @@ public static class LoggerConfigurationExtensions
         /// Optional callback allowing callers to override the default <see cref="AWSLoggerConfig"/>.
         /// </param>
         /// <returns>The updated <see cref="LoggerConfiguration"/>.</returns>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="logGroup"/> is null, empty or whitespace.</exception>
+        /// <exception cref="EmptyArgumentException">Thrown when <paramref name="logGroup"/> is null, empty or whitespace.</exception>
         /// <remarks>
         /// Default behavior:
         /// <list type="bullet">
         /// <item>Log group creation disabled</item>
-        /// <item>Log stream suffix: <c>application_logs</c></item>
+        /// <item>Log stream suffix: <c>{guid}-application_logs</c>, where the GUID is generated once per process</item>
         /// <item>Fallback error log: <c>/var/log/dotnetapp/aws-logger-error.log</c></item>
         /// <item>MaxQueuedMessages: 100,000</item>
+        /// <item>Formatter: Serilog <see cref="JsonFormatter"/> with rendered messages</item>
         /// </list>
+        /// <paramref name="configure"/> runs after the defaults are applied, so it can override any of them.
         /// </remarks>
         public LoggerConfiguration Ec2CloudWatch(string logGroup, Action<AWSLoggerConfig>? configure = null)
         {
