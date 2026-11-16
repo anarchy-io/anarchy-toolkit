@@ -15,6 +15,19 @@ namespace Anarchy.Toolkit.Build.Fallout.Component;
 /// an image with Docker and pushes it to a registry (ECR). Only <see cref="ContainerRegistry"/> must be provided;
 /// everything else has a sensible default.
 /// </summary>
+/// <remarks>
+/// The targets chain as <see cref="EcrPublishAppArtifact"/> → <see cref="EcrImageBuild"/> → <see cref="EcrImagePush"/>,
+/// after <see cref="IStandardBuild.Compile"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// partial class Build : FalloutBuild, IContainerBuild
+/// {
+///     public string ContainerRegistry => "123456789012.dkr.ecr.eu-west-1.amazonaws.com";
+/// }
+/// </code>
+/// Then run <c>fallout ecr-image-push --app-name Shop.Api</c>.
+/// </example>
 public interface IContainerBuild : IStandardBuild
 {
     /// <summary>
@@ -55,6 +68,10 @@ public interface IContainerBuild : IStandardBuild
     string ContainerRuntimeIdentifier =>
         RuntimeInformation.OSArchitecture == Architecture.Arm64 ? "linux-arm64" : "linux-x64";
 
+    /// <summary>
+    /// Publishes <see cref="IStandardBuild.AppName"/> framework-dependent for <see cref="ContainerRuntimeIdentifier"/>
+    /// into <see cref="ContainerAppArtifactDirectory"/>. Requires an app name and an image tag (a Git repository).
+    /// </summary>
     Target EcrPublishAppArtifact => d => d
         .Description("Publishes a runnable application (framework-dependent) to be included in a container image")
         .DependsOn(Compile)
@@ -77,6 +94,10 @@ public interface IContainerBuild : IStandardBuild
                 .SetOutput(ContainerAppArtifactDirectory));
         });
 
+    /// <summary>
+    /// Builds <see cref="ContainerImageReference"/> from <see cref="Dockerfile"/>, with the repository root as context
+    /// and the <c>ROOT_DIR</c> and <c>APP_NAME</c> (lower case) build arguments.
+    /// </summary>
     Target EcrImageBuild => d => d
         .Description("Builds a container image for the published application")
         .DependsOn(EcrPublishAppArtifact)
@@ -92,6 +113,10 @@ public interface IContainerBuild : IStandardBuild
                 .EnableProcessOutputLogging());
         });
 
+    /// <summary>
+    /// Pushes <see cref="ContainerImageReference"/> to the registry. The Docker client must already be logged in to
+    /// <see cref="ContainerRegistry"/>.
+    /// </summary>
     Target EcrImagePush => d => d
         .Description("Pushes the container image to the configured registry")
         .DependsOn(EcrImageBuild)

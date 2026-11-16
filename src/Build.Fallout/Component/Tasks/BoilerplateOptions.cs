@@ -3,6 +3,10 @@ namespace Anarchy.Toolkit.Build.Fallout.Component.Tasks;
 /// <summary>
 /// Controls which scaffold items are installed and whether existing settings files are appended to.
 /// </summary>
+/// <remarks>
+/// Passed to <see cref="BoilerplateTasks.Create(string, string?, BoilerplateOptions)"/>, which maps it onto the
+/// <c>ScaffoldOptions</c> of <c>Anarchy.Toolkit.Build.Cli</c>. <see cref="IBoilerplateBuild"/> fills it from its parameters.
+/// </remarks>
 public sealed class BoilerplateOptions
 {
     /// <summary>

@@ -11,15 +11,23 @@ using Configuration = Anarchy.Toolkit.Build.Fallout.Core.ValueSet.Build.Configur
 
 public partial interface IStandardBuild
 {
+    /// <summary>
+    /// The runnable app <see cref="RunApp"/> runs (<c>--app-name</c>): the name of a project under <c>src</c> with
+    /// <c>OutputType</c> <c>Exe</c>, case-insensitive. Also the app <see cref="IContainerBuild"/> publishes.
+    /// </summary>
     [Parameter("Runnable app name to execute (any src/** project with OutputType=Exe)")]
     string? AppName => TryGetValue(() => AppName);
 
+    /// <summary>
+    /// The runnable apps <see cref="RunApps"/> runs, comma-separated (<c>--app-names</c>).
+    /// </summary>
     [Parameter("Runnable app names to execute in parallel (comma-separated)")]
     string? AppNames => TryGetValue(() => AppNames);
 
     /// <summary>
     /// Runs <see cref="AppName"/> with <c>dotnet run</c> in the <c>Debug</c> configuration.
     /// </summary>
+    /// <remarks>Without <see cref="AppName"/>, or with an unknown one, it lists the runnable apps and fails.</remarks>
     Target RunApp => d => d
         .Description("Builds the solution and runs one runnable app from src/**")
         .Executes(() => {
@@ -44,6 +52,7 @@ public partial interface IStandardBuild
     /// Runs every app in <see cref="AppNames"/> in parallel with <c>dotnet run</c> in the <c>Debug</c>
     /// configuration, stopping all of them on Ctrl+C and failing when any exits with a non-zero code.
     /// </summary>
+    /// <remarks>Without <see cref="AppNames"/>, or with an unknown one, it lists the runnable apps and fails.</remarks>
     Target RunApps => d => d
         .Description("Builds the solution and runs multiple runnable apps from src/** in parallel")
         .Executes(() => {

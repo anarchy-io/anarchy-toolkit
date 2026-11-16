@@ -6,6 +6,15 @@ namespace Anarchy.Toolkit.Build.Fallout.Component.Tasks;
 /// <summary>
 /// Validates and orders a batch of NuGet packages before any are pushed.
 /// </summary>
+/// <remarks>
+/// Used by <see cref="INuGetBuild.Pack"/> and <see cref="INuGetBuild.Publish"/>.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// foreach (var package in NuGetPackageTasks.OrderForPublish(NuGetPackageTasks.FindPackages(directory)))
+///     Console.WriteLine(package);
+/// </code>
+/// </example>
 public static class NuGetPackageTasks
 {
     /// <summary>
@@ -17,6 +26,8 @@ public static class NuGetPackageTasks
     /// Finds primary packages under <paramref name="directory"/> (recursively), excluding legacy
     /// <c>.symbols.nupkg</c> packages stored next to them.
     /// </summary>
+    /// <param name="directory">The directory to search.</param>
+    /// <returns>The full paths of the <c>.nupkg</c> files found, lazily enumerated.</returns>
     public static IEnumerable<string> FindPackages(string directory) =>
         Directory.EnumerateFiles(directory, "*.nupkg", SearchOption.AllDirectories)
             .Where(path => !path.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase));
@@ -26,6 +37,7 @@ public static class NuGetPackageTasks
     /// are assumed to already be available on the feed. Cycles, duplicate IDs and incompatible versions fail
     /// before publishing anything.
     /// </summary>
+    /// <param name="packagePaths">The paths of the <c>.nupkg</c> files to order, e.g. from <see cref="FindPackages"/>.</param>
     /// <returns>The package paths, each one after the packages of the batch it depends on.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when two packages share an ID, the dependencies form a cycle, or a dependency's version range is not

@@ -7,6 +7,9 @@ namespace Anarchy.Toolkit.Build.Fallout.Component;
 /// </summary>
 public interface IVersionedBuild : IDefaultBuild
 {
+    /// <summary>
+    /// The version being built (<c>--build-number</c>), typically passed by CI; <see langword="null"/> when not set.
+    /// </summary>
     [Parameter("Version to build")]
     string? BuildNumber => TryGetValue(() => BuildNumber);
 }

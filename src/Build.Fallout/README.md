@@ -94,6 +94,10 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 
 ## Releases
 
+### 3.3.1
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 3.3.0
 
 - feat(Build.Fallout): add IApiReferenceBuild generating a DocFX API reference from the compiled assemblies
