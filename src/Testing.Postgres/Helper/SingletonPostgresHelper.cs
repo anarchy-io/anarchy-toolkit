@@ -17,6 +17,23 @@ namespace Anarchy.Toolkit.Testing.Postgres.Helper;
 ///     Singleton-cached Postgres test fixtures. Reuses a single connection pool, retry policy builder and
 ///     resilience policy across tests, and exposes helpers to reset table state.
 /// </summary>
+/// <remarks>
+///     <para>
+///     The instances are cached in static fields shared by every test in the process (without locking), and the
+///     settings passed on later calls are ignored until <c>forceRefresh</c> is used. All fixtures target the writer host.
+///     </para>
+///     <para>
+///     The retry policy builder is never rebuilt, and refreshing only the connection pool does not rebuild an
+///     already cached policy; call <see cref="DbPolicyFixture{TSettings}(TSettings, bool)" /> with
+///     <c>forceRefresh</c> to rebuild both pool and policy.
+///     </para>
+/// </remarks>
+/// <example>
+///     <code language="csharp">
+///     var dbPolicy = SingletonPostgresHelper.DbPolicyFixture&lt;MyTestSettings&gt;();
+///     await SingletonPostgresHelper.TruncateTableAsync&lt;MyTestSettings&gt;("orders");
+///     </code>
+/// </example>
 public sealed class SingletonPostgresHelper
 {
     private static IDbConnectionPool<NpgsqlConnection>? _instanceConnectionPool;
@@ -27,6 +44,7 @@ public sealed class SingletonPostgresHelper
     ///     Register a Dapper <see cref="DescriptionEnumTypeHandler{TEnum}" />
     ///     for the given enum type. Consumers call this for each domain enum they need to persist.
     /// </summary>
+    /// <typeparam name="TEnum">The enum type to register.</typeparam>
     public static void RegisterEnumTypeHandler<TEnum>() where TEnum : Enum
     {
         PostgresHelper.RegisterEnumTypeHandler<TEnum>();
@@ -35,6 +53,9 @@ public sealed class SingletonPostgresHelper
     /// <summary>
     ///     Build a <see cref="PostgresConnectionString" /> from the given settings.
     /// </summary>
+    /// <param name="settings">Settings exposing the <c>Postgres</c> section.</param>
+    /// <param name="forceRefresh">Unused; the connection string is never cached.</param>
+    /// <returns>A new connection string builder.</returns>
     public static PostgresConnectionString ConnectionStringFixture(IPostgresAppSettings settings, bool forceRefresh = false)
     {
         return new PostgresConnectionString(
@@ -44,6 +65,9 @@ public sealed class SingletonPostgresHelper
     /// <summary>
     ///     Return the cached connection pool, optionally rebuilding it when <paramref name="forceRefresh" /> is set.
     /// </summary>
+    /// <param name="settings">Settings used when the pool has to be created.</param>
+    /// <param name="forceRefresh">When <c>true</c>, disposes the cached pool and creates a new one.</param>
+    /// <returns>The cached connection pool.</returns>
     public static IDbConnectionPool<NpgsqlConnection> ConnectionPoolFixture(IPostgresAppSettings settings, bool forceRefresh = false)
     {
         if (_instanceConnectionPool is not null && forceRefresh)
@@ -65,8 +89,11 @@ public sealed class SingletonPostgresHelper
     }
 
     /// <summary>
-    ///     Return the cached retry policy builder.
+    ///     Return the cached retry policy builder, creating it on first use.
     /// </summary>
+    /// <param name="settings">Settings used when the builder has to be created.</param>
+    /// <param name="forceRefresh">Currently ignored: the builder is never rebuilt.</param>
+    /// <returns>The cached retry policy builder.</returns>
     public static IAsyncRetryPolicyBuilder<NpgsqlConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false)
     {
         _instanceRetryPolicyBuilder ??= new PostgresAsyncRetryPolicyBuilder(
@@ -79,6 +106,9 @@ public sealed class SingletonPostgresHelper
     ///     Return the cached resilience policy built from the test settings of <typeparamref name="TAppSettings" />,
     ///     optionally rebuilding it when <paramref name="forceRefresh" /> is set.
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy and the connection pool.</param>
+    /// <returns>The cached policy.</returns>
     public static IStoragePolicy<NpgsqlConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false)
         where TAppSettings : class, IPostgresAppSettings, IResilienceAppSettings
     {
@@ -89,6 +119,10 @@ public sealed class SingletonPostgresHelper
     ///     Return the cached resilience policy, optionally rebuilding it when <paramref name="forceRefresh" /> is set.
     ///     The settings must expose both the <c>Postgres</c> and <c>Resilience</c> sections.
     /// </summary>
+    /// <typeparam name="TSettings">The settings type.</typeparam>
+    /// <param name="settings">Settings used when the policy has to be created.</param>
+    /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy and the connection pool.</param>
+    /// <returns>The cached policy.</returns>
     public static IStoragePolicy<NpgsqlConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false)
         where TSettings : IPostgresAppSettings, IResilienceAppSettings
     {
@@ -110,6 +144,10 @@ public sealed class SingletonPostgresHelper
     ///     Truncate the given table using the test settings of <typeparamref name="TAppSettings" />, restarting
     ///     identity and cascading to dependents.
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been truncated.</returns>
     public static async Task TruncateTableAsync<TAppSettings>(string tableName,
                                                              CancellationToken cancellationToken = default)
         where TAppSettings : class, IPostgresAppSettings, IResilienceAppSettings
@@ -120,6 +158,11 @@ public sealed class SingletonPostgresHelper
     /// <summary>
     ///     Truncate the given table using the given settings, restarting identity and cascading to dependents.
     /// </summary>
+    /// <typeparam name="TSettings">The settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="appSettings">Settings used to obtain the cached policy.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been truncated.</returns>
     public static async Task TruncateTableAsync<TSettings>(string tableName, TSettings appSettings,
                                                           CancellationToken cancellationToken = default)
         where TSettings : IPostgresAppSettings, IResilienceAppSettings
@@ -131,6 +174,10 @@ public sealed class SingletonPostgresHelper
     /// <summary>
     ///     Delete all rows from the given table using the test settings of <typeparamref name="TAppSettings" />.
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been cleared.</returns>
     public static async Task ClearTableAsync<TAppSettings>(string tableName,
                                                           CancellationToken cancellationToken = default)
         where TAppSettings : class, IPostgresAppSettings, IResilienceAppSettings
@@ -141,6 +188,11 @@ public sealed class SingletonPostgresHelper
     /// <summary>
     ///     Delete all rows from the given table using the given settings.
     /// </summary>
+    /// <typeparam name="TSettings">The settings type.</typeparam>
+    /// <param name="tableName">Name of the table.</param>
+    /// <param name="appSettings">Settings used to obtain the cached policy.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the table has been cleared.</returns>
     public static async Task ClearTableAsync<TSettings>(string tableName, TSettings appSettings,
                                                        CancellationToken cancellationToken = default)
         where TSettings : IPostgresAppSettings, IResilienceAppSettings

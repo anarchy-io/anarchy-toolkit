@@ -19,6 +19,8 @@ public static class PostgresOptionsMapper
     /// <summary>
     ///     Build <see cref="PostgresConnectionOptions" /> from <see cref="IPostgresAppSettings.Postgres" />.
     /// </summary>
+    /// <param name="appSettings">Settings exposing the <c>Postgres</c> section.</param>
+    /// <returns>The connection options, using <see cref="DefaultCommandTimeoutSeconds" /> as command timeout.</returns>
     public static PostgresConnectionOptions ConnectionOptions(IPostgresAppSettings appSettings)
     {
         var settings = appSettings.Postgres;
@@ -37,6 +39,8 @@ public static class PostgresOptionsMapper
     /// <summary>
     ///     Build <see cref="PostgresResilienceOptions" /> from <see cref="IResilienceAppSettings.Resilience" />.
     /// </summary>
+    /// <param name="appSettings">Settings exposing the <c>Resilience</c> section.</param>
+    /// <returns>The resilience options, carrying the configured retry count.</returns>
     public static PostgresResilienceOptions ResilienceOptions(IResilienceAppSettings appSettings)
     {
         return new PostgresResilienceOptions(appSettings.Resilience.RetryCount);

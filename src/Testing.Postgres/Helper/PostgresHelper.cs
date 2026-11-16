@@ -16,6 +16,17 @@ namespace Anarchy.Toolkit.Testing.Postgres.Helper;
 ///     Test fixtures that build Postgres persistence concretes from the application settings (the test settings of
 ///     the consumer's settings type, or any settings exposing the required sections).
 /// </summary>
+/// <remarks>
+///     Every call builds new instances (connection pool included), targeting the writer host. Use
+///     <see cref="SingletonPostgresHelper" /> to share a cached pool and policy across tests.
+/// </remarks>
+/// <example>
+///     <code language="csharp">
+///     PostgresHelper.RegisterEnumTypeHandler&lt;OrderStatus&gt;();
+///     var dbPolicy = PostgresHelper.DbPolicyFixture&lt;MyTestSettings&gt;();
+///     var unitOfWork = PostgresHelper.DbUnitOfWorkFixture&lt;MyTestSettings&gt;();
+///     </code>
+/// </example>
 public sealed class PostgresHelper
 {
     /// <summary>
@@ -23,6 +34,7 @@ public sealed class PostgresHelper
     ///     its values are mapped to/from their <see cref="System.ComponentModel.DescriptionAttribute" /> string.
     ///     Consumers call this for each domain enum they need to persist.
     /// </summary>
+    /// <typeparam name="TEnum">The enum type to register.</typeparam>
     public static void RegisterEnumTypeHandler<TEnum>() where TEnum : Enum
     {
         DbTestHelper.RegisterEnumTypeHandler<TEnum>();
@@ -32,6 +44,8 @@ public sealed class PostgresHelper
     ///     Build a <see cref="PostgresResilienceDbPolicy" /> fixture from the test settings of
     ///     <typeparamref name="TAppSettings" />.
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <returns>A new resilience policy over a new writer connection pool.</returns>
     public static PostgresResilienceDbPolicy DbPolicyFixture<TAppSettings>()
         where TAppSettings : class, IPostgresAppSettings, IResilienceAppSettings
     {
@@ -42,6 +56,9 @@ public sealed class PostgresHelper
     ///     Build a <see cref="PostgresResilienceDbPolicy" /> fixture from the given settings, which must expose both
     ///     the <c>Postgres</c> and <c>Resilience</c> sections.
     /// </summary>
+    /// <typeparam name="TSettings">The settings type.</typeparam>
+    /// <param name="appSettings">The settings to build the fixture from.</param>
+    /// <returns>A new resilience policy over a new writer connection pool.</returns>
     public static PostgresResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings)
         where TSettings : IPostgresAppSettings, IResilienceAppSettings
     {
@@ -64,6 +81,8 @@ public sealed class PostgresHelper
     ///     Build a <see cref="PostgresDbUnitOfWork" /> fixture from the test settings of
     ///     <typeparamref name="TAppSettings" />.
     /// </summary>
+    /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <returns>A new unit of work over a new writer connection pool.</returns>
     public static PostgresDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>()
         where TAppSettings : class, IPostgresAppSettings
     {
@@ -73,6 +92,12 @@ public sealed class PostgresHelper
     /// <summary>
     ///     Build a <see cref="PostgresDbUnitOfWork" /> fixture from the given settings.
     /// </summary>
+    /// <param name="appSettings">The settings to build the fixture from.</param>
+    /// <returns>A new unit of work over a new writer connection pool.</returns>
+    /// <remarks>
+    ///     The unit of work uses its own async flow context, so repositories built from a separate
+    ///     <see cref="DbPolicyFixture{TSettings}(TSettings)" /> do not join its sessions.
+    /// </remarks>
     public static PostgresDbUnitOfWork DbUnitOfWorkFixture(IPostgresAppSettings appSettings)
     {
         return new PostgresDbUnitOfWork(
