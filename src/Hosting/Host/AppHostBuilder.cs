@@ -12,6 +12,11 @@ namespace Anarchy.Toolkit.Hosting.Host;
 /// Environment variables are always added as a configuration source. Any other source (e.g. the AWS SSM Parameter
 /// Store through <c>AddAwsSystemsManagerParameterStore</c>) is the application's choice, made through
 /// <c>configureAppConfiguration</c>; it runs before the environment variables so those keep the last word.
+/// <para>Both builders start from <see cref="Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()"/>, use
+/// <see cref="AppContext.BaseDirectory"/> as content root and bootstrap services through the
+/// <see cref="IStartup"/> type argument, registering an <see cref="AppRunner"/> describing the
+/// runner type. Usually used through <see cref="JobEntryPointBase{TJobStartup}"/> or
+/// <see cref="WorkerEntryPointBase{TJobStartup}"/>.</para>
 /// </remarks>
 public class AppHostBuilder
 {
@@ -20,6 +25,10 @@ public class AppHostBuilder
     /// </summary>
     /// <typeparam name="TJobStartup">The startup type used to configure services.</typeparam>
     /// <param name="configureAppConfiguration">Adds the application's own configuration sources.</param>
+    /// <returns>The built, not yet started, host.</returns>
+    /// <exception cref="Anarchy.Toolkit.Hosting.Extension.Microsoft.Hosting.Exceptions.MissingStartupConstructorException">
+    /// Thrown if <typeparamref name="TJobStartup"/> has no <c>(IHostEnvironment, IConfiguration)</c> constructor.
+    /// </exception>
     public static IHost ForJob<TJobStartup>(
         Action<HostBuilderContext, IConfigurationBuilder>? configureAppConfiguration = null)
         where TJobStartup : class, IStartup
@@ -32,8 +41,16 @@ public class AppHostBuilder
     /// <summary>
     /// Builds an EC2/systemd-hosted Worker for the given startup type.
     /// </summary>
+    /// <remarks>
+    /// Additionally enables systemd integration (<c>UseSystemd</c>) and reads <c>ASPNETCORE_</c>-prefixed environment
+    /// variables into the host configuration.
+    /// </remarks>
     /// <typeparam name="TJobStartup">The startup type used to configure services.</typeparam>
     /// <param name="configureAppConfiguration">Adds the application's own configuration sources.</param>
+    /// <returns>The built, not yet started, host.</returns>
+    /// <exception cref="Anarchy.Toolkit.Hosting.Extension.Microsoft.Hosting.Exceptions.MissingStartupConstructorException">
+    /// Thrown if <typeparamref name="TJobStartup"/> has no <c>(IHostEnvironment, IConfiguration)</c> constructor.
+    /// </exception>
     public static IHost ForWorker<TJobStartup>(
         Action<HostBuilderContext, IConfigurationBuilder>? configureAppConfiguration = null)
         where TJobStartup : class, IStartup

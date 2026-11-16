@@ -19,7 +19,14 @@ namespace Anarchy.Toolkit.Hosting.DependencyInjection;
 /// This factory only wires the generic <typeparamref name="TAppSettingsDiModule"/> module plus a small set of
 /// cross-cutting singletons. Domain-specific modules (infrastructure, aggregates, brokers, etc.) are supplied
 /// by the consumer through the <c>extraModules</c> parameter.
+/// <para>Registered services: the <see cref="IHostEnvironment"/>, the memory cache, the
+/// <typeparamref name="TAppSettingsDiModule"/> module, default <see cref="CorrelationIdOptions"/>,
+/// <see cref="IHttpContextAccessor"/>, a scoped <see cref="ICachedSecretManagementService"/>
+/// (<see cref="CachedSecretManagementService"/>, which requires an <see cref="ISecretManagementService"/> registration)
+/// and <see cref="TimeProvider.System"/>.</para>
 /// </remarks>
+/// <typeparam name="TAppSettingsDiModule">The module that binds and registers <typeparamref name="TAppSettings"/>.</typeparam>
+/// <typeparam name="TAppSettings">The consumer's concrete application settings type.</typeparam>
 public static class DiFactory<TAppSettingsDiModule, TAppSettings>
     where TAppSettingsDiModule : class, IAppSettingsDiModule<TAppSettings>, new()
     where TAppSettings : class, IAppSettings
