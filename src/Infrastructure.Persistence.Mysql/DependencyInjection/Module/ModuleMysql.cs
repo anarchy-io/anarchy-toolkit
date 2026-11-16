@@ -15,10 +15,23 @@ using MySqlConnector;
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Mysql.DependencyInjection.Module;
 
 /// <summary>Registers MySQL writer/reader pools and policies, retries and unit of work. Requires an Observer.</summary>
+/// <param name="connectionOptions">Factory building the connection options from <see cref="IConfiguration"/>.</param>
+/// <param name="resilienceOptions">Factory building the resilience (retry) options from <see cref="IConfiguration"/>.</param>
+/// <example>
+/// <code language="csharp">
+/// var module = new ModuleMysql(
+///     cfg =&gt; cfg.GetSection("Database").Get&lt;MysqlConnectionOptions&gt;()!,
+///     cfg =&gt; new MysqlResilienceOptions(RetryCount: 3));
+/// module.RegisterServices(builder.Services, builder.Configuration, builder.Environment);
+///
+/// // In a repository: unkeyed policy = writer; [FromKeyedServices("reader")] = reader.
+/// </code>
+/// </example>
 public sealed class ModuleMysql(
     Func<IConfiguration, MysqlConnectionOptions> connectionOptions,
     Func<IConfiguration, MysqlResilienceOptions> resilienceOptions) : IDependencyInjectionModule
 {
+    /// <inheritdoc/>
     public IServiceCollection RegisterServices(IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         services.AddSingleton(connectionOptions(configuration))
