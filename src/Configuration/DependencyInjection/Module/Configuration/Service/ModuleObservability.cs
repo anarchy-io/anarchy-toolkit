@@ -21,6 +21,13 @@ namespace Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration
 /// The observer is built by an <see cref="ObserverFactory"/>; organisation-specific sinks, enrichers and metrics
 /// backends are plugged in by passing a derived factory.
 /// </remarks>
+/// <example>
+/// <code language="csharp">
+/// services.UseModule(
+///     new ModuleLibConfiguration&lt;ModuleAppSettings, AppSettings&gt;(new ModuleObservability(new MyObserverFactory())),
+///     configuration, environment);
+/// </code>
+/// </example>
 public sealed class ModuleObservability : IDependencyInjectionModule
 {
     private const string ConfigurationSectionName = "Observability";
@@ -28,10 +35,16 @@ public sealed class ModuleObservability : IDependencyInjectionModule
     private readonly ObserverFactory _observerFactory;
     private readonly Func<IConfiguration, CorrelationIdOptions>? _correlationIdOptions;
 
+    /// <summary>
+    /// Creates the module with the default <see cref="ObserverFactory"/> and correlation-id options.
+    /// </summary>
     public ModuleObservability() : this(null)
     {
     }
 
+    /// <summary>
+    /// Creates the module with a custom observer factory and/or correlation-id options.
+    /// </summary>
     /// <param name="observerFactory">Builds the observer; the vendor-neutral <see cref="ObserverFactory"/> when <c>null</c>.</param>
     /// <param name="correlationIdOptions">Resolves the correlation-id options; the defaults when <c>null</c>.</param>
     public ModuleObservability(ObserverFactory? observerFactory,
@@ -41,6 +54,13 @@ public sealed class ModuleObservability : IDependencyInjectionModule
         _correlationIdOptions = correlationIdOptions;
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// Reads <see cref="ObservabilityOptions"/> from the <c>Observability</c> section to resolve the application name,
+    /// registers the correlation-id module, <see cref="IApplicationContext"/>, clears the Microsoft logging providers,
+    /// and registers <see cref="Observer"/> as a singleton built by the <see cref="ObserverFactory"/> (using the
+    /// <see cref="AppRunner"/> from DI when present).
+    /// </remarks>
     public IServiceCollection RegisterServices(IServiceCollection services, IConfiguration configuration,
                                                IHostEnvironment environment)
     {

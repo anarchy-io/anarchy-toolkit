@@ -38,6 +38,15 @@ public sealed record ObserverContext(
 /// properties (<see cref="Enrich"/>), sinks (<see cref="WriteTo"/>), metrics backend (<see cref="CreateMeasurer"/>),
 /// or the whole hosted/local behaviour.
 /// </remarks>
+/// <example>
+/// <code language="csharp">
+/// public sealed class MyObserverFactory : ObserverFactory
+/// {
+///     protected override LoggerConfiguration Enrich(LoggerConfiguration configuration, ObserverContext context) =>
+///         base.Enrich(configuration, context).Enrich.WithProperty("team", "payments");
+/// }
+/// </code>
+/// </example>
 public class ObserverFactory
 {
     /// <summary>The log property holding the correlation id.</summary>
@@ -46,12 +55,23 @@ public class ObserverFactory
     /// <summary>The log property holding the attempt id.</summary>
     protected virtual string AttemptIdPropertyName => CorrelationLogPropertyNames.AttemptId;
 
+    /// <summary>
+    /// Builds the observer: <see cref="CreateLocal"/> when the environment is local, otherwise
+    /// <see cref="CreateHosted"/>.
+    /// </summary>
+    /// <param name="context">Information about the application.</param>
+    /// <returns>The application's observer.</returns>
     public virtual Observer Create(ObserverContext context)
     {
         return context.Environment.IsLocal() ? CreateLocal(context) : CreateHosted(context);
     }
 
-    /// <summary>Builds the observer used on a developer machine.</summary>
+    /// <summary>
+    /// Builds the observer used on a developer machine: readable console logs from <c>Debug</c> level and a
+    /// <see cref="ConsoleMeasurer"/>.
+    /// </summary>
+    /// <param name="context">Information about the application.</param>
+    /// <returns>The local observer.</returns>
     protected virtual Observer CreateLocal(ObserverContext context)
     {
         return new Observer(
@@ -68,6 +88,8 @@ public class ObserverFactory
     /// Builds the observer used once deployed: <see cref="CreateBaseLoggerConfiguration"/>, then
     /// <see cref="Enrich"/>, then <see cref="WriteTo"/>, with metrics from <see cref="CreateMeasurer"/>.
     /// </summary>
+    /// <param name="context">Information about the application.</param>
+    /// <returns>The hosted observer.</returns>
     protected virtual Observer CreateHosted(ObserverContext context)
     {
         var logger = WriteTo(Enrich(CreateBaseLoggerConfiguration(context), context), context)
@@ -80,6 +102,8 @@ public class ObserverFactory
     /// The baseline every hosted logger starts from: log context, correlation ids, structured exceptions and the
     /// <c>app_name</c> property, minimum level <c>Information</c> with <c>Microsoft</c>/<c>System</c> overrides.
     /// </summary>
+    /// <param name="context">Information about the application.</param>
+    /// <returns>The base logger configuration.</returns>
     protected virtual LoggerConfiguration CreateBaseLoggerConfiguration(ObserverContext context)
     {
         return new LoggerConfiguration()
@@ -93,6 +117,9 @@ public class ObserverFactory
     }
 
     /// <summary>Adds hosted-only enrichers. By default, the AWS request context on Lambda.</summary>
+    /// <param name="configuration">The logger configuration built so far.</param>
+    /// <param name="context">Information about the application.</param>
+    /// <returns>The enriched logger configuration.</returns>
     protected virtual LoggerConfiguration Enrich(LoggerConfiguration configuration, ObserverContext context)
     {
         return context.Runner is AppRunner.Types.Lambda
@@ -101,12 +128,18 @@ public class ObserverFactory
     }
 
     /// <summary>Adds the hosted sinks. By default, JSON to the console.</summary>
+    /// <param name="configuration">The logger configuration built so far.</param>
+    /// <param name="context">Information about the application.</param>
+    /// <returns>The logger configuration with sinks added.</returns>
     protected virtual LoggerConfiguration WriteTo(LoggerConfiguration configuration, ObserverContext context)
     {
         return configuration.WriteTo.Console(new JsonFormatter(renderMessage: true));
     }
 
     /// <summary>Builds the hosted metrics backend. By default, metrics are written as log events.</summary>
+    /// <param name="context">Information about the application.</param>
+    /// <param name="logger">The hosted logger just created.</param>
+    /// <returns>The metrics backend.</returns>
     protected virtual MeasurerBase CreateMeasurer(ObserverContext context, ILogger logger)
     {
         return new LoggerMeasurer(logger);
