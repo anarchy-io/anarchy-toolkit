@@ -27,6 +27,11 @@ public interface IOutboundMessageBuilder
     /// <summary>
     /// Builds an outbound message overriding the configured destination with an explicit name.
     /// </summary>
+    /// <param name="destination">The queue/topic name to publish to.</param>
+    /// <param name="message">The serialized message body.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="attributes">Optional custom message attributes.</param>
+    /// <returns>An outbound message entity ready for publishing.</returns>
     OutboundMessageEntity Build(
         string destination,
         string message,
@@ -36,6 +41,12 @@ public interface IOutboundMessageBuilder
     /// <summary>
     /// Convenience overload that resolves an enum destination via its description.
     /// </summary>
+    /// <typeparam name="TDestination">The destination enum type.</typeparam>
+    /// <param name="destination">The destination; its description is used as the queue/topic name.</param>
+    /// <param name="message">The serialized message body.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="attributes">Optional custom message attributes.</param>
+    /// <returns>An outbound message entity ready for publishing.</returns>
     OutboundMessageEntity Build<TDestination>(
         TDestination destination,
         string message,
@@ -44,12 +55,34 @@ public interface IOutboundMessageBuilder
         where TDestination : Enum;
 }
 
+/// <summary>
+/// Default <see cref="IOutboundMessageBuilder"/> bound to a default destination and an optional source.
+/// </summary>
+/// <remarks>
+/// Every built message gets a new random GUID as both <see cref="OutboundMessageEntity.Id"/> and
+/// <see cref="OutboundMessageEntity.DeduplicationId"/>. When <paramref name="source"/> is not empty it is added as
+/// the <c>Source</c> attribute, overriding any caller-supplied <c>Source</c> attribute. The builder is immutable and
+/// thread-safe.
+/// </remarks>
+/// <param name="destination">The default queue/topic name used by <see cref="Build(string, string?, IReadOnlyDictionary{string, string}?)"/>.</param>
+/// <param name="source">Optional name of the publishing application, added as the <c>Source</c> attribute.</param>
+/// <example>
+/// <code language="csharp">
+/// var builder = new OutboundMessageBuilder("orders-events.fifo", source: "order-service");
+/// var outbound = builder.Build(domainEvent.ToJson(), partitionKey: domainEvent.AggregateId);
+/// await publisher.PublishAsync(outbound);
+/// </code>
+/// </example>
 public class OutboundMessageBuilder(string destination, string? source = null)
     : IOutboundMessageBuilder
 {
     /// <summary>
     /// Convenience constructor that resolves an enum destination/source via their descriptions.
     /// </summary>
+    /// <typeparam name="TDestination">The destination enum type.</typeparam>
+    /// <param name="destination">The default destination; its description is used as the queue/topic name.</param>
+    /// <param name="source">Optional name of the publishing application.</param>
+    /// <returns>A new builder.</returns>
     public static OutboundMessageBuilder Create<TDestination>(
         TDestination destination,
         string? source = null)
@@ -59,6 +92,11 @@ public class OutboundMessageBuilder(string destination, string? source = null)
     /// <summary>
     /// Convenience constructor that resolves both enum destination and enum source via their descriptions.
     /// </summary>
+    /// <typeparam name="TDestination">The destination enum type.</typeparam>
+    /// <typeparam name="TSource">The source enum type.</typeparam>
+    /// <param name="destination">The default destination; its description is used as the queue/topic name.</param>
+    /// <param name="source">The publishing application; its description is used as the <c>Source</c> attribute.</param>
+    /// <returns>A new builder.</returns>
     public static OutboundMessageBuilder Create<TDestination, TSource>(
         TDestination destination,
         TSource source)
@@ -66,12 +104,24 @@ public class OutboundMessageBuilder(string destination, string? source = null)
         where TSource : Enum
         => new(destination.ToDescription(), source.ToDescription());
 
+    /// <inheritdoc/>
     public OutboundMessageEntity Build(
         string message,
         string? partitionKey = null,
         IReadOnlyDictionary<string, string>? attributes = null)
         => Build(destination, message, partitionKey, attributes);
 
+    /// <summary>
+    /// Builds an outbound message overriding the configured destination with an explicit name.
+    /// </summary>
+    /// <param name="destinationName">The queue/topic name to publish to.</param>
+    /// <param name="message">The serialized message body.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="attributes">Optional custom message attributes.</param>
+    /// <returns>An outbound message entity ready for publishing.</returns>
+    /// <exception cref="Core.Exceptions.EmptyArgumentException">
+    /// <paramref name="destinationName"/> or <paramref name="message"/> is null, empty or whitespace.
+    /// </exception>
     public OutboundMessageEntity Build(
         string destinationName,
         string message,
@@ -87,6 +137,15 @@ public class OutboundMessageBuilder(string destination, string? source = null)
             BuildAttributes(attributes));
     }
 
+    /// <summary>
+    /// Convenience overload that resolves an enum destination via its description.
+    /// </summary>
+    /// <typeparam name="TDestination">The destination enum type.</typeparam>
+    /// <param name="destinationValue">The destination; its description is used as the queue/topic name.</param>
+    /// <param name="message">The serialized message body.</param>
+    /// <param name="partitionKey">Optional partition/message-group key.</param>
+    /// <param name="attributes">Optional custom message attributes.</param>
+    /// <returns>An outbound message entity ready for publishing.</returns>
     public OutboundMessageEntity Build<TDestination>(
         TDestination destinationValue,
         string message,
