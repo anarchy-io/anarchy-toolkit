@@ -10,6 +10,12 @@ namespace Anarchy.Toolkit.Configuration.Service.Observability;
 /// This implementation favors readable console output and tolerates malformed metrics/tags by skipping invalid input.
 /// It is not intended for production telemetry pipelines.
 /// </summary>
+/// <remarks>
+/// Used by default by <see cref="Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Service.ObserverFactory"/>
+/// in local environments. Metrics with an empty type or name are skipped, and tags not in <c>name:value</c> form are
+/// dropped. Ambient <see cref="MeasurerBase.BeginScope"/> tags are not included.
+/// </remarks>
+/// <param name="tagsAsJson">When <see langword="true"/>, tags are printed as indented JSON instead of one line per tag.</param>
 public sealed class ConsoleMeasurer(bool tagsAsJson = false) : MeasurerBase
 {
     private const string Reset = "\u001b[0m";
@@ -20,31 +26,47 @@ public sealed class ConsoleMeasurer(bool tagsAsJson = false) : MeasurerBase
     private const string Purple = "\u001B[38;5;0200m";
     private const string Gray = "\u001b[90m";
 
+    /// <inheritdoc />
     public override void IncrementCounter(string name, params string[] tags)
     {
         IncrementCounter(name, 1, tags);
     }
 
+    /// <inheritdoc />
     public override void IncrementCounter(string name, int amount, params string[] tags)
     {
         WriteMetric("counter", name, amount.ToString(CultureInfo.InvariantCulture), tags);
     }
 
+    /// <inheritdoc />
     public override void Gauge(string name, double value, params string[] tags)
     {
         WriteMetric("gauge", name, value.ToString(CultureInfo.InvariantCulture), tags);
     }
 
+    /// <inheritdoc />
     public override void Histogram(string name, double value, params string[] tags)
     {
         WriteMetric("histogram", name, value.ToString(CultureInfo.InvariantCulture), tags);
     }
 
+    /// <summary>
+    /// Registers an elapsed time for a timer-type metric (printed in <c>c</c> TimeSpan format).
+    /// </summary>
+    /// <param name="name">The metric name.</param>
+    /// <param name="elapsed">The measured duration.</param>
+    /// <param name="tags">The tags, in <c>name:value</c> format.</param>
     public override void Timer(string name, TimeSpan elapsed, params string[] tags)
     {
         WriteMetric("timer", name, elapsed.ToString("c", CultureInfo.InvariantCulture), tags);
     }
 
+    /// <summary>
+    /// Registers an event.
+    /// </summary>
+    /// <param name="name">The event title.</param>
+    /// <param name="text">The event description.</param>
+    /// <param name="tags">The tags, in <c>name:value</c> format.</param>
     public override void Event(string name, string text, params string[] tags)
     {
         WriteMetric("event", name, text, tags);

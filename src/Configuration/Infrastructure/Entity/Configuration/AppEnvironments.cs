@@ -1,5 +1,9 @@
 namespace Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 
+/// <summary>
+/// Names of the environments supported by the toolkit, for use with <see cref="Microsoft.Extensions.Hosting.IHostEnvironment"/>
+/// (e.g. through <see cref="Anarchy.Toolkit.Configuration.Extension.Microsoft.Hosting.HostEnvironmentEnvExtension"/>).
+/// </summary>
 public static class AppEnvironments
 {
     /// <summary>
@@ -32,6 +36,9 @@ public static class AppEnvironments
     /// <remarks>The production environment should be configured to maximize security, performance, and application robustness.</remarks>
     public const string Production = "Production";
 
+    /// <summary>
+    /// All supported environment names, from <see cref="Development"/> to <see cref="Production"/>.
+    /// </summary>
     public static readonly IReadOnlyCollection<string> AllAvailable = [
         Development,
         Testing,

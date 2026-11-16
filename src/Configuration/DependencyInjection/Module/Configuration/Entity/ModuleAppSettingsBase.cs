@@ -6,9 +6,30 @@ using Microsoft.Extensions.Options;
 
 namespace Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Entity;
 
+/// <summary>
+/// Default <see cref="IAppSettingsDiModule{TAppSettings}"/>: binds <typeparamref name="TAppSettings"/> from the root
+/// configuration, validates it with data annotations on start, and registers it as a singleton.
+/// </summary>
+/// <remarks>
+/// Registers <c>IOptions&lt;TAppSettings&gt;</c>, <typeparamref name="TAppSettings"/> and
+/// <see cref="IAppSettings"/>. Derive from it and override <see cref="RegisterAdditionalTypesForSettings"/> to also
+/// expose capability interfaces such as
+/// <see cref="Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Amazon.IAwsAppSettings"/>.
+/// </remarks>
+/// <typeparam name="TAppSettings">The consumer's concrete application settings type.</typeparam>
+/// <example>
+/// <code language="csharp">
+/// public sealed class ModuleAppSettings : ModuleAppSettingsBase&lt;AppSettings&gt;
+/// {
+///     protected override IServiceCollection RegisterAdditionalTypesForSettings(IServiceCollection services) =>
+///         services.AddSingleton&lt;IAwsAppSettings&gt;(sp => sp.GetRequiredService&lt;AppSettings&gt;());
+/// }
+/// </code>
+/// </example>
 public class ModuleAppSettingsBase<TAppSettings> : IAppSettingsDiModule<TAppSettings>
     where TAppSettings : class, IAppSettings
 {
+    /// <inheritdoc />
     public IServiceCollection RegisterServices(
         IServiceCollection services,
         IConfiguration configuration,

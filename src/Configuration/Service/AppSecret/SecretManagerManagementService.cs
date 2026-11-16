@@ -5,6 +5,15 @@ using System.Collections.Concurrent;
 
 namespace Anarchy.Toolkit.Configuration.Service.AppSecret;
 
+/// <summary>
+/// Process-wide reader of AWS Secrets Manager secrets with an in-memory cache.
+/// </summary>
+/// <remarks>
+/// Uses a lazily created singleton with a default <c>AmazonSecretsManagerClient</c> (credentials and region from the
+/// default AWS SDK chain). Secrets are cached for the lifetime of the process without expiration. Typically accessed
+/// through <c>IHostEnvironment.GetSecretValue</c> in
+/// <see cref="Anarchy.Toolkit.Configuration.Extension.Microsoft.Hosting.HostEnvironmentEnvExtension"/>.
+/// </remarks>
 public class SecretManagerManagementService
 {
     private static readonly Lazy<SecretManagerManagementService> Instance =
@@ -18,6 +27,14 @@ public class SecretManagerManagementService
         _secretManagerClient = new AmazonSecretsManagerClient();
     }
 
+    /// <summary>
+    /// Gets the string value of a secret, from the cache when available.
+    /// </summary>
+    /// <remarks>Blocks synchronously on the asynchronous AWS call; intended for startup/configuration time.</remarks>
+    /// <param name="secretName">The secret name or ARN.</param>
+    /// <returns>The secret string value.</returns>
+    /// <exception cref="SecretNotFoundException">Thrown if the secret has no string value.</exception>
+    /// <exception cref="SecretRetrievalException">Thrown if retrieving the secret fails for any other reason.</exception>
     public static string GetSecretWithCache(string secretName)
     {
         return Instance.Value.GetSecretFromCacheAsync(secretName)
