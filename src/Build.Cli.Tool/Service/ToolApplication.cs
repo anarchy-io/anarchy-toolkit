@@ -12,6 +12,22 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Service;
 /// bootstraps or scaffolds. Bootstrapping defaults to the working directory; scaffolding looks for a solution from the
 /// working directory upwards.
 /// </summary>
+/// <remarks>
+/// This is the entry point of the <c>anarchy-toolkit</c> .NET tool; <c>Program.cs</c> only calls
+/// <see cref="CreateDefault"/> and <see cref="Run"/>. Expected failures (invalid names, I/O errors while generating)
+/// are reported through the <see cref="IWizardPrompter"/> and turned into exit code <c>1</c> rather than thrown.
+/// </remarks>
+/// <param name="prompter">The console interactions used for output, prompts and wizards.</param>
+/// <param name="versions">The toolkit package versions written into generated projects.</param>
+/// <param name="workingDirectory">
+/// The directory relative to which <c>bootstrap</c> resolves its output directory and from which <c>scaffold</c>
+/// searches upwards for a solution.
+/// </param>
+/// <example>
+/// <code language="csharp">
+/// return ToolApplication.CreateDefault().Run(args, interactive: !Console.IsInputRedirected);
+/// </code>
+/// </example>
 public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVersions versions, string workingDirectory)
 {
     private const string ReviewSettings = "Review each application's settings (auth service URLs, client IDs) before running it.";
@@ -20,6 +36,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
     /// Creates the application for the real console, the package versions embedded in this assembly and the current
     /// directory.
     /// </summary>
+    /// <returns>A new <see cref="ToolApplication"/> using <see cref="SpectreWizardPrompter"/> on <see cref="AnsiConsole.Console"/>.</returns>
     public static ToolApplication CreateDefault() => new(
         new SpectreWizardPrompter(AnsiConsole.Console),
         ToolkitPackageVersionReader.FromAssembly(typeof(ToolApplication).Assembly),

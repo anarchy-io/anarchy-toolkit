@@ -7,6 +7,11 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 /// <summary>
 /// Guides the user through naming the solution, choosing its directory and layering, and adding APIs, jobs and UIs.
 /// </summary>
+/// <remarks>
+/// <see cref="Service.ToolApplication"/> runs it for <c>anarchy-toolkit bootstrap</c> when no solution name is given. Answers
+/// are validated as they are entered, so the returned plan has already passed name, directory and layer checks.
+/// </remarks>
+/// <param name="prompter">The console interactions to run the wizard through.</param>
 public sealed class BootstrapWizard(IWizardPrompter prompter)
 {
     /// <summary>

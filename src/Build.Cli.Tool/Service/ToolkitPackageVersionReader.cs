@@ -14,6 +14,8 @@ public static class ToolkitPackageVersionReader
     /// <summary>
     /// Collects the package versions from <paramref name="assembly"/>, keyed by package ID and ignoring empty values.
     /// </summary>
+    /// <param name="assembly">The assembly whose <see cref="AssemblyMetadataAttribute"/> entries are read.</param>
+    /// <returns>The versions found; empty if the assembly carries none.</returns>
     public static ToolkitPackageVersions FromAssembly(Assembly assembly) => new(
         assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Where(attribute => attribute.Key.StartsWith(Prefix, StringComparison.Ordinal) && !string.IsNullOrEmpty(attribute.Value))
