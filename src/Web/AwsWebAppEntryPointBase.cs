@@ -9,6 +9,23 @@ namespace Anarchy.Toolkit.Web;
 ///     actual Lambda function entry point. The Lambda handler field should be set to
 ///     &lt;Assembly&gt;::&lt;Namespace&gt;.WebEntryPoint::FunctionHandlerAsync
 /// </summary>
+/// <remarks>
+/// <see cref="Init(IWebHostBuilder)"/> adds the sources from <see cref="ConfigureAppConfiguration"/> followed by
+/// environment variables and uses <typeparamref name="T"/> as startup. The base class targets API Gateway REST APIs
+/// and HTTP API payload version 1.0.
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// public class WebEntryPoint : AwsWebAppEntryPointBase&lt;Startup&gt;
+/// {
+///     protected override void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder)
+///     {
+///         // e.g. add the AWS SSM Parameter Store for this application
+///     }
+/// }
+/// </code>
+/// </example>
+/// <typeparam name="T">The startup class of the web application.</typeparam>
 public abstract class AwsWebAppEntryPointBase<T> :
     // The base class must be set to match the AWS service invoking the Lambda function. If not Amazon.Lambda.AspNetCoreServer
     // will fail to convert the incoming request correctly into a valid ASP.NET Core request.
@@ -26,7 +43,7 @@ public abstract class AwsWebAppEntryPointBase<T> :
     ///     The builder has configuration, logging and Amazon API Gateway already configured. The startup class
     ///     needs to be configured in this method using the UseStartup&lt;&gt;() method.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The web host builder to configure.</param>
     protected override void Init(IWebHostBuilder builder)
     {
         builder
@@ -42,7 +59,7 @@ public abstract class AwsWebAppEntryPointBase<T> :
     ///     It is recommended not to call ConfigureWebHostDefaults to configure the IWebHostBuilder inside this method.
     ///     Instead, customize the IWebHostBuilder in the Init(IWebHostBuilder) overload.
     /// </summary>
-    /// <param name="builder"></param>
+    /// <param name="builder">The generic host builder. The base implementation does nothing.</param>
     protected override void Init(IHostBuilder builder)
     {
     }
@@ -50,7 +67,9 @@ public abstract class AwsWebAppEntryPointBase<T> :
     /// <summary>
     /// An overridable method that determines the project's name
     /// </summary>
-    /// <returns>string</returns>
+    /// <remarks>Defaults to the last dot-separated segment of the entry point's assembly name.</remarks>
+    /// <returns>The application name.</returns>
+    /// <exception cref="Anarchy.Toolkit.Hosting.Host.Exceptions.AppNameNotResolvedException">The assembly name cannot be resolved.</exception>
     protected virtual string GetAppName()
     {
         return GetType().Assembly.GetName().Name?.Split(".").Last() ??
@@ -58,15 +77,15 @@ public abstract class AwsWebAppEntryPointBase<T> :
     }
 
     /// <summary>
-    /// Configures application settings for the REST API host by loading AWS Systems Manager
-    /// Parameter Store parameters for the current application and environment, followed by
-    /// host environment variables. This allows running the Lambda without physical configuration
-    /// files while still supporting environment overrides and cloud-managed parameters.
-    /// </summary>
-    /// <summary>
     /// Adds the application's own configuration sources (e.g. the AWS SSM Parameter Store through
     /// <c>AddAwsSystemsManagerParameterStore</c>) before the environment variables.
     /// </summary>
+    /// <remarks>
+    /// This allows running the Lambda without physical configuration files while still supporting environment
+    /// overrides and cloud-managed parameters. The base implementation adds nothing.
+    /// </remarks>
+    /// <param name="context">The web host builder context.</param>
+    /// <param name="builder">The configuration builder to add sources to.</param>
     protected virtual void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder)
     {
     }

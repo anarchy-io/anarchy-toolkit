@@ -27,6 +27,10 @@ See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/guides/exp
 
 ## Releases
 
+### 1.0.8
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 1.0.7
 
 - `Microsoft.OpenApi` updated to 2.13.0 and `System.Security.Cryptography.*` aligned with the .NET 10 LTS (10.0.15, down from 11.0.0).

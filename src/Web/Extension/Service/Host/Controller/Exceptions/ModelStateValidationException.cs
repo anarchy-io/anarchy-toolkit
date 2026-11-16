@@ -6,6 +6,16 @@ using System.Text;
 
 namespace Anarchy.Toolkit.Web.Extension.Service.Host.Controller.Exceptions;
 
+/// <summary>
+/// Describes an invalid MVC model state, capturing the validation errors and (optionally) the received model so
+/// both can be written to logs.
+/// </summary>
+/// <remarks>
+/// Used by <see cref="Anarchy.Toolkit.Web.Extension.Microsoft.AspNetCore.Mvc.ControllerBaseExtensions.BadRequestIfInvalid{T}"/>
+/// to log bad requests. The detailed information is exposed through <see cref="ToString"/>.
+/// </remarks>
+/// <param name="modelState">The invalid model state whose errors are reported.</param>
+/// <param name="model">The received model; its public properties are listed in <see cref="ToString"/>. Optional.</param>
 public class ModelStateValidationException(ModelStateDictionary modelState, object? model = null)
     : InvalidArgumentException
 {
@@ -16,6 +26,11 @@ public class ModelStateValidationException(ModelStateDictionary modelState, obje
         .Select(p => new { p.Name, Value = p.GetValue(model) })
         .ToDictionary(p => p.Name, p => p.Value);
 
+    /// <summary>
+    /// Returns the base exception text followed by a "Validation Errors" section listing each invalid key and its
+    /// messages and, when a model was supplied, a "Received Model" section listing its property values.
+    /// </summary>
+    /// <returns>A multi-line diagnostic description of the validation failure.</returns>
     public override string ToString()
     {
         var sb = new StringBuilder(base.ToString());

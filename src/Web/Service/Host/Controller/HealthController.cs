@@ -9,12 +9,27 @@ using System.Diagnostics;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Controller;
 
+/// <summary>
+/// Controller exposing the dependency health check endpoint (<c>GET /health/services</c>).
+/// </summary>
+/// <remarks>
+/// Runs every registered <see cref="Anarchy.Toolkit.Core.Health.Service.Health.IServiceHealthReport"/> and returns a
+/// <see cref="HealthCheckReportOutput"/>. Anonymous access is allowed.
+/// </remarks>
+/// <param name="reports">The health reports to run.</param>
+/// <param name="observer">The observer used for logging and metrics.</param>
 [Route("health")]
 [Produces("application/json")]
 public class HealthController(
     IReadOnlyCollection<IServiceHealthReport> reports,
     Observer observer) : ControllerBase
 {
+    /// <summary>Runs all registered health checks.</summary>
+    /// <param name="cancellationToken">Token to cancel the checks.</param>
+    /// <returns>
+    /// <c>200 OK</c> with the report when all checks pass; <c>500</c> with the report when any check fails; or a
+    /// <c>500</c> problem details response when running the checks throws.
+    /// </returns>
     [Route("services")]
     [HttpGet]
     [AllowAnonymous]

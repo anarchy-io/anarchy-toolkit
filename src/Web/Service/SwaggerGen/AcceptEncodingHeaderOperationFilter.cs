@@ -9,6 +9,9 @@ namespace Anarchy.Toolkit.Web.Service.SwaggerGen;
 /// </summary>
 public class AcceptEncodingHeaderOperationFilter : IOperationFilter
 {
+    /// <summary>Adds the optional <c>Accept-Encoding</c> header parameter (default <c>gzip, br</c>) to <paramref name="operation"/>.</summary>
+    /// <param name="operation">The OpenAPI operation being generated.</param>
+    /// <param name="context">The operation filter context.</param>
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         operation.Parameters ??= new List<IOpenApiParameter>();

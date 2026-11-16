@@ -11,6 +11,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Anarchy.Toolkit.Web.Extension.DependencyInjection;
 
+/// <summary>
+/// <see cref="IServiceCollection"/> extensions that register the toolkit web services (authentication,
+/// authorization, Swagger, response compression and UI services).
+/// </summary>
 public static partial class ServiceCollectionExtension
 {
     extension(IServiceCollection services)
@@ -19,6 +23,15 @@ public static partial class ServiceCollectionExtension
         /// Registers JWT bearer authentication. On TAP the token is validated against the
         /// configured auth authority; locally an unsigned JWT handler is used for development.
         /// </summary>
+        /// <remarks>
+        /// Both modes register the <see cref="JwtBearerDefaults.AuthenticationScheme"/> scheme with
+        /// <see cref="Anarchy.Toolkit.Web.Service.Host.Authentication.JwtBearerEventsBuilder.Build"/> events. Remotely the
+        /// authority is <c>AuthService.Host</c>, HTTPS metadata is required only for <c>https</c> authorities and the
+        /// audience is not validated. In the local environment tokens are read <b>without signature validation</b>.
+        /// </remarks>
+        /// <param name="appSettings">Auth service settings providing the OAuth authority (<c>AuthService.Host</c>).</param>
+        /// <param name="environment">The host environment; selects the local or remote handler.</param>
+        /// <returns>The service collection, for chaining.</returns>
         public IServiceCollection AddToolkitAuthentication(IAuthServiceAppSettings appSettings, IHostEnvironment environment)
         {
             return environment.IsLocal() ? services.AddAuthLocal(appSettings) : services.AddAuthTap(appSettings);
@@ -31,6 +44,15 @@ public static partial class ServiceCollectionExtension
         /// <param name="readScope">Scope granting read access.</param>
         /// <param name="writeScope">Scope granting write access.</param>
         /// <param name="adminScope">Scope granting admin access (also satisfies read and write).</param>
+        /// <returns>The service collection, for chaining.</returns>
+        /// <example>
+        /// <code language="csharp">
+        /// services.SetupAuthorization("my-api.read", "my-api.write", "my-api.admin");
+        ///
+        /// [Authorize(Policy = ApiAccess.Policy.Read)]
+        /// public class OrdersController : ControllerBase { }
+        /// </code>
+        /// </example>
         public IServiceCollection SetupAuthorization(string readScope,
                                                      string writeScope,
                                                      string adminScope)
@@ -47,6 +69,14 @@ public static partial class ServiceCollectionExtension
         /// <summary>
         /// Registers Swagger generation for the REST API.
         /// </summary>
+        /// <remarks>
+        /// Creates a single <c>spec</c> document, includes every <c>*.xml</c> documentation file found in
+        /// <see cref="AppContext.BaseDirectory"/>, declares an <c>oauth2</c> client-credentials scheme whose token URL
+        /// is <c>{AuthService.Host}/connect/token</c>, applies
+        /// <see cref="Anarchy.Toolkit.Web.Service.SwaggerGen.AuthorizeCheckOperationFilter"/> and
+        /// <see cref="Anarchy.Toolkit.Web.Service.SwaggerGen.AcceptEncodingHeaderOperationFilter"/>, and adds a server
+        /// entry from the <c>BASE_PATH</c> environment variable when it is set.
+        /// </remarks>
         /// <param name="apiName">The API display name.</param>
         /// <param name="appSettings">Auth service settings (provide the OAuth authority).</param>
         /// <param name="environment">The host environment.</param>
@@ -57,6 +87,7 @@ public static partial class ServiceCollectionExtension
         /// Bracketed prefix for the Swagger document title (e.g. "[MyApi]"). Defaults to "[API]".
         /// </param>
         /// <param name="descriptionOptions">Optional links rendered in the Swagger description.</param>
+        /// <returns>The service collection, for chaining.</returns>
         public IServiceCollection RegisterSwagger(string apiName,
                                                   IAuthServiceAppSettings appSettings,
                                                   IHostEnvironment environment,

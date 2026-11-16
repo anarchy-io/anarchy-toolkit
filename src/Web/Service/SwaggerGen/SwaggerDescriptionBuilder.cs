@@ -20,6 +20,14 @@ public static class SwaggerDescriptionBuilder
         </ul>
         """;
 
+    /// <summary>
+    /// Builds the HTML description containing the runtime details (environment name and OAuth2 authority) and the
+    /// optional resource links and team credit.
+    /// </summary>
+    /// <param name="appSettings">Auth service settings providing the OAuth2 authority.</param>
+    /// <param name="environment">The host environment whose name is displayed.</param>
+    /// <param name="options">Optional links; when <see langword="null"/>, only runtime details are rendered.</param>
+    /// <returns>The HTML description.</returns>
     public static string Build(IAuthServiceAppSettings appSettings,
                                IHostEnvironment environment,
                                SwaggerDescriptionOptions? options = null)
@@ -57,9 +65,14 @@ public static class SwaggerDescriptionBuilder
 /// </summary>
 public record SwaggerDescriptionOptions
 {
+    /// <summary>URL of the source code repository, rendered as "Codebase".</summary>
     public string? RepositoryUrl { get; init; }
+    /// <summary>URL of the monitoring dashboard, rendered as "Dashboard".</summary>
     public string? DashboardUrl { get; init; }
+    /// <summary>URL of the documentation, rendered as "Documentation".</summary>
     public string? DocumentationUrl { get; init; }
+    /// <summary>Name of the owning team; the credit line is rendered only when <see cref="TeamLink"/> is also set.</summary>
     public string? TeamName { get; init; }
+    /// <summary>Link to the owning team; the credit line is rendered only when <see cref="TeamName"/> is also set.</summary>
     public string? TeamLink { get; init; }
 }

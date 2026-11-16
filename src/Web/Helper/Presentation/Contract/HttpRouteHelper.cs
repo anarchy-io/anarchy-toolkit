@@ -5,11 +5,43 @@ using System.Text.RegularExpressions;
 
 namespace Anarchy.Toolkit.Web.Helper.Presentation.Contract;
 
+/// <summary>
+/// Builds concrete URLs from ASP.NET Core style route templates (e.g. <c>orders/{id:int}</c>).
+/// </summary>
 public static partial class HttpRouteHelper
 {
     [GeneratedRegex(@"\{(?<name>[^}:]+)(:[^}]+)?\}")]
     private static partial Regex RouteParameterRegex();
 
+    /// <summary>
+    /// Combines <paramref name="routeRelative"/> with <paramref name="routeBase"/> and replaces the template
+    /// parameters with the supplied values.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A <paramref name="routeRelative"/> starting with <c>/</c> is used as is; an empty one yields the base route.
+    /// If the route has no <c>{name}</c> parameters, <paramref name="routeParameters"/> are applied with
+    /// <see cref="string.Format(IFormatProvider, string, object[])"/>.
+    /// </para>
+    /// <para>
+    /// A single non-scalar argument (dictionary or object with public properties) is treated as named values,
+    /// matched case-insensitively. Otherwise values are consumed positionally. Values are formatted with the
+    /// invariant culture; route constraints (e.g. <c>:int</c>) are dropped.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code language="csharp">
+    /// HttpRouteHelper.FromTemplate("{id:int}/items", "orders", 42);          // "orders/42/items"
+    /// HttpRouteHelper.FromTemplate("{id}/items/{itemId}", "orders", new { id = 1, itemId = 7 }); // "orders/1/items/7"
+    /// </code>
+    /// </example>
+    /// <param name="routeRelative">The route template, relative to <paramref name="routeBase"/> unless it starts with <c>/</c>.</param>
+    /// <param name="routeBase">The optional base route (e.g. a controller route).</param>
+    /// <param name="routeParameters">Positional values, or a single object/dictionary of named values.</param>
+    /// <returns>The resolved route.</returns>
+    /// <exception cref="MissingRouteParameterException">
+    /// A named-values object contains none of the template parameters, or there are fewer positional values than parameters.
+    /// </exception>
     public static string FromTemplate(string routeRelative, string? routeBase = null, params object[] routeParameters)
     {
         var resolvedRoute = routeRelative.StartsWith("/", StringComparison.Ordinal) ?
