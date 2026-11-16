@@ -7,6 +7,18 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service.Container;
 /// logs, and wait for containers to be running or healthy. Uses Compose V2 (<c>docker compose</c>) when available,
 /// otherwise the legacy <c>docker-compose</c>; the compose file sees its own directory as <c>DOCKER_ROOT</c>.
 /// </summary>
+/// <example>
+/// <code language="csharp">
+/// var tasks = new LocalContainerTasks(root, "docker/docker-compose.yml", LocalContainerTasks.ProjectNameOf(root));
+/// tasks.Start([], waitFor: ["database"], healthy: true);
+/// </code>
+/// </example>
+/// <param name="root">The solution directory, where commands run.</param>
+/// <param name="composeFile">The compose file, relative to <paramref name="root"/> or absolute.</param>
+/// <param name="projectName">The Compose project name (see <see cref="ProjectNameOf"/>).</param>
+/// <param name="cli">Runs the commands; defaults to a <see cref="ProcessContainerCli"/> in <paramref name="root"/>.</param>
+/// <param name="console">Receives the output; defaults to <c>AnsiConsole.Console</c>.</param>
+/// <param name="sleep">Waits between polls; defaults to <see cref="System.Threading.Thread.Sleep(System.TimeSpan)"/>.</param>
 public sealed class LocalContainerTasks(
     string root,
     string composeFile,
@@ -35,6 +47,8 @@ public sealed class LocalContainerTasks(
     /// A valid Compose project name for a directory: its name in lower case, with any character other than letters,
     /// digits, dashes and underscores replaced by a dash; <c>anarchy</c> if nothing is left.
     /// </summary>
+    /// <param name="directory">The directory, usually the solution directory.</param>
+    /// <returns>The project name.</returns>
     public static string ProjectNameOf(string directory)
     {
         var name = new string(Path.GetFileName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)))
@@ -45,6 +59,8 @@ public sealed class LocalContainerTasks(
     /// <summary>
     /// Splits extra command-line arguments on whitespace.
     /// </summary>
+    /// <param name="arguments">The arguments, or <see langword="null"/>.</param>
+    /// <returns>The arguments; empty for <see langword="null"/> or blank input.</returns>
     public static string[] SplitArguments(string? arguments) =>
         string.IsNullOrWhiteSpace(arguments) ? [] : arguments.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
@@ -74,6 +90,7 @@ public sealed class LocalContainerTasks(
     /// <summary>
     /// Stops every container running on the host, not only this environment's.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">Thrown when <c>docker stop</c> fails.</exception>
     public void StopAll()
     {
         var ids = RunningContainerIds();
@@ -88,6 +105,9 @@ public sealed class LocalContainerTasks(
     /// <summary>
     /// Prints the environment's logs, of one container if given.
     /// </summary>
+    /// <param name="container">The container (service) name, or <see langword="null"/> for every container.</param>
+    /// <param name="extraArguments">Extra <c>logs</c> arguments, e.g. <c>--follow</c>.</param>
+    /// <exception cref="System.InvalidOperationException">Thrown when the compose file is missing or Compose fails.</exception>
     public void Logs(string? container, IEnumerable<string> extraArguments) =>
         RunCompose(["logs", .. Optional(container), .. extraArguments]);
 
@@ -96,7 +116,12 @@ public sealed class LocalContainerTasks(
     /// <paramref name="healthy"/> is set (see <see cref="WaitForHealthy"/>), otherwise to be running within
     /// <paramref name="startTimeout"/> seconds.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the compose file is missing, Compose fails, or a container does not get ready in time.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when the compose file is missing, Compose fails, or a container does not get ready in time.</exception>
+    /// <param name="extraArguments">Extra <c>up</c> arguments.</param>
+    /// <param name="waitFor">The containers to wait for.</param>
+    /// <param name="healthy">Whether to wait for health checks rather than only for the containers to run.</param>
+    /// <param name="timeout">The seconds to wait for each health check.</param>
+    /// <param name="startTimeout">The seconds to wait for each container to run.</param>
     public void Start(IEnumerable<string> extraArguments, IReadOnlyCollection<string> waitFor, bool healthy,
         int timeout = DefaultTimeout, int startTimeout = DefaultStartTimeout)
     {
@@ -111,22 +136,28 @@ public sealed class LocalContainerTasks(
     /// <summary>
     /// Stops the environment's containers without removing them.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">Thrown when the compose file is missing or Compose fails.</exception>
     public void Stop() => RunCompose(["stop"]);
 
     /// <summary>
     /// Restarts the environment, or one container if given.
     /// </summary>
+    /// <param name="container">The container (service) name, or <see langword="null"/> for every container.</param>
+    /// <exception cref="System.InvalidOperationException">Thrown when the compose file is missing or Compose fails.</exception>
     public void Restart(string? container) => RunCompose(["restart", .. Optional(container)]);
 
     /// <summary>
     /// Removes the environment's containers, networks and volumes.
     /// </summary>
+    /// <exception cref="System.InvalidOperationException">Thrown when the compose file is missing or Compose fails.</exception>
     public void Destroy() => RunCompose(["down", "-v", "--remove-orphans"]);
 
     /// <summary>
     /// Waits up to <paramref name="timeout"/> seconds for a container to be running.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the container is not running in time.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when the container is not running in time.</exception>
+    /// <param name="container">The container name.</param>
+    /// <param name="timeout">The seconds to wait.</param>
     public void WaitForRunning(string container, int timeout = DefaultTimeout) => WaitForRunning(container, timeout, null);
 
     /// <summary>
@@ -134,7 +165,10 @@ public sealed class LocalContainerTasks(
     /// given, then waits up to <paramref name="timeout"/> more seconds, calling it once a second with the container's
     /// name, until it returns true: a custom health check for containers that have none.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the container is not running, or not ready, in time.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when the container is not running, or not ready, in time.</exception>
+    /// <param name="container">The container name.</param>
+    /// <param name="timeout">The seconds to wait for each step.</param>
+    /// <param name="ready">The custom readiness check, or <see langword="null"/>.</param>
     public void WaitForRunning(string container, int timeout, Func<string, bool>? ready)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(container);
@@ -154,9 +188,12 @@ public sealed class LocalContainerTasks(
     /// <paramref name="timeout"/> seconds for its health check to pass. Fails at once if it turns unhealthy or has no
     /// health check.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="System.InvalidOperationException">
     /// Thrown when the container is not running or healthy in time, turns unhealthy, or has no health check.
     /// </exception>
+    /// <param name="container">The container name.</param>
+    /// <param name="timeout">The seconds to wait for the health check.</param>
+    /// <param name="startTimeout">The seconds to wait for the container to run.</param>
     public void WaitForHealthy(string container, int timeout = DefaultTimeout, int startTimeout = DefaultStartTimeout)
     {
         WaitForRunning(container, startTimeout);

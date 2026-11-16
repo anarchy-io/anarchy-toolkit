@@ -9,7 +9,15 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// </summary>
 public static class BuildHostScaffolder
 {
-    /// <exception cref="IOException">Thrown when <c>build/_build.csproj</c> or <c>build/Program.cs</c> already exists.</exception>
+    /// <summary>
+    /// Writes <c>build/_build.csproj</c> and <c>build/Program.cs</c>, whose <c>Build</c> class implements the toolkit's
+    /// standard build components (NuGet, layering, dependency map, upgrades, Git hooks, boilerplate and Docker).
+    /// </summary>
+    /// <param name="root">The solution directory.</param>
+    /// <param name="buildFalloutVersion">
+    /// The version of <c>Anarchy.Toolkit.Build.Fallout</c>, or <see langword="null"/> under central package management.
+    /// </param>
+    /// <exception cref="System.IO.IOException">Thrown when <c>build/_build.csproj</c> or <c>build/Program.cs</c> already exists.</exception>
     public static void Create(string root, string? buildFalloutVersion)
     {
         FileHelper.WriteNewText(Path.Combine(root, "build", "_build.csproj"), $$"""

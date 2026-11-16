@@ -24,12 +24,19 @@ public static partial class LayeringTasks
     /// See <c>ILayeringBuild.GetLayer</c>: the prefix of the project's name for projects under <c>src/</c>,
     /// <c>null</c> (not checked) for anything else.
     /// </summary>
+    /// <param name="projectName">The project name.</param>
+    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
+    /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
     public static string? GetDefaultLayer(string projectName, string relativePath) => GetDefaultLayer(projectName, relativePath, "src");
 
     /// <summary>
     /// The prefix of the project's name (up to the first dot) for projects under <paramref name="root"/>, a
     /// solution-relative folder; <c>null</c> (not checked) for anything else.
     /// </summary>
+    /// <param name="projectName">The project name.</param>
+    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
+    /// <param name="root">The solution-relative folder holding the layered projects, e.g. <c>src</c>.</param>
+    /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
     public static string? GetDefaultLayer(string projectName, string relativePath, string root) =>
         PathUnderRoot(relativePath, root) is not null ? projectName.Split('.')[0] : null;
 
@@ -37,6 +44,8 @@ public static partial class LayeringTasks
     /// The first folder under <c>src/</c>, or an empty string for a project directly under <c>src/</c>;
     /// projects outside <c>src/</c> are not checked. Never falls back to the project name.
     /// </summary>
+    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
+    /// <returns>The layer folder, an empty string, or <see langword="null"/> when the project is not checked.</returns>
     public static string? GetFolderLayer(string relativePath) => GetFolderLayer(relativePath, "src");
 
     /// <summary>
@@ -44,7 +53,13 @@ public static partial class LayeringTasks
     /// (<c>folder=Layer</c>, e.g. <c>src/Api=Web</c>) containing it, else its folder under <paramref name="root"/> when
     /// <paramref name="byFolder"/> is set, else its name prefix if it is under <paramref name="root"/>.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when an application folder entry is not <c>folder=Layer</c>.</exception>
+    /// <exception cref="System.ArgumentException">Thrown when an application folder entry is not <c>folder=Layer</c>.</exception>
+    /// <param name="projectName">The project name.</param>
+    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
+    /// <param name="root">The solution-relative folder holding the layered projects.</param>
+    /// <param name="byFolder">Whether layers are folders (<see cref="Anarchy.Toolkit.Build.Cli.Core.Entity.LayeringMode.Folder"/>) rather than name prefixes.</param>
+    /// <param name="applicationFolders">Application folders mapped to their layer, as <c>folder=Layer</c> entries.</param>
+    /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
     public static string? GetLayer(string projectName, string relativePath, string root, bool byFolder, IEnumerable<string> applicationFolders)
     {
         foreach (var entry in applicationFolders)
@@ -62,6 +77,9 @@ public static partial class LayeringTasks
     /// The first folder under <paramref name="root"/>, a solution-relative folder, or an empty string for a project
     /// directly under it; <c>null</c> (not checked) for projects outside it.
     /// </summary>
+    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
+    /// <param name="root">The solution-relative folder holding the layer folders.</param>
+    /// <returns>The layer folder, an empty string, or <see langword="null"/> when the project is not checked.</returns>
     public static string? GetFolderLayer(string relativePath, string root)
     {
         var path = PathUnderRoot(relativePath, root);
@@ -89,6 +107,9 @@ public static partial class LayeringTasks
     /// Reads the projects with a layer (see <paramref name="layerOf"/>), ordered by name. References are reduced to
     /// project names, and sources and root folders are read from disk.
     /// </summary>
+    /// <param name="solutionProjects">The solution's projects.</param>
+    /// <param name="layerOf">Gives a project's layer, or <see langword="null"/> to leave it out.</param>
+    /// <returns>The projects to check.</returns>
     public static IReadOnlyList<LayeringProject> Collect(IEnumerable<SolutionProjectInfo> solutionProjects, Func<SolutionProjectInfo, string?> layerOf)
     {
         var projects = solutionProjects
@@ -122,6 +143,9 @@ public static partial class LayeringTasks
     /// </list>
     /// Test kits are only checked for their layer; their files and folders are free.
     /// </summary>
+    /// <param name="projects">The projects, as returned by <see cref="Collect"/>.</param>
+    /// <param name="layers">The layers, innermost first.</param>
+    /// <returns>The violations; empty when the solution follows its layering.</returns>
     public static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, IReadOnlyList<string> layers) =>
         Check(projects, layers, false);
 
@@ -129,6 +153,10 @@ public static partial class LayeringTasks
     /// As <see cref="Check(IReadOnlyCollection{LayeringProject}, IReadOnlyList{string})"/>; <paramref name="byFolder"/>
     /// only words the unknown-layer violations as a missing layer folder rather than a missing name prefix.
     /// </summary>
+    /// <param name="projects">The projects, as returned by <see cref="Collect"/>.</param>
+    /// <param name="layers">The layers, innermost first.</param>
+    /// <param name="byFolder">Whether layers are determined by folder.</param>
+    /// <returns>The violations; empty when the solution follows its layering.</returns>
     public static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, IReadOnlyList<string> layers, bool byFolder)
     {
         var violations = new List<string>();

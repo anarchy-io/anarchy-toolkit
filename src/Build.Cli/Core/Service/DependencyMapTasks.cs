@@ -33,6 +33,10 @@ public static class DependencyMapTasks
     /// <c>build/</c>, <c>Tests</c> under <c>tests/</c>, <c>Samples</c> under <c>samples/</c>, otherwise its name prefix
     /// if that is one of <paramref name="layers"/> or <c>Testing</c>, else <c>Other</c>.
     /// </summary>
+    /// <param name="projectName">The project name.</param>
+    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
+    /// <param name="layers">The layers, innermost first.</param>
+    /// <returns>The group, or <see langword="null"/> when the project is not mapped.</returns>
     public static string? GetDefaultGroup(string projectName, string relativePath, IReadOnlyList<string> layers)
     {
         var path = relativePath.Replace('\\', '/');
@@ -48,6 +52,11 @@ public static class DependencyMapTasks
     /// <summary>
     /// Maps the projects with a group (see <paramref name="groupOf"/>) and the references between them.
     /// </summary>
+    /// <param name="title">The page heading, usually the solution name.</param>
+    /// <param name="solutionProjects">The solution's projects.</param>
+    /// <param name="groupOf">Gives a project's group, or <see langword="null"/> to leave it out (e.g. <see cref="GetDefaultGroup"/>).</param>
+    /// <param name="layers">The layers, innermost first.</param>
+    /// <returns>The map, with source sizes counted from disk (see <see cref="CountSource"/>).</returns>
     public static DependencyMap Collect(string title, IEnumerable<SolutionProjectInfo> solutionProjects, Func<SolutionProjectInfo, string?> groupOf, IReadOnlyList<string> layers)
     {
         var projects = solutionProjects
@@ -82,6 +91,8 @@ public static class DependencyMapTasks
     /// <summary>
     /// Counts the <c>.cs</c> files under a project directory and their non-blank lines, ignoring <c>bin</c>/<c>obj</c>.
     /// </summary>
+    /// <param name="directory">The project directory.</param>
+    /// <returns>The number of files and of non-blank lines.</returns>
     public static (int Files, int Lines) CountSource(string directory)
     {
         var files = Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories)
@@ -94,6 +105,8 @@ public static class DependencyMapTasks
     /// <summary>
     /// Renders the map as a static HTML page. The output is deterministic: same map, same bytes.
     /// </summary>
+    /// <param name="map">The map to render.</param>
+    /// <returns>The HTML page.</returns>
     public static string RenderHtml(DependencyMap map)
     {
         var groups = map.Groups;
@@ -473,6 +486,8 @@ public static class DependencyMapTasks
     /// Drops the references implied by others (A → C when A → B → C), which only clutter the graph: references
     /// form a DAG, so a reference is redundant when its target is reachable through another one.
     /// </summary>
+    /// <param name="references">The references, forming a directed acyclic graph.</param>
+    /// <returns>The references that are not implied by others.</returns>
     public static IReadOnlyList<DependencyMapReference> WithoutTransitive(IReadOnlyCollection<DependencyMapReference> references)
     {
         var targets = references.GroupBy(r => r.From).ToDictionary(g => g.Key, g => g.Select(r => r.To).ToArray());

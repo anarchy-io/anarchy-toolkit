@@ -10,6 +10,11 @@ public static class OracleConnectionStringUtility
     /// Gets an ADO.NET Oracle connection string over TCPS (port <c>2484</c>) based on host, username, and password.
     /// By default the <paramref name="serviceName"/> used is <c>SERVICES</c>.
     /// </summary>
+    /// <param name="host">The database host.</param>
+    /// <param name="username">The user name.</param>
+    /// <param name="password">The password, quoted in the connection string.</param>
+    /// <param name="serviceName">The Oracle service name.</param>
+    /// <returns>The connection string.</returns>
     public static string GetOracleConnectionString(
         string host,
         string username,

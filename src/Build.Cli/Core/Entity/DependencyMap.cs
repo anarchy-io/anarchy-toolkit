@@ -25,12 +25,20 @@ public sealed record DependencyMap(
     /// <summary>
     /// Whether <paramref name="group"/> is one of the <see cref="Layers"/>, rather than a group outside the chain.
     /// </summary>
+    /// <param name="group">The group name to check.</param>
+    /// <returns><see langword="true"/> if <paramref name="group"/> is in <see cref="Layers"/>.</returns>
     public bool IsLayer(string group) => Layers.Contains(group);
 
     /// <summary>
     /// Whether a reference breaks the layering: it points to a higher layer, or from a layer to a group outside
     /// the chain (production code depending on a test kit, a sample, ...).
     /// </summary>
+    /// <remarks>
+    /// References from groups outside the chain, and references involving projects that are not in
+    /// <see cref="Projects"/>, are never violations.
+    /// </remarks>
+    /// <param name="reference">The reference to check.</param>
+    /// <returns><see langword="true"/> if <paramref name="reference"/> breaks the layering.</returns>
     public bool IsViolation(DependencyMapReference reference)
     {
         var from = GroupOf(reference.From);

@@ -10,11 +10,21 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// project per layer and the planned applications, all added to the solution, with layering configured for the layout.
 /// Package versions are always managed centrally, in the root <c>Directory.Packages.props</c>.
 /// </summary>
+/// <example>
+/// <code language="csharp">
+/// var plan = new SolutionPlan("Shop", "/work/shop", SolutionLayout.Default,
+///     [new ApplicationSpec(ApplicationKind.Api, "Orders")]);
+/// if (SolutionBootstrapper.Validate(plan) is { } error) Console.Error.WriteLine(error);
+/// else SolutionBootstrapper.Create(plan, versions, Console.WriteLine);
+/// </code>
+/// </example>
 public static class SolutionBootstrapper
 {
     /// <summary>
     /// Why <paramref name="directory"/> cannot receive a new solution, or null if it can.
     /// </summary>
+    /// <param name="directory">The directory to check; it must be missing or empty.</param>
+    /// <returns>An error message, or <see langword="null"/>.</returns>
     public static string? ValidateRootDirectory(string? directory)
     {
         if (string.IsNullOrWhiteSpace(directory)) return "Enter a directory.";
@@ -33,6 +43,9 @@ public static class SolutionBootstrapper
     /// <summary>
     /// Why the plan cannot be created, or null if it can.
     /// </summary>
+    /// <remarks>Checks the solution name, the layers, every application and the root directory, in that order.</remarks>
+    /// <param name="plan">The plan to check.</param>
+    /// <returns>The first error message, or <see langword="null"/>.</returns>
     public static string? Validate(SolutionPlan plan)
     {
         if (!NameRules.IsValidSolutionName(plan.Name)) return NameRules.SolutionNameHelp;
@@ -50,7 +63,10 @@ public static class SolutionBootstrapper
     /// <summary>
     /// Creates the planned solution, reporting each step to <paramref name="progress"/>.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the plan is invalid (see <see cref="Validate"/>) or a <c>dotnet</c> command fails.</exception>
+    /// <param name="plan">The solution to create.</param>
+    /// <param name="versions">The toolkit package versions, pinned in <c>Directory.Packages.props</c>.</param>
+    /// <param name="progress">Receives progress messages; <see langword="null"/> discards them.</param>
+    /// <exception cref="System.InvalidOperationException">Thrown when the plan is invalid (see <see cref="Validate"/>) or a <c>dotnet</c> command fails.</exception>
     public static void Create(SolutionPlan plan, ToolkitPackageVersions versions, Action<string>? progress = null)
     {
         if (Validate(plan) is { } error) throw new InvalidOperationException(error);

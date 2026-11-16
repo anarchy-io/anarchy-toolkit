@@ -3,6 +3,7 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service.Container;
 /// <summary>
 /// An <see cref="IContainerCli"/> running real processes in a working directory.
 /// </summary>
+/// <param name="root">The working directory of every command.</param>
 public sealed class ProcessContainerCli(string root) : IContainerCli
 {
     /// <inheritdoc/>

@@ -6,6 +6,9 @@ namespace Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 /// </summary>
 public static class ConsoleBanner
 {
+    /// <summary>
+    /// The minimum terminal width, in columns, for the wide wordmark.
+    /// </summary>
     public const int WideColumns = 116;
 
     private const string Red = "\e[0;31m";
@@ -65,6 +68,9 @@ public static class ConsoleBanner
     /// <summary>
     /// The banner for a terminal <paramref name="columns"/> wide, with ANSI colors unless <paramref name="color"/> is false.
     /// </summary>
+    /// <param name="columns">The terminal width, in columns.</param>
+    /// <param name="color">Whether to include ANSI color escape sequences.</param>
+    /// <returns>The banner, ending with a newline.</returns>
     public static string Render(int columns, bool color = true) =>
         string.Join("\n", columns >= WideColumns ? Wide : Compact)
             .Replace("{R}", color ? Red : "")

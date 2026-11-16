@@ -20,6 +20,10 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.2.2
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 1.2.1
 
 - `install-sdk.sh` installs the pinned feature band (e.g. `10.0.1xx`) when `global.json` only lets patches roll forward, the default, instead of a newer feature band its own check rejects; it also announces what it installs before downloading.

@@ -23,10 +23,19 @@ public static class SolutionScaffolder
     /// <c>.fallout/parameters.json</c>. Existing <c>.gitignore</c>, <c>.editorconfig</c>, <c>global.json</c>,
     /// <c>nuget.config</c> and <c>Directory.Build.props</c> files are kept.
     /// </summary>
-    /// <exception cref="ArgumentException">
+    /// <remarks>
+    /// The packaged files are embedded resources (the Makefile, <c>scripts</c>, settings files, ...). Creating the
+    /// solution requires <c>build/_build.csproj</c> (see <see cref="BuildHostScaffolder"/>). Nothing is written when a
+    /// conflict is detected.
+    /// </remarks>
+    /// <param name="root">The directory to install into.</param>
+    /// <param name="solutionName">The solution name; required only when the <c>solution</c> item is selected.</param>
+    /// <param name="options">Which items to install, and how to treat existing settings files.</param>
+    /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
+    /// <exception cref="System.ArgumentException">
     /// Thrown when the solution is selected and <paramref name="solutionName"/> is invalid, or a selector is unknown.
     /// </exception>
-    /// <exception cref="InvalidOperationException">
+    /// <exception cref="System.InvalidOperationException">
     /// Thrown when generated files or a solution already exist, the build host is missing, or Fallout's parameters
     /// already define a solution.
     /// </exception>

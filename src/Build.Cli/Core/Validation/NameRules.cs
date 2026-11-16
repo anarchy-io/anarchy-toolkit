@@ -22,17 +22,23 @@ public static partial class NameRules
     /// <summary>
     /// Whether a name can be used for a solution file: a letter or digit followed by letters, digits, dots, underscores or hyphens.
     /// </summary>
+    /// <param name="name">The candidate name.</param>
+    /// <returns><see langword="true"/> if <paramref name="name"/> is valid; <see langword="false"/> if it is invalid or <see langword="null"/>.</returns>
     public static bool IsValidSolutionName(string? name) => name is not null && SolutionNameRegex().IsMatch(name);
 
     /// <summary>
     /// Whether a name can be used for an application or layer: a letter followed by letters and digits.
     /// </summary>
+    /// <param name="name">The candidate name.</param>
+    /// <returns><see langword="true"/> if <paramref name="name"/> is valid; <see langword="false"/> if it is invalid or <see langword="null"/>.</returns>
     public static bool IsValidApplicationName(string? name) => name is not null && ApplicationNameRegex().IsMatch(name);
 
     /// <summary>
     /// Why the layers, innermost first, cannot be used, or null if they can: each must be a valid name, not
     /// <c>Testing</c> or <c>Library</c>, and listed once (ignoring case).
     /// </summary>
+    /// <param name="layers">The layers, innermost first.</param>
+    /// <returns>The first error message, or <see langword="null"/>.</returns>
     public static string? ValidateLayers(IReadOnlyCollection<string> layers)
     {
         if (layers.Count == 0) return "Enter at least one layer.";

@@ -28,6 +28,7 @@ public static class GitHookTasks
     /// <param name="skipLint">Skips <c>lint_fix</c>, which re-stages the files it fixes.</param>
     /// <param name="skipStatic">Skips <c>lint</c> and <c>test_unit</c>.</param>
     /// <param name="skipRuntime">Skips <c>test_integration</c> and <c>test_end_to_end</c>.</param>
+    /// <returns>The script, or an empty string.</returns>
     public static string Content(bool skipLint, bool skipStatic, bool skipRuntime)
     {
         var tasks = new List<string>();
@@ -46,8 +47,15 @@ public static class GitHookTasks
     /// Writes an executable hook of <paramref name="type"/> (e.g. <c>pre-commit</c>) into the repository's hooks
     /// directory; with <paramref name="dryRun"/>, only logs it. Nothing is written when every task is skipped.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="type"/> is not a valid hook name.</exception>
-    /// <exception cref="InvalidOperationException">
+    /// <param name="root">A directory in the repository.</param>
+    /// <param name="type">The hook type: lowercase letters, digits and dashes.</param>
+    /// <param name="dryRun">Whether to only log the hook instead of writing it.</param>
+    /// <param name="force">Whether to replace an existing hook.</param>
+    /// <param name="skipLint">Skips <c>lint_fix</c>; see <see cref="Content"/>.</param>
+    /// <param name="skipStatic">Skips <c>lint</c> and <c>test_unit</c>.</param>
+    /// <param name="skipRuntime">Skips <c>test_integration</c> and <c>test_end_to_end</c>.</param>
+    /// <exception cref="System.ArgumentException">Thrown when <paramref name="type"/> is not a valid hook name.</exception>
+    /// <exception cref="System.InvalidOperationException">
     /// Thrown when the hook already exists and <paramref name="force"/> is not set, or when <c>git</c> fails.
     /// </exception>
     public static void Enable(string root, string type, bool dryRun, bool force, bool skipLint, bool skipStatic, bool skipRuntime)
@@ -67,7 +75,10 @@ public static class GitHookTasks
     /// <summary>
     /// Deletes the hook of <paramref name="type"/>, if any.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="type"/> is not a valid hook name.</exception>
+    /// <param name="root">A directory in the repository.</param>
+    /// <param name="type">The hook type, e.g. <c>pre-commit</c>.</param>
+    /// <exception cref="System.ArgumentException">Thrown when <paramref name="type"/> is not a valid hook name.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when <c>git</c> fails.</exception>
     public static void Disable(string root, string type)
     {
         var path = HookPath(root, type);
@@ -79,7 +90,11 @@ public static class GitHookTasks
     /// The content of the hook of <paramref name="type"/> or, without a type, of every active hook: executable files
     /// other than Git's <c>.sample</c> ones.
     /// </summary>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="type"/> is not a valid hook name.</exception>
+    /// <param name="root">A directory in the repository.</param>
+    /// <param name="type">The hook type, or <see langword="null"/>/empty for every active hook.</param>
+    /// <returns>Each hook's name followed by its content, or a message when none is found.</returns>
+    /// <exception cref="System.ArgumentException">Thrown when <paramref name="type"/> is not a valid hook name.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when <c>git</c> fails.</exception>
     public static string Show(string root, string? type)
     {
         if (!string.IsNullOrEmpty(type))

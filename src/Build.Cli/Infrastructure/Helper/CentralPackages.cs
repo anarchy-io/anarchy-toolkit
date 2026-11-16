@@ -17,6 +17,8 @@ public static class CentralPackages
     /// <summary>
     /// A props file enabling central package management for every package listed, ordered by package ID.
     /// </summary>
+    /// <param name="versions">The versions, keyed by package ID.</param>
+    /// <returns>The content of a <c>Directory.Packages.props</c>.</returns>
     public static string Render(IReadOnlyDictionary<string, string> versions) => $"""
         <Project>
           <PropertyGroup>
@@ -35,6 +37,8 @@ public static class CentralPackages
     /// file does not set <c>ManagePackageVersionsCentrally</c>, the nearest <c>Directory.Build.props</c> decides.
     /// File names match case-insensitively, and unreadable XML counts as not set.
     /// </summary>
+    /// <param name="directory">The project directory to start from.</param>
+    /// <returns>The full path of the props file, or <see langword="null"/>.</returns>
     public static string? Find(string directory)
     {
         for (var current = new DirectoryInfo(Path.GetFullPath(directory)); current is not null; current = current.Parent)
@@ -52,7 +56,10 @@ public static class CentralPackages
     /// Adds a <c>PackageVersion</c> unless the props file already pins the package; existing versions are kept. The
     /// entry follows the last <c>PackageVersion</c>, or goes in a new <c>ItemGroup</c>, preserving the file's formatting.
     /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the props file has no root element.</exception>
+    /// <exception cref="System.InvalidOperationException">Thrown when the props file has no root element.</exception>
+    /// <param name="propsPath">The path of the props file.</param>
+    /// <param name="packageId">The package ID, compared case-insensitively.</param>
+    /// <param name="version">The version to pin when the package is not pinned yet.</param>
     public static void Ensure(string propsPath, string packageId, string version)
     {
         var document = XDocument.Load(propsPath, LoadOptions.PreserveWhitespace);

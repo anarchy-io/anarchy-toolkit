@@ -7,16 +7,35 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// Merges an <c>appsettings.json.template</c> into an <c>appsettings.Development.json</c>: see the
 /// <c>GenerateAppSettings</c> Fallout target.
 /// </summary>
+/// <remarks>
+/// The template's string values are human-readable hints rather than values; any other value (number, boolean,
+/// array, ...) is a fixed default. Nested objects are merged recursively and their keys reported in configuration
+/// notation (<c>Section:Key</c>).
+/// </remarks>
+/// <example>
+/// <code language="csharp">
+/// var template = AppSettingsMerger.ParseJsonObject(File.ReadAllText("appsettings.json.template"))!;
+/// var result = AppSettingsMerger.Merge(template, existing: null, reset: false,
+///     prompt: (key, hint, current) =&gt; Console.ReadLine());
+/// File.WriteAllText("appsettings.Development.json", result.Settings.ToJsonString());
+/// </code>
+/// </example>
 public static class AppSettingsMerger
 {
     /// <summary>
     /// Asks for one setting; <c>null</c> or blank means "keep the current value, if any".
     /// </summary>
+    /// <param name="key">The setting key, in configuration notation (e.g. <c>Database:Password</c>).</param>
+    /// <param name="hint">The template's hint for the setting.</param>
+    /// <param name="currentValue">The value already set, or <see langword="null"/> if none.</param>
+    /// <returns>The answer, or <see langword="null"/>/blank to keep the current value.</returns>
     public delegate string? Prompt(string key, string hint, string? currentValue);
 
     /// <summary>
     /// The merged settings, and the keys of the settings left unset (no value and no answer).
     /// </summary>
+    /// <param name="Settings">The merged settings.</param>
+    /// <param name="Missing">The keys left unset, in configuration notation.</param>
     public sealed record MergeResult(JsonObject Settings, IReadOnlyList<string> Missing);
 
     /// <summary>
@@ -26,6 +45,11 @@ public static class AppSettingsMerger
     /// set string keys are asked for again too, offering their value as default. <paramref name="existing"/> is not
     /// modified.
     /// </summary>
+    /// <param name="template">The parsed template.</param>
+    /// <param name="existing">The current settings, or <see langword="null"/> to start from an empty object.</param>
+    /// <param name="reset">Whether to ask again for string settings that are already set.</param>
+    /// <param name="prompt">Asks for each setting; <see langword="null"/> leaves every unset hint key missing.</param>
+    /// <returns>The merged settings and the keys left unset.</returns>
     public static MergeResult Merge(
         JsonObject template, JsonObject? existing, bool reset, Prompt? prompt)
     {
@@ -110,6 +134,8 @@ public static class AppSettingsMerger
     /// Whether a setting key looks like it holds a secret, to read it with masked input. Keys ending in <c>Name</c>
     /// (e.g. <c>ClientSecretName</c>) only name a secret and are not sensitive.
     /// </summary>
+    /// <param name="key">The setting key; only its last <c>:</c>-separated segment is considered.</param>
+    /// <returns><see langword="true"/> if the key mentions a password, secret, token, API key or private key.</returns>
     public static bool IsSensitive(string key)
     {
         var name = key[(key.LastIndexOf(':') + 1)..];
@@ -122,6 +148,9 @@ public static class AppSettingsMerger
     /// <summary>
     /// Parses a settings file's content, allowing comments and trailing commas; <c>null</c> when it is not an object.
     /// </summary>
+    /// <param name="json">The file content.</param>
+    /// <returns>The root object, or <see langword="null"/>.</returns>
+    /// <exception cref="System.Text.Json.JsonException">Thrown by the parser when <paramref name="json"/> is not valid JSON.</exception>
     public static JsonObject? ParseJsonObject(string json) =>
         JsonNode.Parse(
             json,
@@ -131,6 +160,8 @@ public static class AppSettingsMerger
     /// <summary>
     /// Whether a relative path goes through <c>bin</c>, <c>obj</c>, <c>node_modules</c> or a hidden folder.
     /// </summary>
+    /// <param name="relativePath">The path, with <c>/</c> or <c>\</c> separators.</param>
+    /// <returns><see langword="true"/> if any segment is ignored.</returns>
     public static bool IsInIgnoredDirectory(string relativePath) =>
         relativePath
             .Split('/', '\\')
