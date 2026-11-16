@@ -6,6 +6,10 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 /// <summary>
 /// Guides the user through adding an API, job or UI to an existing solution.
 /// </summary>
+/// <remarks>
+/// <see cref="Service.ToolApplication"/> runs it for <c>anarchy-toolkit scaffold</c> when no application is given.
+/// </remarks>
+/// <param name="prompter">The console interactions to run the wizard through.</param>
 public sealed class ScaffoldWizard(IWizardPrompter prompter)
 {
     /// <summary>

@@ -10,10 +10,23 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 /// User-supplied text is markup-escaped. The banner is skipped when output is redirected, and progress falls back to
 /// plain lines when the console is not interactive.
 /// </summary>
+/// <remarks>
+/// This is the prompter used by <see cref="Service.ToolApplication.CreateDefault"/>. Tests typically substitute their own
+/// <see cref="IWizardPrompter"/> instead, or pass a Spectre.Console test console to this class.
+/// </remarks>
+/// <param name="console">The Spectre.Console console all prompts and output go to.</param>
+/// <example>
+/// <code language="csharp">
+/// var prompter = new SpectreWizardPrompter(Spectre.Console.AnsiConsole.Console);
+/// var plan = new BootstrapWizard(prompter).Run();
+/// </code>
+/// </example>
 public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompter
 {
+    /// <inheritdoc/>
     public void ShowBanner() => new ConsoleBannerOptions().Write(console);
 
+    /// <inheritdoc/>
     public void ShowWelcome(string title, string description)
     {
         console.Write(new Rule($"[bold yellow]{Markup.Escape(title)}[/]").LeftJustified());
@@ -21,6 +34,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         console.WriteLine();
     }
 
+    /// <inheritdoc/>
     public void ShowHelp()
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(4)).AddColumn();
@@ -36,6 +50,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         console.MarkupLine("[grey]Existing files are never overwritten. Package versions follow the solution's Directory.Packages.props when it manages them centrally. The .NET 10 SDK is required.[/]");
     }
 
+    /// <inheritdoc/>
     public string Ask(string prompt, string? defaultValue, Func<string, string?> validate)
     {
         var textPrompt = new TextPrompt<string>(Markup.Escape(prompt) + ":")
@@ -47,14 +62,17 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         return console.Prompt(textPrompt).Trim();
     }
 
+    /// <inheritdoc/>
     public bool Confirm(string prompt, bool defaultValue) => console.Confirm(Markup.Escape(prompt), defaultValue);
 
+    /// <inheritdoc/>
     public T SelectOne<T>(string title, IReadOnlyList<T> choices, Func<T, string> label) where T : notnull =>
         console.Prompt(new SelectionPrompt<T>()
             .Title(Markup.Escape(title))
             .UseConverter(choice => Markup.Escape(label(choice)))
             .AddChoices(choices));
 
+    /// <inheritdoc/>
     public IReadOnlyList<T> SelectMany<T>(string title, IReadOnlyList<T> choices, Func<T, string> label) where T : notnull =>
         console.Prompt(new MultiSelectionPrompt<T>()
             .Title(Markup.Escape(title))
@@ -63,6 +81,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
             .UseConverter(choice => Markup.Escape(label(choice)))
             .AddChoices(choices));
 
+    /// <inheritdoc/>
     public void ShowPlan(SolutionPlan plan)
     {
         console.WriteLine();
@@ -79,6 +98,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         console.Write(table);
     }
 
+    /// <inheritdoc/>
     public void ShowScaffold(SolutionWorkspace workspace, ApplicationSpec app)
     {
         console.WriteLine();
@@ -97,6 +117,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
             SolutionLayout.LayerOf(app.Kind),
             port is { } p ? $"http://localhost:{p.Http}, https://localhost:{p.Https}" : "");
 
+    /// <inheritdoc/>
     public void RunWithProgress(string title, Action<Action<string>> action)
     {
         string? current = null;
@@ -123,6 +144,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         Complete();
     }
 
+    /// <inheritdoc/>
     public void ShowNextSteps(string title, IReadOnlyList<string> steps, string? note)
     {
         console.WriteLine();
@@ -132,7 +154,9 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         if (note is not null) console.MarkupLine($"[grey]{Markup.Escape(note)}[/]");
     }
 
+    /// <inheritdoc/>
     public void Info(string message) => console.MarkupLine(Markup.Escape(message));
 
+    /// <inheritdoc/>
     public void Error(string message) => console.MarkupLine("[red]" + Markup.Escape(message) + "[/]");
 }

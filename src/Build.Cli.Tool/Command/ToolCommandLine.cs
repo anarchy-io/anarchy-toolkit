@@ -5,15 +5,32 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Command;
 /// <summary>
 /// Parses <c>anarchy-toolkit [bootstrap|scaffold] [arguments]</c>.
 /// </summary>
+/// <example>
+/// <code language="csharp">
+/// var command = ToolCommandLine.Parse(["scaffold", "api", "Orders"]);
+/// // command.Mode == ToolMode.Scaffold, command.Application == new ApplicationSpec(ApplicationKind.Api, "Orders")
+/// </code>
+/// </example>
 public static class ToolCommandLine
 {
+    /// <summary>
+    /// The usage line of the <c>bootstrap</c> command, shown when its arguments are malformed.
+    /// </summary>
     public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>]]";
+    /// <summary>
+    /// The usage line of the <c>scaffold</c> command, shown when its arguments are malformed.
+    /// </summary>
     public const string ScaffoldUsage = "anarchy-toolkit scaffold [api|job|ui <Name>]";
 
     /// <summary>
     /// Parses the arguments, without the executable name. Never throws: malformed input yields a
     /// <see cref="ToolMode.Invalid"/> command carrying the error.
     /// </summary>
+    /// <param name="args">The command-line arguments, without the executable name.</param>
+    /// <returns>
+    /// The parsed command: <see cref="ToolMode.Help"/> for no arguments or a help flag, <see cref="ToolMode.Bootstrap"/>
+    /// or <see cref="ToolMode.Scaffold"/> (with their optional arguments), or <see cref="ToolMode.Invalid"/>.
+    /// </returns>
     public static ToolCommand Parse(IReadOnlyList<string> args) => args switch {
         [] or ["--help" or "-h" or "help", ..] => new ToolCommand(ToolMode.Help),
         ["bootstrap", ..] => ParseBootstrap(args.Skip(1).ToArray()),

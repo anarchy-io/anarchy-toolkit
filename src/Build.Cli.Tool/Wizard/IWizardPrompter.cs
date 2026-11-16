@@ -7,6 +7,10 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 /// The console interactions of the tool, abstracted so the wizards and <see cref="Service.ToolApplication"/> can run
 /// against any front end (including test doubles).
 /// </summary>
+/// <remarks>
+/// <see cref="SpectreWizardPrompter"/> is the production implementation. Every method is synchronous and blocks until the
+/// user has answered; implementations are not expected to be thread-safe.
+/// </remarks>
 public interface IWizardPrompter
 {
     /// <summary>
@@ -17,6 +21,8 @@ public interface IWizardPrompter
     /// <summary>
     /// Introduces a wizard with a <paramref name="title"/> and a one-line <paramref name="description"/>.
     /// </summary>
+    /// <param name="title">The wizard's title.</param>
+    /// <param name="description">A one-line description of what the wizard does.</param>
     void ShowWelcome(string title, string description);
 
     /// <summary>
@@ -38,28 +44,44 @@ public interface IWizardPrompter
     /// <summary>
     /// Asks a yes/no question, answering <paramref name="defaultValue"/> when the user just presses Enter.
     /// </summary>
+    /// <param name="prompt">The question to ask.</param>
+    /// <param name="defaultValue">The answer assumed when the user just presses Enter.</param>
+    /// <returns><see langword="true"/> if the user answered yes; otherwise <see langword="false"/>.</returns>
     bool Confirm(string prompt, bool defaultValue);
 
     /// <summary>
     /// Lets the user pick one of <paramref name="choices"/>, shown through <paramref name="label"/>; the first is
     /// preselected.
     /// </summary>
+    /// <typeparam name="T">The type of the choices.</typeparam>
+    /// <param name="title">The question shown above the list.</param>
+    /// <param name="choices">The choices to pick from; must not be empty.</param>
+    /// <param name="label">Returns the text shown for a choice.</param>
+    /// <returns>The chosen item.</returns>
     T SelectOne<T>(string title, IReadOnlyList<T> choices, Func<T, string> label) where T : notnull;
 
     /// <summary>
     /// Lets the user pick any number of <paramref name="choices"/>, including none, shown through
     /// <paramref name="label"/>.
     /// </summary>
+    /// <typeparam name="T">The type of the choices.</typeparam>
+    /// <param name="title">The question shown above the list.</param>
+    /// <param name="choices">The choices to pick from.</param>
+    /// <param name="label">Returns the text shown for a choice.</param>
+    /// <returns>The chosen items, possibly empty.</returns>
     IReadOnlyList<T> SelectMany<T>(string title, IReadOnlyList<T> choices, Func<T, string> label) where T : notnull;
 
     /// <summary>
     /// Shows the solution about to be bootstrapped: its directory, layering and projects.
     /// </summary>
+    /// <param name="plan">The plan to show.</param>
     void ShowPlan(SolutionPlan plan);
 
     /// <summary>
     /// Shows the project about to be added to <paramref name="workspace"/> for <paramref name="app"/>.
     /// </summary>
+    /// <param name="workspace">The solution the project will be added to; used for its layout and ports in use.</param>
+    /// <param name="app">The application to be added.</param>
     void ShowScaffold(SolutionWorkspace workspace, ApplicationSpec app);
 
     /// <summary>
@@ -80,10 +102,12 @@ public interface IWizardPrompter
     /// <summary>
     /// Shows an informational message.
     /// </summary>
+    /// <param name="message">The message to show.</param>
     void Info(string message);
 
     /// <summary>
     /// Shows an error message.
     /// </summary>
+    /// <param name="message">The message to show.</param>
     void Error(string message);
 }

@@ -75,6 +75,10 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 
 ## Releases
 
+### 2.3.1
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
 ### 2.3.0
 
 - feat(Build.Fallout): add IApiReferenceBuild generating a DocFX API reference from the compiled assemblies
