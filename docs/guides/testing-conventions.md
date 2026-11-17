@@ -194,6 +194,16 @@ Its key benefit is that it exercises both hosting models:
 
 Use the separate native and Lambda methods for responses with variable fields (timestamps, durations, generated ids). Use `TestEndpointAsync(...)` when both paths should return the same result.
 
+### Mock server 🎭 (`Anarchy.Toolkit.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
+
+When the application under integration or end-to-end test calls HTTP services you do not run, stand them in with the mock server instead of mocking the clients:
+
+1. Add a runnable `*.MockServer` project whose `Program` calls `MockServerEntryPoint.RunAsync(args, …)`, plugging in any middlewares that compute answers from the request, and write MockServer-style JSON expectations (e.g. under `tests/mocks`).
+2. Implement `IMockServerBuild` in the build and run `make test_integration_mocked EXPECTATIONS=tests/mocks` (or `test_end_to_end_mocked`): the server starts in the background, the tests get its address as `MOCKSERVER_URL`, and it stops afterwards. `make mock_server_start` / `mock_server_stop` keep one running across several runs.
+3. In the tests, use a `MockServerFixture` (it connects to `MOCKSERVER_URL`, or spawns the server when tests run on their own) and assert what the application sent with `mock.Client.AssertReceivedAsync("POST", "/payments/{id}/capture", times: 1)`.
+
+Reset the server (`ResetAsync`) at the start of tests that assert on received requests, and prefer runtime expectations (`AddExpectationAsync`) for scenario-specific answers, keeping the JSON files for the stable defaults.
+
 ## Shared test resources
 
 Resources shared across *many* packages belong in the test kits under `src/Testing`. Resources used by the tests of a single package live at the root of that package's folder, next to the layer folders, grouped like this:
