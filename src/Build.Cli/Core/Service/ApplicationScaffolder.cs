@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using Anarchy.Toolkit.Build.Cli.Core.Template;
 using Anarchy.Toolkit.Build.Cli.Core.Validation;
 using Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
+using LocalPorts = Anarchy.Toolkit.Core.Helper.LocalPorts;
 
 namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 
@@ -81,7 +82,7 @@ public static class ApplicationScaffolder
     {
         if (Validate(workspace.Layout, app, workspace.ProjectNames) is { } error) throw new InvalidOperationException(error);
         var report = progress ?? (_ => { });
-        var ports = LocalPorts.Assign([app], workspace.UsedPorts);
+        var ports = LocalPorts.Assign(app.IsWebHost ? [app] : Array.Empty<ApplicationSpec>(), workspace.UsedPorts);
 
         report($"Creating {workspace.Layout.ProjectPath(app)}");
         Create(workspace.Root, workspace.Layout, app, versions[app.PackageId], ports.TryGetValue(app, out var port) ? port : null);

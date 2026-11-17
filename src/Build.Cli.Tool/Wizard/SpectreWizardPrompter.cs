@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Build.Cli.Core.Entity;
 using Anarchy.Toolkit.Build.Cli.Core.Service;
 using Anarchy.Toolkit.Build.Cli.Infrastructure.Helper;
 using Spectre.Console;
+using LocalPorts = Anarchy.Toolkit.Core.Helper.LocalPorts;
 
 namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 
@@ -103,7 +104,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
     {
         console.WriteLine();
         var table = NewProjectTable();
-        var ports = LocalPorts.Assign([app], workspace.UsedPorts);
+        var ports = LocalPorts.Assign(app.IsWebHost ? [app] : Array.Empty<ApplicationSpec>(), workspace.UsedPorts);
         AddApplicationRow(table, workspace.Layout, app, ports.TryGetValue(app, out var port) ? port : null);
         console.Write(table);
     }

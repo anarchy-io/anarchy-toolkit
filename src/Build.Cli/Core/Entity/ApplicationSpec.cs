@@ -6,7 +6,7 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Entity;
 /// <remarks>
 /// Instances are listed in <see cref="SolutionPlan.Applications"/> and resolved to project names, folders and
 /// namespaces by <see cref="SolutionLayout"/>. Being a record, two specs with the same kind and name are equal, which
-/// makes them usable as dictionary keys (e.g. in <see cref="LocalPorts.Assign"/>).
+/// makes them usable as dictionary keys (e.g. in <c>LocalPorts.Assign</c>).
 /// </remarks>
 /// <param name="Kind">The kind of application, which selects its template, layer and toolkit package.</param>
 /// <param name="Name">The application name, e.g. <c>Orders</c>.</param>

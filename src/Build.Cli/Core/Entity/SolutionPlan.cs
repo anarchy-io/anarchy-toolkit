@@ -1,3 +1,4 @@
+using LocalPorts = Anarchy.Toolkit.Core.Helper.LocalPorts;
 namespace Anarchy.Toolkit.Build.Cli.Core.Entity;
 
 /// <summary>
@@ -20,5 +21,5 @@ public sealed record SolutionPlan(string Name, string RootDirectory, SolutionLay
     /// <summary>
     /// The local HTTP and HTTPS ports of each web host, in the order the applications were added.
     /// </summary>
-    public IReadOnlyDictionary<ApplicationSpec, (int Http, int Https)> Ports => LocalPorts.Assign(Applications, []);
+    public IReadOnlyDictionary<ApplicationSpec, (int Http, int Https)> Ports => LocalPorts.Assign(Applications.Where(app => app.IsWebHost), []);
 }
