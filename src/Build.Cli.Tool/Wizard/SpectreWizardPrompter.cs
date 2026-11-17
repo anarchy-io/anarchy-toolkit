@@ -43,6 +43,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]][/]", "Create the baseline solution in an empty or new directory (default: current).");
         grid.AddRow("[blue]anarchy-toolkit scaffold[/]", "Guided addition of an API, job or UI to the solution here.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts.");
+        grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger-theme[/]", "Add an API whose Swagger UI keeps its own look.");
         grid.AddRow("[blue]anarchy-toolkit [[--help]][/]", "Show this help.");
 
         console.Write(new Panel(grid)

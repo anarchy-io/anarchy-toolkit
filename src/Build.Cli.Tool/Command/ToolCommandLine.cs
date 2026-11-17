@@ -18,9 +18,14 @@ public static class ToolCommandLine
     /// </summary>
     public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>]]";
     /// <summary>
+    /// The <c>scaffold api</c> flag that generates an API without the toolkit's default Swagger UI theme.
+    /// </summary>
+    public const string NoSwaggerTheme = "--no-swagger-theme";
+
+    /// <summary>
     /// The usage line of the <c>scaffold</c> command, shown when its arguments are malformed.
     /// </summary>
-    public const string ScaffoldUsage = "anarchy-toolkit scaffold [api|job|ui <Name>]";
+    public const string ScaffoldUsage = "anarchy-toolkit scaffold [api <Name> [--no-swagger-theme]|job <Name>|ui <Name>]";
 
     /// <summary>
     /// Parses the arguments, without the executable name. Never throws: malformed input yields a
@@ -48,8 +53,10 @@ public static class ToolCommandLine
 
     private static ToolCommand ParseScaffold(IReadOnlyList<string> args) => args switch {
         [] => new ToolCommand(ToolMode.Scaffold),
-        [var kind, var name] when TryParseKind(kind, out var parsed) =>
+        [var kind, var name] when TryParseKind(kind, out var parsed) && !name.StartsWith('-') =>
             new ToolCommand(ToolMode.Scaffold, Application: new ApplicationSpec(parsed, name)),
+        [var kind, var name, NoSwaggerTheme] when TryParseKind(kind, out var parsed) && parsed == ApplicationKind.Api && !name.StartsWith('-') =>
+            new ToolCommand(ToolMode.Scaffold, Application: new ApplicationSpec(parsed, name, SwaggerTheme: false)),
         _ => Invalid("Usage: " + ScaffoldUsage)
     };
 
