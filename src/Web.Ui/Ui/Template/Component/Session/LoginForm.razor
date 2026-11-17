@@ -5,6 +5,13 @@
 
 <div class="login-container">
     <div class="login-card">
+        @if (!string.IsNullOrEmpty(BrandLogoPath))
+        {
+            <div class="login-brand">
+                <img class="login-brand-light" src="@Presenter.GetRoute(BrandLogoPath)" alt="Anarchy I/O" />
+                <img class="login-brand-dark" src="@Presenter.GetRoute(DarkBrandLogoPath ?? BrandLogoPath)" alt="Anarchy I/O" />
+            </div>
+        }
         <h1>
             @if (string.IsNullOrEmpty(LogoPath))
             {
@@ -75,6 +82,18 @@
 
     /// <summary>Route of the logo image (e.g. "logo.png"), resolved against the UI base path.</summary>
     [Parameter] public string? LogoPath { get; set; }
+
+    /// <summary>
+    /// Brand logo shown above the heading in light mode; defaults to the Anarchy I/O logo with dark text.
+    /// <see langword="null"/> or empty shows none.
+    /// </summary>
+    [Parameter] public string? BrandLogoPath { get; set; } = "images/logo.png";
+
+    /// <summary>
+    /// Brand logo in dark mode; defaults to the Anarchy I/O logo with white text. <see langword="null"/> uses
+    /// <see cref="BrandLogoPath"/>.
+    /// </summary>
+    [Parameter] public string? DarkBrandLogoPath { get; set; } = "images/logo-dark.png";
 
     /// <summary>Optional subtitle shown under the heading.</summary>
     [Parameter] public string? Subtitle { get; set; }

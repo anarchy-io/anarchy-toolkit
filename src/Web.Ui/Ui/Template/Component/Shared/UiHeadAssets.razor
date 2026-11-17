@@ -2,16 +2,34 @@
 
 <base href="@Presenter.GetRoute()" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" type="image/svg+xml" href="@Presenter.GetRoute(FaviconPath)" />
-<link rel="stylesheet" href="@Presenter.GetRoute("toolkit-ui.css")" />
+@if (FallbackFaviconPath is not null)
+{
+    <link rel="icon" href="@Presenter.GetRoute(FallbackFaviconPath)" />
+}
+@if (FaviconPath.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+{
+    <link rel="icon" type="image/svg+xml" sizes="any" href="@Presenter.GetRoute(FaviconPath)" />
+}
+else
+{
+    <link rel="icon" href="@Presenter.GetRoute(FaviconPath)" />
+}
+@* Applies the remembered light/dark choice before the first paint (see ThemeToggle) *@
+<script>try{var t=localStorage.getItem("toolkit-ui-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="stylesheet" href="@Presenter.GetRoute("css/toolkit-ui.css")" />
 @foreach (var stylesheet in Stylesheets)
 {
     <link rel="stylesheet" href="@Presenter.GetRoute(stylesheet)" />
 }
 
 @code {
-    /// <summary>Favicon path; defaults to the toolkit's shared favicon.</summary>
-    [Parameter] public string FaviconPath { get; set; } = "favicon.png";
+    /// <summary>Favicon path; defaults to the toolkit's shared favicon (the Anarchy symbol, as SVG).</summary>
+    [Parameter] public string FaviconPath { get; set; } = "favicon.svg";
+
+    /// <summary>
+    /// Raster favicon for browsers without SVG favicons; defaults to the toolkit's 64×64 PNG. <see langword="null"/> adds none.
+    /// </summary>
+    [Parameter] public string? FallbackFaviconPath { get; set; } = "favicon.png";
 
     /// <summary>Application stylesheets, loaded after the toolkit ones.</summary>
     [Parameter] public IReadOnlyCollection<string> Stylesheets { get; set; } = [];
