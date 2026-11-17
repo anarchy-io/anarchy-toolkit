@@ -1,23 +1,37 @@
 <Project>
 
+  <!-- Build configuration -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- Code analysis and documentation -->
   <PropertyGroup>
-    <Company>Anarchy</Company>
-    <Authors>Anarchy I/O</Authors>
-    <Product>Anarchy.Toolkit</Product>
-    <PackageProjectUrl>https://github.com/anarchy-io/anarchy-toolkit</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/anarchy-io/anarchy-toolkit</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- Assembly metadata -->
+  <PropertyGroup>
+    <Authors>Leandro Melão Medeiros</Authors>
+    <Company>Anarchy I/O</Company>
+    <Product>Anarchy.Toolkit</Product>
+  </PropertyGroup>
+
+  <!-- NuGet package metadata -->
+  <PropertyGroup>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/anarchy-io/anarchy-toolkit</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/anarchy-io/anarchy-toolkit</RepositoryUrl>
+  </PropertyGroup>
+
+  <!-- NuGet symbol packages -->
+  <PropertyGroup>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>

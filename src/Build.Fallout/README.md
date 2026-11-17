@@ -107,6 +107,13 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 
 ## Releases
 
+### 3.6.1
+
+- docs(packages): identify each package's pillar and layer
+- build(packages): attribute the copyright to Leandro Melão Medeiros
+- build: relicense under Apache-2.0 and update the package metadata
+- fix(mock-server): default to port 6001, which browsers allow
+
 ### 3.6.0
 
 - build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1

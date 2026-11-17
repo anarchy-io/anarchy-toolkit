@@ -28,6 +28,12 @@ See the [sample tests](https://github.com/anarchy-io/anarchy-toolkit/tree/main/s
 
 ## Releases
 
+### 1.2.1
+
+- docs(packages): identify each package's pillar and layer
+- build(packages): attribute the copyright to Leandro Melão Medeiros
+- build: relicense under Apache-2.0 and update the package metadata
+
 ### 1.2.0
 
 - build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
