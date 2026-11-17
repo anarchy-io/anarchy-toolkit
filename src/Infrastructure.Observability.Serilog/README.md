@@ -18,7 +18,7 @@ Use this adapter when a service already uses Serilog and needs consistent organi
 
 ## How to use it
 
-Add the desired enrichers to the host's `LoggerConfiguration`, or override `ObserverFactory.Enrich` when using the toolkit configuration bootstrap. For example, the observability guide shows an override chaining `WithTeam("payments")` and `WithCostCenter("finance")` onto the base configuration.
+Add the desired enrichers to the host's `LoggerConfiguration`, or override `ObserverFactory.Enrich` when using the toolkit configuration bootstrap. For example, the observability guide shows an override chaining `WithTeam("identity")` and `WithCostCenter("platform")` onto the base configuration.
 
 For an EC2-hosted CloudWatch sink, configure `Ec2CloudWatch(logGroup)` in the host's sink setup and provide the necessary AWS credentials, region and CloudWatch permissions. Avoid adding an EC2-specific sink or metadata enricher to environments where they are not appropriate. The package does not create an observability backend or define your retention policy for you.
 

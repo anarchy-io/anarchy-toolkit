@@ -1,10 +1,13 @@
 # Exposing Endpoints
 
-This guide explains how to expose endpoints from an API built on `Anarchy.Toolkit.Web`, with clear boundaries and low coupling. The goal is simple: keep HTTP contracts stable while letting domain models evolve safely. 🧭
+This guide explains how to expose endpoints from an API built on `Anarchy.Toolkit.Web`, with clear boundaries and low coupling. The objective is to keep HTTP contracts stable while allowing domain models to evolve independently.
 
-The toolkit itself follows these rules (see `HealthController` and the `Health*Output` DTOs in `Anarchy.Toolkit.Web`), and consumer applications should too.
+> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+{: .notice--info}
 
-## Ideal class distribution
+The toolkit follows these rules itself (see `HealthController` and the `Health*Output` DTOs in `Anarchy.Toolkit.Web`), and applications built on it may use them as a starting point. The examples below use a `User` resource from a user-management API.
+
+## Recommended project structure
 
 Use the same layers as the toolkit (see [Layered Architecture](architecture.md)):
 
@@ -14,24 +17,24 @@ src/
     ├── Core/
     │   └── Entity/
     │       ├── DomainModel/
-    │       │   ├── FooBarEntity.cs
-    │       │   └── FooBarItemEntity.cs
+    │       │   ├── UserEntity.cs
+    │       │   └── UserRoleEntity.cs
     │       └── Api/
     │           ├── Input/
-    │           │   └── CreateFooBarUseCaseInput.cs
+    │           │   └── CreateUserUseCaseInput.cs
     │           └── Output/
-    │               └── FooBarAuditDto.cs
+    │               └── UserAuditDto.cs
     └── Web/
         └── Presentation/
             ├── Contract/
-            │   └── FooBar/
-            │       └── IFooBarController.cs
+            │   └── User/
+            │       └── IUserController.cs
             └── Entity/
                 ├── Input/
-                │   └── CreateFooBarInput.cs
+                │   └── CreateUserInput.cs
                 └── Output/
-                    ├── FooBarOutput.cs
-                    └── FooBarAuditOutput.cs
+                    ├── UserOutput.cs
+                    └── UserAuditOutput.cs
 ```
 
 ### What each layer owns
@@ -42,17 +45,17 @@ src/
 - `Web/Presentation/Contract`: endpoint routes and signatures. One stable contract surface helps tests and client integrations. Controller contracts may extend the toolkit's `IToolkitController` marker.
 - `Web/Presentation/Entity/Input` and `Web/Presentation/Entity/Output`: HTTP request/response shapes owned by the presentation layer. Output DTOs also own their own Core-to-DTO mapping (see below); there is no separate `Web/Service/Builder` layer.
 
-## Endpoint rules ✅
+## Endpoint rules
 
 - Every endpoint must declare explicit response types (`ProducesResponseType`) using Web entities.
-- **Use `ActionResult<T>` for endpoints that return payloads.** This enforces type safety at the interface level and improves API documentation. For example, `Task<ActionResult<FooBarOutput>>` makes the contract explicit.
+- **Use `ActionResult<T>` for endpoints that return payloads.** This enforces type safety at the interface level and improves API documentation. For example, `Task<ActionResult<UserOutput>>` makes the contract explicit.
 - Only use bare `IActionResult` for endpoints without a response body (e.g. `204 No Content`, `202 Accepted`).
 - **Never expose Core domain entities (or Core `Api` DTOs) in response payloads.** Every response payload must be a dedicated Web `*Output` type under `Web/Presentation/Entity/Output`, even when its shape mirrors a Core entity/DTO one-to-one.
 - **Never accept Core domain entities (or Core `Api` DTOs) as controller parameters.** Every non-primitive request payload (`[FromBody]`, or an implicit-body complex parameter) must be a dedicated Web `*Input` type under `Web/Presentation/Entity/Input`. Route/query parameters may stay primitive (`string`, `long`, `int`, `double`, `bool`, enums, etc.).
 - Controllers must never call repositories directly. Call abstraction services such as Use Cases and Entity-based Aggregates.
 - Keep controllers thin: validate input, call the service, map output via the DTO's own static factory method, return a status.
 - Only expose fields intentionally meant for API consumers.
-- Favor backward-compatible response contracts. Adapt the mapping when internals change, so clients don't break from internal refactors. ✨
+- Favor backward-compatible response contracts. Adapt the mapping when internals change, so that internal refactoring does not break API clients.
 
 ## Mapping Core entities/DTOs to Output DTOs
 
@@ -92,16 +95,16 @@ Rules for this mapping:
 Symmetrically, do not map an Input record's fields inline in the controller body, and do not create a separate mapper class either. Add a `public` instance method on the Web Input record, named `ToDto(...)` (target: a Core `Api/Input` DTO) or `ToEntity(...)` (target: a Core domain entity). Pass any values the request doesn't carry itself (e.g. a route id) as method arguments:
 
 ```csharp
-public class CreateFooBarInput
+public class CreateUserInput
 {
-    [Required] public required string Name { get; init; }
-    public required IReadOnlyCollection<string> ItemIds { get; init; }
+    [Required] public required string Email { get; init; }
+    public required IReadOnlyCollection<string> RoleIds { get; init; }
 
-    public CreateFooBarUseCaseInput ToUseCaseParams()
+    public CreateUserUseCaseInput ToUseCaseParams()
     {
-        return new CreateFooBarUseCaseInput {
-            Name = Name,
-            ItemIds = ItemIds
+        return new CreateUserUseCaseInput {
+            Email = Email,
+            RoleIds = RoleIds
         };
     }
 }
@@ -120,7 +123,7 @@ The toolkit's validation attributes (`RequiredIntAttribute`, `RequiredLongAttrib
 
 Declare controller interfaces in `Web/Presentation/Contract` and implement them in API hosts.
 
-This gives practical benefits:
+Benefits:
 
 - one source of truth for routes and endpoint signatures,
 - simpler end-to-end tests against a stable contract surface (`RestApiTestCaseBase` and `HttpRouteHelper.FromTemplate` build requests from those route constants),
@@ -145,17 +148,17 @@ The native ASP.NET Core `ActionResult<T>` type gives you:
 | Endpoint returns multiple unrelated types | `IActionResult` |
 
 ```csharp
-public interface IFooBarController : IToolkitController
+public interface IUserController : IToolkitController
 {
     // Returns a payload: use ActionResult<T>
-    Task<ActionResult<FooBarOutput>> GetByIdAsync(string id);
+    Task<ActionResult<UserOutput>> GetByIdAsync(string id);
 
     // No response body: use IActionResult
     Task<IActionResult> DeleteAsync(string id);
 }
 ```
 
-## Recommended endpoint flow 🚀
+## Recommended endpoint flow
 
 1. Receive and validate the transport input (`Web/Presentation/Entity/Input`).
 2. Convert it to a use-case/service input (`Core/Entity/Api/Input`) or a Core entity via the Input record's own `ToDto()`/`ToEntity()` method.
@@ -168,35 +171,33 @@ Unhandled exceptions are translated centrally by the toolkit's `ExceptionMiddlew
 ## Controller example
 
 ```csharp
-[Route(IFooBarController.RouteBase)]
+[Route(IUserController.RouteBase)]
 [Produces("application/json")]
-public class FooBarController(IFooBarUseCase useCase) : ControllerBase, IFooBarController
+public class UserController(IUserUseCase useCase) : ControllerBase, IUserController
 {
     [HttpPost]
-    [Route(IFooBarController.RouteCreate)]
-    [ProducesResponseType(typeof(FooBarOutput), StatusCodes.Status201Created)]
+    [Route(IUserController.RouteCreate)]
+    [ProducesResponseType(typeof(UserOutput), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<FooBarOutput>> CreateAsync([FromBody] CreateFooBarInput input)
+    public async Task<ActionResult<UserOutput>> CreateAsync([FromBody] CreateUserInput input)
     {
         var result = await useCase.CreateAsync(input.ToUseCaseParams());
-        var output = FooBarOutput.FromDto(result);
+        var output = UserOutput.FromDto(result);
 
-        return CreatedAtAction(nameof(GetByIdAsync), new { fooBarId = output.Id }, output);
+        return CreatedAtAction(nameof(GetByIdAsync), new { userId = output.Id }, output);
     }
 
     [HttpGet]
-    [Route(IFooBarController.RouteGetById)]
-    [ProducesResponseType(typeof(FooBarOutput), StatusCodes.Status200OK)]
+    [Route(IUserController.RouteGetById)]
+    [ProducesResponseType(typeof(UserOutput), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<FooBarOutput>> GetByIdAsync(string fooBarId)
+    public async Task<ActionResult<UserOutput>> GetByIdAsync(string userId)
     {
-        var result = await useCase.GetByIdAsync(fooBarId);
+        var result = await useCase.GetByIdAsync(userId);
 
         return result == null
             ? NotFound()
-            : Ok(FooBarOutput.FromDto(result));
+            : Ok(UserOutput.FromDto(result));
     }
 }
 ```
-
-Small boundary, big payoff: cleaner architecture, easier refactoring, and safer public APIs. 💙

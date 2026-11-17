@@ -1,6 +1,6 @@
 # Fallout Builds
 
-`Anarchy.Toolkit.Build.Fallout` (`src/Build.Fallout`) holds the toolkit's [Fallout](https://fallout.build/) build components. They are packaged as build components so every repository gets the same targets. The toolkit's own `./build` is its first consumer. 🔧
+`Anarchy.Toolkit.Build.Fallout` (`src/Build.Fallout`) holds the toolkit's [Fallout](https://fallout.build/) build components. They are distributed as a package so that every repository uses the same targets. The toolkit's own `./build` project consumes them as well.
 
 ## Using it
 
@@ -96,8 +96,8 @@ If publishing fails after the version commit, use **Run workflow** without a bas
 ```json
 {
   "AuthService": {
-    "Host": "Base URL of the auth service you develop against, ending with '/' (e.g. https://auth.dev.example.local/)",
-    "ClientId": "OAuth client id registered for your local app, see the auth service's client registry"
+    "Host": "Base URL of the identity service to develop against, ending with '/' (e.g. https://auth.dev.example.local/)",
+    "ClientId": "OAuth client ID registered for the local application, as listed in the identity service's client registry"
   }
 }
 ```
@@ -110,8 +110,8 @@ Each key not yet set is prompted for, showing its explanation; values already se
 
 ```csharp
 public IReadOnlyCollection<Artifact> Artifacts => [
-    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Api" / "Orders" / "Orders.csproj" },
-    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Jobs" / "Sync" / "Sync.csproj" },
+    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Api" / "Users" / "Users.csproj" },
+    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Jobs" / "ClientSync" / "ClientSync.csproj" },
 ];
 ```
 

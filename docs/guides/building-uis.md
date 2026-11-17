@@ -1,8 +1,8 @@
 # Building UIs
 
-`Anarchy.Toolkit.Web.Ui` is a generic UI: an interactive-server Blazor app behind a cookie session, where developers log in with OAuth client credentials and the UI calls downstream APIs on their behalf. Everything domain-specific (which APIs, which pages, which environment URLs) is supplied by the consumer.
+`Anarchy.Toolkit.Web.Ui` provides a generic UI host: an interactive-server Blazor application behind a cookie session, where users sign in with OAuth client credentials and the UI calls downstream APIs on their behalf. Everything domain-specific (APIs, pages and environment URLs) is supplied by the application. The examples below build an administration UI for a user-management API.
 
-[`samples/Samples.Ui`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) is a runnable example of everything below.
+[`samples/Samples.Ui`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) is a runnable example of the features described in this guide.
 
 ## What you get
 
@@ -10,7 +10,7 @@
 |---|---|---|
 | `UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>` | `Ui/Composition/Startup` | Razor components, interactive server mode, cascading auth state, presenters, cookie session, login/logout endpoints, static assets. |
 | `UiAuthenticationOptions` | `Entity/Ui` | Cookie settings, login/logout/home paths, OAuth `Scope`, and the `Environments` a session can target. |
-| `UiRoutingOptions` | `Entity/Ui` | Route prefixes and the optional `/{environment}` link prefix on TAP hosts. |
+| `UiRoutingOptions` | `Entity/Ui` | Route prefixes and the optional `/{environment}` link prefix, for hosts served behind an API gateway stage. |
 | `UiEnvironment` / `IUiEnvironmentCatalog` | `Core/Entity/Ui`, `Core/Service/Ui` | Auth service URL and named downstream API URLs per environment. |
 | `IUiSessionContext` | `Core/Service/Ui/Session` | Access token, client name and target environment of the signed-in user. |
 | `UiApiClientBase` + `AddToolkitUiApiHttpClient` | `Infrastructure/Service/Http/Client`, `Configuration/Extension/Microsoft/DependencyInjection` | Bearer-authenticated JSON/GraphQL calls to the session's environment; failures raise `DownstreamHttpRequestException` with a readable body. |
@@ -21,18 +21,18 @@
 ## Wiring a UI
 
 ```csharp
-public class BackofficeStartup(IWebHostEnvironment environment, IConfiguration configuration)
+public class UserAdminStartup(IWebHostEnvironment environment, IConfiguration configuration)
     : UiWebAppStartupBase<ModuleAppSettings, AppSettings>(environment, configuration)
 {
-    protected override string ApiName => "My UI";
+    protected override string ApiName => "User Admin";
 
     protected override UiAuthenticationOptions GetUiAuthenticationOptions() => new() {
-        Scope = "MyApi:Admin",
+        Scope = "UserApi:Admin",
         Environments = [
             new UiEnvironment("Development", new Uri("http://localhost:6001/"),
-                new Dictionary<string, Uri> { ["MyApi"] = new("https://localhost:5005") }),
+                new Dictionary<string, Uri> { ["UserApi"] = new("https://localhost:5005") }),
             new UiEnvironment("Testing", new Uri("https://auth.testing.example.com/"),
-                new Dictionary<string, Uri> { ["MyApi"] = new("https://myapi.testing.example.com/") }),
+                new Dictionary<string, Uri> { ["UserApi"] = new("https://users.testing.example.com/") }),
         ]
     };
 
@@ -41,7 +41,7 @@ public class BackofficeStartup(IWebHostEnvironment environment, IConfiguration c
         base.ConfigureWebCustomServices(services)
             .AddToolkitUiApiHttpClient(TimeSpan.FromSeconds(30));
 
-        return services.AddScoped<IMyApiClient, MyApiClient>();
+        return services.AddScoped<IUserApiClient, UserApiClient>();
     }
 
     protected override void ConfigureUiEndpoints(IEndpointRouteBuilder endpoints)
@@ -53,27 +53,27 @@ public class BackofficeStartup(IWebHostEnvironment environment, IConfiguration c
 }
 ```
 
-The login (`POST /endpoint/auth/login`, antiforgery-protected) and logout (`GET /endpoint/auth/logout`) endpoints are mapped for you. Locally the login form lets the developer pick any catalog environment; deployed hosts always use their own environment, so it must be in the catalog.
+The login (`POST /endpoint/auth/login`, antiforgery-protected) and logout (`GET /endpoint/auth/logout`) endpoints are mapped for you. Locally, the login form lets the user select any catalog environment; deployed hosts always use their own environment, so it must be in the catalog.
 
 A downstream client only names the API and the route:
 
 ```csharp
-public class MyApiClient(IHttpClientFactory factory, IUiSessionContext session, IUiEnvironmentCatalog catalog, Observer observer)
-    : UiApiClientBase(factory, session, catalog, observer), IMyApiClient
+public class UserApiClient(IHttpClientFactory factory, IUiSessionContext session, IUiEnvironmentCatalog catalog, Observer observer)
+    : UiApiClientBase(factory, session, catalog, observer), IUserApiClient
 {
-    public async Task<OrderOutput> GetOrderAsync(string id) =>
-        await SendAsync<OrderOutput>(HttpMethod.Get, await GetApiBaseUriAsync("MyApi"), BindRoute("orders/{id}", ("id", id)));
+    public async Task<UserOutput> GetUserAsync(string id) =>
+        await SendAsync<UserOutput>(HttpMethod.Get, await GetApiBaseUriAsync("UserApi"), BindRoute("users/{id}", ("id", id)));
 }
 ```
 
 ## Pages and layout
 
-Pages stay in the consumer (routes are compile-time constants), composed from the toolkit components. Add `@using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Session` (and `.Shared`, `.Json`, `.Layout`) to your `_Imports.razor`, and register the toolkit assembly with the router only if you add routable components of your own there.
+Pages belong to the application (routes are compile-time constants), composed from the toolkit components. Add `@using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Session` (and `.Shared`, `.Json`, `.Layout`) to the application's `_Imports.razor`, and register the toolkit assembly with the router only if you add routable components of your own there.
 
 ```razor
 @* App.razor *@
 <head>
-    <UiHeadAssets Stylesheets='["my-ui.css"]' />
+    <UiHeadAssets Stylesheets='["user-admin.css"]' />
 </head>
 <body>
     <Routes />
@@ -85,7 +85,7 @@ Pages stay in the consumer (routes are compile-time constants), composed from th
 @* Pages/Login.razor *@
 @page "/ui/login"
 @layout LoginLayout
-<LoginForm Title="My UI" LogoPath="logo.png" Subtitle="Developer Admin Panel" />
+<LoginForm Title="User Admin" LogoPath="logo.png" Subtitle="User management" />
 
 @* Pages/Logout.razor *@
 @page "/ui/logout"
@@ -103,7 +103,7 @@ Pages stay in the consumer (routes are compile-time constants), composed from th
 A paginated table pairs the toolkit's classes with `PaginationState` (call `Paginate` once per change and keep the result):
 
 ```razor
-<div class="events-table table-with-footer">
+<div class="users-table table-with-footer">
     <div class="table-scroll">
         <table class="sticky-edges-table">...</table>
     </div>

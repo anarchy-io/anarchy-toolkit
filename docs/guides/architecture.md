@@ -1,6 +1,9 @@
 # Layered Architecture
 
-This guide explains how the toolkit is organized on disk and in namespaces, and the one rule that keeps it healthy: **dependencies only point down the layers**. 🧭
+This guide explains how the toolkit is organized on disk and in namespaces, and the rule that governs its dependencies: **dependencies only point down the layers**.
+
+> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+{: .notice--info}
 
 ## The layers
 
@@ -132,5 +135,3 @@ The responsibility folders produce a few namespace segments that collide with ty
 - **`Host`.** A `Host/` folder (e.g. `Hosting/Host/`) can shadow `Microsoft.Extensions.Hosting.Host` for code in neighboring namespaces. If you get `CS0118` on `Host.CreateDefaultBuilder(...)`, use the full type name.
 
 The general fix for `CS0118` ("is a namespace but is used like a type") or `CS0104` (ambiguous reference) is the same: an alias placed right after the file-scoped namespace line.
-
-Small, consistent structure makes it obvious where code belongs and makes layering drift visible in review. 💙

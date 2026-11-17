@@ -1,30 +1,33 @@
 # Async Conventions
 
-This guide explains how async code is written in the toolkit, so APIs and workers built on it behave predictably. ✨
+This guide defines how asynchronous code is written in the toolkit and in applications built on it, so that APIs and workers behave predictably under load and during shutdown.
 
-## Why this matters (more than it looks)
+> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+{: .notice--info}
 
-When an application is deployed as a Lambda, cancellation can feel less urgent day-to-day: AWS spins up a fresh invocation and keeps moving.
+## Why it matters
 
-But toolkit packages are also used by long-lived workers (`Anarchy.Toolkit.Hosting.Workers` on EC2 or ECS), and there things change fast:
+In a short-lived host such as AWS Lambda, each invocation is bounded by the platform, so missing cancellation support is rarely visible.
 
-- long-running calls can block loops,
-- shutdown can become slow,
-- retries and recovery can get messy.
+Long-lived workers (`Anarchy.Toolkit.Hosting.Workers` on EC2 or ECS) are different. Without cancellation:
 
-So this can feel like overkill at first, but in worker mode it is absolutely worth it. 🧠
+- long-running calls block processing loops,
+- shutdown is delayed until in-flight calls complete or time out,
+- retries and recovery become harder to reason about.
 
-## 🏷️ Naming rule
+Apply these rules consistently, even in code that currently runs only in short-lived hosts.
+
+## Naming rule
 
 Use the `Async` suffix for asynchronous methods.
 
-Examples from the toolkit:
+Examples:
 
-- `GetLatestIdAsync`
-- `RunInManagedSessionAsync`
-- `ExecuteAsync`
+- `GetUserByIdAsync`
+- `RunInManagedSessionAsync` (toolkit)
+- `ExecuteAsync` (toolkit)
 
-## 🧵 Cancellation rule
+## Cancellation rule
 
 Expose an explicitly optional token on async methods:
 
@@ -38,9 +41,9 @@ Typical signature pattern (as in `IStoragePolicy<TStorage>.ExecuteAsync`):
 Task<TResult> ExecuteAsync(..., CancellationToken? cancellationToken = null)
 ```
 
-This keeps call sites clean while still letting worker, host or request cancellation flow through when needed.
+Call sites that have no token stay concise, while worker, host or request cancellation still flows through when a token is available.
 
-## 🔄 Propagation rule
+## Propagation rule
 
 If a method accepts `CancellationToken? cancellationToken = null`, pass it downstream wherever supported.
 
@@ -49,32 +52,32 @@ For database queries specifically:
 - use command-level cancellation (for example Dapper's `CommandDefinition`) for calls that can hang or run long,
 - keep simple, low-risk queries straightforward when cancellation is already bounded by other controls (timeouts, retries, short-lived operations).
 
-So this is not a blanket rule to force `CommandDefinition` everywhere; it is a practical tool to apply where the risk is higher. 🎯
+`CommandDefinition` is not mandatory for every query; use it where a query can block for an unbounded time.
 
 Example in a repository deriving from `PostgresDbReaderRepositoryBase`:
 
 ```csharp
-public async Task<IReadOnlyCollection<MyEntity>> GetPendingAsync(CancellationToken? cancellationToken = null)
+public async Task<IReadOnlyCollection<UserEntity>> GetPendingActivationAsync(CancellationToken? cancellationToken = null)
 {
     return await dbPolicy.ExecuteAsync(async (connEnvelope, callbackToken) => {
         var token = cancellationToken ?? callbackToken ?? CancellationToken.None;
 
         // Use CommandDefinition for potentially hanging or heavy queries.
         var command = new CommandDefinition(
-            commandText: LoadSql("MyEntity.Get.Pending"),
+            commandText: LoadSql("User.Get.PendingActivation"),
             parameters: new { Limit = 100 },
             cancellationToken: token
         );
 
-        var rows = await connEnvelope.DataStorageConnection.QueryAsync<MyEntity>(command);
+        var rows = await connEnvelope.DataStorageConnection.QueryAsync<UserEntity>(command);
         return rows.ToArray();
-    }, operationName: "MyEntity.Get.Pending", cancellationToken: cancellationToken);
+    }, operationName: "User.Get.PendingActivation", cancellationToken: cancellationToken);
 }
 ```
 
 The `operationName` is also attached to the database-policy duration metric as the `operation_name` tag. When omitted, the policy falls back to the calling method's call site.
 
-## ⚙️ Worker-focused guidance
+## Worker-focused guidance
 
 In workers built on `WorkerBase` / `MonitoredWorkerBase` / `ResilientWorkerBase`:
 
@@ -82,4 +85,4 @@ In workers built on `WorkerBase` / `MonitoredWorkerBase` / `ResilientWorkerBase`
 - make polling and publishing loops stoppable,
 - avoid uncancelable network or database calls in shutdown paths.
 
-This gives cleaner shutdowns, fewer stuck operations, and better resilience for continuously running workers. 💙
+Following these rules results in prompt shutdowns, fewer stuck operations and more predictable recovery for continuously running workers.

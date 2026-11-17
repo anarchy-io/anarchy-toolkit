@@ -1,6 +1,9 @@
 # Testing Conventions
 
-This guide explains how test cases and shared test resources are named and organized in the toolkit. The goal is simple: a test or fixture should be easy to find from the type it exercises. 🧭
+This guide explains how test cases and shared test resources are named and organized in the toolkit. A test or fixture must be easy to locate from the type it exercises.
+
+> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+{: .notice--info}
 
 ## Test layout
 
@@ -47,13 +50,13 @@ The Fallout build discovers test projects by name (a project named after its kin
 
 ## Test naming rules
 
-- Name the test type after its concrete subject under test (SUT), with the singular `Test` suffix: `FooBar.cs` becomes `FooBarTest.cs`.
+- Name the test type after its concrete subject under test (SUT), with the singular `Test` suffix: `UserService.cs` becomes `UserServiceTest.cs`.
 - Keep the test file in the same relative folder as the SUT, with the namespace aligned to that folder.
 - Use the exact SUT name. Do not shorten or rename path segments in the test tree.
 
 ```text
-Good:  FooBarServiceTest.cs
-Avoid: FooBarServiceTests.cs
+Correct:   UserServiceTest.cs
+Incorrect: UserServiceTests.cs
 ```
 
 > Some older suites (`Core.Health`, `Core.Observability`, `Infrastructure.CorrelationId`, the `Hosting.Workers` health API, `Infrastructure.Observability.*`, and the `Testing` in-memory sinks) still use `*Tests` class names. They do follow the folder and namespace rules above. New tests should use `Test`.
@@ -63,9 +66,9 @@ Avoid: FooBarServiceTests.cs
 When one test type is split across files, keep a single primary file and name the others after the same test type:
 
 ```text
-FooBarControllerTest.cs
-FooBarControllerTest.Create.cs
-FooBarControllerTest.Read.cs
+UserControllerTest.cs
+UserControllerTest.Create.cs
+UserControllerTest.Read.cs
 ```
 
 ### Test methods
@@ -73,7 +76,7 @@ FooBarControllerTest.Read.cs
 Name test methods after the observed behavior:
 
 ```csharp
-Create_WhenFooHasNoBars_ReturnsEmptyResult()
+Create_WhenUserHasNoRoles_AssignsDefaultRole()
 ```
 
 This makes the scenario, condition and outcome visible in the test results without reading the implementation.
@@ -122,11 +125,11 @@ Mocks can still be used for dependencies outside the boundary under test, but do
 
 APIs and jobs built on the toolkit are validated end-to-end in `*.EndToEnd.Tests` projects. These tests exercise the hosted application and can verify several integrations together. They should validate externally observable behavior (an API response, a processed message, a completed job) rather than implementation details.
 
-## Test kits 🧰
+## Test kits
 
 The packable test kits under `src/Testing` are the toolkit's shared test helpers. Reuse them before adding local setup code.
 
-### `TestCaseBase` ⭐ (`Anarchy.Toolkit.Testing`)
+### `TestCaseBase` (`Anarchy.Toolkit.Testing`)
 
 Most unit and integration tests should inherit from `TestCaseBase`. It provides:
 
@@ -135,24 +138,24 @@ Most unit and integration tests should inherit from `TestCaseBase`. It provides:
 
 Tests that read settings inherit from `TestCaseBase<TAppSettings>` instead, where `TAppSettings` is your own settings type implementing `IAppSettings` (the toolkit never ships a concrete one). It adds `TestSettings()`: a cached `TAppSettings` bound from the `appsettings.json` and `appsettings.Development.json` embedded in the assembly that declares `TAppSettings` (`<EmbeddedResource Include="appsettings*.json" />`). `TestHelper.TestSettings<TAppSettings>()` returns the same instance outside a `TestCaseBase`.
 
-`FixtureObserver` is fully in memory, so its logs (`SinkLogs`) and metrics (`InMemoryMeasurer`) can be asserted when observability is the behavior under test. Avoid asserting incidental logs or metrics in ordinary business-rule tests; assert the business result first. 🎯
+`FixtureObserver` is fully in memory, so its logs (`SinkLogs`) and metrics (`InMemoryMeasurer`) can be asserted when observability is the behavior under test. Avoid asserting incidental logs or metrics in ordinary business-rule tests; assert the business result first.
 
 ```csharp
-public class FooBarServiceTest : TestCaseBase
+public class UserServiceTest : TestCaseBase
 {
     [Fact]
-    public void Execute_WhenFooIsValid_ReturnsBar()
+    public void Activate_WhenUserIsPending_ReturnsActiveUser()
     {
-        var sut = new FooBarService(FixtureObserver);
+        var sut = new UserService(FixtureObserver);
 
-        var result = sut.Execute(new FooBarEntityFixture().Build());
+        var result = sut.Activate(new UserEntityFixture().Build());
 
         result.Should().NotBeNull();
     }
 }
 ```
 
-### `TestHelper` 🎲 (`Anarchy.Toolkit.Testing`)
+### `TestHelper` (`Anarchy.Toolkit.Testing`)
 
 `TestHelper` provides random values and common setup utilities. Prefer it when a value must be unique or intentionally arbitrary, instead of hard-coding data unrelated to the scenario:
 
@@ -163,9 +166,9 @@ public class FooBarServiceTest : TestCaseBase
 - `LowPrecisionNow()` provides a timestamp suitable for serialization-sensitive assertions.
 - `WaitAsync(...)` and `OverrideProperty(...)` support asynchronous checks and exceptional setup cases.
 
-Keep scenario-defining values explicit. For example, use `const long fooId = 1001L` when the assertion depends on that id, and `TestHelper.RandomId<long>()` for a unique value whose exact content does not matter.
+Keep scenario-defining values explicit. For example, use `const long userId = 1001L` when the assertion depends on that id, and `TestHelper.RandomId<long>()` for a unique value whose exact content does not matter.
 
-### `PostgresHelper` 🐘 (`Anarchy.Toolkit.Testing.Postgres`)
+### `PostgresHelper` (`Anarchy.Toolkit.Testing.Postgres`)
 
 `PostgresHelper` creates PostgreSQL dependencies backed by the local database configured in the test settings of your settings type:
 
@@ -178,11 +181,11 @@ Use them in database integration tests, so the concrete repository reaches Postg
 
 `OracleHelper` / `SingletonOracleHelper` (`Anarchy.Toolkit.Testing.Oracle`) offer the same helpers for Oracle. Both delegate the provider-agnostic parts (enum type handlers, `TruncateTableAsync`, `ClearTableAsync`, options mapping) to `DbTestHelper` and `DbOptionsMapper` in `Anarchy.Toolkit.Testing.Db`.
 
-### AWS helpers ☁️ (`Anarchy.Toolkit.Testing.Aws`)
+### AWS helpers (`Anarchy.Toolkit.Testing.Aws`)
 
 `SqsHelper<TAppSettings>`, `AwsMessageBrokerHelper` (constructed with an `IAwsAppSettings`) and `SqsMessageFixture` create, purge and read LocalStack SNS/SQS resources and build `SQSEvent` payloads for message-driven tests.
 
-### `RestApiTestCaseBase` 🚀 (`Anarchy.Toolkit.Testing.Web`)
+### `RestApiTestCaseBase` (`Anarchy.Toolkit.Testing.Web`)
 
 REST API end-to-end tests should inherit from `RestApiTestCaseBase<TStartup, TAppSettings>`; the mock bearer token's issuer defaults to `AuthService.Host` from the test settings of `TAppSettings`. It supplies a hosted `HttpClient`, route helpers (`Get`, `Post`, `Put`, `Patch`), authorization-token setup, response parsing and status assertions.
 
@@ -194,13 +197,13 @@ Its key benefit is that it exercises both hosting models:
 
 Use the separate native and Lambda methods for responses with variable fields (timestamps, durations, generated ids). Use `TestEndpointAsync(...)` when both paths should return the same result.
 
-### Mock server 🎭 (`Anarchy.Toolkit.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
+### Mock server (`Anarchy.Toolkit.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
 
 When the application under integration or end-to-end test calls HTTP services you do not run, stand them in with the mock server instead of mocking the clients:
 
 1. Add a runnable `*.MockServer` project whose `Program` calls `MockServerEntryPoint.RunAsync(args, …)`, plugging in any middlewares that compute answers from the request, and write MockServer-style JSON expectations (e.g. under `tests/mocks`).
 2. Implement `IMockServerBuild` in the build and run `make test_integration_mocked EXPECTATIONS=tests/mocks` (or `test_end_to_end_mocked`): the server starts in the background, the tests get its address as `MOCKSERVER_URL`, and it stops afterwards. `make mock_server_start` / `mock_server_stop` keep one running across several runs.
-3. In the tests, use a `MockServerFixture` (it connects to `MOCKSERVER_URL`, or spawns the server when tests run on their own) and assert what the application sent with `mock.Client.AssertReceivedAsync("POST", "/payments/{id}/capture", times: 1)`.
+3. In the tests, use a `MockServerFixture` (it connects to `MOCKSERVER_URL`, or spawns the server when tests run on their own) and assert what the application sent with `mock.Client.AssertReceivedAsync("POST", "/clients/{id}/users", times: 1)`.
 
 To start or update expectations from a service's OpenAPI specification, run `make mock_server_sync_openapi SPEC=<file or URL> OUT=tests/mocks`: it only adds expectations for endpoints that have none, and lists endpoints that changed or disappeared for you to fix by hand. Review the generated bodies (taken from the specification's examples, or placeholders shaped like its schemas) before committing.
 
@@ -236,14 +239,14 @@ Use a mock resource when it configures or returns a mocking-framework substitute
 Use `EntityFixtureBase<T>` for repeatable defaults with focused overrides. A fixture provides a valid default object through `BuildDefaultFixture()`, so a test only supplies the values that matter to its scenario:
 
 ```csharp
-public class FooBarPayloadFixture : EntityFixtureBase<FooBarPayload>
+public class UserEntityFixture : EntityFixtureBase<UserEntity>
 {
-    protected override FooBarPayload BuildDefaultFixture()
+    protected override UserEntity BuildDefaultFixture()
     {
-        return new FooBarPayload {
-            FooId = 1,
-            BarId = 2,
-            IsEnabled = true
+        return new UserEntity {
+            UserId = 1,
+            ClientId = 2,
+            IsActive = true
         };
     }
 }
@@ -252,16 +255,16 @@ public class FooBarPayloadFixture : EntityFixtureBase<FooBarPayload>
 Call `Build()` without arguments when the default instance is enough, or pass an anonymous object to override selected properties:
 
 ```csharp
-var payload = new FooBarPayloadFixture().Build(new { BarId = 1001L });
+var user = new UserEntityFixture().Build(new { ClientId = 1001L });
 ```
 
 By default, a `null` override keeps the fixture's default value. Pass `overrideWithNulls: true` only when the test explicitly needs a `null`:
 
 ```csharp
-var withoutBar = new FooBarPayloadFixture().Build(new { BarId = (long?)null }, overrideWithNulls: true);
+var withoutClient = new UserEntityFixture().Build(new { ClientId = (long?)null }, overrideWithNulls: true);
 ```
 
-Use `BuildList(...)`, `ToJson(...)` and `ToJsonList(...)` when the scenario needs a collection or serialized data. ✨
+Use `BuildList(...)`, `ToJson(...)` and `ToJsonList(...)` when the scenario needs a collection or serialized data.
 
 ## Quick checklist
 
@@ -273,5 +276,3 @@ Before adding a test or shared test resource, check:
 4. Is the test level appropriate for the SUT and its boundary?
 5. Does a real-object builder use the `Fixture` suffix, a mocking setup `Mocker`/`Mock`, and a stand-in type the `Dummy` prefix?
 6. Is a resource needed by several packages placed in a `src/Testing` kit instead of being copied?
-
-Small, predictable conventions make the test suite fast to navigate and structural drift obvious in review. 💙

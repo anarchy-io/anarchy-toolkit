@@ -1,6 +1,6 @@
 # Database Providers
 
-This guide explains how the toolkit's relational persistence is split between a provider-agnostic core and thin provider adapters, what is specific to each supported database, and how to add a new one. 🗄️
+This guide explains how the toolkit's relational persistence is split between a provider-agnostic core and thin provider adapters, what is specific to each supported database, and how to add a new one.
 
 ## How the layers fit together
 
@@ -54,4 +54,4 @@ A new provider only adds a thin adapter, mirroring the existing provider project
 3. **`Testing.<Provider>`**: helpers delegating to `DbTestHelper`.
 4. **The outbox, outside the toolkit**: the toolkit only ships the `Db*RepositoryBase<TConnection, TDialect>` outbox bases. Applications (or an adapters package) add keyed-DI implementations over them, with the provider's SQL in a `Queries/` folder next to them (`LoadSql` resolves from the most derived type's namespace). Override `IdSequenceName` if the sequences are named differently.
 
-Run `make check_layering` afterwards: provider projects belong to the `Infrastructure` layer and must not reference anything above it. 💙
+Then run `make check_layering`: provider projects belong to the `Infrastructure` layer and must not reference any higher layer.
