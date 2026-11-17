@@ -13,6 +13,21 @@ public static class EndpointRouteBuilderExtension
     extension(IEndpointRouteBuilder endpoints)
     {
         /// <summary>
+        /// Maps the toolkit UI endpoints: the session login/logout endpoints when the cookie session is registered
+        /// with cookie authentication enabled; nothing otherwise.
+        /// </summary>
+        /// <returns>The endpoint route builder, for chaining.</returns>
+        public IEndpointRouteBuilder MapToolkitUi()
+        {
+            if (endpoints.ServiceProvider.GetService<UiAuthenticationOptions>() is { EnableCookieAuth: true })
+            {
+                endpoints.MapToolkitUiSessionEndpoints();
+            }
+
+            return endpoints;
+        }
+
+        /// <summary>
         /// Maps the login (form POST, antiforgery-protected) and logout endpoints at the paths configured in
         /// <see cref="UiAuthenticationOptions"/>.
         /// </summary>

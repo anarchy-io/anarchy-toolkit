@@ -30,13 +30,14 @@ public class BasePresenter(
         hostEnvironment ?? throw new ArgumentNullException(nameof(hostEnvironment));
 
     /// <summary>
-    /// The prefix applied to every link: <c>/{environment-name}</c> when the environment path prefix is enabled on a
-    /// non-local host; otherwise an empty string.
+    /// The prefix applied to every link: <see cref="UiRoutingOptions.PathBase"/>, then <c>/{environment-name}</c> when
+    /// the environment path prefix is enabled on a non-local host; an empty string when neither applies.
     /// </summary>
-    public readonly string BaseHypertextReference = !routingOptions.EnableEnvironmentNamePathPrefix
-                                                    || hostEnvironment.IsLocal() ?
-        string.Empty :
-        "/" + hostEnvironment.EnvironmentName.ToLower();
+    public readonly string BaseHypertextReference = routingOptions.PathBase
+                                                    + (!routingOptions.EnableEnvironmentNamePathPrefix
+                                                       || hostEnvironment.IsLocal() ?
+                                                        string.Empty :
+                                                        "/" + hostEnvironment.EnvironmentName.ToLower());
 
     /// <summary>Builds an absolute link to <paramref name="route"/>, prefixed with <see cref="BaseHypertextReference"/>.</summary>
     /// <param name="route">The route, with or without a leading slash.</param>

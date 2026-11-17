@@ -36,4 +36,26 @@ public class BasePresenterTest
     {
         Create("Production", prefix: false).GetUiRoute("login").Should().Be("/ui/login");
     }
+
+    [Fact]
+    public void GetRoute_WithPathBase_PrefixesPathBaseBeforeEnvironment()
+    {
+        var presenter = new BasePresenter(
+            new UiRoutingOptions { PathBase = "/__mock/ui", EnableEnvironmentNamePathPrefix = true },
+            Mock.Of<IHostEnvironment>(x => x.EnvironmentName == "Testing"));
+
+        presenter.BaseHypertextReference.Should().Be("/__mock/ui/testing");
+        presenter.GetUiRoute("orders").Should().Be("/__mock/ui/testing/ui/orders");
+    }
+
+    [Fact]
+    public void GetRoute_WithPathBaseOnLocalHost_BaseHrefEndsWithSlash()
+    {
+        var presenter = new BasePresenter(
+            new UiRoutingOptions { PathBase = "/__mock/ui" },
+            Mock.Of<IHostEnvironment>(x => x.EnvironmentName == "Development"));
+
+        presenter.GetRoute().Should().Be("/__mock/ui/");
+        presenter.GetRoute("css/toolkit-ui.css").Should().Be("/__mock/ui/css/toolkit-ui.css");
+    }
 }

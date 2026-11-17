@@ -14,12 +14,12 @@ dotnet add package Anarchy.Toolkit.Web.Ui
 
 ## When to use it
 
-Use this package for a server-interactive Blazor WebApp that signs in with OAuth client credentials, maintains a cookie session and calls environment-specific downstream APIs. It provides shared UI infrastructure and components, not your application's pages, API contracts or identity server.
+Use this package for a server-interactive Blazor WebApp, with or without a login. `AddToolkitUi` runs on a plain `WebApplication`; the cookie session add-on (`AddCookieSession`) signs in with OAuth client credentials and calls environment-specific downstream APIs. It provides shared UI infrastructure and components, not your application's pages, API contracts or identity server.
 
 ## How to use it
 
-1. Define your settings module and derive a startup from `UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>`.
-2. Provide `UiAuthenticationOptions`, including the required OAuth scope and an environment catalog with auth and API URLs. The deployed host's environment must be present in that catalog.
+1. Call `services.AddToolkitUi()`, `app.UseToolkitUi()` and `endpoints.MapToolkitUi()`, or derive a startup from `UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>`.
+2. For a login, opt into the session with `AddToolkitUi(ui => ui.AddCookieSession(options))` (or by overriding `GetUiAuthenticationOptions`), providing `UiAuthenticationOptions`, including the required OAuth scope and an environment catalog with auth and API URLs. The deployed host's environment must be present in that catalog.
 3. Register `AddToolkitUiApiHttpClient`, your own clients and presenters. Derive a client from `UiApiClientBase` to resolve the target environment and send authenticated calls.
 4. Map your Razor application with interactive server rendering, then compose pages and layouts with the supplied login, session, notification, modal and pagination components. Keep real credentials and deployment URLs in appropriate configuration or secret stores.
 
@@ -38,6 +38,10 @@ See the [UI guide](https://anarchy-io.github.io/anarchy-toolkit/guides/building-
 - **Rebranding.** Override the tokens at the top of `css/toolkit-ui.css` (`--primary-color`, `--link-color`, `--header-bg`, `--brand-gradient`, …) in a stylesheet passed to `UiHeadAssets`' `Stylesheets`, which load after the toolkit's.
 
 ## Releases
+
+### 2.0.0
+
+- refactor(Web.Ui)!: make the cookie session an opt-in add-on and allow UIs without a startup base
 
 ### 1.2.2
 

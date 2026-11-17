@@ -41,7 +41,7 @@ public static class ApplicationBuilderExtension
         /// Does nothing for published applications (they have no runtime manifest; the assets are in <c>wwwroot</c>) and
         /// when already applied. In <c>Development</c>, where ASP.NET Core usually loads them already, it also covers
         /// hosts whose manifest is only known from the <c>staticWebAssets</c> setting. Call it before
-        /// <c>MapStaticAssets</c>; <c>UseToolkitHostUi</c> calls it for you.
+        /// <c>MapStaticAssets</c>; <c>UseToolkitUi</c> and <c>UseToolkitHostUi</c> call it for you.
         /// </remarks>
         /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseToolkitUiStaticWebAssets()
@@ -61,6 +61,27 @@ public static class ApplicationBuilderExtension
                 StaticWebAssetsLoaded.Add(environment, new object());
             }
             return app;
+        }
+
+        /// <summary>
+        /// Adds the minimal toolkit UI pipeline: <c>UseToolkitUiStaticWebAssets</c>, the shared toolkit static files, <c>UseToolkitUiStaticFiles</c> and
+        /// antiforgery. Needs no session or observability services; use it on a plain <c>WebApplication</c>
+        /// registered with <c>AddToolkitUi</c>.
+        /// </summary>
+        /// <remarks>
+        /// Antiforgery must run after routing and authentication: when you add those yourself, call them before this.
+        /// Works inside an <c>app.Map("/sub/path", ...)</c> branch; set <see cref="Anarchy.Toolkit.Web.Ui.Entity.Ui.UiRoutingOptions.PathBase"/>
+        /// to the same path so rendered links resolve under it.
+        /// </remarks>
+        /// <returns>The application builder, for chaining.</returns>
+        public IApplicationBuilder UseToolkitUi()
+        {
+            return app
+                    .UseToolkitUiStaticWebAssets()
+                    .UseToolkitStaticFiles()
+                    .UseToolkitUiStaticFiles()
+                    .UseAntiforgery()
+                ;
         }
 
         /// <summary>

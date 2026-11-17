@@ -1,6 +1,6 @@
 # Building UIs
 
-`Anarchy.Toolkit.Web.Ui` provides a generic UI host: an interactive-server Blazor application behind a cookie session, where users sign in with OAuth client credentials and the UI calls downstream APIs on their behalf. Everything domain-specific (APIs, pages and environment URLs) is supplied by the application. The examples below build an administration UI for a user-management API.
+`Anarchy.Toolkit.Web.Ui` provides a generic UI host: an interactive-server Blazor application that runs without a login, with an opt-in cookie session where users sign in with OAuth client credentials and the UI calls downstream APIs on their behalf. Everything domain-specific (APIs, pages and environment URLs) is supplied by the application. The examples below build an administration UI for a user-management API.
 
 [`samples/Samples.Ui`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) is a runnable example of the features described in this guide.
 
@@ -8,7 +8,9 @@
 
 | Piece | Where | What it does |
 |---|---|---|
-| `UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>` | `Ui/Composition/Startup` | Razor components, interactive server mode, cascading auth state, presenters, cookie session, login/logout endpoints, static assets. |
+| `AddToolkitUi` / `ToolkitUiBuilder` | `Ui/Extension/DependencyInjection` | Razor components, interactive server mode, presenters and routing options; `AddCookieSession` adds the cookie session, cascading auth state and `LoginPresenter`. |
+| `UseToolkitUi` / `MapToolkitUi` | `Extension/Service/Builder` | Static assets and antiforgery; the login/logout endpoints when the cookie session is on. |
+| `UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>` | `Ui/Composition/Startup` | Thin startup wrapper over the above, plus the toolkit common middlewares; session opt-in through `GetUiAuthenticationOptions` and add-ons through `ConfigureUi`. |
 | `UiAuthenticationOptions` | `Entity/Ui` | Cookie settings, login/logout/home paths, OAuth `Scope`, and the `Environments` a session can target. |
 | `UiRoutingOptions` | `Entity/Ui` | Route prefixes and the optional `/{environment}` link prefix, for hosts served behind an API gateway stage. |
 | `UiEnvironment` / `IUiEnvironmentCatalog` | `Core/Entity/Ui`, `Core/Service/Ui` | Auth service URL and named downstream API URLs per environment. |
@@ -19,6 +21,33 @@
 | `toolkit-ui.css`, `toolkit-ui.js` | `wwwroot` (embedded) | Styles for the components above, layered on the consumer's theme stylesheet; scroll-edge shadows for wide tables. |
 
 ## Wiring a UI
+
+The UI is a core plus opt-in add-ons. The core (`AddToolkitUi`) needs no login, no environment catalog and no startup base, so it runs on a plain `WebApplication`:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddToolkitUi();
+
+var app = builder.Build();
+app.UseToolkitUi();       // toolkit + embedded UI static files, antiforgery
+app.MapToolkitUi();       // session endpoints only when the cookie session is on
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.Run();
+```
+
+Components such as `ThemeToggle`, `JsonViewLink`, `JsonModalHost`, `Pagination` and `NotificationHost` work as they are. The session components (`LoginForm`, `SessionBadge`, `RootRedirect`, `RedirectToLogin`) and `UiApiClientBase` need the cookie session add-on:
+
+```csharp
+builder.Services.AddToolkitUi(ui => ui
+    .UseRouting(new UiRoutingOptions { EnableEnvironmentNamePathPrefix = true })
+    .AddCookieSession(new UiAuthenticationOptions { Scope = "UserApi:Admin", Environments = [/* ... */] }));
+```
+
+To mount the UI under a sub-path, call `UseToolkitUi()` inside `app.Map("/admin", branch => ...)` and set `UiRoutingOptions.PathBase = "/admin"` (through `ui.UseRouting(...)`) so links and `<base href>` resolve under it.
+
+With a session, add `UseRouting()`, `UseAuthentication()` and `UseAuthorization()` before `UseToolkitUi()`.
+
+`UiWebAppStartupBase` wraps the same pieces for toolkit hosts. The session is off by default; return options from `GetUiAuthenticationOptions` to opt in, and override `ConfigureUi(ToolkitUiBuilder)` for further add-ons:
 
 ```csharp
 public class UserAdminStartup(IWebHostEnvironment environment, IConfiguration configuration)
