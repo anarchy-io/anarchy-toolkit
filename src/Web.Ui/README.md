@@ -39,6 +39,10 @@ See the [UI guide](https://anarchy-io.github.io/anarchy-toolkit/guides/building-
 
 ## Releases
 
+### 1.2.2
+
+- fix(Web.Ui): serve static web assets of unpublished builds outside Development
+
 ### 1.2.1
 
 - docs(packages): identify each package's pillar and layer

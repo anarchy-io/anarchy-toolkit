@@ -66,6 +66,14 @@ public class UserApiClient(IHttpClientFactory factory, IUiSessionContext session
 }
 ```
 
+### Static web assets outside Development
+
+Blazor's `_framework/blazor.web.js`, and the static assets of referenced packages, come from the build's static web
+assets manifest. ASP.NET Core only loads it in `Development`, so an unpublished build run in `Local`, `Testing` or a test
+host would answer an empty script and render blank interactive pages. `UseToolkitHostUi` calls
+`UseToolkitUiStaticWebAssets()` first to load it in every environment; call it yourself before `MapStaticAssets()` if you
+build the pipeline without `UseToolkitHostUi`. Published applications are unaffected: their assets are in `wwwroot`.
+
 ## Pages and layout
 
 Pages belong to the application (routes are compile-time constants), composed from the toolkit components. Add `@using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Session` (and `.Shared`, `.Json`, `.Layout`) to the application's `_Imports.razor`, and register the toolkit assembly with the router only if you add routable components of your own there.
