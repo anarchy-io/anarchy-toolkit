@@ -20,6 +20,10 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.4.0
+
+- feat: `OpenApiExpectationSync` adds mock server expectations for OpenAPI/Swagger endpoints (file or URL, JSON or YAML) that have none, never changing existing ones and reporting changed or removed endpoints; `mock_server_sync_openapi` Make target
+
 ### 1.3.0
 
 - refactor: `LocalPorts` moved to `Anarchy.Toolkit.Core.Helper` (now references Anarchy.Toolkit.Core)
