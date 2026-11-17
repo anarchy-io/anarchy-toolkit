@@ -38,8 +38,8 @@ public interface IMockServerBuild : IStandardBuild
     [Parameter("Mock server host project (default: the runnable project whose name ends in MockServer)")]
     string? MockServerProject => TryGetValue(() => MockServerProject);
 
-    /// <summary>The port (<c>--mock-server-port</c>); by default <c>6000</c>, or the next free one.</summary>
-    [Parameter("Mock server port (default: 6000, or the next free one)")]
+    /// <summary>The port (<c>--mock-server-port</c>); by default <c>6001</c>, or the next free one.</summary>
+    [Parameter("Mock server port (default: 6001, or the next free one)")]
     int? MockServerPort => TryGetValue<int?>(() => MockServerPort);
 
     /// <summary>Expectation files, directories or globs, relative to the repository root (<c>--mock-server-expectations</c>).</summary>

@@ -325,7 +325,7 @@
             "null"
           ],
           "format": "int32",
-          "description": "Mock server port (default: 6000, or the next free one)"
+          "description": "Mock server port (default: 6001, or the next free one)"
         },
         "MockServerProject": {
           "type": "string",

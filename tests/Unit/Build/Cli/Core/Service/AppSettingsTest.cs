@@ -43,7 +43,7 @@ public class AppSettingsTest
     public void MergeAppSettings_GivenExistingValues_KeepsThemAndExtraKeysWithoutPrompting()
     {
         // Arrange
-        var existing = Parse("""{ "AuthService": { "Host": "https://auth.local/" }, "Port": 6000, "Extra": "mine" }""");
+        var existing = Parse("""{ "AuthService": { "Host": "https://auth.local/" }, "Port": 6001, "Extra": "mine" }""");
         var prompted = new List<string>();
 
         // Act
@@ -56,7 +56,7 @@ public class AppSettingsTest
         prompted.Should().Equal("AuthService:ClientId");
         result.Settings["AuthService"]!["Host"]!.GetValue<string>().Should().Be("https://auth.local/");
         result.Settings["AuthService"]!["ClientId"]!.GetValue<string>().Should().Be("client");
-        result.Settings["Port"]!.GetValue<int>().Should().Be(6000);
+        result.Settings["Port"]!.GetValue<int>().Should().Be(6001);
         result.Settings["Extra"]!.GetValue<string>().Should().Be("mine");
     }
 

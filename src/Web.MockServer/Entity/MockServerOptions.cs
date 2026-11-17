@@ -7,7 +7,7 @@ namespace Anarchy.Toolkit.Web.MockServer.Entity;
 public sealed class MockServerOptions
 {
     /// <summary>The port used when none is given; when it is taken, the next free one is used instead.</summary>
-    public const int DefaultPort = 6000;
+    public const int DefaultPort = 6001;
 
     /// <summary>The port to listen on; <see langword="null"/> means <see cref="DefaultPort"/> or the next free one.</summary>
     public int? Port { get; set; }

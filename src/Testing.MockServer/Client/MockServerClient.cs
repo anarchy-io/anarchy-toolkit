@@ -11,7 +11,7 @@ namespace Anarchy.Toolkit.Testing.MockServer.Client;
 /// </summary>
 /// <example>
 /// <code language="csharp">
-/// var mock = new MockServerClient(new Uri("http://localhost:6000"));
+/// var mock = new MockServerClient(new Uri("http://localhost:6001"));
 /// await mock.ResetAsync();
 /// await mock.AddExpectationAsync("GET", "/stock/{sku}", 200, new { available = 0 });
 /// // … exercise the application …
@@ -24,7 +24,7 @@ public sealed class MockServerClient : IDisposable
     private readonly bool _ownsHttp;
 
     /// <summary>Creates a client for the mock server at <paramref name="baseAddress"/>.</summary>
-    /// <param name="baseAddress">The server's base address, e.g. <c>http://localhost:6000</c>.</param>
+    /// <param name="baseAddress">The server's base address, e.g. <c>http://localhost:6001</c>.</param>
     public MockServerClient(Uri baseAddress) : this(new HttpClient { BaseAddress = baseAddress }) => _ownsHttp = true;
 
     /// <summary>Creates a client over an existing <see cref="HttpClient"/> whose base address is the server's.</summary>
