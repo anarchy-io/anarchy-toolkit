@@ -26,7 +26,7 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 ### 1.7.0
 
 - feat(Build.Cli): add opt-in agent skills to the boilerplate
-- fix(Build.Cli): print no banner on narrow terminals
+- fix(Build.Cli): print a plain title on narrow terminals
 
 ### 1.6.0
 

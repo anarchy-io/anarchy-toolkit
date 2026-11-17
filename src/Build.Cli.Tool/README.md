@@ -11,7 +11,7 @@ dotnet tool install --global Anarchy.Toolkit.Build.Cli.Tool
 anarchy-toolkit
 ```
 
-Without a command (or with `--help`), the tool shows its usage. Every command starts by printing Anarchy's logo, the same as `scripts/console/banner.sh` (wide on terminals of 116 columns or more, compact otherwise); it is omitted when the output is redirected.
+Without a command (or with `--help`), the tool shows its usage. Every command starts by printing Anarchy's logo, the same as `scripts/console/banner.sh` (wide on terminals of 116 columns or more, compact from 66, a plain title on narrower ones); it is omitted when the output is redirected.
 
 | Command | What it does |
 |---|---|
@@ -91,7 +91,7 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 - feat(Build.Cli): add opt-in agent skills to the boilerplate
 - feat(Build.Fallout): validate and sync agent skills
 - feat(Build.Cli.Tool): install agent skills from the CLI
-- fix(Build.Cli): print no banner on narrow terminals
+- fix(Build.Cli): print a plain title on narrow terminals
 
 ### 3.0.0
 
