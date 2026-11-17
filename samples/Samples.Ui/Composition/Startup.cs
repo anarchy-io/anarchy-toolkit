@@ -22,7 +22,7 @@ public sealed class Startup(IWebHostEnvironment environment, IConfiguration conf
     protected override string ApiName => "Samples UI";
 
     /// <summary>
-    /// Two environments, both served by the stubs in this host so the sample runs on its own. A real UI points
+    /// Opts into the cookie session (off by default) with two environments, both served by the stubs in this host so the sample runs on its own. A real UI points
     /// each one at that environment's auth service and API hosts.
     /// </summary>
     protected override UiAuthenticationOptions GetUiAuthenticationOptions()

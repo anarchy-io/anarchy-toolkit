@@ -11,6 +11,18 @@ public record UiRoutingOptions
     /// </summary>
     public bool EnableEnvironmentNamePathPrefix { get; init; }
 
+    /// <summary>
+    /// Path the UI is mounted under (e.g. <c>/__mock/ui</c> for <c>app.Map("/__mock/ui", ...)</c>); prepended to every
+    /// link before the environment prefix. Normalized to a leading slash and no trailing slash; empty for the root.
+    /// </summary>
+    public string PathBase {
+        get;
+        init {
+            var trimmed = (value ?? string.Empty).Trim().Trim('/');
+            field = trimmed.Length == 0 ? string.Empty : "/" + trimmed;
+        }
+    } = "";
+
     /// <summary>Route prefix of the Blazor pages.</summary>
     public string UiRoutePrefix { get; init; } = "ui";
 

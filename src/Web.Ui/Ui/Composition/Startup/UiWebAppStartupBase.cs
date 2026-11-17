@@ -4,7 +4,6 @@ using Anarchy.Toolkit.Core.Observability.Entity.Service;
 using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Web.Composition;
 using Anarchy.Toolkit.Web.Ui.Entity.Ui;
-using Anarchy.Toolkit.Web.Ui.Extension.DependencyInjection;
 using Anarchy.Toolkit.Web.Ui.Extension.Service.Builder;
 using Anarchy.Toolkit.Web.Ui.Ui.Extension.DependencyInjection;
 
@@ -16,14 +15,13 @@ namespace Anarchy.Toolkit.Web.Ui.Ui.Composition.Startup;
 /// <remarks>
 /// <para>
 /// On top of <see cref="Anarchy.Toolkit.Web.Composition.WebAppStartupBase{TAppSettingsDiModule, TAppSettings}"/> it
-/// registers the HTTP context accessor, cascading authentication state, Razor components with interactive server
-/// rendering, the UI presentation services (<c>AddToolkitUiPresentation</c>) and, unless
-/// <see cref="GetUiAuthenticationOptions"/> returns <see langword="null"/>, the cookie session
-/// (<c>AddToolkitUiAuthentication</c>).
+/// registers the toolkit UI (<c>AddToolkitUi</c>) with the routing options of <see cref="GetUiRoutingOptions"/>,
+/// the cookie session add-on when <see cref="GetUiAuthenticationOptions"/> returns options (it returns
+/// <see langword="null"/> by default, so the UI has no login), and whatever <see cref="ConfigureUi"/> adds.
 /// </para>
 /// <para>
-/// <see cref="Configure"/> runs <c>UseToolkitHostUi</c>, maps the login/logout endpoints when cookie authentication is
-/// enabled, and then calls <see cref="ConfigureUiEndpoints"/>.
+/// <see cref="Configure"/> runs <c>UseToolkitHostUi</c>, maps the toolkit UI endpoints (<c>MapToolkitUi</c>: login/logout when the cookie
+/// session is enabled), and then calls <see cref="ConfigureUiEndpoints"/>.
 /// </para>
 /// </remarks>
 /// <example>
@@ -54,11 +52,10 @@ public abstract class UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>(
     where TAppSettings : class, IAppSettings
 {
     /// <summary>
-    /// Override to specify custom UI authentication options.
-    /// Return null to disable authentication, or default options will be used.
+    /// Override to opt into the cookie session: return its options to add the OAuth login and environment catalog.
     /// </summary>
-    /// <returns>The UI authentication options; defaults to a new <see cref="UiAuthenticationOptions"/>.</returns>
-    protected virtual UiAuthenticationOptions GetUiAuthenticationOptions() => new();
+    /// <returns>The UI authentication options; <see langword="null"/> (no session) by default.</returns>
+    protected virtual UiAuthenticationOptions? GetUiAuthenticationOptions() => null;
 
     /// <summary>
     /// Override to change how rendered links are built.
@@ -66,26 +63,32 @@ public abstract class UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>(
     /// <returns>The UI routing options; defaults to a new <see cref="UiRoutingOptions"/>.</returns>
     protected virtual UiRoutingOptions GetUiRoutingOptions() => new();
 
-    /// <summary>Registers the Blazor, UI presentation and (optionally) UI session services in addition to the base services.</summary>
+    /// <summary>
+    /// Override to configure further UI add-ons. Runs after the routing options and, when enabled, the cookie session
+    /// have been applied.
+    /// </summary>
+    /// <param name="ui">The toolkit UI builder.</param>
+    protected virtual void ConfigureUi(ToolkitUiBuilder ui)
+    {
+    }
+
+    /// <summary>Registers the toolkit UI (<c>AddToolkitUi</c>) in addition to the base services.</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection, for chaining.</returns>
     protected override IServiceCollection ConfigureWebCustomServices(IServiceCollection services)
     {
-        base
+        return base
             .ConfigureWebCustomServices(services)
-            .AddHttpContextAccessor()
-            .AddCascadingAuthenticationState();
+            .AddToolkitUi(ui => {
+                ui.UseRouting(GetUiRoutingOptions());
 
-        services.AddRazorComponents().AddInteractiveServerComponents();
-        services.AddToolkitUiPresentation(GetUiRoutingOptions());
+                if (GetUiAuthenticationOptions() is { } authOptions)
+                {
+                    ui.AddCookieSession(authOptions);
+                }
 
-        var authOptions = GetUiAuthenticationOptions();
-        if (authOptions != null)
-        {
-            services.AddToolkitUiAuthentication(authOptions);
-        }
-
-        return services;
+                ConfigureUi(ui);
+            });
     }
 
     /// <summary>
@@ -113,11 +116,7 @@ public abstract class UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>(
         app
             .UseToolkitHostUi(Environment)
             .UseEndpoints(endpoints => {
-                if (endpoints.ServiceProvider.GetService<UiAuthenticationOptions>() is { EnableCookieAuth: true })
-                {
-                    endpoints.MapToolkitUiSessionEndpoints();
-                }
-
+                endpoints.MapToolkitUi();
                 ConfigureUiEndpoints(endpoints);
             })
             ;
