@@ -23,7 +23,7 @@ public interface IBoilerplateBuild : IFalloutBuild
     /// Comma-separated boilerplate items or script paths to include (<c>--boilerplate-items</c>); all when not set.
     /// See <see cref="Tasks.BoilerplateOptions.Items"/>.
     /// </summary>
-    [Parameter("Comma-separated boilerplate items to include (default: all)")]
+    [Parameter("Comma-separated boilerplate items to include (default: all but the agent skills, which 'skills' selects)")]
     string? BoilerplateItems => TryGetValue(() => BoilerplateItems);
 
     /// <summary>

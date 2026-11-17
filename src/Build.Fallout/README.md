@@ -89,10 +89,32 @@ Use `--boilerplate-items` for a comma-separated allowlist and `--boilerplate-exc
 | `Makefile`, `.gitignore`, `.editorconfig`, `global.json`, `nuget.config` | Install the corresponding packaged file. |
 | `Directory.Build.props` | Create the SQL resource embedding rule if the file is absent. |
 | `scripts` | Install all scripts; individual paths such as `scripts/build.fallout.sh` or `scripts/bootstrap` can also be selected or excluded. |
+| `skills` | Install the toolkit's agent skills into `.agents/skills` (see [Agent skills](#agent-skills)). Opt-in: `all` leaves them out. |
 
-`all` selects every item and `none` selects nothing. Unknown names fail before any files are written. When selecting individual scripts, include their helpers: the launcher needs `scripts/shared/colors.env`, `scripts/console/subtitle.sh` and, unless environment reloading is disabled, `scripts/bootstrap/shell-profile-path.sh`.
+`all` selects every item except `skills`, and `none` selects nothing. Unknown names fail before any files are written. When selecting individual scripts, include their helpers: the launcher needs `scripts/shared/colors.env`, `scripts/console/subtitle.sh` and, unless environment reloading is disabled, `scripts/bootstrap/shell-profile-path.sh`.
 
 Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-existing` (or `--apend-existing`) is supplied; packaged content is then appended at most once. Review the result because later rules can change earlier ones. The same option adds the packaged `test` section (`"runner": "Microsoft.Testing.Platform"`, which `dotnet test` needs to run xUnit.net v3 projects) to an existing `global.json` that does not have one; the rest of the file is kept, and a file with comments is left alone. Existing `nuget.config` and `Directory.Build.props` are always preserved, as is `global.json` otherwise. The target refuses to overwrite a solution, selected script, Makefile, starter project, `.gitkeep` or existing `Solution` parameter. If an operation fails partway through, inspect the output before retrying.
+
+## Agent skills
+
+The toolkit ships five [Agent Skills](https://agentskills.io/) so coding agents run the solution's operations the way the toolkit intends: `anarchy` (the entry point: CLI, rules and which skill to load), `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. They are opt-in: `make install_skills` (or `make boilerplate ITEMS=skills`, or `anarchy-toolkit skills install`) copies them to `.agents/skills`, never overwriting existing files.
+
+A skill is free text (when to use the commands, how to combine them, what to avoid) plus a commands table generated between `<!-- anarchy:commands:begin … -->` and `<!-- anarchy:commands:end -->` from the Makefiles' `#?`, `#+` and `#!` comments. Make targets declare their skill with a `#@` comment, which `make help COMMAND=<target>` also shows:
+
+```make
+#@ shop-billing              # before the first target: every documented target of the file
+invoice: #? Issues the pending invoices
+#@ shop-admin                # right after a target: that target only; '#@ -' exempts it
+```
+
+A bare `#@` names the skill `<prefix>-<file>`. `IAgentSkillsBuild` keeps the skills in step:
+
+| Target | Make | What it does |
+|---|---|---|
+| `SyncAgentSkills` | `skills_sync [PREFIX=…]` | Creates each missing skill from a template and rewrites the commands block of every skill, keeping the rest of the file |
+| `ValidateAgentSkills` | `skills_validate [PREFIX=…]` | Fails when a required skill is missing or invalid, still has the template's `TODO` description, lost its `## When to use` or `## Commands` section, or lists outdated commands |
+
+`--agent-skills-prefix` defaults to the solution's name, and `--agent-skills-directories` to `.agents/skills` (new skills are created in the first). `ValidateAgentSkills` is not part of `PullRequest`; run it as its own CI step.
 
 ## Mock server
 
@@ -106,6 +128,12 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 | `MockServerSyncOpenApi` | `mock_server_sync_openapi SPEC=… [OUT=…] [DRY_RUN=true]` | Adds an expectation for each endpoint of an OpenAPI or Swagger specification (file or URL) that has none, into `<tag>.json` files for you to review and commit. It never changes existing expectations: endpoints that changed, disappeared or answer an undocumented status code are only reported |
 
 ## Releases
+
+### 3.8.0
+
+- feat(Build.Cli): add opt-in agent skills to the boilerplate
+- feat(Build.Fallout): validate and sync agent skills
+- fix(Build.Cli): print no banner on narrow terminals
 
 ### 3.7.0
 

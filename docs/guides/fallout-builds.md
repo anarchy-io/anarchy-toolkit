@@ -45,6 +45,7 @@ Reference the package (`<PackageReference Include="Anarchy.Toolkit.Build.Fallout
 | `ILayeringBuild` | `CheckLayering` | Fails when layering is broken. `--layering-root` selects the solution-relative (or absolute) project root, defaulting to `src/`; `--layering-by-folder true` uses its first folder instead of project-name prefixes, with no fallback (see the [architecture guide](architecture.md#enforcing-the-rule)). Override `LayeringLayers` and `GetLayer` (return `null` to leave a project out) for other conventions. |
 | `IDependencyUpgradeBuild` | `UpgradeDependencies` | Lists outdated packages and optionally runs the global `dotnet-outdated-tool`. |
 | `IGitHooksBuild` | `EnableGitHook`, `DisableGitHook`, `ShowGitHooks` | Manages local hooks; generated hooks invoke the repository's Make targets. |
+| `IAgentSkillsBuild` | `ValidateAgentSkills`, `SyncAgentSkills` | Keeps the agent skills in step with the Makefiles: targets marked with `#@` must be listed by a skill, whose commands table is generated from their `#?` comments while the rest stays hand-written. Not part of `PullRequest`: run it as a separate CI step. See [Agent skills](../packages/Build.Fallout/README.md#agent-skills). |
 
 Run `make fallout_help` for the full list of targets and parameters, or `make fallout TARGET="--plan"` for the execution plan.
 
