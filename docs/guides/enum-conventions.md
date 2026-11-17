@@ -1,15 +1,18 @@
 # Enum Conventions
 
-This guide explains when enums are a great fit in code built on the toolkit, and when they quietly become a coupling trap. 🪄
+This guide explains when to use enums in code built on the toolkit, and when to use a more flexible representation to avoid coupling to external systems.
+
+> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+{: .notice--info}
 
 ## Why this matters
 
-Enums look clean, but they come with a hidden contract: every possible value must already be known in code.
+An enum carries an implicit contract: every possible value must be known at compile time.
 
-That is perfect for **local, controlled vocabularies**.
-It is risky for **data coming from external systems**, and for **large datasets where string-based storage or filtering is expensive**.
+This is appropriate for **local, controlled vocabularies**.
+It is not appropriate for **data coming from external systems**, and for **large datasets where string-based storage or filtering is expensive**.
 
-The short version:
+In summary:
 
 - use enums for **local decisions, comparisons, defaults and fixtures**,
 - avoid enums for **parsing uncontrolled external values**,
@@ -17,11 +20,11 @@ The short version:
 
 This is also why the toolkit's generic code is **string-based at its core**: `Event.TypeAggregate`/`TypeEvent`, `SupportedAggregateTypes`, message destinations and so on are strings. Consumers bring their own enums and convert them at the edge with `ToDescription()` or the enum-friendly overloads (for example `Event.Create<TAgg, TEvt>(...)` or `SupportedAggregateTypes.Support<TAgg, TEvt>(...)`).
 
-## ✅ When an enum is a good fit
+## When to use an enum
 
 Use an enum when all valid values are owned by your application and are expected to stay intentionally small and explicit.
 
-Typical good uses:
+Typical uses:
 
 - business-rule comparisons,
 - default property assignment,
@@ -31,12 +34,12 @@ Typical good uses:
 Example:
 
 ```csharp
-StatusSummary = OrderStatusSummary.Created.ToDescription();
+Status = UserStatus.Active.ToDescription();
 ```
 
-That is safe because the enum is being used as a **local constant source**, not as a parser for unknown input.
+This is safe because the enum is being used as a **local constant source**, not as a parser for unknown input.
 
-## 🚫 When to avoid an enum
+## When to avoid an enum
 
 Avoid enums when values come from a source you do not control, such as:
 
@@ -44,9 +47,9 @@ Avoid enums when values come from a source you do not control, such as:
 - database content that can evolve independently,
 - upstream systems that may introduce new values without coordinating with you.
 
-Parsing those values directly into an enum means your application breaks whenever the source sends a value you have not deployed yet.
+If such values are parsed directly into an enum, the application fails whenever the source sends a value that has not yet been added to the code.
 
-## 🧰 The auxiliary-table pattern
+## The auxiliary-table pattern
 
 For flexible string attributes you want to persist without duplicating text everywhere, use auxiliary tables (lookup tables with an integer id and a unique name). The outbox package does this for its event attributes, through `EventTypeTable.TypeAggregate`, `TypeEvent` and `TypeTask`.
 
@@ -58,24 +61,24 @@ Under the hood, `AttributeIdCacheBase<TAttributeTypes, TId>` (`Anarchy.Toolkit.I
 2. it keeps a `name -> id` map in memory for fast lookups,
 3. if a value is missing, it inserts that single value and caches the returned id.
 
-You get the flexibility of strings without paying the storage and lookup cost repeatedly in the main data tables. Derive from `AttributeIdCacheBase` for your own auxiliary tables (see `EventWriterMultiAttributeIdCache` for an example), e.g.:
+This provides the flexibility of strings without repeatedly paying their storage and lookup cost in the main data tables. Derive from `AttributeIdCacheBase` for your own auxiliary tables (see `EventWriterMultiAttributeIdCache` for an example), e.g.:
 
 ```csharp
-public sealed class CustomerStatusIdCache : AttributeIdCacheBase<CustomerStatusTable, int>
+public sealed class ClientTypeIdCache : AttributeIdCacheBase<ClientTypeTable, int>
 {
-    // hydrate and insert queries for the customer_status auxiliary table
+    // Hydrate and insert queries for the client_type auxiliary table
 }
 ```
 
-### 🔄 Why the cache is cleared on rollback
+### Why the cache is cleared on rollback
 
-There is one important edge case: a transaction can insert a new auxiliary-table row, cache the generated id, and then roll back.
+One edge case requires attention: a transaction can insert a new auxiliary-table row, cache the generated id, and then roll back.
 
 If the cached id were kept, future writes could reuse an identifier that no longer exists and trigger foreign-key failures.
 
 To prevent that, the outbox's `RolledBackTransactionEventHandler` listens for the unit of work's `RolledBackUowTransactionLocalEvent` and calls `Clear()` on the relevant caches. The next lookup re-hydrates from the database and rebuilds a consistent cache. Do the same for any cache of your own that can be populated inside a transaction.
 
-## ⚡ Event attributes: why auxiliary tables are the right fit
+## Event attributes: why auxiliary tables are the right fit
 
 Event tables grow very large, so filtering or indexing on long strings costs more than filtering on compact integer ids.
 
@@ -85,30 +88,30 @@ Auxiliary tables let you:
 - store only integer foreign keys in the large event tables,
 - run quick lookups and filters on simple indexed numeric columns instead of repeatedly indexing and comparing strings.
 
-The application stays expressive at the edges, while persistence stays lean and query-friendly.
+The application works with readable values at its boundaries, while persistence remains compact and efficient to query.
 
-## 📦 External, uncontrolled values
+## External, uncontrolled values
 
-When a value is sourced from a system you do not control (an order status from another team's service, for example), new values can appear before your application is updated.
+When a value is sourced from a system you do not control (for example, a user's account status returned by an external identity provider), new values can appear before your application is updated.
 
-So the value should not be treated as a strict enum for persistence or parsing. Instead:
+Such a value should not be treated as a strict enum for persistence or parsing. Instead:
 
 - accept the incoming status string as data,
 - store it through an auxiliary table,
 - keep an enum only for local comparisons and manual assignments.
 
-The key rule is: **do not force external, uncontrolled values through an enum parser**.
+The rule is: **do not force external, uncontrolled values through an enum parser**.
 
-## 🛡️ External, but explicitly mapped
+## External, but explicitly mapped
 
 Sometimes an external value is intentionally **translated** into a small local vocabulary:
 
 ```csharp
 return dto?.status?.ToLower() switch {
-    "approved" => FraudCheckStatus.Approved,
-    "denied" => FraudCheckStatus.Rejected,
-    "cancelled" => FraudCheckStatus.Deleted,
-    _ => FraudCheckStatus.Pending
+    "verified" => EmailVerificationStatus.Verified,
+    "rejected" => EmailVerificationStatus.Failed,
+    "expired" => EmailVerificationStatus.Expired,
+    _ => EmailVerificationStatus.Pending
 };
 ```
 
@@ -120,7 +123,7 @@ That explicit mapping creates a clear boundary:
 
 Because the persisted value is **your mapped local status**, keeping the enum in code (and even a database enum) is acceptable here.
 
-## 🏷️ `Description`-based enum mapping
+## `Description`-based enum mapping
 
 When you do use enums, the toolkit relies on the `[Description(...)]` attribute to define the persisted or serialized representation.
 
@@ -138,7 +141,7 @@ The same convention is wired into serialization and persistence:
 
 These are convenient for **stable local mappings**. They should not be used as blanket parsers for arbitrary upstream data you do not own.
 
-## 🧭 Rule of thumb
+## Rule of thumb
 
 Before introducing or keeping an enum, ask:
 
@@ -152,4 +155,4 @@ Choose the pattern like this:
 - **Manual mapping into an enum**: external source, intentionally translated into our own bounded local vocabulary.
 - **Auxiliary table**: external or evolving vocabulary that must be accepted without tightly coupling the application to every possible value.
 
-If in doubt, prefer the option that keeps the boundary explicit and avoids letting external systems define your application's runtime behavior.
+When in doubt, prefer the option that keeps the boundary explicit and avoids letting external systems define your application's runtime behavior.

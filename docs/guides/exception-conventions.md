@@ -1,15 +1,18 @@
 # Exception Conventions
 
-This guide explains how exceptions are designed, named and placed in the toolkit and in applications built on it. The goal is simple: every failure is **identifiable by type**, carries **its own message**, and can still be caught by the **native .NET type** callers already know. 🧯
+This guide explains how exceptions are designed, named and placed in the toolkit and in applications built on it. Every failure must be **identifiable by type**, carries **its own message**, and can still be caught by the **native .NET type** that callers already handle.
+
+> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+{: .notice--info}
 
 ## The four rules
 
-1. **Every thrown exception is specialized.** Never `throw new Exception(...)`, `ArgumentException`, `InvalidOperationException`, `JsonException` and friends directly. Throw a custom type instead.
+1. **Every thrown exception is specialized.** Never `throw new Exception(...)`, `ArgumentException`, `InvalidOperationException`, `JsonException` or other native exceptions directly. Throw a custom type instead.
 2. **Custom exceptions extend a `Core` base whenever possible.** The primitives wrap the native exceptions, so `catch (ArgumentException)` keeps working when you throw `EmptyArgumentException`.
 3. **Prefer the least context-specific exception.** If a generic exception describes the failure (an empty argument, an undefined enum value, a missing environment variable), throw that. Only if the failure is truly contextual, create a specific exception that extends a mid-level one and **encapsulates its own message**.
 4. **Exception classes live in an `Exceptions` folder and namespace, never next to the code that throws or catches them.** The more specific the exception, the closer its `Exceptions` folder is to where it is used.
 
-## 🧱 The primitives
+## The primitives
 
 All of these live in `Anarchy.Toolkit.Core.Exceptions` (`src/Core/Exceptions`).
 
@@ -37,14 +40,14 @@ All of these live in `Anarchy.Toolkit.Core.Exceptions` (`src/Core/Exceptions`).
 
 If none of these fits, first ask whether a new **generic** primitive is warranted (it would be reused across projects). Only then add one to `Core`, wrapping the matching native exception.
 
-## 🧭 Choosing what to throw
+## Choosing what to throw
 
 ```text
 Is there a generic primitive that describes the failure?
 ├── yes → throw it, with its structured constructor
 │         throw new EmptyArgumentException(nameof(messages));
 │         throw new UndefinedEnumValueException(nameof(instanceType), instanceType);
-│         throw new MissingEnvironmentVariableException("COST_CENTER");
+│         throw new MissingEnvironmentVariableException("DATABASE_URL");
 └── no  → is there a mid-level exception for this area (storage, broker, events...)?
           ├── yes → create a specific exception extending it, with its own message
           └── no  → create the mid-level first (extending a primitive), then the specific one
@@ -53,21 +56,21 @@ Is there a generic primitive that describes the failure?
 A specific exception **encapsulates its message**: the throw site passes data, never prose.
 
 ```csharp
-// ✅ the type owns the message
+// Correct: the exception type owns the message
 public class DbConnectionReleaseException(Exception innerException)
     : DbPolicyExecutionException("Error releasing connection", innerException);
 
 throw new DbConnectionReleaseException(exception);
 
-// 🚫 the throw site writes the message
+// Incorrect: the throw site writes the message
 throw new DbPolicyExecutionException("Error releasing connection", exception);
 ```
 
-Expose the data that explains the failure as properties (`SecretName`, `FailedMessageCount`, `EnumType`...), so handlers and logs do not have to parse messages.
+Expose the data that explains the failure as properties (`SecretName`, `FailedMessageCount`, `EnumType`, …) so that handlers and logs do not need to parse messages.
 
 ### Mid-level exceptions
 
-A mid-level exception groups the failures of one area so callers can catch them together. It takes a message (and usually an inner exception) and is extended by the specific exceptions; you normally do not throw it directly. Examples:
+A mid-level exception groups the failures of one area so callers can catch them together. It takes a message (and usually an inner exception) and is extended by the specific exceptions; it is not normally thrown directly. Examples:
 
 | Mid-level | Extends | Specific exceptions |
 |---|---|---|
@@ -80,7 +83,7 @@ A mid-level exception groups the failures of one area so callers can catch them 
 | `StorageException` → `PersistanceStorageException` | `Exception` | `EmptyEntityListForBatchSaveStorageException`, `DuplicatedEntityStorageException` |
 | `InvalidStartupTypeExceptionBase` (abstract) | `InvalidStateException` | `MissingStartupInterfaceException`, `MissingStartupConstructorException` |
 
-## 📁 Where exception classes live
+## Where exception classes live
 
 Exceptions always live in an `Exceptions` folder whose namespace matches the folder. Place that folder at the **lowest common ancestor** of the code that throws and catches the exception:
 
@@ -93,9 +96,9 @@ Exceptions always live in an `Exceptions` folder whose namespace matches the fol
 
 Never declare an exception in the same file or folder as the class that throws it, and never name the folder `Exception` (singular): it shadows `System.Exception` inside the parent namespace.
 
-## ✍️ Writing an exception class
+## Writing an exception class
 
-- Name it after the failure, ending in `Exception`: `SecretNotFoundException`, not `SecretManagerException2`.
+- Name it after the failure, ending in `Exception`: `UserNotFoundException`, not `UserServiceException2`.
 - Use a primary constructor; pass the encapsulated message to the base.
 - Add a `/// <summary>Thrown when ...</summary>` doc comment.
 - Accept `Exception innerException` when you wrap a caught failure, and **always** pass it on.
@@ -115,19 +118,19 @@ public class SecretRetrievalException(string secretName, Exception innerExceptio
 }
 ```
 
-## 🪤 Catching and wrapping
+## Catching and wrapping
 
 - Catch the narrowest type you can handle. When wrapping everything in a `try`, do not swallow your own specific exceptions: `catch (Exception e) when (e is not SecretNotFoundException)`.
 - When wrapping, keep the original as the inner exception.
 - Re-throw with `throw;`, never `throw ex;`.
 
-## ⚖️ Base types change HTTP status codes
+## Base types change HTTP status codes
 
 `ExceptionMiddleware` (`Web`) chooses the response status from the **native** base type: `InvalidOperationException` and Newtonsoft's `JsonException` become `400`, everything else `500`. `UnitOfWorkSessionException` is unwrapped to its base exception first.
 
 So picking a base is also picking a status code. `InvalidStateException` derives from `InvalidOperationException` and therefore returns `400`. When you re-base an existing exception, check that it keeps the status code its callers expect.
 
-## 🚦 Allowed exceptions to rule 1
+## Allowed exceptions to rule 1
 
 These stay native on purpose:
 
@@ -137,7 +140,7 @@ These stay native on purpose:
 - **Caller-supplied factories**, such as `throw errorFunc(statusCode)`.
 - **Third-party contracts** that require a specific type with no primitive equivalent, like Newtonsoft's `JsonSerializationException` inside a `ContractResolver`. Still create a specific subclass (`ConstructorParameterCasingException`) in an `Exceptions` folder.
 
-## ✅ Checklist
+## Checklist
 
 - [ ] No `throw new <NativeException>(...)` outside the allowed cases.
 - [ ] The exception extends a primitive or a mid-level that does.

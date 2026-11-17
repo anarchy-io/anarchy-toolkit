@@ -1,6 +1,9 @@
 # Observability
 
-This is the observability guide for applications built on the toolkit: how to log and emit metrics through `Observer`, and where that telemetry ends up at runtime. 🔭
+This guide describes how applications built on the toolkit write logs and emit metrics through `Observer`, and where that telemetry is sent at runtime.
+
+> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+{: .notice--info}
 
 ## The building blocks
 
@@ -14,9 +17,9 @@ This is the observability guide for applications built on the toolkit: how to lo
 
 ## Telemetry first: shared rules for logs and metrics
 
-Think of logs and metrics as one story told in two formats. Keep the conventions aligned so searches, dashboards and alerts stay predictable. 🧭
+Logs and metrics describe the same events in two formats. Keep their conventions aligned so that searches, dashboards and alerts remain predictable.
 
-### ✅ Golden rules
+### General rules
 
 - **Use `Observer` wrappers first** (`Log*`, `ExecutionIncrementCount`, `ExecutionRecordDuration`) instead of direct `ILogger`/`MeasurerBase` calls.
 - **Prefer `CallSiteEntity` overloads**, so class and method context is attached automatically.
@@ -24,39 +27,39 @@ Think of logs and metrics as one story told in two formats. Keep the conventions
 - **Pass `caller` into private helpers** that log or emit metrics, to keep the right context.
 - **Use structured data** (template properties for logs, tags for metrics) instead of string composition.
 
-### 🧩 Call-site pattern
+### Call-site pattern
 
 ```csharp
 var caller = this.CalledFrom();
 
-observer.LogInformation(caller, "Processing order {OrderId}", orderId);
+observer.LogInformation(caller, "Processing user {UserId}", userId);
 observer.ExecutionIncrementCount(caller, 1, Tags.Success);
 ```
 
 If `this.CalledFrom()` is not available (for example in a static method), build the call site explicitly:
 
 ```csharp
-var caller = new CallSiteEntity("FooBarMapper", "Map");
-observer.LogWarning(caller, "Falling back for {FooBarId}", fooBarId);
+var caller = new CallSiteEntity("UserMapper", "Map");
+observer.LogWarning(caller, "Falling back to default role for {UserId}", userId);
 ```
 
 `this.ParentCaller()` returns the call site one frame up. The database policies use it to tag their duration metric with the repository method that triggered the query.
 
 ## Logging conventions
 
-### ✍️ Message style
+### Message style
 
 - Do not repeat class or method names in message templates.
-- Use structured properties (`{OrderId}`, `{FooBarId}`, `{RetryCount}`) for filterable logs.
+- Use structured properties (`{UserId}`, `{ClientId}`, `{RetryCount}`) for filterable logs.
 - Keep tense consistent:
 
 | Situation | Convention | Example |
 |---|---|---|
-| Before action | Imperative | `"Processing FooBar order {OrderId}"` |
-| After success | Past tense | `"Processed FooBar order {OrderId}"` |
-| Failure | Start with `Failed ...` or `Error during ...` | `"Failed to process FooBar order {OrderId}"` |
+| Before action | Imperative | `"Creating user {UserId}"` |
+| After success | Past tense | `"Created user {UserId}"` |
+| Failure | Start with `Failed ...` or `Error during ...` | `"Failed to create user {UserId}"` |
 
-### 🚨 Error/fatal logs
+### Error/fatal logs
 
 - Always pass the exception as the first argument to `LogError` / `LogFatal`.
 - Include key identifiers in the message template.
@@ -64,26 +67,26 @@ observer.LogWarning(caller, "Falling back for {FooBarId}", fooBarId);
 ```csharp
 try
 {
-    await fooBarGateway.SendAsync(payload, cancellationToken);
+    await emailGateway.SendAsync(welcomeEmail, cancellationToken);
 }
 catch (Exception ex)
 {
-    observer.LogError(ex, caller, "Failed to send FooBar payload for {OrderId}", orderId);
+    observer.LogError(ex, caller, "Failed to send welcome email to {UserId}", userId);
     throw;
 }
 ```
 
-### 🔗 Correlation/context properties
+### Correlation/context properties
 
 When a flow spans several log lines, push the shared context once:
 
 ```csharp
 using (observer.LogContext.WithCorrelationId(correlationId))
-using (observer.LogContext.PushProperties(new LogContextProperty("FooBarId", fooBarId)))
+using (observer.LogContext.PushProperties(new LogContextProperty("ClientId", clientId)))
 {
-    observer.LogInformation(caller, "Started FooBar orchestration");
-    // ... work
-    observer.LogInformation(caller, "Completed FooBar orchestration");
+    observer.LogInformation(caller, "Started client onboarding");
+    // ...
+    observer.LogInformation(caller, "Completed client onboarding");
 }
 ```
 
@@ -91,11 +94,11 @@ using (observer.LogContext.PushProperties(new LogContextProperty("FooBarId", foo
 
 ## Metric conventions
 
-### 📈 Collection API
+### Collection API
 
 Prefer `observer.ExecutionIncrementCount(caller, value, tags)` over `observer.MeasurerBase.IncrementCounter(...)`.
 
-### 🏷️ Metric suffixes
+### Metric suffixes
 
 When recording metrics with custom suffixes, use the constants on `Observer` instead of hard-coded strings:
 
@@ -123,28 +126,28 @@ observer.RecordDuration(caller, Observer.MetricSuffixDuration, elapsed, Tags.Suc
 
 For a whole async action, `observer.MonitoredActionAsync(caller, action)` records duration and count with the right outcome tag, and logs failures for you.
 
-### 🏷️ Outcome tags
+### Outcome tags
 
 - Use `Tags.Success` and `Tags.Failure` for outcome signaling whenever applicable. Add more tags fluently: `Tags.Failure.WithTag("entity_state", "empty")`.
-- Keep custom tag names domain-focused and in **snake_case** (`retry`, `result`, `subsidiary_id`).
+- Keep custom tag names domain-focused and in **snake_case** (`retry`, `result`, `client_tier`).
 - Keep boolean tag values lowercase (`"true"` / `"false"`).
 
-### ⚠️ Keep cardinality low
+### Keep cardinality low
 
 - Metric tags must stay low-cardinality (roughly **<= 5 distinct values** per tag).
 - If a value can vary widely (request paths, handler names, message counts, ids, timestamps, exception names), do **not** put it in metric tags.
 - Put high-variance values in structured log properties instead, so they stay searchable without exploding the number of metric series.
 - Prefer a simple outcome tag on the metric and attach detailed context to the logs in the same code path.
 
-### 🚫 Avoid redundant metric naming
+### Avoid redundant metric naming
 
 The call site already includes class and method context, so avoid metric names that repeat it:
 
 ```csharp
-// bad: direct MeasurerBase access and redundant naming
-observer.MeasurerBase.IncrementCounter("task_handler.fetch_fraud_score.handle", 1, Tags.Success);
+// Incorrect: direct MeasurerBase access and redundant naming
+observer.MeasurerBase.IncrementCounter("user_handler.sync_user_profile.handle", 1, Tags.Success);
 
-// good: context comes from the caller via Observer wrappers
+// Correct: context comes from the caller via Observer wrappers
 observer.ExecutionIncrementCount(caller, 1, Tags.Success);
 ```
 
@@ -153,19 +156,19 @@ observer.ExecutionIncrementCount(caller, 1, Tags.Success);
 When a private helper emits telemetry, accept `caller` as a parameter:
 
 ```csharp
-public async Task HandleAsync(FooBarEvent @event, CancellationToken cancellationToken)
+public async Task HandleAsync(UserRolesChangedEvent @event, CancellationToken cancellationToken)
 {
     var caller = this.CalledFrom();
-    await ProcessItemsAsync(caller, @event.Items, cancellationToken);
+    await AssignRolesAsync(caller, @event.UserId, @event.Roles, cancellationToken);
 }
 
-private async Task ProcessItemsAsync(CallSiteEntity caller, IEnumerable<FooBarItem> items, CancellationToken cancellationToken)
+private async Task AssignRolesAsync(CallSiteEntity caller, string userId, IEnumerable<UserRole> roles, CancellationToken cancellationToken)
 {
-    foreach (var item in items)
+    foreach (var role in roles)
     {
-        observer.LogDebug(caller, "Processing item {ItemId}", item.Id);
+        observer.LogDebug(caller, "Assigning role {RoleId} to {UserId}", role.Id, userId);
         observer.ExecutionIncrementCount(caller, 1, Tags.Success);
-        await fooBarRepository.SaveAsync(item, cancellationToken);
+        await userRoleRepository.SaveAsync(userId, role, cancellationToken);
     }
 }
 ```
@@ -177,7 +180,7 @@ private async Task ProcessItemsAsync(CallSiteEntity caller, IEnumerable<FooBarIt
 ```json
 {
   "Observability": {
-    "AppNamePrefix": "MyCompany."
+    "AppNamePrefix": "UserManagement."
   }
 }
 ```
@@ -198,37 +201,37 @@ Derive from `ObserverFactory` and override only the steps that differ, then hand
 | Override | To change |
 |---|---|
 | `CorrelationIdPropertyName` / `AttemptIdPropertyName` | the log property names of the correlation ids |
-| `Enrich` | the hosted log properties (team, cost center, instance ids, ...) |
+| `Enrich` | the hosted log properties (team, cost center, instance IDs, …) |
 | `WriteTo` | the hosted sinks (e.g. `Ec2CloudWatch(logGroup)`) |
-| `CreateMeasurer` | the metrics backend (e.g. a `FooBarMeasurer` that ships metrics to your provider) |
+| `CreateMeasurer` | the metrics backend (e.g. a `PrometheusMeasurer` that ships metrics to your provider) |
 | `CreateBaseLoggerConfiguration`, `CreateLocal`, `CreateHosted`, `Create` | everything else |
 
 ```csharp
-public sealed class AcmeObserverFactory : ObserverFactory
+public sealed class CustomObserverFactory : ObserverFactory
 {
     protected override LoggerConfiguration Enrich(LoggerConfiguration configuration, ObserverContext context) =>
-        base.Enrich(configuration, context).Enrich.WithTeam("payments").Enrich.WithCostCenter("finance");
+        base.Enrich(configuration, context).Enrich.WithTeam("identity").Enrich.WithCostCenter("platform");
 
     protected override MeasurerBase CreateMeasurer(ObserverContext context, ILogger logger) =>
-        new FooBarMeasurer();
+        new PrometheusMeasurer();
 }
 
 services.UseModule(
     new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(
-        new ModuleObservability(new AcmeObserverFactory(), config => new CorrelationIdOptions { CorrelationIdHeaderName = "Acme-CorrelationId" })),
+        new ModuleObservability(new CustomObserverFactory(), config => new CorrelationIdOptions { CorrelationIdHeaderName = "X-Request-Id" })),
     configuration,
     environment);
 ```
 
-An organization-wide factory, for example, could add its own metrics backend (e.g. a `FooBarMeasurer`), CloudWatch logging on EC2, the standard log properties under the organization's names, and its own correlation headers, all without changing the toolkit.
+A shared factory can, for example, add a metrics backend, CloudWatch logging on EC2, the standard log properties under the organization's own names and custom correlation headers, without changes to the toolkit.
 
 ## Testing telemetry
 
 `TestCaseBase.FixtureObserver` is an `InMemoryObserver`, so logs and metrics can be asserted when observability *is* the behavior under test:
 
 ```csharp
-FixtureObserver.SinkLogs.Should().HaveMessage("Processed order {OrderId}");
-FixtureObserver.InMemoryMeasurer.Should().HaveCounter("foo_bar_service.execute.execution_count");
+FixtureObserver.SinkLogs.Should().HaveMessage("Created user {UserId}");
+FixtureObserver.InMemoryMeasurer.Should().HaveCounter("user_service.create.execution_count");
 ```
 
 Avoid asserting incidental logs or metrics in ordinary business-rule tests; assert the business result first. See [Testing Conventions](testing-conventions.md).

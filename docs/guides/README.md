@@ -1,6 +1,6 @@
 # Guides
 
-Guides for the platform's three pillars (Architecture, Infrastructure and Build Ecosystem) and the engineering practices shared by the toolkit and the applications built with it. Each guide stands on its own; start with **Layered Architecture**, which explains where code goes.
+Guides for the platform's three pillars (Architecture, Infrastructure and Build Ecosystem) and the engineering practices shared by the toolkit and the applications built with it. The conventions they describe are **rules within the toolkit itself** and **recommendations for applications built on it**: adopters can follow, adapt or ignore them. Each guide stands on its own; start with **Layered Architecture**, which explains where code goes.
 
 ![Architectural blueprint lines on a dark background with red-orange highlights, wide banner](../assets/images/headers/guides.png)
 
