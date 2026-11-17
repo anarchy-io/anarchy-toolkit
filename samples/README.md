@@ -8,7 +8,8 @@ Applications built on the toolkit, one per kind of workload a typical service ru
 | [`Samples.Job`](Samples.Job) | AWS Lambda job | `JobStartupBase` + `JobEntryPointBase`, a scoped service wrapped in `MonitoredActionAsync`. |
 | [`Samples.Worker`](Samples.Worker) | EC2/systemd worker | `WorkerEntryPointBase`, `HeartbeatWorker` and a custom `MonitoredWorkerBase`. |
 | [`Samples.Ui`](Samples.Ui) | WebApp | `UiWebAppStartupBase` with two environments, an orders page built from the `Web.Ui` components (`LoginForm`, `SessionBadge`, `NotificationHost`, `JsonModalHost`/`JsonViewLink`, `Pagination`, `TablePaginationFooter`, `ConfirmationModal`, `TypedConfirmationModal`), and a `UiApiClientBase` client. Stub auth and orders endpoints under `/stub` (local hosts only) let it run without external services. |
-| [`Samples.Tests`](Samples.Tests) | Tests | Smoke tests running the API through both the native and Lambda pipelines (`RestApiTestCaseBase`), invoking the job handler, and exercising the UI's shell and stubs. |
+| [`Samples.MockServer`](Samples.MockServer) | Mock server host | `MockServerEntryPoint` with JSON expectations for a payments service (`mocks/`), a conventional middleware rejecting requests without a bearer token, and an inline one computing stock levels from the request when no expectation matches. |
+| [`Samples.Tests`](Samples.Tests) | Tests | Smoke tests running the API through both the native and Lambda pipelines (`RestApiTestCaseBase`), invoking the job handler, and exercising the UI's shell and stubs. Asserting what an application sent to the payments and stock services stood in by `Samples.MockServer` (`MockServerFixture`, `AssertReceivedAsync`). |
 
 Every sample registers `ModuleLibConfiguration`, so it gets the toolkit's vendor-neutral `ObserverFactory`. To use an organization's own sinks, log properties or metrics backend, pass a derived factory through `new ModuleLibConfiguration<…>(new ModuleObservability(new MyObserverFactory()))`. See the [observability guide](../docs/guides/observability.md#plugging-in-an-organizations-setup).
 
@@ -25,3 +26,11 @@ dotnet run --project samples/Samples.Ui --environment Development
 ```
 
 Pick either environment on the login page: each has its own orders. Canceling a shipped order shows how a failed downstream call is reported; priority orders (★) ask for typed confirmation.
+
+Run the mock server locally, showing request headers and bodies, then try `curl -H 'Authorization: Bearer x' -d '{"currency":"EUR"}' localhost:6000/payments` or `curl localhost:6000/stock/ABC-1`:
+
+```bash
+dotnet run --project samples/Samples.MockServer -- --verbosity detailed --record artifacts/mock-requests.jsonl
+```
+
+The `MockServerTests` in `Samples.Tests` spawn it on a free port, or use the one at `MOCKSERVER_URL` when it is set.

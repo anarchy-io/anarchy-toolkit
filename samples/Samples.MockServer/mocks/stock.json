@@ -1,0 +1,7 @@
+[
+  {
+    "id": "stock-discontinued",
+    "httpRequest": { "method": "GET", "path": "/stock/DISCONTINUED" },
+    "httpResponse": { "statusCode": 410, "body": "This product is no longer sold" }
+  }
+]

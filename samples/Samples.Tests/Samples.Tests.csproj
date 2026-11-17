@@ -19,8 +19,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Testing.Web\Testing.Web.csproj" />
+    <ProjectReference Include="..\..\src\Testing.MockServer\Testing.MockServer.csproj" />
     <ProjectReference Include="..\Samples.Api\Samples.Api.csproj" />
     <ProjectReference Include="..\Samples.Job\Samples.Job.csproj" />
+    <ProjectReference Include="..\Samples.MockServer\Samples.MockServer.csproj" />
     <ProjectReference Include="..\Samples.Ui\Samples.Ui.csproj" />
   </ItemGroup>
 
