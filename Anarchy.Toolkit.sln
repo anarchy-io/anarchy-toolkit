@@ -97,6 +97,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution items", "solution 
 		.github\dependabot.yml = .github\dependabot.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.MockServer", "src\Web.MockServer\Web.MockServer.csproj", "{E2AE4E46-478D-4361-8247-6E4EAFA546CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -550,6 +552,18 @@ Global
 		{BA1BD013-2E45-45AE-9CBA-7635D9A0F0D5}.Release|x64.Build.0 = Release|Any CPU
 		{BA1BD013-2E45-45AE-9CBA-7635D9A0F0D5}.Release|x86.ActiveCfg = Release|Any CPU
 		{BA1BD013-2E45-45AE-9CBA-7635D9A0F0D5}.Release|x86.Build.0 = Release|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Debug|x64.Build.0 = Debug|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Debug|x86.Build.0 = Debug|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Release|x64.ActiveCfg = Release|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Release|x64.Build.0 = Release|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Release|x86.ActiveCfg = Release|Any CPU
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -591,5 +605,6 @@ Global
 		{BE517C48-1FEC-409B-BEF0-D45B65393F5C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{6EB0F391-BC89-43BB-92AB-5BBF37A402E7} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{BA1BD013-2E45-45AE-9CBA-7635D9A0F0D5} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{E2AE4E46-478D-4361-8247-6E4EAFA546CB} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal
