@@ -34,6 +34,7 @@
     <ProjectReference Include="..\..\src\Testing.Mysql\Testing.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Web\Web.csproj" />
     <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
+    <ProjectReference Include="..\..\src\Web.MockServer\Web.MockServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
