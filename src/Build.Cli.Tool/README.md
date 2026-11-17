@@ -17,6 +17,7 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 | `anarchy-toolkit bootstrap <name> [--output <dir>]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one). |
 | `anarchy-toolkit scaffold` | Guided addition of an API, job or UI to the current solution. |
 | `anarchy-toolkit scaffold api\|job\|ui <Name>` | Adds one without prompts. |
+| `anarchy-toolkit scaffold api <Name> --no-swagger-theme` | Adds an API whose Swagger UI keeps its own look instead of the toolkit's default theme. |
 
 ## Bootstrap
 
@@ -57,6 +58,8 @@ Run `anarchy-toolkit scaffold` anywhere inside a solution created by `bootstrap`
 
 It follows the solution's package management. When the nearest `Directory.Packages.props` above the new project enables central package management (in that file or in `Directory.Build.props`), the package version is added there as a `PackageVersion`, unless the package is already pinned, in which case the existing version is kept, and the project's reference is unversioned. Otherwise the reference carries the version.
 
+Generated APIs use the toolkit's default Swagger UI theme (see the [Web package README](../Web/README.md#swagger-ui-theme)). With `--no-swagger-theme`, the startup disables it with `.Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)`; remove that line to turn it back on.
+
 ## Requirements
 
 The .NET 10 SDK is required to generate and build solutions. The generated projects reference the `Anarchy.Toolkit.Build.Fallout`, `Anarchy.Toolkit.Web`, `Anarchy.Toolkit.Web.Ui` and `Anarchy.Toolkit.Hosting` versions this tool was built with, which must be available on a configured NuGet feed. The generated `nuget.config` uses nuget.org by default; adjust it if using a private feed.
@@ -74,6 +77,14 @@ make check_layering
 The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build.Cli/README.md); see the [Fallout package README](../Build.Fallout/README.md) for the build targets.
 
 ## Releases
+
+### 2.6.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+- feat(Web): serve OpenAPI 3.2 and theme Swagger UI with a light and dark Anarchy theme
+- feat(Web.Ui): align the UI theme with the documentation and add dark mode
+- feat(Build.Cli): scaffold APIs without the Swagger theme and UIs with the logo and theme toggle
+- feat(Build.Cli.Tool): add the --no-swagger-theme flag to scaffold api
 
 ### 2.3.1
 

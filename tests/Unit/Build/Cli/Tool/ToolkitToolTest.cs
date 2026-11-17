@@ -32,6 +32,9 @@ public class ToolkitToolTest
     [InlineData(new[] { "scaffold" }, ToolMode.Scaffold, true)]
     [InlineData(new[] { "scaffold", "API", "Orders" }, ToolMode.Scaffold, false)]
     [InlineData(new[] { "scaffold", "worker", "Orders" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "scaffold", "api", "Orders", "--no-swagger-theme" }, ToolMode.Scaffold, false)]
+    [InlineData(new[] { "scaffold", "job", "Orders", "--no-swagger-theme" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "scaffold", "api", "Orders", "--unknown" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "MyApp" }, ToolMode.Invalid, false)]
     public void CommandLine_SelectsMode(string[] args, ToolMode mode, bool interactive)
     {
@@ -256,6 +259,32 @@ public class ToolkitToolTest
             File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Orders.csproj"))
                 .Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Web\" Version=\"2.0.0\" />");
             File.Exists(Path.Combine(root, "Directory.Packages.props")).Should().BeFalse();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_ScaffoldsAnApiWithOrWithoutTheSwaggerTheme()
+    {
+        var root = TempRoot();
+        try
+        {
+            Application(new ScriptedPrompter()).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+
+            var prompter = new ScriptedPrompter();
+            Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            Application(prompter, root).Run(["scaffold", "api", "Billing", "--no-swagger-theme"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Composition", "Startup.cs"))
+                .Should().NotContain("SwaggerThemeOptions");
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Billing", "Composition", "Startup.cs"))
+                .Should().Contain("using Anarchy.Toolkit.Web.Entity.Swagger;")
+                .And.Contain("            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false);");
         }
         finally
         {
