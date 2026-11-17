@@ -80,6 +80,10 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 
 ## Releases
 
+### 2.6.2
+
+- fix(Web.Ui): serve static web assets of unpublished builds outside Development
+
 ### 2.6.1
 
 - docs(packages): identify each package's pillar and layer
