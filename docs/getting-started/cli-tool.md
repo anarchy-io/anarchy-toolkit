@@ -1,6 +1,6 @@
 # New Solution with the CLI
 
-The `anarchy-toolkit` .NET global tool creates Anarchy-based solutions and adds applications to them. It is the quickest way to get a working, layered solution with the toolkit's build system already in place.
+The `anarchy-toolkit` .NET global tool is the entry point to the platform's **Build Ecosystem**: it creates solutions and adds applications to them. It is the quickest way to adopt all three pillars at once, with a layered solution (Architecture), applications wired to the toolkit packages (Infrastructure) and the Fallout build already in place.
 
 ## Install
 
@@ -77,9 +77,9 @@ From anywhere inside the solution:
 
 ```bash
 anarchy-toolkit scaffold          # guided
-anarchy-toolkit scaffold api Orders
-anarchy-toolkit scaffold job Billing
-anarchy-toolkit scaffold ui BackOffice
+anarchy-toolkit scaffold api Users
+anarchy-toolkit scaffold job ClientSync
+anarchy-toolkit scaffold ui UserAdmin
 ```
 
 The tool places each application according to the solution's layering settings, adds it to the solution and references the toolkit package it needs, following the solution's central package management.

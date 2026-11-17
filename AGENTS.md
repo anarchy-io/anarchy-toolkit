@@ -1,8 +1,9 @@
 # Agent instructions
 
-Anarchy.Toolkit is a .NET 10 monorepo of NuGet packages (`src/`), with unit tests (`tests/Unit/`), sample applications
-(`samples/`), a Fallout build (`build/`) and a documentation site (`docs/`). Read @README.md for the overview and the
-Make and Fallout commands.
+Anarchy.Toolkit is a .NET developer platform built around three pillars (Architecture, Infrastructure and Build
+Ecosystem), delivered from this .NET 10 monorepo as independently published NuGet packages (`src/`), with unit tests
+(`tests/Unit/`), sample applications (`samples/`), a Fallout build (`build/`) and a documentation site (`docs/`). Read
+@README.md for the overview and the Make and Fallout commands.
 
 ## Rules
 
