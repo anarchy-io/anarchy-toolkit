@@ -11,7 +11,7 @@ dotnet restore Anarchy.Toolkit.sln
 dotnet build Anarchy.Toolkit.sln -c Release
 ```
 
-Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Fallout commands and the [guides](../docs/guides/README.md) for architecture, coding, and testing conventions.
+Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Fallout commands and the [guides](../docs/guides/README.md) for architecture, coding, and testing conventions. Those conventions are recommendations for applications built on the platform, but rules for contributions to this repository.
 
 ## Making a change
 

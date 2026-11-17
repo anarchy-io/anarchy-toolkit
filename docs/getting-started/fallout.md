@@ -1,6 +1,6 @@
 # Adding the Fallout Build
 
-[`Anarchy.Toolkit.Build.Fallout`](../packages/Build.Fallout/README.md) packages a complete [Fallout](https://fallout.build/) build as reusable components: implement the interfaces you need on your build class and you get their targets, plus a self-documenting Makefile on top. It is what the [CLI tool](cli-tool.md) generates, and it works just as well in a repository you already have.
+Part of the platform's **Build Ecosystem**, [`Anarchy.Toolkit.Build.Fallout`](../packages/Build.Fallout/README.md) packages a complete [Fallout](https://fallout.build/) build as reusable components: implement the interfaces you need on your build class and you get their targets, plus a self-documenting Makefile on top. It is what the [CLI tool](cli-tool.md) generates, and it works just as well in a repository you already have.
 
 ```mermaid
 flowchart LR
