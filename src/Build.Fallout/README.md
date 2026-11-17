@@ -133,7 +133,7 @@ A bare `#@` names the skill `<prefix>-<file>`. `IAgentSkillsBuild` keeps the ski
 
 - feat(Build.Cli): add opt-in agent skills to the boilerplate
 - feat(Build.Fallout): validate and sync agent skills
-- fix(Build.Cli): print no banner on narrow terminals
+- fix(Build.Cli): print a plain title on narrow terminals
 
 ### 3.7.0
 
