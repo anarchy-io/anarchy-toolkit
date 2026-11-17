@@ -4,11 +4,48 @@ permalink: /overview/
 
 # Overview
 
-The **Anarchy I/O Toolkit** is a set of reusable, self-contained NuGet packages for building .NET services: REST and GraphQL APIs, Blazor WebApps, AWS Lambda jobs and EC2 workers, with the persistence, messaging, observability and testing plumbing they share. It comes with a build system ([`Build.Fallout`](packages/Build.Fallout/README.md)) and a CLI tool ([`anarchy-toolkit`](packages/Build.Cli.Tool/README.md)) that set up new solutions the same way.
+## What is Anarchy I/O Toolkit?
 
-> **Provide the foundation. Never dictate the destination.** The toolkit ships plumbing, not a framework: your domain, your architecture decisions and your vendors stay yours.
+The **Anarchy I/O Toolkit** is a **.NET developer platform**: an integrated ecosystem for building maintainable .NET applications (REST and GraphQL APIs, Blazor WebApps, AWS Lambda jobs and EC2 workers) through consistent architecture, reusable infrastructure and automated development workflows.
 
-## Three ways in
+> **Provide the foundation. Never dictate the destination.** The toolkit ships plumbing, not a framework: your domain, your architecture decisions and your vendors stay yours, and no part of the platform requires adopting the rest.
+
+## The three pillars
+
+| Pillar | What it provides | Start with |
+|---|---|---|
+| **Architecture** | How applications are structured and how dependencies are governed: the layers `Core < Infrastructure < Configuration < Hosting < Web < Build`, DI modules as the unit of composition, and conventions for async code, exceptions, enums, endpoints and tests. | [Layered Architecture](guides/architecture.md), [Guides](guides/README.md) |
+| **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence (PostgreSQL, Oracle, MySQL), messaging (AWS SNS/SQS), observability, configuration and secrets, hosting for jobs and workers, REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
+| **Build Ecosystem** | Tools and workflows for developing and delivering applications: the [`Build.Fallout`](packages/Build.Fallout/README.md) build components (compile, lint, test, layering check, dependency map, packaging, versioning, releases, Docker) and the [`anarchy-toolkit`](packages/Build.Cli.Tool/README.md) CLI (solution bootstrap and scaffolding), with a distributed Makefile and scripts. | [Getting Started](getting-started/README.md), [Fallout Builds](guides/fallout-builds.md) |
+
+## How the pillars work together
+
+The pillars are conceptual product areas, not layers: none of them is a runtime dependency of another. Architecture defines where code goes; Infrastructure packages are organized by those same layers and wired through the same DI modules; the Build Ecosystem scaffolds solutions with that structure and enforces it (`make check_layering`) while it builds, tests, packs and releases them. The Build Ecosystem runs at development and delivery time only and is never part of the deployed application.
+
+Conceptual platform diagram (not the project-reference graph, which follows below):
+
+```mermaid
+flowchart LR
+    subgraph Architecture["<b>Architecture</b>"]
+        A1["Layering · contracts"]
+        A2["Conventions · composition"]
+    end
+    subgraph Infrastructure["<b>Infrastructure</b>"]
+        I1["Core abstractions · persistence · messaging"]
+        I2["Observability · configuration · hosting"]
+        I3["Web · testing kits"]
+    end
+    subgraph BuildEcosystem["<b>Build Ecosystem</b> (development time)"]
+        B1["Fallout · CLI · scaffolding"]
+        B2["Validation · packaging · versioning · releases"]
+    end
+    Apps["<b>.NET applications</b><br/>APIs · workers · jobs · web apps"]
+    Architecture -->|structures| Apps
+    Infrastructure -->|runs inside| Apps
+    BuildEcosystem -.->|builds, validates, ships| Apps
+```
+
+## Independent adoption
 
 | You have | Start with | Page |
 |---|---|---|
@@ -16,7 +53,7 @@ The **Anarchy I/O Toolkit** is a set of reusable, self-contained NuGet packages 
 | An existing repository | The Fallout build components: compile, lint, test, layering, packaging and releases. | [Adding the Fallout build](getting-started/fallout.md) |
 | An existing application | Individual packages, wired through their DI modules. | [Using the packages](getting-started/consuming-packages.md) |
 
-## How the packages fit together
+## Platform architecture and dependency model
 
 Every project under `src/` is one package, versioned and published on its own to [NuGet.org](https://www.nuget.org/profiles/anarchy-io). Its package ID, assembly name and root namespace are all `Anarchy.Toolkit.<project name>`, and its prefix is its **layer**. Dependencies only point down the layers, which `make check_layering` enforces:
 
@@ -44,6 +81,12 @@ The [Package Catalog](packages/README.md) lists every package by layer, and the 
 - **Vendor-neutral.** Company-specific conventions plug in through extension points: an overridable `ObserverFactory` for logs and metrics, options and constructor parameters, and `ConfigureAppConfiguration` hooks for configuration sources.
 - **Standalone.** Every dependency restores from nuget.org; test-only libraries such as AwesomeAssertions are confined to the `Testing.*` kits.
 
-## Learn the conventions
+## Samples
 
-The [guides](guides/README.md) describe how code is organized and written in the toolkit and in applications built with it: layering, async, enums, exceptions, endpoints, UIs, databases, observability, testing and builds. The [samples](samples/README.md) put them together in runnable applications.
+The [samples](samples/README.md) are runnable applications (a REST API, a Lambda job, a worker, a WebApp, a mock server and their tests) that together show the three pillars composed: each is laid out by the architecture, built on the infrastructure packages and validated by the Fallout build.
+
+## Learn more
+
+- [Guides](guides/README.md): architecture, infrastructure, build ecosystem and engineering practices.
+- [Package Catalog](packages/README.md) and [NuGet.org](https://www.nuget.org/profiles/anarchy-io): every package, by layer.
+- [API reference](https://anarchy-io.github.io/anarchy-toolkit/api/): the generated reference for every public type.

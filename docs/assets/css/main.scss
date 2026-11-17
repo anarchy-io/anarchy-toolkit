@@ -182,3 +182,67 @@ figure.highlight {
   width: 100%;
   border-radius: $border-radius;
 }
+
+/* Home page feature rows: same image size whatever the source proportions */
+.feature__item .archive__item-teaser img {
+  width: 100%;
+  aspect-ratio: 5 / 3;
+  object-fit: fill;
+}
+
+/* Home page pillar buttons, one brand color per pillar */
+.btn--pillar {
+  color: $anarchy-white;
+  border: 0;
+
+  &:hover,
+  &:visited {
+    color: $anarchy-white;
+  }
+
+  &:hover {
+    background: $anarchy-gradient;
+  }
+}
+
+.btn--pillar-architecture {
+  background: $anarchy-red;
+}
+
+.btn--pillar-infrastructure {
+  background: $anarchy-orange;
+}
+
+.btn--pillar-build {
+  background: $anarchy-carbon;
+}
+
+/* Home page heading between the pillars and the adoption paths */
+h2.adoption-heading {
+  margin-top: 1em;
+  border-bottom: 0;
+  text-align: center;
+}
+
+.adoption-lead {
+  color: $anarchy-muted;
+  text-align: center;
+}
+
+/* Footer: copyright and license stacked on the left, links on the right */
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+
+  .page__footer-copyright {
+    margin: 0;
+  }
+
+  .page__footer-follow ul {
+    margin: 0;
+    padding: 0;
+  }
+}

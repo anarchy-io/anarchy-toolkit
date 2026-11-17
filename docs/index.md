@@ -16,10 +16,32 @@ header:
     - label: "Browse packages"
       url: "/packages/"
 excerpt: >
-  **Build without limits.** Composable .NET foundations for APIs, UIs, jobs and workers.
-  The toolkit provides the foundation; you decide the destination.
+  **A .NET developer platform.** An integrated ecosystem for building maintainable .NET applications
+  through consistent architecture, reusable infrastructure and automated development workflows. Build without limits.
 intro:
-  - excerpt: "One package per concern, layered so dependencies only point down, wired with a single module call, and published independently to nuget.org."
+  - excerpt: "Architecture. Infrastructure. Build engineering. Three pillars, each adoptable on its own, designed to work consistently together."
+pillars:
+  - image_path: /assets/images/features/pillars-architecture.png
+    alt: "Layered architecture illustration"
+    title: "Architecture"
+    excerpt: "Layered application structure where dependencies only point down, DI-module composition and enforceable conventions for async, exceptions, enums, endpoints and tests."
+    url: "/guides/architecture.html"
+    btn_class: "btn--pillar btn--pillar-architecture"
+    btn_label: "Explore the architecture"
+  - image_path: /assets/images/features/pillars-infra.png
+    alt: "Reusable infrastructure components illustration"
+    title: "Infrastructure"
+    excerpt: "Independently published packages for persistence, messaging, observability, configuration, hosting, APIs, UIs and testing: reference only what you use."
+    url: "/packages/"
+    btn_class: "btn--pillar btn--pillar-infrastructure"
+    btn_label: "Browse the packages"
+  - image_path: /assets/images/features/pillars-build.png
+    alt: "Build automation pipeline illustration"
+    title: "Build Ecosystem"
+    excerpt: "Fallout build components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, layering checks, packaging, versioning and releases."
+    url: "/guides/fallout-builds.html"
+    btn_class: "btn--pillar btn--pillar-build"
+    btn_label: "Automate the build"
 feature_row:
   - image_path: /assets/images/features/cli-tool.png
     alt: "Terminal window running a scaffolding command, flat outline illustration, red-orange accent on dark background"
@@ -46,11 +68,21 @@ feature_row:
 
 {% include feature_row id="intro" type="center" %}
 
+{% include feature_row id="pillars" %}
+
+## Choose your entry point
+{: .adoption-heading}
+
+Adopt the whole platform, or start with the single piece you need.
+{: .adoption-lead}
+
 {% include feature_row %}
 
 ## Where to go next
 
-- **[Overview](overview/)**: what the toolkit is, how its layers fit together and the ideas behind it.
+- **[Overview](overview/)**: what the platform is, how its three pillars fit together and the ideas behind it.
 - **[Getting Started](getting-started/)**: choose between the CLI tool, the Fallout build and individual packages.
 - **[NuGet.org](https://www.nuget.org/profiles/anarchy-io)**: every published `Anarchy.Toolkit.*` package and its versions.
-- **[Guides](guides/)**: the architecture, coding, observability and testing conventions.
+- **[Guides](guides/)**: the architecture, infrastructure, build and engineering-practice guides.
+- **[Samples](samples/)**: runnable applications composed from the platform.
+- **[API reference](api/)**: the generated reference for every public type.
