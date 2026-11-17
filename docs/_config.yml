@@ -16,6 +16,9 @@ copyright_url: "https://github.com/leandrommedeiros"
 remote_theme: "mmistakes/minimal-mistakes@4.28.0"
 minimal_mistakes_skin: "default"  # recolored with the brand palette in assets/css/main.scss
 search: true
+search_full_content: true
+lunr:
+  search_within_pages: true
 atom_feed:
   hide: true
 
