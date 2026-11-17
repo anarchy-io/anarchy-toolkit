@@ -1,6 +1,7 @@
 #############################
 ## MONOREPO
 #############################
+#@ anarchy-monorepo
 
 TOOL_PROJECT := $(abspath src/Build.Cli.Tool/Build.Cli.Tool.csproj)
 
