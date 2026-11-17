@@ -58,7 +58,7 @@ public sealed class NotificationService : IDisposable
     /// <summary>How long a notification stays visible before it is dismissed automatically (10 seconds).</summary>
     public static readonly TimeSpan AutoDismissDelay = TimeSpan.FromSeconds(10);
 
-    // Must match the `notification-fade-out` animation duration in toolkit-ui.css.
+    // Must match the `notification-fade-out` animation duration in css/toolkit-ui.css.
     /// <summary>How long a dismissing notification is kept so the UI can fade it out (400 ms).</summary>
     public static readonly TimeSpan FadeOutDuration = TimeSpan.FromMilliseconds(400);
 

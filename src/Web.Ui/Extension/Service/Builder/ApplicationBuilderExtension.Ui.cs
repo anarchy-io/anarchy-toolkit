@@ -14,7 +14,7 @@ public static class ApplicationBuilderExtension
     extension(IApplicationBuilder app)
     {
         /// <summary>
-        /// Serves the UI assets embedded in this package (<c>toolkit-ui.css</c>, <c>toolkit-ui.js</c>).
+        /// Serves the UI assets embedded in this package (<c>css/toolkit-ui.css</c>, <c>js/toolkit-ui.js</c>).
         /// </summary>
         /// <returns>The application builder, for chaining.</returns>
         public IApplicationBuilder UseToolkitUiStaticFiles()

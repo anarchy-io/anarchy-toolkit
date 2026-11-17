@@ -6,8 +6,8 @@ namespace Anarchy.Toolkit.Tests.Unit.Web.Ui.Extension.Service.Builder;
 public class EmbeddedAssetsTest
 {
     [Theory]
-    [InlineData("toolkit-ui.css")]
-    [InlineData("toolkit-ui.js")]
+    [InlineData("css.toolkit-ui.css")]
+    [InlineData("js.toolkit-ui.js")]
     public void Assembly_EmbedsUiStaticAsset(string fileName)
     {
         typeof(ApplicationBuilderExtension).Assembly.GetManifestResourceNames()
