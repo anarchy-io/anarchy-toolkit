@@ -30,6 +30,8 @@ Dependencies restore from nuget.org. See the [README](../README.md) for the Make
 
 NuGet dependencies are centrally managed in `Directory.Packages.props`. Review compatibility constraints in that file when updating packages; Dependabot proposes weekly grouped updates for NuGet and GitHub Actions.
 
+Whenever you add a project, a project reference or a package dependency, run `make dependency_map` and commit the regenerated `docs/dependency-map.html` together with the change. Likewise, commit `.fallout/build.schema.json` when the build regenerates it after you add or change Fallout parameters.
+
 ## Branches and commit messages
 
 Use scoped semantic commit titles in the form `type(scope): description`. Choose the type that best describes the change, such as `feat`, `fix`, `docs`, `test`, `build`, `ci`, `chore`, or `revert`, and use a scope that identifies the affected area. For example:
@@ -43,6 +45,12 @@ Keep the title plain text. The only formatting permitted in the title is apostro
 
 Additional context is optional. When included, separate it from the title with an empty line. The details may use Markdown formatting and must not exceed two paragraphs.
 
+Shape the history for review:
+
+- Commit at least once per project introduced and per layer touched, so each commit stays focused on one area and its scope is accurate.
+- Keep follow-up fixes to work that is still on the branch out of the history: fold them into the commit that introduced the code (`git commit --fixup=<commit>`, then `git rebase -i --autosquash <base>`). This includes formatting fixes from `make lint_fix` and analyzer fixes found by the Release build.
+- Fold version bumps into the commit of the change that needs them, once `ValidateLocalRelease` passes (see [Publishing packages](#publishing-packages-maintainers)).
+
 Prefer a branch name prefixed with the semantic group most relevant to the commits in the pull request. Include the GitHub issue number when available, followed by a brief snake_case description. For example, a pull request containing `feat`, `chore`, and `docs` commits could use `feature/#123/brief_snake_case_description` when feature work is the main purpose. Without an issue number, omit that segment.
 
 ## Publishing packages (maintainers)
@@ -50,5 +58,13 @@ Prefer a branch name prefixed with the semantic group most relevant to the commi
 Every push to `main` runs the NuGet workflow; it can also be started manually to retry publication. Before the first run, configure the GitHub Actions repository secret `NUGET_API_KEY` with a nuget.org API key authorized to push the `Anarchy.Toolkit.*` packages, including new package IDs if needed. Protect `main` and require reviewed pull requests and passing checks.
 
 Each project under `src/` has its own `<Version>`. Prepare a release with `make release_bump RELEASE_PROJECT=Core.Events RELEASE_BUMP=patch` (or `minor`/`major`); it also bumps transitive package dependents. Review and commit the project files. PR checks compare versions with the base commit and reject missing or insufficient dependent bumps. They do not detect source changes that need a bump. Changes to a package with an existing version will **not** be published: nuget.org versions are immutable and the publisher skips duplicates.
+
+When bumping versions:
+
+- Never edit `<Version>` by hand; always use `make release_bump`, so dependents are bumped too.
+- Bump from the base branch's versions, and run the target once per change: it bumps from the current working versions, so repeated runs stack. When several changed projects depend on each other, bump the lowest one only if that already brings the others to the version they need, as dependents get the same kind of bump.
+- Keep a package that has never been published at its initial version (e.g. `1.0.0`), even if the target bumped it as a dependent.
+- Add a release note under `## Releases` in the README of each package changed on purpose. `make release_notes RELEASE_BASE=main` generates the missing ones from the subjects of the commits affecting each package, dependents included, for its current version. It only adds entries, leaving versions already listed untouched, so run it after the changes are committed and the versions bumped, then review the notes and fold them into the relevant commits.
+- Check the result with `make fallout TARGET="ValidateLocalRelease --ReleaseBase main"` before committing.
 
 After merging, the workflow runs unit tests, then uses the Fallout `Publish` target to pack all source projects, validate the batch, and push packages in dependency order. Every version not already on the feed is eligible, including on the first run. A failed push stops the remaining packages but cannot roll back those already pushed; fix the problem and rerun the workflow, which skips versions already on nuget.org. Feed indexing can delay availability. See the [NuGet build guide](../docs/guides/fallout-builds.md#nuget-packages) for details.
