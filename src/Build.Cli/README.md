@@ -20,6 +20,10 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.3.0
+
+- refactor: `LocalPorts` moved to `Anarchy.Toolkit.Core.Helper` (now references Anarchy.Toolkit.Core)
+
 ### 1.2.2
 
 - docs: expand XML docblocks across all projects for the DocFX API reference

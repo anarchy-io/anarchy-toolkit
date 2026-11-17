@@ -26,6 +26,10 @@ See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview
 
 ## Releases
 
+### 1.1.0
+
+- feat: `LocalPorts` (moved from Build.Cli), now generic, with a configurable first port, `IsAvailable` and `FindAvailable`
+
 ### 1.0.6
 
 - docs: expand XML docblocks across all projects for the DocFX API reference

@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Build.Cli</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Cli</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Cli</RootNamespace>
-    <Version>1.2.2</Version>
+    <Version>1.3.0</Version>
     <Description>Command-line foundations for Anarchy solutions: starter solution scaffolding, build hosts, application templates and dotnet CLI helpers.</Description>
     <PackageTags>anarchy cli scaffold</PackageTags>
     <Nullable>enable</Nullable>
@@ -14,6 +14,10 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
