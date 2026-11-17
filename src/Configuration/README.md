@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Configuration
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Configuration · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 Application settings, secrets and observability bootstrap for toolkit-based services.
 
 ```bash

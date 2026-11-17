@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Infrastructure.Messaging.Aws
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Infrastructure · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 AWS SNS and SQS publishers implementing the toolkit's message-broker abstractions.
 
 ```bash

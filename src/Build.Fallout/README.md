@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Build.Fallout
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Build · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 Reusable [Fallout](https://fallout.build/) build components for .NET repositories.
 
 ```bash

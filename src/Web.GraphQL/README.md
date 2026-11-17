@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Web.GraphQL
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 GraphQL wiring for ASP.NET Core APIs built on the toolkit's web pipeline.
 
 ```bash
