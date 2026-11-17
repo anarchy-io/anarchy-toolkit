@@ -26,15 +26,17 @@ public sealed class SpawnedMockServer : MockServerFixture
 
 public class MockServerFixtureTest(SpawnedMockServer mock) : TestCaseBase, IClassFixture<SpawnedMockServer>
 {
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     [Fact]
     public async Task SpawnedServer_AnswersRuntimeExpectationsAndRecordsRequests()
     {
-        await mock.Client.ResetAsync();
-        await mock.Client.AddExpectationAsync("POST", "/orders", 201, new { id = 7 });
+        await mock.Client.ResetAsync(Ct);
+        await mock.Client.AddExpectationAsync("POST", "/orders", 201, new { id = 7 }, cancellationToken: Ct);
         using var http = new HttpClient { BaseAddress = mock.BaseAddress };
 
-        var response = await http.PostAsync("/orders", new StringContent("""{ "sku": "A1" }"""));
-        await http.GetAsync("/unknown");
+        var response = await http.PostAsync("/orders", new StringContent("""{ "sku": "A1" }"""), Ct);
+        await http.GetAsync("/unknown", Ct);
 
         mock.IsSpawned.Should().BeTrue();
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -47,9 +49,9 @@ public class MockServerFixtureTest(SpawnedMockServer mock) : TestCaseBase, IClas
     [Fact]
     public async Task ShouldHaveReceived_WhenTheCountDiffers_FailsListingTheRequests()
     {
-        await mock.Client.ResetAsync();
+        await mock.Client.ResetAsync(Ct);
         using var http = new HttpClient { BaseAddress = mock.BaseAddress };
-        await http.GetAsync("/orders/1");
+        await http.GetAsync("/orders/1", Ct);
 
         var assert = async () => await mock.Client.AssertReceivedAsync("GET", "/orders/{id}", times: 2);
 
