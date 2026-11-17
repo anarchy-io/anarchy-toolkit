@@ -11,6 +11,7 @@ dotnet add package Anarchy.Toolkit.Build.Cli
 - Solutions: `SolutionBootstrapper` creates a complete solution from a `SolutionPlan` in an empty directory: the Fallout build host (`BuildHostScaffolder`), the packaged Makefile, scripts and settings files (`SolutionScaffolder`), a library per layer and the planned applications. `SolutionWorkspace` reads an existing solution's layout and `ApplicationScaffolder` adds an API, job or UI to it. Existing files are never overwritten.
 - Layouts: `SolutionLayout` places libraries and applications by folder (`src/Library/<Layer>`, `src/Api`, `src/Jobs`, `src/Ui`) or by name prefix (`src/<Layer>.<Name>`), and gives the matching `ILayeringBuild` parameters.
 - Build operations: layering checks, dependency maps, release versioning and notes, Git hooks, dependency upgrades and NuGet packaging, without depending on Fallout.
+- Agent skills: `AgentSkillTasks` reads the Make targets and their `#@` skill markers, creates missing skills from a template and refreshes their generated commands (`Sync`), and checks them (`Validate`); the toolkit's own skills are the boilerplate's opt-in `skills` item.
 - Containers: `LocalContainerTasks` manages a Docker Compose environment; `WaitForRunning` takes an optional readiness callback for containers without a health check.
 - Banners: tools built on this package choose their banner with `ConsoleBannerOptions`: Anarchy's logo by default (`AnarchyConsoleBanner`), their own `IConsoleBanner` through `Banner`, or none with `Hide = true`. `Write(console)` prints it, skipping redirected output. The `anarchy-toolkit` tool always prints Anarchy's.
 
@@ -18,9 +19,14 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Distributed files
 
-`Boilerplate/` holds the Makefile and scripts installed into generated solutions; together with the repository's `.gitignore`, `.editorconfig`, `global.json` and `nuget.config`, it is embedded as-is. The toolkit repository uses the same files in place through its root `Makefile`, which sets `SCRIPTS_DIR`. The scripts find the project root from `PROJECT_ROOT` (exported by the Makefile), else their parent directory.
+`Boilerplate/` holds the Makefile, scripts and agent skills (`.agents/skills`, installed only when selected) installed into generated solutions; together with the repository's `.gitignore`, `.editorconfig`, `global.json` and `nuget.config`, it is embedded as-is. The toolkit repository uses the same files in place through its root `Makefile`, which sets `SCRIPTS_ROOT` so that `SCRIPTS_DIR` (and shell completion) resolve to `src/Build.Cli/Boilerplate/scripts`. The scripts find the project root from `PROJECT_ROOT` (exported by the Makefile), else their parent directory.
 
 ## Releases
+
+### 1.7.0
+
+- feat(Build.Cli): add opt-in agent skills to the boilerplate
+- fix(Build.Cli): print no banner on narrow terminals
 
 ### 1.6.0
 

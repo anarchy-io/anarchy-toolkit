@@ -41,7 +41,8 @@ public static class BuildHostScaffolder
             using Fallout.Common;
 
             class Build : FalloutBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
-                          IDependencyUpgradeBuild, IGitHooksBuild, IBoilerplateBuild, IDockerBuild
+                          IDependencyUpgradeBuild, IGitHooksBuild, IBoilerplateBuild, IDockerBuild,
+                          IAgentSkillsBuild
             {
                 public IReadOnlyCollection<Artifact> Artifacts => [];
                 public static int Main() => Execute<Build>(x => x.As<IDefaultBuild>().Clean);

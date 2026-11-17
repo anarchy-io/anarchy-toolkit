@@ -80,6 +80,7 @@ for file in "${SCRIPT_DIR}"/targets/*.mk ${MAKE_EXTRA_TARGETS:-}; do
             if (COMMAND == "" || COMMAND == names[i]) {
                 print "TARGET|" names[i] "|" desc
                 if (notes != "") printf "%s", notes
+                if (COMMAND != "" && skill != "-") print "SKILL|" (skill == "" ? "the solution'"'"'s own skill for this file" : skill)
                 print "END"
             }
         }
@@ -94,6 +95,7 @@ for file in "${SCRIPT_DIR}"/targets/*.mk ${MAKE_EXTRA_TARGETS:-}; do
         count = split(nameparts[1], names, /[ \t]+/)
         desc = parts[2]
         notes = ""
+        skill = fileskill
         next
     }
 
@@ -101,12 +103,16 @@ for file in "${SCRIPT_DIR}"/targets/*.mk ${MAKE_EXTRA_TARGETS:-}; do
 
     count && /^#\+ / { sub(/^#\+ /, ""); notes = notes "VAR|" $0 "\n"; next; }
 
+    # #@ names the agent skill describing the targets: before the first target, for the whole file.
+    /^#@/ { sub(/^#@ */, ""); if (count) skill = $0; else fileskill = $0; next; }
+
     END { print_targets() }
     ' "$file" | while IFS='|' read -r kind f1 f2 f3; do
         case "$kind" in
             TARGET) print_target "$f1" "$f2" ;;
             WARN)   print_warning "$f1" ;;
             VAR)    print_variable "$f1" "$f2" "$f3" ;;
+            SKILL)  printf "    %sAgent skill: %s%s\n" "$CL_GREEN" "$f1" "$CL_RESET" ;;
             END)    if [[ -z "$COMMAND" ]]; then echo ""; fi;;
         esac
     done

@@ -1,6 +1,7 @@
 #############################
 ## CODE QUALITY
 #############################
+#@ anarchy-develop
 
 .PHONY: lint
 lint: #? Runs linter analysis on the whole solution

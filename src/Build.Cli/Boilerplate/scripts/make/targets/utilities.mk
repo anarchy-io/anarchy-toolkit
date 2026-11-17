@@ -1,6 +1,7 @@
 #############################
 ## UTILITIES
 #############################
+#@ anarchy-maintenance
 
 # With ENV=ci, every target runs as a CI build: its dotnet commands use diagnostic verbosity (see IDefaultBuild).
 FALLOUT_CI_FLAGS = $(if $(and $(filter ci,$(ENV)),$(if $(findstring --IsCiBuild,$(TARGET)),,ci)), --IsCiBuild true,)
@@ -70,3 +71,14 @@ git_hooks_show: #? Shows content of a configured Git Hook
 #+ HOOK_TYPE|str|Name of the hook (default: all)
 	@$(SCRIPTS_DIR)/console/title.sh 'yellow' 'SHOW GIT HOOKS'
 	${MAKE} fallout SKIP_TITLE=true TARGET="ShowGitHooks$(if $(HOOK_TYPE), --HookType $(HOOK_TYPE),)"
+
+.PHONY: boilerplate
+boilerplate: #? Installs selected boilerplate items (Makefile, scripts, settings files...) without overwriting files
+#+ ITEMS|str|Comma-separated items, e.g. Makefile,scripts (DEFAULT=all but the agent skills)
+#+ EXCLUDE|str|Comma-separated items to leave out
+#+ APPEND|bool|Append the packaged .gitignore and .editorconfig to existing ones (DEFAULT=false)
+	${MAKE} fallout SKIP_TITLE=true TARGET="SetupBoilerplate$(if $(ITEMS), --BoilerplateItems $(ITEMS),)$(if $(EXCLUDE), --BoilerplateExclude $(EXCLUDE),)$(if $(filter true,$(APPEND)), --AppendExisting true,)"
+
+.PHONY: api_reference
+api_reference: #? Generates the DocFX API reference website from the compiled packages (needs IApiReferenceBuild)
+	${MAKE} fallout SKIP_TITLE=true TARGET=GenerateApiReference

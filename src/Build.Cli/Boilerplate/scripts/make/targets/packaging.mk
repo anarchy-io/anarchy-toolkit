@@ -1,6 +1,7 @@
 #############################
 ## PACKAGING & PUBLISHING
 #############################
+#@ anarchy-release
 
 .PHONY: pack
 pack: #? Packs every package into a .nupkg under artifacts/packages
@@ -41,3 +42,10 @@ publish: #? Packs and pushes all packages to the NuGet feed
 #+ SOURCE|str|NuGet feed URL (required)
 	@$(SCRIPTS_DIR)/console/title.sh 'magenta' 'Publishing NuGet Packages'
 	${MAKE} fallout SKIP_TITLE=true TARGET="Publish$(if $(API_KEY), --NuGetApiKey $(API_KEY),)$(if $(SOURCE), --NuGetSource $(SOURCE),)"
+
+.PHONY: validate_release
+validate_release: #? Checks that changed packages and their dependents have the version bumps they need
+#+ RELEASE_BASE|str|Base Git commit or ref, e.g. main (required)
+#+ RELEASE_HEAD|str|Head Git commit (defaults to HEAD)
+	@test -n "$(RELEASE_BASE)" || { echo 'RELEASE_BASE is required'; exit 1; }
+	${MAKE} fallout SKIP_TITLE=true TARGET="ValidateLocalRelease --ReleaseBase $(RELEASE_BASE)$(if $(RELEASE_HEAD), --ReleaseHead $(RELEASE_HEAD),)"

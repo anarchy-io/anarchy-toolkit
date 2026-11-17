@@ -21,6 +21,8 @@ include $(SCRIPTS_DIR)/make/targets/mock-server.mk
 include $(SCRIPTS_DIR)/make/targets/installation.mk
 include $(SCRIPTS_DIR)/make/targets/packaging.mk
 include $(SCRIPTS_DIR)/make/targets/utilities.mk
+include $(SCRIPTS_DIR)/make/targets/container.mk
+include $(SCRIPTS_DIR)/make/targets/agents.mk
 
 .PHONY: help
 help: art_logo #? Prints the available make targets

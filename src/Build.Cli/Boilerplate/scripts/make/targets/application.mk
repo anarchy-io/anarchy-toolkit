@@ -1,6 +1,7 @@
 #############################
 ## PROJECT COMPILATION
 #############################
+#@ anarchy-develop
 
 .PHONY: clean
 clean: #? Cleans build outputs across the solution

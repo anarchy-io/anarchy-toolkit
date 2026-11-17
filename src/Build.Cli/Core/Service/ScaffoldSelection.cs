@@ -5,9 +5,14 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// <summary>
 /// Resolves <see cref="ScaffoldOptions.Items"/> and <see cref="ScaffoldOptions.Exclude"/> against the available items.
 /// </summary>
+/// <remarks>
+/// The agent skills (<c>.agents/skills</c>) are opt-in: only an explicit <c>skills</c> selector includes them.
+/// </remarks>
 internal sealed class ScaffoldSelection
 {
     private static readonly string[] GeneratedItems = ["solution", "core", "tests", "samples", "docs", "Directory.Build.props"];
+    private const string Skills = "skills";
+    private const string SkillsPath = ".agents/skills/";
     private readonly string[] _includes;
     private readonly string[] _excludes;
 
@@ -25,10 +30,14 @@ internal sealed class ScaffoldSelection
     }
 
     /// <summary>
-    /// Whether an item is included and not excluded. A <c>scripts</c> selector also matches every script below that folder.
+    /// Whether an item is included and not excluded. A <c>scripts</c> selector also matches every script below that
+    /// folder, and <c>skills</c> every agent skill, which <c>all</c> leaves out.
     /// </summary>
     public bool Includes(string item) =>
-        _includes.Any(selector => Matches(item, selector)) && !_excludes.Any(selector => Matches(item, selector));
+        (IsSkill(item) ? _includes.Contains(Skills) : _includes.Any(selector => Matches(item, selector))) &&
+        !_excludes.Any(selector => Matches(item, selector));
+
+    private static bool IsSkill(string item) => item.StartsWith(SkillsPath, StringComparison.Ordinal);
 
     private static string[] Parse(string? value, bool defaultAll) => string.IsNullOrWhiteSpace(value)
         ? defaultAll ? ["all"] : []
@@ -36,6 +45,7 @@ internal sealed class ScaffoldSelection
             .Select(item => item.Replace('\\', '/').TrimEnd('/').ToLowerInvariant()).ToArray();
 
     private static bool Matches(string item, string selector) => selector == "all" ||
+        (selector == Skills && IsSkill(item)) ||
         string.Equals(item, selector, StringComparison.OrdinalIgnoreCase) ||
         (selector.StartsWith("scripts", StringComparison.OrdinalIgnoreCase) &&
          item.StartsWith(selector + "/", StringComparison.OrdinalIgnoreCase));

@@ -1,6 +1,7 @@
 ##############################
 ## MOCK SERVER
 ##############################
+#@ anarchy-environment
 
 # Requires the build project to implement IMockServerBuild and the solution to hold a mock server host: a runnable
 # project whose name ends in MockServer (or MOCK_PROJECT) calling MockServerEntryPoint.RunAsync(args).
