@@ -50,7 +50,7 @@ dotnet Anarchy.Toolkit.Web.MockServer.dll -e "mocks/**/*.json" --record artifact
 
 | Option | Environment | Description |
 | --- | --- | --- |
-| `-p, --port` | `MOCKSERVER_PORT` | Port (default `6000` or the next free one; an explicit port that is taken fails). |
+| `-p, --port` | `MOCKSERVER_PORT` | Port (default `6000` or the next free one; `0` lets the OS choose; an explicit port that is taken fails). |
 | `--host` | `MOCKSERVER_HOST` | Host (default `localhost`). |
 | `-e, --expectations` | `MOCKSERVER_EXPECTATIONS` (`;`-separated) | File, directory or glob; repeatable. |
 | `-w, --watch` | `MOCKSERVER_WATCH` | Reload expectations when the files change. |

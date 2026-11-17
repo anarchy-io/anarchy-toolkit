@@ -13,7 +13,7 @@ public static class MockServerArguments
     public const string Usage = """
         Usage: mockserver [options]
 
-          -p, --port <port>            Port to listen on (default 6000, or the next free one)      MOCKSERVER_PORT
+          -p, --port <port>            Port to listen on (default 6000, or the next free one; 0 = any)  MOCKSERVER_PORT
               --host <host>            Host to listen on (default localhost)                       MOCKSERVER_HOST
           -e, --expectations <path>    Expectation file, directory or glob; repeatable             MOCKSERVER_EXPECTATIONS (;-separated)
           -w, --watch                  Reload expectations when their files change                 MOCKSERVER_WATCH
@@ -70,7 +70,7 @@ public static class MockServerArguments
 
             switch (arg)
             {
-                case "-p" or "--port": SetInt(Value(), arg, v => options.Port = v, errors, 1, 65535); break;
+                case "-p" or "--port": SetInt(Value(), arg, v => options.Port = v, errors, 0, 65535); break;
                 case "--host": if (Value() is { } host) options.Host = host; break;
                 case "-e" or "--expectations": if (Value() is { } path) expectationsFromArgs.Add(path); break;
                 case "-w" or "--watch": options.WatchExpectations = true; break;
@@ -117,7 +117,7 @@ public static class MockServerArguments
 
     private static void ApplyEnvironment(MockServerOptions options, Func<string, string?> environment, List<string> errors)
     {
-        SetInt(environment("MOCKSERVER_PORT"), "MOCKSERVER_PORT", v => options.Port = v, errors, 1, 65535);
+        SetInt(environment("MOCKSERVER_PORT"), "MOCKSERVER_PORT", v => options.Port = v, errors, 0, 65535);
         if (environment("MOCKSERVER_HOST") is { Length: > 0 } host) options.Host = host;
         if (environment("MOCKSERVER_EXPECTATIONS") is { Length: > 0 } paths)
             options.ExpectationPaths.AddRange(paths.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
