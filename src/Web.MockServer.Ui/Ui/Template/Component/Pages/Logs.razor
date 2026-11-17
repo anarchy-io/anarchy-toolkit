@@ -1,0 +1,92 @@
+@page "/logs"
+@implements IDisposable
+@inject MockServerUiContext Mock
+
+<PageTitle>Mock Server / Logs</PageTitle>
+
+<div class="page-container">
+    <div class="page-header-row">
+        <h1>Logs</h1>
+        <button class="btn" @onclick="TogglePause">@(_paused ? "Resume" : "Pause")</button>
+    </div>
+
+    <div class="form-section">
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="level">Minimum level</label>
+                <select id="level" @bind="_level">
+                    @foreach (var level in Enum.GetValues<MockServerLogLevel>())
+                    {
+                        <option value="@level">@level</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="search">Contains</label>
+                <input id="search" type="text" @bind="_search" @bind:event="oninput" />
+            </div>
+        </div>
+    </div>
+
+    <p>Following the last @(Mock.Options.LogBuffer == 0 ? "all" : Mock.Options.LogBuffer.ToString()) entries, whatever the console verbosity.</p>
+
+    <div class="events-table">
+        <div class="table-scroll">
+            <table class="sticky-edges-table">
+                <thead><tr><th>Time</th><th>Level</th><th>Category</th><th>Message</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var entry in Visible)
+                {
+                    <tr @key="entry.Sequence">
+                        <td class="nowrap">@entry.Timestamp.ToString("HH:mm:ss.fff")</td>
+                        <td>@entry.Level</td>
+                        <td class="nowrap">@entry.Category</td>
+                        <td><code>@entry.Message</code></td>
+                        <td>
+                            @if (entry.Request is not null)
+                            {
+                                <JsonViewLink Title="Request" JsonContent="@JsonSerializer.Serialize(entry.Request, MockServerJson.Options)" />
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IReadOnlyList<MockServerLogEntry> _entries = [];
+    private MockServerLogLevel _level = MockServerLogLevel.Request;
+    private string _search = "";
+    private bool _paused;
+
+    private IEnumerable<MockServerLogEntry> Visible => _entries.AsEnumerable().Reverse()
+        .Where(e => e.Level >= _level && (_search.Length == 0 || e.Message.Contains(_search, StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>Takes a snapshot and follows new entries.</summary>
+    protected override void OnInitialized()
+    {
+        _entries = Mock.Log.All;
+        Mock.Log.EntryWritten += OnEntry;
+    }
+
+    private void OnEntry(MockServerLogEntry entry)
+    {
+        if (_paused) return;
+        _ = InvokeAsync(() => {
+            _entries = Mock.Log.All;
+            StateHasChanged();
+        });
+    }
+
+    private void TogglePause()
+    {
+        _paused = !_paused;
+        if (!_paused) _entries = Mock.Log.All;
+    }
+
+    /// <summary>Stops following the log.</summary>
+    public void Dispose() => Mock.Log.EntryWritten -= OnEntry;
+}

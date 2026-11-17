@@ -36,6 +36,7 @@
     <ProjectReference Include="..\..\src\Web\Web.csproj" />
     <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
     <ProjectReference Include="..\..\src\Web.MockServer\Web.MockServer.csproj" />
+    <ProjectReference Include="..\..\src\Web.MockServer.Ui\Web.MockServer.Ui.csproj" />
   </ItemGroup>
 
   <ItemGroup>

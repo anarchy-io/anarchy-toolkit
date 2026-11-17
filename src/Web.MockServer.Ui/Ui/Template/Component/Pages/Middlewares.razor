@@ -1,0 +1,30 @@
+@page "/middlewares"
+@inject MockServerUiContext Mock
+
+<PageTitle>Mock Server / Middlewares</PageTitle>
+
+<div class="page-container">
+    <h1>Middlewares</h1>
+    <p>Run in this order after expectation matching and before the matched expectation answers.</p>
+
+    @if (Mock.Middlewares.Count == 0)
+    {
+        <p>No middleware is plugged in.</p>
+    }
+    else
+    {
+        <div class="events-table">
+            <div class="table-scroll">
+                <table class="sticky-edges-table">
+                    <thead><tr><th>#</th><th>Name</th><th>Kind</th></tr></thead>
+                    <tbody>
+                    @foreach (var middleware in Mock.Middlewares)
+                    {
+                        <tr><td>@middleware.Order</td><td><code>@middleware.Name</code></td><td>@middleware.Kind</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

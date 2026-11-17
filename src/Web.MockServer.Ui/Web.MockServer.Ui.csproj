@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Web.MockServer.Ui</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Web.MockServer.Ui</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Web.MockServer.Ui</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Browser UI for Anarchy.Toolkit.Web.MockServer, built on Anarchy.Toolkit.Web.Ui: loaded expectations, received requests, plugged-in middlewares and a live log. Runs standalone or from a host of your own.</Description>
+    <PackageTags>anarchy mock mockserver testing integration e2e ui blazor</PackageTags>
+    <OutputType>Exe</OutputType>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Web.MockServer\Web.MockServer.csproj" />
+    <ProjectReference Include="..\Web.Ui\Web.Ui.csproj" />
+  </ItemGroup>
+
+</Project>
