@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Anarchy.Toolkit.Web.Extension.DependencyInjection;
@@ -75,7 +76,8 @@ public static partial class ServiceCollectionExtension
         /// is <c>{AuthService.Host}/connect/token</c>, applies
         /// <see cref="Anarchy.Toolkit.Web.Service.SwaggerGen.AuthorizeCheckOperationFilter"/> and
         /// <see cref="Anarchy.Toolkit.Web.Service.SwaggerGen.AcceptEncodingHeaderOperationFilter"/>, and adds a server
-        /// entry from the <c>BASE_PATH</c> environment variable when it is set.
+        /// entry from the <c>BASE_PATH</c> environment variable when it is set. The document is served as OpenAPI 3.2
+        /// by default; override <see cref="SwaggerOptions.OpenApiVersion"/> via <c>services.Configure&lt;SwaggerOptions&gt;</c>.
         /// </remarks>
         /// <param name="apiName">The API display name.</param>
         /// <param name="appSettings">Auth service settings (provide the OAuth authority).</param>
@@ -95,6 +97,9 @@ public static partial class ServiceCollectionExtension
                                                   string titlePrefix = "[API]",
                                                   SwaggerDescriptionOptions? descriptionOptions = null)
         {
+            // Serve OpenAPI 3.2 by default; consumers can override via services.Configure<SwaggerOptions>(...)
+            services.Configure<SwaggerOptions>(o => o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_2);
+
             return services.AddSwaggerGen(c => {
                 // Root Document
                 c.SwaggerDoc("spec", new OpenApiInfo {

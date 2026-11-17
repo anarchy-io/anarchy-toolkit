@@ -1,0 +1,309 @@
+/*
+ * Swagger UI theme, layered on top of Swagger UI's own stylesheet. Only colours, type and a few borders change;
+ * layouts are Swagger UI's own. Every colour comes from css/swagger-colors.css: change that file, not this one,
+ * to rebrand.
+ *
+ * The rules are nested under `html:is(.dark-mode, :not(.dark-mode))`, which matches in both modes with the same
+ * specificity as Swagger UI's `html.dark-mode` rules, so this stylesheet (loaded after them) wins in either mode.
+ */
+html:is(.dark-mode, :not(.dark-mode)) {
+  background-color: var(--swagger-theme-background);
+
+  /* Page */
+  body {
+    margin: 0;
+    background-color: var(--swagger-theme-background);
+  }
+
+  .swagger-ui {
+    background-color: var(--swagger-theme-background);
+    color: var(--swagger-theme-text);
+  }
+
+  .swagger-ui,
+  .swagger-ui :is(h1, h2, h3, h4, h5, h6, p, label, button, input, select, textarea, table, th, td, a, span, div) {
+    font-family: var(--swagger-theme-font-sans);
+  }
+
+  .swagger-ui :is(code, pre, .microlight, .opblock-summary-path, .opblock-summary-path *, .parameter__type,
+    .prop-format, .response-col_status, .model, .model *, .model-title, .highlight-code *) {
+    font-family: var(--swagger-theme-font-mono);
+  }
+
+  .swagger-ui :is(.info .title, .info h1, .info h2, .info h3, .info h4, .info h5, .info p, .info li, .info table,
+    .info .base-url, .opblock-tag, .opblock-tag small, .opblock .opblock-section-header h4,
+    .opblock .opblock-section-header label, .opblock .responses-inner h4, .opblock .responses-inner h5, .tab li,
+    .tab button, table thead tr th, table thead tr td, .parameter__name, .response-col_status, .response-col_links,
+    .model-title, .model, .model .brace-open, .model .brace-close, .model-box-control:not(.prop),
+    section.models h4 span, section h3, .markdown p, .markdown li, .renderedMarkdown p, .renderedMarkdown li,
+    .scheme-container .schemes > .schemes-server-container > label, .dialog-ux .modal-ux,
+    .dialog-ux .modal-ux :is(h2, h3, h4, h5, p, label), .json-schema-2020-12__title,
+    .json-schema-2020-12-keyword__name--primary, .loading-container .loading:after) {
+    color: var(--swagger-theme-text);
+  }
+
+  .swagger-ui :is(.info .title small, .opblock-description-wrapper p, .opblock-summary-description,
+    .parameter__in, .parameter__extension, .prop-format, .json-schema-2020-12__attribute--muted,
+    .json-schema-2020-12-keyword__name--secondary, .json-schema-2020-12-keyword__value--secondary) {
+    color: var(--swagger-theme-muted);
+  }
+
+  .swagger-ui :is(.authorization__btn svg, .expand-operation svg, .opblock-control-arrow svg,
+    .models-control svg, .json-schema-2020-12 button svg) {
+    color: var(--swagger-theme-muted);
+    fill: currentColor;
+  }
+
+  /* Header bar */
+  .swagger-ui .topbar {
+    background-color: var(--swagger-theme-header);
+    border-bottom: var(--swagger-theme-accent-width) solid transparent;
+    border-image: var(--swagger-theme-gradient) 1;
+  }
+
+  .swagger-ui .topbar :is(a, .download-url-wrapper .select-label, .download-url-wrapper .select-label span) {
+    color: var(--swagger-theme-header-text);
+  }
+
+  .swagger-ui .topbar .dark-mode-toggle button svg {
+    fill: var(--swagger-theme-header-text);
+  }
+
+  .swagger-ui .topbar .download-url-wrapper .download-url-button {
+    background: var(--swagger-theme-gradient);
+    color: var(--swagger-theme-on-primary);
+  }
+
+  .swagger-ui .topbar .download-url-wrapper :is(.download-url-input, select) {
+    border-color: var(--swagger-theme-secondary);
+  }
+
+  /* Header logo: SwaggerThemeOptions.Logo and DarkLogo set the variables below and replace Swagger's logo */
+  .swagger-ui .topbar .topbar-wrapper .link {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .swagger-ui .topbar .topbar-wrapper .link svg {
+    display: var(--swagger-theme-logo-svg-display, block);
+  }
+
+  .swagger-ui .topbar .topbar-wrapper .link::before {
+    content: "";
+    display: var(--swagger-theme-logo-display, none);
+    width: 160px;
+    height: 40px;
+    background: var(--swagger-theme-logo) left center / contain no-repeat;
+  }
+
+  &.dark-mode .swagger-ui .topbar .topbar-wrapper .link::before {
+    background-image: var(--swagger-theme-logo-dark, var(--swagger-theme-logo));
+  }
+
+  /* Title and links */
+  .swagger-ui .info .title {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .swagger-ui .info .title small {
+    background-color: var(--swagger-theme-muted);
+  }
+
+  .swagger-ui .info .title small.version-stamp {
+    background-color: var(--swagger-theme-primary);
+  }
+
+  .swagger-ui :is(a, .info a, .opblock-tag a.link, .opblock-external-docs a.link, .dialog-ux .modal-ux .scopes a,
+    .json-schema-2020-12 a) {
+    color: var(--swagger-theme-link);
+  }
+
+  .swagger-ui :is(a, .info a):hover {
+    color: var(--swagger-theme-link-hover);
+  }
+
+  /* Server and authorisation bar */
+  .swagger-ui .scheme-container {
+    background-color: var(--swagger-theme-surface);
+    box-shadow: none;
+    border-top: 1px solid var(--swagger-theme-border);
+    border-bottom: 1px solid var(--swagger-theme-border);
+  }
+
+  /* Buttons */
+  .swagger-ui .btn {
+    border-radius: var(--swagger-theme-radius);
+    border-color: var(--swagger-theme-border);
+    color: var(--swagger-theme-text);
+    box-shadow: none;
+  }
+
+  .swagger-ui :is(.btn.authorize, .scheme-container .btn.authorize, .dialog-ux .modal-ux .btn.modal-btn) {
+    border-color: var(--swagger-theme-primary);
+    color: var(--swagger-theme-primary);
+    background-color: transparent;
+  }
+
+  .swagger-ui :is(.btn.authorize svg, .scheme-container .btn.authorize svg) {
+    color: var(--swagger-theme-primary);
+    fill: var(--swagger-theme-primary);
+  }
+
+  .swagger-ui :is(.opblock .btn.execute, .btn.execute, .btn.authorize.modal-btn-auth, .dialog-ux .modal-ux .btn.modal-btn.auth.authorize) {
+    background: var(--swagger-theme-gradient);
+    border-color: transparent;
+    color: var(--swagger-theme-on-primary);
+  }
+
+  .swagger-ui :is(.btn.cancel, .opblock .opblock-section-header .try-out__btn.cancel) {
+    border-color: var(--swagger-theme-primary);
+    color: var(--swagger-theme-primary);
+  }
+
+  .swagger-ui :is(.opblock .opblock-section-header .try-out__btn, .opblock .btn.btn-clear,
+    .dialog-ux .modal-ux .btn.modal-btn.btn-done) {
+    border-color: var(--swagger-theme-border);
+    color: var(--swagger-theme-text);
+  }
+
+  /* Form fields */
+  .swagger-ui :is(input[type=text], input[type=password], input[type=search], input[type=email], input[type=file],
+    textarea, select) {
+    border-color: var(--swagger-theme-border);
+    border-radius: var(--swagger-theme-radius);
+    background-color: var(--swagger-theme-background);
+    color: var(--swagger-theme-text);
+  }
+
+  .swagger-ui :is(input, textarea)::placeholder {
+    color: var(--swagger-theme-muted);
+    opacity: 1;
+  }
+
+  .swagger-ui :is(input, textarea, select):focus:not(.download-url-input) {
+    border-color: var(--swagger-theme-secondary) !important;
+    outline: 2px solid var(--swagger-theme-secondary);
+    outline-offset: 0;
+  }
+
+  .swagger-ui :is(input, textarea, select).invalid,
+  .swagger-ui .opblock :is(.parameter__name.required span, .parameter__name.required:after),
+  .swagger-ui .model .property-row.required .star {
+    border-color: var(--swagger-theme-delete);
+    color: var(--swagger-theme-delete);
+  }
+
+  /* Tag sections */
+  .swagger-ui .opblock-tag {
+    border-bottom-color: var(--swagger-theme-border);
+    font-weight: 600;
+  }
+
+  .swagger-ui .opblock-tag:hover {
+    background-color: var(--swagger-theme-surface);
+  }
+
+  /* Operations, each tinted with its method colour */
+  .swagger-ui .opblock.opblock-get { --swagger-theme-method: var(--swagger-theme-get); }
+  .swagger-ui .opblock.opblock-post { --swagger-theme-method: var(--swagger-theme-post); }
+  .swagger-ui .opblock.opblock-put { --swagger-theme-method: var(--swagger-theme-put); }
+  .swagger-ui .opblock.opblock-patch { --swagger-theme-method: var(--swagger-theme-patch); }
+  .swagger-ui .opblock.opblock-delete { --swagger-theme-method: var(--swagger-theme-delete); }
+  .swagger-ui .opblock.opblock-head { --swagger-theme-method: var(--swagger-theme-head); }
+  .swagger-ui .opblock.opblock-options { --swagger-theme-method: var(--swagger-theme-options); }
+  .swagger-ui .opblock.opblock-deprecated { --swagger-theme-method: var(--swagger-theme-deprecated); }
+
+  .swagger-ui .opblock[class*="opblock-"] {
+    border-color: var(--swagger-theme-method, var(--swagger-theme-border));
+    border-radius: var(--swagger-theme-radius);
+    background-color: color-mix(in srgb, var(--swagger-theme-method, var(--swagger-theme-muted)) 7%, var(--swagger-theme-background));
+    box-shadow: none;
+
+    .opblock-summary {
+      border-color: var(--swagger-theme-method, var(--swagger-theme-border));
+    }
+
+    .opblock-summary-method {
+      background-color: var(--swagger-theme-method, var(--swagger-theme-muted));
+      color: var(--swagger-theme-method-text);
+      border-radius: calc(var(--swagger-theme-radius) / 2);
+      text-shadow: none;
+    }
+
+    .opblock-section-header {
+      background-color: color-mix(in srgb, var(--swagger-theme-method, var(--swagger-theme-muted)) 12%, var(--swagger-theme-background));
+      border-color: color-mix(in srgb, var(--swagger-theme-method, var(--swagger-theme-border)) 40%, transparent);
+      box-shadow: none;
+    }
+
+    .opblock-section-header .tab-header .tab-item .opblock-title span:after,
+    .tab-header .tab-item.active h4 span::after {
+      background-color: var(--swagger-theme-method, var(--swagger-theme-primary));
+    }
+
+    :is(thead tr td, thead tr th) {
+      border-color: color-mix(in srgb, var(--swagger-theme-method, var(--swagger-theme-border)) 40%, transparent);
+    }
+
+    .opblock-body > :is(.opblock-description-wrapper, .opblock-external-docs-wrapper, .opblock-title_normal) {
+      border-color: color-mix(in srgb, var(--swagger-theme-method, var(--swagger-theme-border)) 40%, transparent);
+    }
+  }
+
+  /* Code */
+  .swagger-ui :is(.highlight-code, .microlight, pre) {
+    border-radius: var(--swagger-theme-radius);
+  }
+
+  .swagger-ui :is(.renderedMarkdown code, .markdown code) {
+    color: var(--swagger-theme-code);
+    background-color: var(--swagger-theme-surface);
+  }
+
+  .swagger-ui :is(.copy-to-clipboard, .download-contents) {
+    background-color: var(--swagger-theme-surface);
+    color: var(--swagger-theme-text);
+  }
+
+  /* Schemas */
+  .swagger-ui :is(section.models, section.models h4) {
+    border-color: var(--swagger-theme-border);
+  }
+
+  .swagger-ui section.models {
+    border-radius: var(--swagger-theme-radius);
+  }
+
+  .swagger-ui :is(section.models .model-container, .model-box, .json-schema-2020-12, .json-schema-2020-12 button) {
+    background-color: var(--swagger-theme-surface);
+    border-radius: var(--swagger-theme-radius);
+  }
+
+  .swagger-ui .model .prop-type {
+    color: var(--swagger-theme-code);
+  }
+
+  /* Dialogs */
+  .swagger-ui .dialog-ux .modal-ux {
+    background-color: var(--swagger-theme-background);
+    border: 1px solid var(--swagger-theme-border);
+    border-radius: var(--swagger-theme-radius);
+  }
+
+  .swagger-ui .dialog-ux .modal-ux-header {
+    border-bottom: var(--swagger-theme-accent-width) solid transparent;
+    border-image: var(--swagger-theme-gradient) 1;
+  }
+
+  .swagger-ui .dialog-ux .modal-ux .auth-container {
+    border-color: var(--swagger-theme-border);
+  }
+
+  /* Errors */
+  .swagger-ui :is(.info .errors-wrapper, .opblock .validation-errors.errors-wrapper) {
+    background-color: color-mix(in srgb, var(--swagger-theme-delete) 10%, var(--swagger-theme-background));
+    border-color: var(--swagger-theme-delete);
+    color: var(--swagger-theme-text);
+  }
+}

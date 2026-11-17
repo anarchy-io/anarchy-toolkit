@@ -1,0 +1,55 @@
+/*
+ * Swagger UI theme colours: the only file to change for a custom palette.
+ *
+ * css/swagger-theme.css styles Swagger UI through these variables only. To rebrand, add a
+ * wwwroot/css/swagger-colors.css to your API project with your own values (it is served instead of this one),
+ * or point SwaggerThemeOptions.ColorsStylesheet at another stylesheet. Copy every variable: a missing one leaves
+ * its rules unstyled.
+ *
+ * Each colour is a light-dark(<light>, <dark>) pair. Swagger UI starts in dark mode when the system prefers it and
+ * its header has a toggle; dark mode sets `color-scheme: dark`, which selects the second value.
+ *
+ * The header logo is set with SwaggerThemeOptions.Logo and DarkLogo, not here.
+ *
+ * These defaults are the Anarchy palette (docs/assets/css/tokens.css and the brand guide's surface system).
+ */
+:root {
+  color-scheme: light;
+
+  /* Brand */
+  --swagger-theme-primary: #F02020;
+  --swagger-theme-secondary: #FF751F;
+  --swagger-theme-gradient: linear-gradient(110deg, #F02020 0%, #FF751F 100%);
+
+  /* Surfaces and text */
+  --swagger-theme-background: light-dark(#FFFFFF, #111114);
+  --swagger-theme-surface: light-dark(#F5F5F7, #1C1C21);
+  --swagger-theme-header: light-dark(#FFFFFF, #111114);
+  --swagger-theme-header-text: light-dark(#111114, #FFFFFF);
+  --swagger-theme-on-primary: #FFFFFF;
+  --swagger-theme-text: light-dark(#111114, #FFFFFF);
+  --swagger-theme-muted: light-dark(#5C5C66, #A1A1AA);
+  --swagger-theme-border: light-dark(#DCDCE2, #34343B);
+
+  /* Links: darker than the primary colour on light, for AA contrast; orange on dark */
+  --swagger-theme-link: light-dark(#C81818, #FF751F);
+  --swagger-theme-link-hover: light-dark(#FF751F, #FFFFFF);
+  --swagger-theme-code: light-dark(#C81818, #FF9A5C);
+
+  /* Operations, by HTTP method: distinct hues so they stay recognisable at a glance */
+  --swagger-theme-get: light-dark(#2B6CB0, #63A4F0);
+  --swagger-theme-post: light-dark(#2F855A, #48BB78);
+  --swagger-theme-put: light-dark(#DD6B20, #FF8C42);
+  --swagger-theme-patch: light-dark(#6B46C1, #9F7AEA);
+  --swagger-theme-delete: light-dark(#D01B1B, #FF5252);
+  --swagger-theme-head: light-dark(#5C5C66, #A1A1AA);
+  --swagger-theme-options: light-dark(#5C5C66, #A1A1AA);
+  --swagger-theme-deprecated: light-dark(#85858F, #6B6B75);
+  --swagger-theme-method-text: light-dark(#FFFFFF, #111114);
+
+  /* Typography (system fonts only; nothing is downloaded) and shape */
+  --swagger-theme-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --swagger-theme-font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --swagger-theme-radius: 8px;
+  --swagger-theme-accent-width: 3px;
+}

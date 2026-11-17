@@ -17,7 +17,7 @@ public static partial class ApplicationBuilderExtension
         }
 
         /// <summary>
-        /// Serves the shared static assets embedded in this package (theme stylesheet, favicon).
+        /// Serves the shared static assets embedded in this package (favicons, Swagger theme stylesheets, script and logos).
         /// </summary>
         /// <remarks>
         /// Files are read from the <c>Anarchy.Toolkit.Web.wwwroot</c> embedded resources of this assembly through an

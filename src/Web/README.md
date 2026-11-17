@@ -25,7 +25,24 @@ The [sample API startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main
 
 See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/guides/exposing-endpoints.html), [API sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Api) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
+## Swagger UI theme
+
+Swagger UI is themed by default, with the Anarchy palette, header logo (dark text in light mode, white text in dark mode) and favicon, in light and dark mode. Swagger UI starts in dark mode when the system prefers it; the choice made with its header toggle is remembered in the browser. The theme is a mechanism rather than a brand: the stylesheet reads every colour, font and radius from a separate colours stylesheet, so you can rebrand by changing only the colours.
+
+- **Change the colours.** Copy [`wwwroot/css/swagger-colors.css`](https://github.com/anarchy-io/anarchy-toolkit/blob/main/src/Web/wwwroot/css/swagger-colors.css) to your API project's `wwwroot/css/swagger-colors.css` and edit the values. Each colour is a `light-dark(<light>, <dark>)` pair. The packaged assets follow the usual `wwwroot` layout (`css/swagger-colors.css`, `css/swagger-theme.css`, `js/swagger-theme.js`, `images/logo.png`, `images/logo-dark.png`, and `favicon.svg` and `favicon.png` at the root), and files in your API project's `wwwroot` are served first, so a `wwwroot/favicon.svg` or `wwwroot/images/logo.png` replaces the packaged one the same way.
+- **Point elsewhere.** `services.Configure<SwaggerThemeOptions>(...)` sets `ColorsStylesheet`, `Stylesheet`, `Script`, `Logo`, `DarkLogo`, `Favicon` and `FallbackFavicon` (relative to the application base path, or absolute). Set `Stylesheet` to your own file to replace the theme entirely.
+- **Turn it off.** `services.Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)` keeps Swagger UI's own look and favicon.
+
+The theme uses system fonts only and changes colours, type and borders, not layouts. Swagger UI's class names are not a stable API, so check the theme after upgrading Swashbuckle.
+
+The OpenAPI document is served as OpenAPI 3.2 by default; set `SwaggerOptions.OpenApiVersion` with `services.Configure<SwaggerOptions>(...)` to serve another version.
+
 ## Releases
+
+### 1.2.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+- feat(Web): serve OpenAPI 3.2 and theme Swagger UI with a light and dark Anarchy theme
 
 ### 1.0.8
 
