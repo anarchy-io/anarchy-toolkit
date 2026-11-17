@@ -72,7 +72,11 @@ public static class ExpectationMatcher
         return path;
     }
 
-    internal static PathMatch MatchPath(string? expected, string actual)
+    /// <summary>How specifically <paramref name="actual"/> matches <paramref name="expected"/> (see <see cref="MockRequestMatcher.Path"/>).</summary>
+    /// <param name="expected">The exact path, template or regular expression; any path when empty.</param>
+    /// <param name="actual">The request path.</param>
+    /// <returns>How it matched.</returns>
+    public static PathMatch MatchPath(string? expected, string actual)
     {
         if (string.IsNullOrEmpty(expected)) return PathMatch.Pattern;
         if (string.Equals(expected.TrimEnd('/'), actual.TrimEnd('/'), StringComparison.Ordinal)) return PathMatch.Exact;
