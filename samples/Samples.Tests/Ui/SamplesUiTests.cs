@@ -44,7 +44,7 @@ public class SamplesUiTests(WebApplicationFactory<Startup> factory) : IClassFixt
     [Fact]
     public async Task StubToken_WithWrongSecret_IsRejected()
     {
-        using var response = await RequestTokenAsync("samples-ui", "wrong");
+        using var response = await RequestTokenAsync("anarchy", "wrong");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -61,7 +61,7 @@ public class SamplesUiTests(WebApplicationFactory<Startup> factory) : IClassFixt
     public async Task StubOrders_WithIssuedToken_ReturnsTheEnvironmentsOrders()
     {
         var ct = TestContext.Current.CancellationToken;
-        using var tokenResponse = await RequestTokenAsync("samples-ui", "samples-ui-secret");
+        using var tokenResponse = await RequestTokenAsync("anarchy", "secret");
         var token = await tokenResponse.Content.ReadFromJsonAsync<JsonElement>(ct);
 
         using var request = new HttpRequestMessage(HttpMethod.Get, "stub/testing/orders");
