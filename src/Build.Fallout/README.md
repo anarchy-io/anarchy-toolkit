@@ -105,6 +105,11 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 
 ## Releases
 
+### 3.6.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+- feat(Build.Cli): scaffold APIs without the Swagger theme and UIs with the logo and theme toggle
+
 ### 3.5.0
 
 - feat: `MockServerSyncOpenApi` target (`MockServerOpenApi`, `MockServerOpenApiOutput`, `MockServerOpenApiDryRun`) adding expectations for new OpenAPI endpoints

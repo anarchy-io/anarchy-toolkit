@@ -14,6 +14,10 @@ internal static class ApiTemplate
         var ns = context.Namespace;
         var ports = ApplicationTemplates.PortsOf(context);
         var scope = ApplicationTemplates.Kebab(app.Name);
+        var themeUsing = app.SwaggerTheme ? string.Empty : "\nusing Anarchy.Toolkit.Web.Entity.Swagger;";
+        var disableTheme = app.SwaggerTheme
+            ? string.Empty
+            : "\n            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)";
         return new Dictionary<string, string> {
             [$"{context.ProjectName}.csproj"] = ApplicationTemplates.Project("Microsoft.NET.Sdk.Web", context, exe: true),
             ["Program.cs"] = $"""
@@ -30,7 +34,7 @@ internal static class ApiTemplate
                 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
                 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
                 using Anarchy.Toolkit.Core.Health.Service.Health;
-                using Anarchy.Toolkit.Web.Composition.Startup;
+                using Anarchy.Toolkit.Web.Composition.Startup;{{themeUsing}}
                 using Anarchy.Toolkit.Web.Extension.DependencyInjection;
 
                 namespace {{ns}}.Composition;
@@ -44,7 +48,7 @@ internal static class ApiTemplate
                         base.ConfigureWebCustomServices(services)
                             .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
                             .SetupAuthorization(readScope: "{{scope}}:read", writeScope: "{{scope}}:write", adminScope: "{{scope}}:admin")
-                            .AddSingleton<IReadOnlyCollection<IServiceHealthReport>>([]);
+                            .AddSingleton<IReadOnlyCollection<IServiceHealthReport>>([]){{disableTheme}};
                 }
 
                 """,

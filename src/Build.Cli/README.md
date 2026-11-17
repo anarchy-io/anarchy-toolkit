@@ -20,6 +20,11 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.5.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+- feat(Build.Cli): scaffold APIs without the Swagger theme and UIs with the logo and theme toggle
+
 ### 1.4.0
 
 - feat: `OpenApiExpectationSync` adds mock server expectations for OpenAPI/Swagger endpoints (file or URL, JSON or YAML) that have none, never changing existing ones and reporting changed or removed endpoints; `mock_server_sync_openapi` Make target

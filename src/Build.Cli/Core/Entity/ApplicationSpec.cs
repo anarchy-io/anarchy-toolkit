@@ -10,7 +10,11 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Entity;
 /// </remarks>
 /// <param name="Kind">The kind of application, which selects its template, layer and toolkit package.</param>
 /// <param name="Name">The application name, e.g. <c>Orders</c>.</param>
-public sealed record ApplicationSpec(ApplicationKind Kind, string Name)
+/// <param name="SwaggerTheme">
+/// Whether an API keeps the toolkit's default Swagger UI theme; when <see langword="false"/>, the generated startup
+/// disables it. Ignored for other kinds.
+/// </param>
+public sealed record ApplicationSpec(ApplicationKind Kind, string Name, bool SwaggerTheme = true)
 {
     /// <summary>
     /// Whether the application listens on local HTTP ports.
