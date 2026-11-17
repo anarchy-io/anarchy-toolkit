@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Testing.MockServer</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Testing.MockServer</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Testing.MockServer</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Test helpers for Anarchy.Toolkit.Web.MockServer: a control API client, assertions on received requests, a record-file reader, and a fixture that connects to a running mock server or spawns one.</Description>
+    <PackageTags>anarchy mock mockserver testing integration e2e xunit</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Testing\Testing.csproj" />
+    <ProjectReference Include="..\Web.MockServer\Web.MockServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
