@@ -170,7 +170,7 @@ public static partial class OpenApiExpectationSync
         return responses.TryGetValue("default", out var fallback) ? (200, fallback) : (200, null);
     }
 
-    private static JsonNode? BodyOf(OpenApiMediaType media)
+    private static JsonNode? BodyOf(IOpenApiMediaType media)
     {
         if (media.Example is { } example) return example.DeepClone();
         if (media.Examples?.Values.Select(e => e.Value).FirstOrDefault(v => v is not null) is { } named) return named.DeepClone();
