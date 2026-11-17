@@ -4,12 +4,14 @@
 title: Anarchy I/O Toolkit
 subtitle: "Build without limits."
 description: >-
-  Reusable, self-contained NuGet packages for building .NET services.
+  A .NET developer platform: consistent architecture, reusable infrastructure and automated development workflows.
 locale: en-US
 url: "https://anarchy-io.github.io"
 baseurl: "/anarchy-toolkit"
 repository: "anarchy-io/anarchy-toolkit"
 logo: "/assets/images/logo/anarchy-512.png"
+copyright: "Leandro Melão Medeiros"
+copyright_url: "https://github.com/leandrommedeiros"
 
 remote_theme: "mmistakes/minimal-mistakes@4.28.0"
 minimal_mistakes_skin: "default"  # recolored with the brand palette in assets/css/main.scss

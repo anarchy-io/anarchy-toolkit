@@ -1,0 +1,16 @@
+<!-- Overrides the theme footer: copyright and license on the left, links on the right -->
+<div class="site-footer">
+  <div class="site-footer__legal">
+    <div class="page__footer-copyright">&copy; {{ site.time | date: '%Y' }} <a href="{{ site.copyright_url }}">{{ site.copyright }}</a>. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/jekyll-themes/minimal-mistakes/" rel="nofollow">Minimal Mistakes</a>.</div>
+    <div class="page__footer-copyright">Licensed under the <a href="https://github.com/anarchy-io/anarchy-toolkit/blob/main/LICENSE">Apache License 2.0</a>. Third-party components keep their own licenses; see <a href="https://github.com/anarchy-io/anarchy-toolkit/blob/main/NOTICE">NOTICE</a>.</div>
+  </div>
+  <div class="page__footer-follow">
+    <ul class="social-icons">
+      {% for link in site.footer.links %}
+        <li><a href="{{ link.url }}" rel="nofollow noopener noreferrer"><i class="{{ link.icon }}" aria-hidden="true"></i> {{ link.label }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+{% include footer/custom.html %}
