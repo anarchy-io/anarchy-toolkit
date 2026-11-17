@@ -6,9 +6,17 @@
 [![Publish NuGet packages](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/merge-publish-nuget.yml/badge.svg)](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/merge-publish-nuget.yml)
 [![Publish documentation](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/publish-docs.yml)
 
-Reusable, self-contained NuGet packages for building .NET services.
+**A .NET developer platform.** An integrated ecosystem for building maintainable .NET applications through consistent architecture, reusable infrastructure and automated development workflows. *Build without limits.*
 
-> 📖 **Using the toolkit?** The packages, the `anarchy-toolkit` CLI tool, the Fallout build components and the conventions guides are documented at **<https://anarchy-io.github.io/anarchy-toolkit/>**, and the packages are published on [NuGet.org](https://www.nuget.org/profiles/anarchy-io).
+The toolkit is built around three pillars. Each one can be adopted on its own, and they are designed to work consistently together:
+
+| Pillar | What it provides |
+|---|---|
+| **[Architecture](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html)** | Application structure, dependency boundaries (`Core < Infrastructure < Configuration < Hosting < Web < Build`), DI-module composition and engineering conventions. |
+| **[Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/packages/)** | Independently published NuGet packages for persistence, messaging, observability, configuration, hosting, APIs, UIs and testing. |
+| **[Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/getting-started/)** | The Fallout build components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, packaging, versioning and releases. |
+
+> 📖 **Using the toolkit?** Start with the documentation at **<https://anarchy-io.github.io/anarchy-toolkit/>** ([overview](https://anarchy-io.github.io/anarchy-toolkit/overview/), [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/), [guides](https://anarchy-io.github.io/anarchy-toolkit/guides/)). Packages are published on [NuGet.org](https://www.nuget.org/profiles/anarchy-io).
 
 This README is for working **on** the toolkit itself: setting up a local environment, building, testing and releasing. Read [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contribution workflow, commit conventions and maintainer notes.
 
@@ -147,4 +155,4 @@ Sidebars are defined in `docs/_data/navigation.yml`, and brand colors and fonts 
 
 ## License
 
-[GNU General Public License v3.0](LICENSE).
+Copyright 2026 Leandro Melão Medeiros. Licensed under the [Apache License 2.0](LICENSE). It covers the toolkit's original code; third-party components keep their own licenses. See [NOTICE](NOTICE) for attribution.
