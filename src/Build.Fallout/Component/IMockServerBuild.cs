@@ -60,6 +60,13 @@ public interface IMockServerBuild : IStandardBuild
     [Parameter("Mock server verbosity: quiet, minimal, normal, detailed or diagnostic (default: normal)")]
     string MockServerVerbosity => TryGetValue(() => MockServerVerbosity) ?? "normal";
 
+    /// <summary>
+    /// Whether the mock server serves its UI at <c>/__mock/ui</c> (<c>--mock-server-ui</c>), when the host plugs one in
+    /// (<c>Anarchy.Toolkit.Web.MockServer.Ui</c>); <see langword="true"/> by default, <c>false</c> passes <c>--no-ui</c>.
+    /// </summary>
+    [Parameter("Serve the mock server UI when the host has one (default: true)")]
+    bool MockServerUi => TryGetValue<bool?>(() => MockServerUi) ?? true;
+
     /// <summary>Extra mock server arguments (<c>--mock-server-args</c>), e.g. <c>"--watch --unmatched-status 500"</c>.</summary>
     [Parameter("Extra mock server arguments")]
     string? MockServerArgs => TryGetValue(() => MockServerArgs);
@@ -192,7 +199,8 @@ public interface IMockServerBuild : IStandardBuild
         MockServerExpectations.Select(path => Path.GetFullPath(path, RootDirectory)),
         string.IsNullOrWhiteSpace(MockServerRecord) ? null : Path.GetFullPath(MockServerRecord, RootDirectory),
         MockServerVerbosity,
-        MockServerArgs);
+        MockServerArgs,
+        MockServerUi);
 
     /// <summary>The mock server host project (see <see cref="MockServerProject"/>).</summary>
     /// <returns>The project.</returns>

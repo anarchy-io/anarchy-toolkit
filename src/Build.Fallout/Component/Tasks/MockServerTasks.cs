@@ -32,14 +32,17 @@ public static partial class MockServerTasks
     /// <param name="recordFile">The record file, or <see langword="null"/>.</param>
     /// <param name="verbosity">The verbosity, or <see langword="null"/> for its default.</param>
     /// <param name="extra">Extra arguments, split on spaces.</param>
+    /// <param name="ui">Whether hosts with a UI serve it; <see langword="false"/> passes <c>--no-ui</c>.</param>
     /// <returns>The arguments.</returns>
-    public static IReadOnlyList<string> Arguments(int? port, IEnumerable<string> expectations, string? recordFile, string? verbosity, string? extra)
+    public static IReadOnlyList<string> Arguments(
+        int? port, IEnumerable<string> expectations, string? recordFile, string? verbosity, string? extra, bool ui = true)
     {
         var args = new List<string>();
         if (port is { } p) args.AddRange(["--port", p.ToString()]);
         foreach (var expectation in expectations) args.AddRange(["--expectations", expectation]);
         if (!string.IsNullOrWhiteSpace(recordFile)) args.AddRange(["--record", recordFile]);
         if (!string.IsNullOrWhiteSpace(verbosity)) args.AddRange(["--verbosity", verbosity]);
+        if (!ui) args.Add("--no-ui");
         if (!string.IsNullOrWhiteSpace(extra)) args.AddRange(extra.Split(' ', StringSplitOptions.RemoveEmptyEntries));
         return args;
     }

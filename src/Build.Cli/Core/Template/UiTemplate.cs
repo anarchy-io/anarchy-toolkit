@@ -43,7 +43,7 @@ internal static class UiTemplate
                     protected override string ApiName => "{{title}}";
 
                     /// <summary>
-                    /// Sessions target the host's own environment. List further environments, with the downstream API URLs
+                    /// Opts into the cookie session (off by default). Sessions target the host's own environment. List further environments, with the downstream API URLs
                     /// of each, to let local users pick one at login.
                     /// </summary>
                     protected override UiAuthenticationOptions GetUiAuthenticationOptions()

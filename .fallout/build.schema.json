@@ -340,6 +340,10 @@
           "format": "int32",
           "description": "Seconds to wait for a background mock server to be ready (default: 60)"
         },
+        "MockServerUi": {
+          "type": "boolean",
+          "description": "Serve the mock server UI when the host has one (default: true)"
+        },
         "MockServerVerbosity": {
           "type": "string",
           "description": "Mock server verbosity: quiet, minimal, normal, detailed or diagnostic (default: normal)"
