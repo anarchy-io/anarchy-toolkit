@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Build.Cli.Core.Service.MockServer;
 using Anarchy.Toolkit.Build.Fallout.Component.Tasks;
 using Fallout.Common;
 using Fallout.Common.IO;
@@ -103,6 +104,49 @@ public interface IMockServerBuild : IStandardBuild
                 Log.Warning("No mock server is running");
         });
 
+    /// <summary>The OpenAPI specification to synchronize expectations with (<c>--mock-server-open-api</c>): a file relative to the repository root, or a URL.</summary>
+    [Parameter("OpenAPI specification (file or URL) to add missing mock server expectations from")]
+    string? MockServerOpenApi => TryGetValue(() => MockServerOpenApi);
+
+    /// <summary>
+    /// The directory the synchronized expectations are added to (<c>--mock-server-open-api-output</c>); by default the
+    /// first <see cref="MockServerExpectations"/> entry that is a directory, otherwise <c>tests/mocks</c>.
+    /// </summary>
+    [Parameter("Directory to add the expectations to (default: the first expectations directory, else tests/mocks)")]
+    string? MockServerOpenApiOutput => TryGetValue(() => MockServerOpenApiOutput);
+
+    /// <summary>Only reports what <see cref="MockServerSyncOpenApi"/> would add (<c>--mock-server-open-api-dry-run</c>).</summary>
+    [Parameter("Only report what would be added")]
+    bool MockServerOpenApiDryRun => TryGetValue<bool?>(() => MockServerOpenApiDryRun) ?? false;
+
+    /// <summary>
+    /// Adds expectations for the endpoints of <see cref="MockServerOpenApi"/> that have none, for review before
+    /// committing. It never changes existing expectations: endpoints that changed or disappeared are only reported.
+    /// </summary>
+    Target MockServerSyncOpenApi => d => d
+        .Description("Adds mock server expectations for new OpenAPI endpoints; reports changed or removed ones")
+        .Requires(() => !string.IsNullOrWhiteSpace(MockServerOpenApi))
+        .Executes(async () => {
+            var specification = Uri.TryCreate(MockServerOpenApi, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
+                ? MockServerOpenApi!
+                : Path.GetFullPath(MockServerOpenApi!, RootDirectory);
+            var output = Path.GetFullPath(MockServerOpenApiOutput
+                ?? MockServerExpectations.FirstOrDefault(path => Directory.Exists(Path.GetFullPath(path, RootDirectory)))
+                ?? Path.Combine("tests", "mocks"), RootDirectory);
+
+            var report = await OpenApiExpectationSync.SyncAsync(specification, output, MockServerOpenApiDryRun);
+
+            foreach (var warning in report.Warnings) Log.Warning("{Warning}", warning);
+            foreach (var added in report.Added)
+                Log.Information("{Action} {Method} {Path} → {StatusCode} as '{Id}' in {File}", MockServerOpenApiDryRun ? "Would add" : "Added",
+                    added.Method, added.Path, added.StatusCode, added.Id, DisplayPath(added.File));
+            foreach (var notice in report.Notices)
+                Log.Warning("{Kind}: {Message} ({File})", notice.Kind, notice.Message, DisplayPath(notice.File));
+
+            Log.Information("{Count} expectation(s) {Verb}, {Notices} notice(s) to review; existing expectations were not changed",
+                report.Added.Count, MockServerOpenApiDryRun ? "would be added" : "added", report.Notices.Count);
+        });
+
     /// <summary>Runs the <c>Integration</c> tests with a mock server, started for them unless one is already running.</summary>
     Target TestIntegrationWithMockServer => d => d
         .Description("Runs test projects: Integration, with the mock server")
@@ -175,6 +219,9 @@ public interface IMockServerBuild : IStandardBuild
         Log.Information("Mock server ready at {Url} (process {ProcessId}); output in {LogFile}", state.Url, state.ProcessId, Path.GetRelativePath(RootDirectory, MockServerLogFile));
         return state;
     }
+
+    private string DisplayPath(string path) =>
+        Path.GetRelativePath(RootDirectory, path) is var relative && !relative.StartsWith("..") ? relative : path;
 
     private static string Quote(string argument) => argument.Contains(' ') ? $"\"{argument}\"" : argument;
 }

@@ -49,6 +49,7 @@ public class TargetGraphTest
         MockServerRun||1|0|0
         MockServerStart|Compile|1|0|0
         MockServerStop||1|0|0
+        MockServerSyncOpenApi||1|0|1
         Pack|Compile|1|0|0
         Publish|Pack|1|0|1
         PullRequest|Lint,CheckLayering,TestAll|0|0|0

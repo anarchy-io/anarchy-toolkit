@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Build.Fallout</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Fallout</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Fallout</RootNamespace>
-    <Version>3.4.0</Version>
+    <Version>3.5.0</Version>
     <Description>Fallout build components: solution/test conventions, Microsoft.Testing.Platform-aware test runner, linting, layering checks, NuGet and ECR container release flows and local app runs.</Description>
     <PackageTags>fallout build ci</PackageTags>
     <Nullable>enable</Nullable>

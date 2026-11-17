@@ -46,3 +46,11 @@ test_end_to_end_mocked: #? Runs end-to-end tests with the mock server (MOCKSERVE
 #+ VERBOSITY|str|quiet, minimal, normal, detailed or diagnostic (default: normal)
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running End-to-End Tests with the mock server'
 	${MAKE} fallout SKIP_TITLE=true TARGET="TestEndToEndWithMockServer$(MOCK_SERVER_OPTIONS)"
+
+.PHONY: mock_server_sync_openapi
+mock_server_sync_openapi: #? Adds expectations for new OpenAPI endpoints; never changes existing ones, reports changed or removed ones
+#+ SPEC|str|OpenAPI or Swagger file (JSON or YAML) or URL (required)
+#+ OUT|str|Expectations directory (default: the first EXPECTATIONS directory, else tests/mocks)
+#+ DRY_RUN|bool|Only report what would be added (DEFAULT=false)
+	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Synchronizing mock server expectations with OpenAPI'
+	${MAKE} fallout SKIP_TITLE=true TARGET="MockServerSyncOpenApi --MockServerOpenApi '$(SPEC)'$(if $(OUT), --MockServerOpenApiOutput '$(OUT)',)$(if $(EXPECTATIONS), --MockServerExpectations $(EXPECTATIONS),)$(if $(filter true,$(DRY_RUN)), --MockServerOpenApiDryRun true,)"

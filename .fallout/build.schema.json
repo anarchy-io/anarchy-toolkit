@@ -53,6 +53,7 @@
         "MockServerRun",
         "MockServerStart",
         "MockServerStop",
+        "MockServerSyncOpenApi",
         "Pack",
         "Publish",
         "PullRequest",
@@ -305,6 +306,18 @@
           "items": {
             "type": "string"
           }
+        },
+        "MockServerOpenApi": {
+          "type": "string",
+          "description": "OpenAPI specification (file or URL) to add missing mock server expectations from"
+        },
+        "MockServerOpenApiDryRun": {
+          "type": "boolean",
+          "description": "Only report what would be added"
+        },
+        "MockServerOpenApiOutput": {
+          "type": "string",
+          "description": "Directory to add the expectations to (default: the first expectations directory, else tests/mocks)"
         },
         "MockServerPort": {
           "type": [
