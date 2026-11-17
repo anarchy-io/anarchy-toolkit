@@ -44,7 +44,7 @@ dotnet run --project samples/Samples.Ui --environment Development
 
 Pick either environment on the login page: each has its own orders. Canceling a shipped order shows how a failed downstream call is reported; priority orders (★) ask for typed confirmation.
 
-Run the mock server locally, showing request headers and bodies, then try `curl -H 'Authorization: Bearer x' -d '{"currency":"EUR"}' localhost:6000/payments` or `curl localhost:6000/stock/ABC-1`:
+Run the mock server locally, showing request headers and bodies, then try `curl -H 'Authorization: Bearer x' -d '{"currency":"EUR"}' localhost:6001/payments` or `curl localhost:6001/stock/ABC-1`:
 
 ```bash
 dotnet run --project samples/Samples.MockServer -- --verbosity detailed --record artifacts/mock-requests.jsonl

@@ -12,7 +12,7 @@ dotnet add package Anarchy.Toolkit.Web.MockServer
 - Expectations follow [MockServer](https://www.mock-server.com/)'s JSON shape, so existing `expectations/*.json` files work as they are.
 - Your own middlewares run between expectation matching and the answer: they can answer by themselves or change the match.
 - Every request can be appended to a JSON-lines file, and is queryable through the `/__mock` control API (see `Anarchy.Toolkit.Testing.MockServer` for test assertions).
-- It listens on port `6000`, or the next free one when that is taken.
+- It listens on port `6001`, or the next free one when that is taken.
 
 ## When to use it
 
@@ -52,7 +52,7 @@ dotnet Anarchy.Toolkit.Web.MockServer.dll -e "mocks/**/*.json" --record artifact
 
 | Option | Environment | Description |
 | --- | --- | --- |
-| `-p, --port` | `MOCKSERVER_PORT` | Port (default `6000` or the next free one; `0` lets the OS choose; an explicit port that is taken fails). |
+| `-p, --port` | `MOCKSERVER_PORT` | Port (default `6001` or the next free one; `0` lets the OS choose; an explicit port that is taken fails). |
 | `--host` | `MOCKSERVER_HOST` | Host (default `localhost`). |
 | `-e, --expectations` | `MOCKSERVER_EXPECTATIONS` (`;`-separated) | File, directory or glob; repeatable. |
 | `-w, --watch` | `MOCKSERVER_WATCH` | Reload expectations when the files change. |

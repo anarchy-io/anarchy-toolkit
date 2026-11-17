@@ -13,7 +13,7 @@ public static class MockServerArguments
     public const string Usage = """
         Usage: mockserver [options]
 
-          -p, --port <port>            Port to listen on (default 6000, or the next free one; 0 = any)  MOCKSERVER_PORT
+          -p, --port <port>            Port to listen on (default 6001, or the next free one; 0 = any)  MOCKSERVER_PORT
               --host <host>            Host to listen on (default localhost)                       MOCKSERVER_HOST
           -e, --expectations <path>    Expectation file, directory or glob; repeatable             MOCKSERVER_EXPECTATIONS (;-separated)
           -w, --watch                  Reload expectations when their files change                 MOCKSERVER_WATCH

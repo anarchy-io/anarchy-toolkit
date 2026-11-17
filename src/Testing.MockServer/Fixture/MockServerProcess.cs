@@ -19,7 +19,7 @@ public sealed class MockServerProcessOptions
     /// <summary>The assembly to run when there is no <see cref="ProjectPath"/>.</summary>
     public string AssemblyPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "Anarchy.Toolkit.Web.MockServer.dll");
 
-    /// <summary>The port; <see langword="null"/> uses the server's default (<c>6000</c> or the next free one).</summary>
+    /// <summary>The port; <see langword="null"/> uses the server's default (<c>6001</c> or the next free one).</summary>
     public int? Port { get; set; }
 
     /// <summary>Expectation files, directories or glob patterns.</summary>

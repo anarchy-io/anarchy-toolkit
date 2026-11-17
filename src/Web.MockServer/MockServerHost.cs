@@ -54,7 +54,7 @@ public sealed class MockServerHost : IAsyncDisposable
     /// <summary>The port listened on.</summary>
     public int Port { get; private set; }
 
-    /// <summary>The base address, e.g. <c>http://localhost:6000</c>.</summary>
+    /// <summary>The base address, e.g. <c>http://localhost:6001</c>.</summary>
     public Uri BaseAddress { get; private set; } = null!;
 
     /// <summary>The expectations answered with.</summary>

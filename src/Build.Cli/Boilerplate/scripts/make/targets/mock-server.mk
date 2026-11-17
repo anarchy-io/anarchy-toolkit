@@ -9,7 +9,7 @@ MOCK_SERVER_OPTIONS = $(if $(MOCK_PROJECT), --MockServerProject '$(MOCK_PROJECT)
 .PHONY: mock_server
 mock_server: #? Runs the mock server in the foreground until Ctrl+C
 #+ MOCK_PROJECT|str|Mock server host project (default: the runnable project whose name ends in MockServer)
-#+ PORT|int|Port (default: 6000, or the next free one)
+#+ PORT|int|Port (default: 6001, or the next free one)
 #+ EXPECTATIONS|str|Space-separated expectation files, directories or globs
 #+ RECORD|str|Record file (default: artifacts/mock-server/requests.jsonl)
 #+ VERBOSITY|str|quiet, minimal, normal, detailed or diagnostic (default: normal)
@@ -20,7 +20,7 @@ mock_server: #? Runs the mock server in the foreground until Ctrl+C
 .PHONY: mock_server_start
 mock_server_start: #? Starts the mock server in the background
 #+ MOCK_PROJECT|str|Mock server host project (default: the runnable project whose name ends in MockServer)
-#+ PORT|int|Port (default: 6000, or the next free one)
+#+ PORT|int|Port (default: 6001, or the next free one)
 #+ EXPECTATIONS|str|Space-separated expectation files, directories or globs
 #+ RECORD|str|Record file (default: artifacts/mock-server/requests.jsonl)
 #+ VERBOSITY|str|quiet, minimal, normal, detailed or diagnostic (default: normal)
