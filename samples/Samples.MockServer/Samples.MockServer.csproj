@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Samples.MockServer</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Samples.MockServer</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <Description>Sample mock server host: JSON expectations for a payments service plus middlewares answering from the request.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Web.MockServer\Web.MockServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Copied next to the assembly, so the default expectations are found wherever it runs from. -->
+    <None Include="mocks\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

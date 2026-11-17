@@ -1,0 +1,38 @@
+[
+  {
+    "id": "payment-authorize",
+    "httpRequest": {
+      "method": "POST",
+      "path": "/payments",
+      "body": { "currency": "EUR" }
+    },
+    "httpResponse": {
+      "statusCode": 201,
+      "headers": { "Location": ["/payments/pay-123"] },
+      "body": { "id": "pay-123", "status": "authorized" }
+    }
+  },
+  {
+    "id": "payment-declined",
+    "priority": 10,
+    "httpRequest": {
+      "method": "POST",
+      "path": "/payments",
+      "body": { "type": "JSON", "json": { "cardNumber": "4000000000000002" } }
+    },
+    "httpResponse": {
+      "statusCode": 402,
+      "body": { "error": "card declined" }
+    }
+  },
+  {
+    "id": "payment-capture",
+    "httpRequest": { "method": "POST", "path": "/payments/{id}/capture" },
+    "httpResponse": { "statusCode": 202, "delay": { "timeUnit": "MILLISECONDS", "value": 50 } }
+  },
+  {
+    "id": "payment-get",
+    "httpRequest": { "method": "GET", "path": "/payments/pay-[0-9]+" },
+    "httpResponse": { "body": { "id": "pay-123", "status": "captured" } }
+  }
+]
