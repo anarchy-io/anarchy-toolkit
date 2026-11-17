@@ -1,6 +1,6 @@
 # Getting Started
 
-The fastest way to get going with the toolkit is through its build tooling: the **`anarchy-toolkit` CLI tool** creates a complete solution, and the **Fallout build components** it relies on can also be added to a repository you already have. Individual packages work on their own too.
+Each pillar of the [platform](../README.md#the-three-pillars) can be adopted on its own. The fastest way to get the whole platform is through its **Build Ecosystem**: the **`anarchy-toolkit` CLI tool** creates a complete solution, and the **Fallout build components** it relies on can also be added to a repository you already have. Individual **Infrastructure** packages work on their own too.
 
 ![Developer workstation with a terminal and code editor, dark theme, red-orange accent lighting, wide banner](../assets/images/headers/getting-started.png)
 

@@ -17,34 +17,59 @@ main:
 
 # Sidebars, one per section (assigned by path in _config.yml)
 start:
-  - title: "Introduction"
+  - title: "Platform"
     children:
       - title: "Overview"
         url: /overview/
-      - title: "Getting Started"
-        url: /getting-started/
+      - title: "The Three Pillars"
+        url: /overview/#the-three-pillars
+      - title: "Architecture"
+        url: /guides/architecture.html
+      - title: "Design Principles"
+        url: /overview/#design-principles
   - title: "Choose your path"
     children:
+      - title: "Getting Started"
+        url: /getting-started/
       - title: "New Solution with the CLI"
         url: /getting-started/cli-tool.html
       - title: "Adding the Fallout Build"
         url: /getting-started/fallout.html
       - title: "Using the Packages"
         url: /getting-started/consuming-packages.html
-  - title: "Examples"
+  - title: "Reference"
     children:
       - title: "Samples"
         url: /samples/
+      - title: "API Reference"
+        url: /api/
+      - title: "NuGet Packages"
+        url: https://www.nuget.org/profiles/anarchy-io
 
 guides:
   - title: "Guides"
     url: /guides/
+  - title: "Architecture"
     children:
       - title: "Layered Architecture"
         url: /guides/architecture.html
+  - title: "Infrastructure"
+    children:
+      - title: "Observability"
+        url: /guides/observability.html
+      - title: "Database Providers"
+        url: /guides/database-providers.html
+      - title: "Exposing Endpoints"
+        url: /guides/exposing-endpoints.html
+      - title: "Building UIs"
+        url: /guides/building-uis.html
+  - title: "Build Ecosystem"
+    children:
       - title: "Fallout Builds"
         url: /guides/fallout-builds.html
-  - title: "Writing code"
+      - title: "CLI Tool"
+        url: /packages/Build.Cli.Tool/
+  - title: "Engineering Practices"
     children:
       - title: "Async"
         url: /guides/async-conventions.html
@@ -52,24 +77,13 @@ guides:
         url: /guides/enum-conventions.html
       - title: "Exceptions"
         url: /guides/exception-conventions.html
-      - title: "Observability"
-        url: /guides/observability.html
-  - title: "Building applications"
-    children:
-      - title: "Exposing Endpoints"
-        url: /guides/exposing-endpoints.html
-      - title: "Building UIs"
-        url: /guides/building-uis.html
-      - title: "Database Providers"
-        url: /guides/database-providers.html
-  - title: "Quality"
-    children:
       - title: "Testing"
         url: /guides/testing-conventions.html
 
 packages:
   - title: "Packages"
     url: /packages/
+  - title: "Infrastructure"
     children:
       - title: "Core"
         url: /packages/#core-domain-and-application-abstractions
@@ -81,12 +95,12 @@ packages:
         url: /packages/#hosting-running-a-process
       - title: "Web"
         url: /packages/#web-api-and-ui-pipelines
-      - title: "Build"
-        url: /packages/#build-build-tooling
       - title: "Testing kits"
         url: /packages/#testing-kits-reusable-test-helpers
-  - title: "Start here"
+  - title: "Build Ecosystem"
     children:
+      - title: "Build packages"
+        url: /packages/#build-build-tooling
       - title: "CLI Tool"
         url: /packages/Build.Cli.Tool/
       - title: "Fallout Build"

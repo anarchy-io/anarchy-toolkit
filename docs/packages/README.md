@@ -1,6 +1,6 @@
 # Package Catalog
 
-Every project under `src/` is one package. Its package ID, assembly name and root namespace are all `Anarchy.Toolkit.<project name>` (`src/Core.Events/` → `Anarchy.Toolkit.Core.Events`). Each package's README, linked below, is also displayed on NuGet.org.
+The packages are the **Infrastructure** and **Build Ecosystem** pillars of the [Anarchy I/O Toolkit platform](../README.md#the-three-pillars), each adoptable on its own. Every project under `src/` is one package. Its package ID, assembly name and root namespace are all `Anarchy.Toolkit.<project name>` (`src/Core.Events/` → `Anarchy.Toolkit.Core.Events`). Each package's README, linked below, is also displayed on NuGet.org.
 
 ![Stacked modular blocks forming layers, flat outline illustration, dark background with red-orange accent, wide banner](../assets/images/headers/packages.png)
 
