@@ -10,7 +10,8 @@ namespace Anarchy.Toolkit.Build.Fallout.Component.Tasks;
 public sealed class BoilerplateOptions
 {
     /// <summary>
-    /// Comma-separated item names or script paths; <c>null</c> means all items.
+    /// Comma-separated item names or script paths; <c>null</c> means all items except the opt-in agent skills,
+    /// which only <c>skills</c> selects.
     /// </summary>
     public string? Items { get; set; }
     /// <summary>

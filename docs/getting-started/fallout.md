@@ -33,7 +33,7 @@ using Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension;
 using Fallout.Common;
 
 class Build : FalloutBuild, IStandardBuild, ILayeringBuild, IDependencyMapBuild,
-              IDependencyUpgradeBuild, IGitHooksBuild, IBoilerplateBuild
+              IDependencyUpgradeBuild, IGitHooksBuild, IBoilerplateBuild, IAgentSkillsBuild
 {
     public IReadOnlyCollection<Artifact> Artifacts => [];
     public static int Main() => Execute<Build>(x => x.As<IDefaultBuild>().Clean);
@@ -48,7 +48,8 @@ class Build : FalloutBuild, IStandardBuild, ILayeringBuild, IDependencyMapBuild,
 | `INuGetBuild` | `ListPackages`, `Pack` and dependency-ordered `Publish`, plus release versioning and notes. |
 | `IDockerBuild`, `IContainerBuild` | A local Docker Compose environment, and container image builds and pushes. |
 | `IDependencyUpgradeBuild`, `IGitHooksBuild` | Dependency upgrades and Git hook management. |
-| `IBoilerplateBuild` | `SetupBoilerplate`: installs the Makefile, scripts and configuration files. |
+| `IBoilerplateBuild` | `SetupBoilerplate`: installs the Makefile, scripts, configuration files and, on request, the agent skills. |
+| `IAgentSkillsBuild` | `ValidateAgentSkills` and `SyncAgentSkills`: keeps the agent skills in step with the Makefiles. |
 
 The [Fallout Builds guide](../guides/fallout-builds.md) describes every component, its targets and parameters.
 
@@ -75,6 +76,18 @@ make fallout TARGET=Pack
 ```
 
 For CI, `make pull_request` runs linting, the layering check (when implemented) and all tests.
+
+## Agent skills
+
+To let coding agents drive the build, install the toolkit's skills into `.agents/skills` (they are never installed by default). Mark your own make targets with `#@ <skill>` to give them skills too:
+
+```bash
+make install_skills   # anarchy, anarchy-develop, anarchy-environment, anarchy-release, anarchy-maintenance
+make skills_sync      # create skills for your #@ targets and refresh every skill's commands table
+make skills_validate  # fails when a skill is missing, unfinished or out of date; run it in CI
+```
+
+See [Agent skills](../packages/Build.Fallout/README.md#agent-skills) for the markers and the skill template.
 
 ## Next steps
 
