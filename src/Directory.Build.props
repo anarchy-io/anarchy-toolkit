@@ -5,8 +5,7 @@
   <!-- Package metadata shared by the independently published projects under src/. -->
   <PropertyGroup>
     <Title>Anarchy I/O - $(MSBuildProjectName)</Title>
-    <Authors>Leandro M. Medeiros</Authors>
-    <Copyright>Copyright © 2026</Copyright>
+    <Copyright>Copyright © 2026 Leandro Melão Medeiros</Copyright>
     <PackageTags>anarchy;toolkit;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
