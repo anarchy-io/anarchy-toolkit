@@ -50,6 +50,9 @@
         "LintFix",
         "ListPackages",
         "ListProjects",
+        "MockServerRun",
+        "MockServerStart",
+        "MockServerStop",
         "Pack",
         "Publish",
         "PullRequest",
@@ -59,7 +62,9 @@
         "ShowGitHooks",
         "TestAll",
         "TestEndToEnd",
+        "TestEndToEndWithMockServer",
         "TestIntegration",
+        "TestIntegrationWithMockServer",
         "TestUnit",
         "UpgradeDependencies",
         "ValidateLocalRelease"
@@ -289,6 +294,42 @@
         "LayeringRoot": {
           "type": "string",
           "description": "Root folder for layering checks, relative to the solution (defaults to src)"
+        },
+        "MockServerArgs": {
+          "type": "string",
+          "description": "Extra mock server arguments"
+        },
+        "MockServerExpectations": {
+          "type": "array",
+          "description": "Mock server expectation files, directories or globs",
+          "items": {
+            "type": "string"
+          }
+        },
+        "MockServerPort": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int32",
+          "description": "Mock server port (default: 6000, or the next free one)"
+        },
+        "MockServerProject": {
+          "type": "string",
+          "description": "Mock server host project (default: the runnable project whose name ends in MockServer)"
+        },
+        "MockServerRecord": {
+          "type": "string",
+          "description": "Mock server record file (default: artifacts/mock-server/requests.jsonl)"
+        },
+        "MockServerTimeout": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Seconds to wait for a background mock server to be ready (default: 60)"
+        },
+        "MockServerVerbosity": {
+          "type": "string",
+          "description": "Mock server verbosity: quiet, minimal, normal, detailed or diagnostic (default: normal)"
         },
         "NuGetApiKey": {
           "type": "string",

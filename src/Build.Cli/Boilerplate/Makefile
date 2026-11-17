@@ -17,6 +17,7 @@ include $(SCRIPTS_DIR)/make/targets/globals.mk
 include $(SCRIPTS_DIR)/make/targets/application.mk
 include $(SCRIPTS_DIR)/make/targets/code-quality.mk
 include $(SCRIPTS_DIR)/make/targets/docker.mk
+include $(SCRIPTS_DIR)/make/targets/mock-server.mk
 include $(SCRIPTS_DIR)/make/targets/installation.mk
 include $(SCRIPTS_DIR)/make/targets/packaging.mk
 include $(SCRIPTS_DIR)/make/targets/utilities.mk

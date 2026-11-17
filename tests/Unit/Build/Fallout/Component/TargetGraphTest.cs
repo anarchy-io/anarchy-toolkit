@@ -46,6 +46,9 @@ public class TargetGraphTest
         LintFix|Restore|1|0|0
         ListPackages||1|0|0
         ListProjects||1|0|0
+        MockServerRun||1|0|0
+        MockServerStart|Compile|1|0|0
+        MockServerStop||1|0|0
         Pack|Compile|1|0|0
         Publish|Pack|1|0|1
         PullRequest|Lint,CheckLayering,TestAll|0|0|0
@@ -56,7 +59,9 @@ public class TargetGraphTest
         ShowGitHooks||1|0|0
         TestAll|TestUnit,TestIntegration,TestEndToEnd|0|0|0
         TestEndToEnd|Compile|1|0|0
+        TestEndToEndWithMockServer|Compile|1|0|0
         TestIntegration|Compile|1|0|0
+        TestIntegrationWithMockServer|Compile|1|0|0
         TestUnit|Compile|1|0|0
         UpgradeDependencies||1|0|0
         ValidateLocalRelease||1|0|1
@@ -240,7 +245,7 @@ public class TargetGraphTest
     }
 
     private sealed class TestBuild : FalloutBuild, IContainerBuild, INuGetBuild, ILayeringBuild,
-        IDependencyMapBuild, IBoilerplateBuild, IDependencyUpgradeBuild, IGitHooksBuild, IDockerBuild, IFalloutBuild
+        IDependencyMapBuild, IBoilerplateBuild, IDependencyUpgradeBuild, IGitHooksBuild, IDockerBuild, IMockServerBuild, IFalloutBuild
     {
         public AbsolutePath TestRoot { get; set; } = AbsolutePath.Create(Directory.GetCurrentDirectory());
         AbsolutePath IFalloutBuild.RootDirectory => TestRoot;

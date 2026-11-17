@@ -23,6 +23,7 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 ### 1.3.0
 
 - refactor: `LocalPorts` moved to `Anarchy.Toolkit.Core.Helper` (now references Anarchy.Toolkit.Core)
+- feat: `mock-server.mk` boilerplate targets for `IMockServerBuild`
 
 ### 1.2.2
 
