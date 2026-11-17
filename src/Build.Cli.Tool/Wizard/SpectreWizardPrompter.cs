@@ -40,10 +40,11 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(4)).AddColumn();
         grid.AddRow("[blue]anarchy-toolkit bootstrap[/]", "Guided setup: name, layering, and the APIs, jobs and UIs to start with.");
-        grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]][/]", "Create the baseline solution in an empty or new directory (default: current).");
+        grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]] [[--with-skills]][/]", "Create the baseline solution in an empty or new directory (default: current), optionally with the agent skills.");
         grid.AddRow("[blue]anarchy-toolkit scaffold[/]", "Guided addition of an API, job or UI to the solution here.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger-theme[/]", "Add an API whose Swagger UI keeps its own look.");
+        grid.AddRow("[blue]anarchy-toolkit skills install [[--output <dir>]][/]", "Install the agent skills into .agents/skills of the solution here (or <dir>).");
         grid.AddRow("[blue]anarchy-toolkit [[--help]][/]", "Show this help.");
 
         console.Write(new Panel(grid)
@@ -98,6 +99,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         foreach (var app in plan.Applications)
             AddApplicationRow(table, plan.Layout, app, ports.TryGetValue(app, out var port) ? port : null);
         console.Write(table);
+        if (plan.AgentSkills) console.MarkupLine("[grey]With the toolkit's agent skills in .agents/skills[/]");
     }
 
     /// <inheritdoc/>

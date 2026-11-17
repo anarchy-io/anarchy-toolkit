@@ -5,7 +5,8 @@ using Anarchy.Toolkit.Build.Cli.Core.Validation;
 namespace Anarchy.Toolkit.Build.Cli.Tool.Wizard;
 
 /// <summary>
-/// Guides the user through naming the solution, choosing its directory and layering, and adding APIs, jobs and UIs.
+/// Guides the user through naming the solution, choosing its directory and layering, adding APIs, jobs and UIs, and
+/// optionally installing the agent skills.
 /// </summary>
 /// <remarks>
 /// <see cref="Service.ToolApplication"/> runs it for <c>anarchy-toolkit bootstrap</c> when no solution name is given. Answers
@@ -34,7 +35,9 @@ public sealed class BootstrapWizard(IWizardPrompter prompter)
         foreach (var kind in kinds.Where(selected.Contains))
             AskApplications(layout, kind, applications);
 
-        var plan = new SolutionPlan(name, Path.GetFullPath(directory), layout, applications);
+        var skills = prompter.Confirm("Install the toolkit's agent skills (.agents/skills) for AI coding agents?", false);
+
+        var plan = new SolutionPlan(name, Path.GetFullPath(directory), layout, applications) { AgentSkills = skills };
         prompter.ShowPlan(plan);
 
         return prompter.Confirm("Create the solution?", true) ? plan : null;

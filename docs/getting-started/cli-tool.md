@@ -29,10 +29,12 @@ It asks for:
 4. the layers, innermost first (default: `Core, Infrastructure, Configuration, Hosting, Web`); a library project is created per layer, each referencing the one below it;
 5. which applications to start with (APIs, jobs and UIs), and a name for each.
 
+6. whether to install the agent skills (default: no; see [Agent skills](#agent-skills)).
+
 It then shows the plan, including each web application's local ports, and writes nothing until you confirm. To skip the questions and create the baseline solution only:
 
 ```bash
-anarchy-toolkit bootstrap MyApp --output ./MyApp
+anarchy-toolkit bootstrap MyApp --output ./MyApp [--with-skills]
 ```
 
 ### What you get
@@ -83,6 +85,16 @@ anarchy-toolkit scaffold ui UserAdmin
 ```
 
 The tool places each application according to the solution's layering settings, adds it to the solution and references the toolkit package it needs, following the solution's central package management.
+
+## Agent skills
+
+The toolkit ships agent skills that teach coding agents (Claude Code, OpenCode, Codex and others that read `.agents/skills`) how to bootstrap, scaffold, build, test, run, release and maintain the solution: `anarchy` is the entry point, and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance` cover each area. They are opt-in; add them to an existing solution with:
+
+```bash
+anarchy-toolkit skills install   # or: make install_skills
+```
+
+Mark your own make targets with `#@ <skill>`, then `make skills_sync` creates their skills from a template and `make skills_validate` checks that the skills are complete and up to date (see [Agent skills](../packages/Build.Fallout/README.md#agent-skills)). To let an agent adopt the toolkit for you, see [Let your agent do it](README.md#let-your-agent-do-it).
 
 ## Next steps
 
