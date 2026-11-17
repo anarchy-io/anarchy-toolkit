@@ -50,6 +50,7 @@
          Upgrading to 3.x changes IOpenApiRequestBody.Content's signature and throws MissingMethodException at runtime.
          Bump this together with Swashbuckle.AspNetCore once it ships a build targeting Microsoft.OpenApi 3.x. -->
     <PackageVersion Include="Microsoft.OpenApi" Version="2.13.0" />
+    <PackageVersion Include="Microsoft.OpenApi.YamlReader" Version="2.13.0" />
     <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="MySqlConnector" Version="3.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
