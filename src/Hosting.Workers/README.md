@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Hosting.Workers
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Hosting · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 Background-worker primitives and a self-hosted health API for worker processes.
 
 ```bash

@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Web.Ui
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 An interactive-server Blazor UI pipeline with reusable components and cookie-session OAuth login.
 
 ```bash

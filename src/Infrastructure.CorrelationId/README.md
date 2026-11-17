@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Infrastructure.CorrelationId
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Infrastructure · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 Correlation and attempt ID propagation for ASP.NET Core services and Serilog.
 
 ```bash

@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Build.Cli
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Build · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 The build and command-line operations shared by the toolkit's tooling: the Fallout build components ([`Anarchy.Toolkit.Build.Fallout`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/src/Build.Fallout)) call them from their targets, and the [`anarchy-toolkit`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/src/Build.Cli.Tool) tool from its commands.
 
 ```bash

@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Testing.MockServer
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Testing kit · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 Test helpers for [Anarchy.Toolkit.Web.MockServer](https://www.nuget.org/packages/Anarchy.Toolkit.Web.MockServer):
 assert which requests the mock server received.
 
@@ -21,24 +23,24 @@ it from the tests is there for when they run on their own, e.g. from an IDE.
 ## How to use it
 
 ```csharp
-public sealed class PaymentsMockServer : MockServerFixture
+public sealed class IdentityMockServer : MockServerFixture
 {
     // Only used when MOCKSERVER_URL is not set and the fixture spawns the server itself.
     protected override void Configure(MockServerProcessOptions options) => options.ExpectationPaths.Add("mocks");
 }
 
-public class CheckoutTests(PaymentsMockServer mock) : IClassFixture<PaymentsMockServer>
+public class UserRegistrationTests(IdentityMockServer mock) : IClassFixture<IdentityMockServer>
 {
     [Fact]
-    public async Task Checkout_CapturesThePayment()
+    public async Task Register_CreatesTheUserInTheIdentityService()
     {
         await mock.Client.ResetAsync();
-        await mock.Client.AddExpectationAsync("POST", "/payments/{id}/capture", 202);
+        await mock.Client.AddExpectationAsync("POST", "/clients/{id}/users", 201);
 
-        // … call the application, configured to reach the payments service at mock.BaseAddress …
+        // … call the application, configured to reach the identity service at mock.BaseAddress …
 
-        var captures = await mock.Client.AssertReceivedAsync("POST", "/payments/{id}/capture", times: 1);
-        captures[0].BodyAs<CaptureRequest>()!.Amount.Should().Be(10m);
+        var requests = await mock.Client.AssertReceivedAsync("POST", "/clients/{id}/users", times: 1);
+        requests[0].BodyAs<CreateUserRequest>()!.Email.Should().Be("jane.doe@example.com");
     }
 }
 ```

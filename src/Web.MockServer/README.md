@@ -1,5 +1,7 @@
 # Anarchy.Toolkit.Web.MockServer
 
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+
 An HTTP mock server for integration and end-to-end tests: JSON expectations, pluggable middlewares, request recording
 and colourful console output.
 
