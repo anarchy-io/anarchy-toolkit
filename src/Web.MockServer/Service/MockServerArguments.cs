@@ -19,6 +19,8 @@ public static class MockServerArguments
           -w, --watch                  Reload expectations when their files change                 MOCKSERVER_WATCH
           -r, --record <file>          Append every request to <file> as JSON lines                MOCKSERVER_RECORD
               --record-limit <n>       Requests kept in memory for /__mock/requests (0 = all)      MOCKSERVER_RECORD_LIMIT
+              --log-buffer <n>         Log entries kept in memory for the UI and /__mock/logs      MOCKSERVER_LOG_BUFFER
+              --no-ui                  Do not serve the UI (hosts with Web.MockServer.Ui)          MOCKSERVER_UI=false
               --kill-timeout <secs>    Stop after this many seconds                                MOCKSERVER_KILL_TIMEOUT
               --unmatched-status <n>   Status answered when nothing matches (default 404)          MOCKSERVER_UNMATCHED_STATUS
           -v, --verbosity <level>      q[uiet], m[inimal], n[ormal], d[etailed] or diag[nostic]    MOCKSERVER_VERBOSITY
@@ -76,6 +78,9 @@ public static class MockServerArguments
                 case "-w" or "--watch": options.WatchExpectations = true; break;
                 case "-r" or "--record": if (Value() is { } file) options.RecordFile = file; break;
                 case "--record-limit": SetInt(Value(), arg, v => options.RecordLimit = v, errors, 0); break;
+                case "--log-buffer": SetInt(Value(), arg, v => options.LogBuffer = v, errors, 0); break;
+                case "--no-ui": options.Ui = false; break;
+                case "--ui": options.Ui = true; break;
                 case "--kill-timeout": SetInt(Value(), arg, v => options.KillTimeout = v > 0 ? TimeSpan.FromSeconds(v) : null, errors, 0); break;
                 case "--unmatched-status": SetInt(Value(), arg, v => options.UnmatchedStatusCode = v, errors, 100, 599); break;
                 case "-v" or "--verbosity": SetVerbosity(Value(), options, errors); break;
@@ -124,6 +129,8 @@ public static class MockServerArguments
         if (IsTrue(environment("MOCKSERVER_WATCH"))) options.WatchExpectations = true;
         if (environment("MOCKSERVER_RECORD") is { Length: > 0 } record) options.RecordFile = record;
         SetInt(environment("MOCKSERVER_RECORD_LIMIT"), "MOCKSERVER_RECORD_LIMIT", v => options.RecordLimit = v, errors, 0);
+        SetInt(environment("MOCKSERVER_LOG_BUFFER"), "MOCKSERVER_LOG_BUFFER", v => options.LogBuffer = v, errors, 0);
+        if (environment("MOCKSERVER_UI") is { Length: > 0 } ui) options.Ui = IsTrue(ui);
         SetInt(environment("MOCKSERVER_KILL_TIMEOUT"), "MOCKSERVER_KILL_TIMEOUT", v => options.KillTimeout = v > 0 ? TimeSpan.FromSeconds(v) : null, errors, 0);
         SetInt(environment("MOCKSERVER_UNMATCHED_STATUS"), "MOCKSERVER_UNMATCHED_STATUS", v => options.UnmatchedStatusCode = v, errors, 100, 599);
         if (environment("MOCKSERVER_VERBOSITY") is { Length: > 0 } verbosity) SetVerbosity(verbosity, options, errors);

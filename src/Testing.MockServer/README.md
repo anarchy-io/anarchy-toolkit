@@ -52,6 +52,10 @@ on dispose.
 
 ## Releases
 
+### 1.1.0
+
+- feat(Web.MockServer): keep an in-memory log and describe plugged-in middlewares
+
 ### 1.0.1
 
 - docs(packages): identify each package's pillar and layer

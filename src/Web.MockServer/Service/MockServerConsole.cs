@@ -18,14 +18,19 @@ public sealed class MockServerConsole
     /// <summary>Creates the console for <paramref name="options"/>.</summary>
     /// <param name="options">The server options.</param>
     /// <param name="console">The console to write to; standard output by default.</param>
-    public MockServerConsole(MockServerOptions options, IAnsiConsole? console = null)
+    /// <param name="log">The in-memory log every message also goes to, whatever the verbosity; a new one by default.</param>
+    public MockServerConsole(MockServerOptions options, IAnsiConsole? console = null, MockServerLog? log = null)
     {
         Verbosity = options.Verbosity;
+        Log = log ?? new MockServerLog(options.LogBuffer);
         _console = console ?? AnsiConsole.Create(new AnsiConsoleSettings {
             Out = new AnsiConsoleOutput(Console.Out),
             ColorSystem = options.NoColor ? ColorSystemSupport.NoColors : ColorSystemSupport.Detect,
         });
     }
+
+    /// <summary>The in-memory log, followed by the UI and <c>GET /__mock/logs</c>.</summary>
+    public MockServerLog Log { get; }
 
     /// <summary>The verbosity in use.</summary>
     public MockServerVerbosity Verbosity { get; }
@@ -42,9 +47,11 @@ public sealed class MockServerConsole
     /// <param name="codeExpectations">How many expectations were added in code.</param>
     /// <param name="middlewares">How many consumer middlewares are plugged in.</param>
     /// <param name="recordFile">The record file, if any.</param>
-    public void Banner(string url, MockServerOptions options, ExpectationLoader.Result load, int codeExpectations, int middlewares, string? recordFile)
+    /// <param name="uiUrl">The UI's URL, when one is served.</param>
+    public void Banner(string url, MockServerOptions options, ExpectationLoader.Result load, int codeExpectations, int middlewares, string? recordFile, string? uiUrl = null)
     {
         var total = load.Expectations.Count + codeExpectations;
+        Log.Write(MockServerLogLevel.Information, $"Listening on {url} with {total} expectation(s)" + (uiUrl is null ? "" : $"; UI at {uiUrl}"));
         if (Verbosity == MockServerVerbosity.Minimal)
         {
             Write($"[bold green]Mock server[/] listening on [link]{Esc(url)}[/] with [white]{total}[/] expectation(s)");
@@ -61,6 +68,7 @@ public sealed class MockServerConsole
             grid.AddRow("[grey]Unmatched →[/]", options.UnmatchedStatusCode.ToString());
             if (options.KillTimeout is { } timeout) grid.AddRow("[grey]Stops after[/]", $"{timeout.TotalSeconds:0}s");
             grid.AddRow("[grey]Control API[/]", $"{Esc(url)}/__mock");
+            if (uiUrl is not null) grid.AddRow("[grey]UI[/]", $"[bold link]{Esc(uiUrl)}[/]");
             grid.AddRow("[grey]Verbosity[/]", Verbosity.ToString().ToLowerInvariant());
 
             lock (_lock)
@@ -86,6 +94,14 @@ public sealed class MockServerConsole
     public void Request(RecordedRequest record, bool control, string? responseBody)
     {
         var unmatched = record.MatchedExpectation is null && !control;
+        if (!control)
+            Log.Write(new MockServerLogEntry {
+                Timestamp = record.Timestamp,
+                Level = unmatched ? MockServerLogLevel.Warning : MockServerLogLevel.Request,
+                Message = $"{record.Method} {record.Path}{record.QueryString} {record.StatusCode} {record.DurationMs:0}ms "
+                    + (unmatched ? "no expectation matched" : $"← {record.MatchedExpectation}"),
+                Request = record,
+            });
         var level = control ? MockServerVerbosity.Diagnostic : unmatched ? MockServerVerbosity.Minimal : MockServerVerbosity.Normal;
         if (!IsEnabled(level)) return;
 
@@ -126,6 +142,7 @@ public sealed class MockServerConsole
     /// <param name="message">The message (plain text).</param>
     public void Info(string message)
     {
+        Log.Write(MockServerLogLevel.Information, message);
         if (IsEnabled(MockServerVerbosity.Normal)) Write($"[blue]ℹ[/] {Esc(message)}");
     }
 
@@ -133,12 +150,17 @@ public sealed class MockServerConsole
     /// <param name="message">The message (plain text).</param>
     public void Warning(string message)
     {
+        Log.Write(MockServerLogLevel.Warning, message);
         if (IsEnabled(MockServerVerbosity.Minimal)) Write($"[yellow]⚠ {Esc(message)}[/]");
     }
 
     /// <summary>Writes an error (always).</summary>
     /// <param name="message">The message (plain text).</param>
-    public void Error(string message) => Write($"[bold red]✖ {Esc(message)}[/]");
+    public void Error(string message)
+    {
+        Log.Write(MockServerLogLevel.Error, message);
+        Write($"[bold red]✖ {Esc(message)}[/]");
+    }
 
     private void Write(string markup)
     {

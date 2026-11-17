@@ -63,6 +63,12 @@ public sealed class MockServerHost : IAsyncDisposable
     /// <summary>The received requests.</summary>
     public RequestRecorder Recorder { get; }
 
+    /// <summary>The consumer middlewares, in pipeline order.</summary>
+    public IReadOnlyList<MockServerMiddleware> Middlewares => _builder.MiddlewareDescriptors;
+
+    /// <summary>The in-memory log, whatever the console verbosity.</summary>
+    public MockServerLog Log => Console.Log;
+
     /// <summary>The console output.</summary>
     public MockServerConsole Console { get; }
 
@@ -100,10 +106,12 @@ public sealed class MockServerHost : IAsyncDisposable
 
         var webBuilder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { Args = [], ContentRootPath = Directory.GetCurrentDirectory() });
         webBuilder.Logging.ClearProviders();
+        webBuilder.Logging.AddProvider(new MockServerLog.Provider(console.Log));
         if (console.IsEnabled(MockServerVerbosity.Diagnostic)) webBuilder.Logging.AddSimpleConsole().SetMinimumLevel(LogLevel.Information);
         webBuilder.WebHost.UseUrls($"http://{options.Host}:{port}");
-        webBuilder.Services.AddSingleton(options).AddSingleton(store).AddSingleton(recorder).AddSingleton(console);
+        webBuilder.Services.AddSingleton(options).AddSingleton(store).AddSingleton(recorder).AddSingleton(console).AddSingleton(console.Log);
         foreach (var services in builder.Services) services(webBuilder.Services);
+        foreach (var configureHost in builder.HostConfigurations) configureHost(webBuilder);
 
         var app = webBuilder.Build();
         var host = new MockServerHost(app, builder, console, store, recorder);
@@ -116,7 +124,8 @@ public sealed class MockServerHost : IAsyncDisposable
         host.BaseAddress = new Uri(address.Replace("[::]", "localhost").Replace("0.0.0.0", "localhost").Replace("127.0.0.1", "localhost"));
         host.Port = host.BaseAddress.Port;
 
-        console.Banner(host.BaseAddress.ToString().TrimEnd('/'), options, load, builder.Expectations.Count, builder.Middlewares.Count, recorder.File);
+        console.Banner(host.BaseAddress.ToString().TrimEnd('/'), options, load, builder.Expectations.Count, builder.Middlewares.Count, recorder.File,
+            builder.UiUrls.Select(url => url(host)).FirstOrDefault(url => url is not null));
         if (options.WatchExpectations) host.Watch();
         if (options.KillTimeout is { } timeout) host.ScheduleKill(timeout);
 
@@ -150,6 +159,7 @@ public sealed class MockServerHost : IAsyncDisposable
     private void ConfigurePipeline()
     {
         _app.Use(RecordAsync);
+        foreach (var extend in _builder.PipelineExtensions) extend(this, _app);
         _app.Map(ControlPath, control => control.Run(HandleControlAsync));
         _app.Use((context, next) => {
             var feature = context.GetMockServer();
@@ -176,7 +186,7 @@ public sealed class MockServerHost : IAsyncDisposable
         var feature = new MockServerRequestFeature(request);
         context.Features.Set(feature);
 
-        var captureResponse = Console.IsEnabled(MockServerVerbosity.Diagnostic);
+        var captureResponse = !control && Console.IsEnabled(MockServerVerbosity.Diagnostic);
         var originalBody = context.Response.Body;
         using var captured = captureResponse ? new MemoryStream() : null;
         if (captured is not null) context.Response.Body = captured;
@@ -303,6 +313,13 @@ public sealed class MockServerHost : IAsyncDisposable
                 break;
             case ("requests", "DELETE"):
                 await context.Response.WriteAsJsonAsync(new { cleared = Recorder.Clear() }, MockServerJson.Options);
+                break;
+            case ("logs", "GET"):
+                var after = long.TryParse(context.Request.Query["after"], out var sequence) ? sequence : 0;
+                await context.Response.WriteAsJsonAsync(Log.After(after), MockServerJson.Options);
+                break;
+            case ("middlewares", "GET"):
+                await context.Response.WriteAsJsonAsync(Middlewares, MockServerJson.Options);
                 break;
             case ("expectations", "GET"):
                 await context.Response.WriteAsJsonAsync(Expectations.All, MockServerJson.Options);

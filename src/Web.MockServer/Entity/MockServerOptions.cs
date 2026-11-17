@@ -27,6 +27,15 @@ public sealed class MockServerOptions
     /// <summary>How many requests are kept in memory for <c>/__mock/requests</c>; <c>0</c> keeps them all.</summary>
     public int RecordLimit { get; set; } = 1000;
 
+    /// <summary>How many log entries are kept in memory for the UI and <c>/__mock/logs</c>; <c>0</c> keeps them all.</summary>
+    public int LogBuffer { get; set; } = 1000;
+
+    /// <summary>
+    /// Serves the UI when the host plugs one in (e.g. <c>Anarchy.Toolkit.Web.MockServer.Ui</c>); <c>--no-ui</c> turns
+    /// it off. Ignored by hosts without a UI.
+    /// </summary>
+    public bool Ui { get; set; } = true;
+
     /// <summary>Stops the server after this long, guarding against orphaned processes; <see langword="null"/> never stops.</summary>
     public TimeSpan? KillTimeout { get; set; }
 

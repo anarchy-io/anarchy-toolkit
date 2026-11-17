@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Testing;
 using Anarchy.Toolkit.Web.MockServer;
 using Anarchy.Toolkit.Web.MockServer.Entity;
 using AwesomeAssertions;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -45,7 +46,8 @@ public class MockServerHostTest : TestCaseBase, IAsyncLifetime
                     return;
                 }
                 await next(context);
-            })
+            }, "fail middleware")
+            .UseMiddleware<PassThroughMiddleware>()
             .AddExpectation("POST", "/code", 201, new { created = true }));
         _client = new HttpClient { BaseAddress = _host.BaseAddress };
     }
@@ -107,5 +109,36 @@ public class MockServerHostTest : TestCaseBase, IAsyncLifetime
         await _client.PostAsync("/__mock/reset", null, Ct);
         (await _client.GetFromJsonAsync<List<RecordedRequest>>("/__mock/requests", Ct)).Should().BeEmpty();
         (await _client.PostAsync("/runtime", null, Ct)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ControlApi_ListsMiddlewaresInOrder()
+    {
+        var middlewares = await _client.GetFromJsonAsync<List<MockServerMiddleware>>("/__mock/middlewares", Ct);
+
+        middlewares.Should().Equal(
+            new MockServerMiddleware(1, "fail middleware", "delegate"),
+            new MockServerMiddleware(2, nameof(PassThroughMiddleware), "middleware"));
+    }
+
+    [Fact]
+    public async Task ControlApi_ReturnsLogsWhateverTheVerbosity()
+    {
+        await _client.GetAsync("/orders/1", Ct);
+        await _client.GetAsync("/nothing", Ct);
+
+        var logs = await _client.GetFromJsonAsync<List<MockServerLogEntry>>("/__mock/logs", Ct);
+
+        logs.Should().Contain(e => e.Level == MockServerLogLevel.Request && e.Request!.Path == "/orders/1");
+        logs.Should().Contain(e => e.Level == MockServerLogLevel.Warning && e.Message.Contains("/nothing"));
+        logs!.Select(e => e.Sequence).Should().BeInAscendingOrder();
+
+        var after = await _client.GetFromJsonAsync<List<MockServerLogEntry>>($"/__mock/logs?after={logs![^1].Sequence}", Ct);
+        after.Should().NotContain(e => e.Request != null && e.Request.Path == "/orders/1");
+    }
+
+    private sealed class PassThroughMiddleware(RequestDelegate next)
+    {
+        public Task InvokeAsync(HttpContext context) => next(context);
     }
 }
