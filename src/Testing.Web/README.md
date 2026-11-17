@@ -26,6 +26,11 @@ See the [sample tests](https://github.com/anarchy-io/anarchy-toolkit/tree/main/s
 
 ## Releases
 
+### 1.2.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+- feat(Web): serve OpenAPI 3.2 and theme Swagger UI with a light and dark Anarchy theme
+
 ### 1.0.8
 
 - docs: expand XML docblocks across all projects for the DocFX API reference
