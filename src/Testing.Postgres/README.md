@@ -32,6 +32,10 @@ See [Infrastructure.Persistence.Postgres](https://www.nuget.org/packages/Anarchy
 
 ## Releases
 
+### 1.2.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+
 ### 1.1.6
 
 - docs: expand XML docblocks across all projects for the DocFX API reference
