@@ -21,6 +21,11 @@ public enum ToolMode
     Scaffold,
 
     /// <summary>
+    /// <c>skills install</c>: install the toolkit's agent skills into a solution.
+    /// </summary>
+    Skills,
+
+    /// <summary>
     /// An unknown command or malformed arguments; <see cref="ToolCommand.Error"/> says why.
     /// </summary>
     Invalid

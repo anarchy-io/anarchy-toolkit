@@ -16,10 +16,11 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 | Command | What it does |
 |---|---|
 | `anarchy-toolkit bootstrap` | Guided setup of a new solution. |
-| `anarchy-toolkit bootstrap <name> [--output <dir>]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one). |
+| `anarchy-toolkit bootstrap <name> [--output <dir>] [--with-skills]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one), optionally with the agent skills. |
 | `anarchy-toolkit scaffold` | Guided addition of an API, job or UI to the current solution. |
 | `anarchy-toolkit scaffold api\|job\|ui <Name>` | Adds one without prompts. |
 | `anarchy-toolkit scaffold api <Name> --no-swagger-theme` | Adds an API whose Swagger UI keeps its own look instead of the toolkit's default theme. |
+| `anarchy-toolkit skills install [--output <dir>]` | Installs the toolkit's agent skills into `.agents/skills` of the solution found from the current directory (or `<dir>`). |
 
 ## Bootstrap
 
@@ -29,7 +30,8 @@ The wizard asks for:
 2. the output directory (default: the solution name under the current directory), which must be empty or not yet exist;
 3. how `make check_layering` finds each project's layer (see below);
 4. the layers, innermost first (default: `Core, Infrastructure, Configuration, Hosting, Web`). A library project is created per layer, each referencing the one below it;
-5. which kinds of application to start with, then a name for each one, as many as you like.
+5. which kinds of application to start with, then a name for each one, as many as you like;
+6. whether to install the agent skills (default: no).
 
 It then shows the plan, including each web application's local ports, and asks for confirmation before writing anything. Every solution also contains a Fallout build host, Makefile, scripts and configuration. Package versions are always managed centrally: the root `Directory.Packages.props` sets `ManagePackageVersionsCentrally` and pins each toolkit package the solution uses, and the projects' `PackageReference`s carry no versions. Existing files are never overwritten; if a failure occurs after generation starts, inspect the destination before retrying.
 
@@ -62,6 +64,10 @@ It follows the solution's package management. When the nearest `Directory.Packag
 
 Generated APIs use the toolkit's default Swagger UI theme (see the [Web package README](../Web/README.md#swagger-ui-theme)). With `--no-swagger-theme`, the startup disables it with `.Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)`; remove that line to turn it back on.
 
+## Agent skills
+
+`skills install` (and `bootstrap --with-skills`) copies the toolkit's [Agent Skills](https://agentskills.io/) to `.agents/skills`: `anarchy`, the entry point with this tool's commands and the rules, and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. Existing files are never overwritten. See [Agent skills](../Build.Fallout/README.md#agent-skills) for keeping them in step with the solution's Makefiles.
+
 ## Requirements
 
 The .NET 10 SDK is required to generate and build solutions. The generated projects reference the `Anarchy.Toolkit.Build.Fallout`, `Anarchy.Toolkit.Web`, `Anarchy.Toolkit.Web.Ui` and `Anarchy.Toolkit.Hosting` versions this tool was built with, which must be available on a configured NuGet feed. The generated `nuget.config` uses nuget.org by default; adjust it if using a private feed.
@@ -79,6 +85,13 @@ make check_layering
 The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build.Cli/README.md); see the [Fallout package README](../Build.Fallout/README.md) for the build targets.
 
 ## Releases
+
+### 3.1.0
+
+- feat(Build.Cli): add opt-in agent skills to the boilerplate
+- feat(Build.Fallout): validate and sync agent skills
+- feat(Build.Cli.Tool): install agent skills from the CLI
+- fix(Build.Cli): print no banner on narrow terminals
 
 ### 3.0.0
 

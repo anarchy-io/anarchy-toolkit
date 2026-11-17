@@ -3,7 +3,7 @@ using Anarchy.Toolkit.Build.Cli.Core.Entity;
 namespace Anarchy.Toolkit.Build.Cli.Tool.Command;
 
 /// <summary>
-/// Parses <c>anarchy-toolkit [bootstrap|scaffold] [arguments]</c>.
+/// Parses <c>anarchy-toolkit [bootstrap|scaffold|skills] [arguments]</c>.
 /// </summary>
 /// <example>
 /// <code language="csharp">
@@ -16,7 +16,17 @@ public static class ToolCommandLine
     /// <summary>
     /// The usage line of the <c>bootstrap</c> command, shown when its arguments are malformed.
     /// </summary>
-    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>]]";
+    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills]]";
+
+    /// <summary>
+    /// The <c>bootstrap</c> flag that also installs the toolkit's agent skills.
+    /// </summary>
+    public const string WithSkills = "--with-skills";
+
+    /// <summary>
+    /// The usage line of the <c>skills</c> command, shown when its arguments are malformed.
+    /// </summary>
+    public const string SkillsUsage = "anarchy-toolkit skills install [--output <solution-directory>]";
     /// <summary>
     /// The <c>scaffold api</c> flag that generates an API without the toolkit's default Swagger UI theme.
     /// </summary>
@@ -33,22 +43,47 @@ public static class ToolCommandLine
     /// </summary>
     /// <param name="args">The command-line arguments, without the executable name.</param>
     /// <returns>
-    /// The parsed command: <see cref="ToolMode.Help"/> for no arguments or a help flag, <see cref="ToolMode.Bootstrap"/>
-    /// or <see cref="ToolMode.Scaffold"/> (with their optional arguments), or <see cref="ToolMode.Invalid"/>.
+    /// The parsed command: <see cref="ToolMode.Help"/> for no arguments or a help flag, <see cref="ToolMode.Bootstrap"/>,
+    /// <see cref="ToolMode.Scaffold"/> or <see cref="ToolMode.Skills"/> (with their optional arguments), or
+    /// <see cref="ToolMode.Invalid"/>.
     /// </returns>
     public static ToolCommand Parse(IReadOnlyList<string> args) => args switch {
         [] or ["--help" or "-h" or "help", ..] => new ToolCommand(ToolMode.Help),
         ["bootstrap", ..] => ParseBootstrap(args.Skip(1).ToArray()),
         ["scaffold", ..] => ParseScaffold(args.Skip(1).ToArray()),
+        ["skills", ..] => ParseSkills(args.Skip(1).ToArray()),
         [var command, ..] => Invalid($"Unknown command '{command}'.")
     };
 
-    private static ToolCommand ParseBootstrap(IReadOnlyList<string> args) => args switch {
-        [] => new ToolCommand(ToolMode.Bootstrap),
-        [var name] when !name.StartsWith('-') => new ToolCommand(ToolMode.Bootstrap, name),
-        [var name, "--output" or "-o", var output] when !name.StartsWith('-') && !string.IsNullOrWhiteSpace(output) =>
-            new ToolCommand(ToolMode.Bootstrap, name, output),
-        _ => Invalid("Usage: " + BootstrapUsage)
+    private static ToolCommand ParseBootstrap(IReadOnlyList<string> args)
+    {
+        if (args.Count == 0) return new ToolCommand(ToolMode.Bootstrap);
+        if (args[0].StartsWith('-')) return Invalid("Usage: " + BootstrapUsage);
+
+        string? output = null;
+        var skills = false;
+        for (var index = 1; index < args.Count; index++)
+        {
+            switch (args[index])
+            {
+                case "--output" or "-o" when output is null && index + 1 < args.Count && !string.IsNullOrWhiteSpace(args[index + 1]):
+                    output = args[++index];
+                    break;
+                case WithSkills when !skills:
+                    skills = true;
+                    break;
+                default:
+                    return Invalid("Usage: " + BootstrapUsage);
+            }
+        }
+        return new ToolCommand(ToolMode.Bootstrap, args[0], output) { AgentSkills = skills };
+    }
+
+    private static ToolCommand ParseSkills(IReadOnlyList<string> args) => args switch {
+        ["install"] => new ToolCommand(ToolMode.Skills),
+        ["install", "--output" or "-o", var output] when !string.IsNullOrWhiteSpace(output) =>
+            new ToolCommand(ToolMode.Skills, OutputDirectory: output),
+        _ => Invalid("Usage: " + SkillsUsage)
     };
 
     private static ToolCommand ParseScaffold(IReadOnlyList<string> args) => args switch {

@@ -9,8 +9,8 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Service;
 
 /// <summary>
 /// Runs the tool: parses the command line (showing the help without a command), runs a wizard when needed, and
-/// bootstraps or scaffolds. Bootstrapping defaults to the working directory; scaffolding looks for a solution from the
-/// working directory upwards.
+/// bootstraps, scaffolds or installs the agent skills. Bootstrapping defaults to the working directory; scaffolding
+/// and installing the skills look for a solution from the working directory upwards.
 /// </summary>
 /// <remarks>
 /// This is the entry point of the <c>anarchy-toolkit</c> .NET tool; <c>Program.cs</c> only calls
@@ -75,6 +75,9 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         var workspace = SolutionWorkspace.Find(workingDirectory);
         return command.Mode switch {
             ToolMode.Bootstrap => Bootstrap(command),
+            ToolMode.Skills => InstallSkills(command.OutputDirectory is { } output
+                ? Path.GetFullPath(output, workingDirectory)
+                : workspace?.Root ?? workingDirectory),
             _ when workspace is null => Fail("No Anarchy solution (.fallout/parameters.json with a Solution) found here or above; run 'anarchy-toolkit bootstrap' first."),
             _ => Scaffold(workspace, command.Application)
         };
@@ -90,7 +93,9 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         }
         else if (NameRules.IsValidSolutionName(command.SolutionName))
         {
-            plan = new SolutionPlan(command.SolutionName, Path.GetFullPath(command.OutputDirectory ?? workingDirectory, workingDirectory));
+            plan = new SolutionPlan(command.SolutionName, Path.GetFullPath(command.OutputDirectory ?? workingDirectory, workingDirectory)) {
+                AgentSkills = command.AgentSkills
+            };
         }
         else
         {
@@ -108,6 +113,21 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         steps.AddRange(plan.Applications.Where(app => app.IsWebHost).Select(app => $"dotnet run --project {plan.Layout.ProjectPath(app)}"));
         steps.Add("anarchy-toolkit scaffold    # add more APIs, jobs or UIs later");
         prompter.ShowNextSteps($"{plan.Name} is ready", steps, plan.Applications.Count > 0 ? ReviewSettings : null);
+        return 0;
+    }
+
+    private int InstallSkills(string root)
+    {
+        if (!Directory.Exists(root)) return Fail($"{root} does not exist.");
+        if (!TryRun("Installing the agent skills", progress =>
+                SolutionScaffolder.Create(root, null, new ScaffoldOptions { Items = "skills", Log = progress })))
+            return 1;
+
+        prompter.ShowNextSteps($"Agent skills installed in {Path.Combine(root, AgentSkillTasks.DefaultDirectory)}", [
+            "Commit .agents/skills so every agent working on the solution can use them",
+            "make skills_validate    # check that the skills list the current make targets",
+            "make skills_sync        # refresh the skills' commands, and create skills for #@-marked targets"
+        ], null);
         return 0;
     }
 

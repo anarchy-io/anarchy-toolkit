@@ -29,6 +29,13 @@ public class ToolkitToolTest
     [InlineData(new[] { "bootstrap", "MyApp" }, ToolMode.Bootstrap, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--output", "dir" }, ToolMode.Bootstrap, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--output" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--with-skills", "--output", "dir" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--with-skills", "--with-skills" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "--with-skills" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "skills", "install" }, ToolMode.Skills, false)]
+    [InlineData(new[] { "skills", "install", "--output", "dir" }, ToolMode.Skills, false)]
+    [InlineData(new[] { "skills" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "skills", "remove" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "scaffold" }, ToolMode.Scaffold, true)]
     [InlineData(new[] { "scaffold", "API", "Orders" }, ToolMode.Scaffold, false)]
     [InlineData(new[] { "scaffold", "worker", "Orders" }, ToolMode.Invalid, false)]
@@ -71,7 +78,7 @@ public class ToolkitToolTest
             new object[] { ApplicationKind.Ui, ApplicationKind.Api },
             "Orders", true, "orders", "Billing", false,
             "Billing", "Admin", false,
-            true);
+            false, true);
 
         var plan = new BootstrapWizard(prompter).Run();
 
@@ -96,7 +103,7 @@ public class ToolkitToolTest
         File.WriteAllText(Path.Combine(existing, "keep"), "");
         try
         {
-            var prompter = new ScriptedPrompter("MyApp", existing, "", LayeringMode.Prefix, "Core Web", Array.Empty<object>(), true);
+            var prompter = new ScriptedPrompter("MyApp", existing, "", LayeringMode.Prefix, "Core Web", Array.Empty<object>(), false, true);
             var plan = new BootstrapWizard(prompter).Run();
             plan!.RootDirectory.Should().Be(Path.GetFullPath("MyApp"));
             plan.Layout.Should().BeEquivalentTo(new SolutionLayout(LayeringMode.Prefix, ["Core", "Web"]));
@@ -113,7 +120,7 @@ public class ToolkitToolTest
     public void Run_WhenWizardIsDeclined_WritesNothing()
     {
         var root = TempRoot();
-        var prompter = new ScriptedPrompter("MyApp", root, LayeringMode.Folder, "", Array.Empty<object>(), false);
+        var prompter = new ScriptedPrompter("MyApp", root, LayeringMode.Folder, "", Array.Empty<object>(), false, false);
 
         Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(1);
 
@@ -167,7 +174,7 @@ public class ToolkitToolTest
                 "MyApp", root, LayeringMode.Folder, "",
                 new object[] { ApplicationKind.Api, ApplicationKind.Job },
                 "Orders", false, "Billing", false,
-                true);
+                false, true);
 
             Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
 
@@ -176,6 +183,7 @@ public class ToolkitToolTest
             var solution = File.ReadAllText(Path.Combine(root, "MyApp.sln"));
             solution.Should().Contain("_build.csproj").And.Contain("Configuration.csproj").And.Contain("Orders.csproj").And.Contain("Billing.csproj");
             File.Exists(Path.Combine(root, "src", "Core", "Core.csproj")).Should().BeFalse();
+            Directory.Exists(Path.Combine(root, ".agents")).Should().BeFalse();
             File.ReadAllText(Path.Combine(root, "src", "Library", "Web", "Web.csproj")).Should().Contain(@"..\Hosting\Hosting.csproj");
             var packages = File.ReadAllText(Path.Combine(root, "Directory.Packages.props"));
             packages.Should().Contain("<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>")
@@ -227,7 +235,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter("MyApp", root, LayeringMode.Prefix, "Core, Web",
-                new object[] { ApplicationKind.Api }, "Orders", false, true);
+                new object[] { ApplicationKind.Api }, "Orders", false, true, true);
 
             Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
 
@@ -236,6 +244,7 @@ public class ToolkitToolTest
             var workspace = SolutionWorkspace.Load(root);
             workspace.Layout.Should().BeEquivalentTo(new SolutionLayout(LayeringMode.Prefix, ["Core", "Web"]));
             workspace.UsedPorts.Should().BeEquivalentTo(new[] { 5000, 5001 });
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy", "SKILL.md")).Should().BeTrue();
         }
         finally
         {
@@ -285,6 +294,38 @@ public class ToolkitToolTest
             File.ReadAllText(Path.Combine(root, "src", "Api", "Billing", "Composition", "Startup.cs"))
                 .Should().Contain("using Anarchy.Toolkit.Web.Entity.Swagger;")
                 .And.Contain("            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false);");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void CommandLine_ReadsBootstrapSkillsAndOutput()
+    {
+        var command = ToolCommandLine.Parse(["bootstrap", "MyApp", "-o", "dir", "--with-skills"]);
+        command.Should().BeEquivalentTo(new ToolCommand(ToolMode.Bootstrap, "MyApp", "dir") { AgentSkills = true });
+        ToolCommandLine.Parse(["bootstrap", "MyApp"]).AgentSkills.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Run_InstallsSkillsIntoTheSolutionWithoutOverwriting()
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            Directory.Exists(Path.Combine(root, ".agents")).Should().BeFalse();
+
+            Application(prompter, Path.Combine(root, "build")).Run(["skills", "install"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-develop", "SKILL.md")).Should().BeTrue();
+
+            Application(prompter, root).Run(["skills", "install"], interactive: false).Should().Be(1);
+            prompter.Errors.Should().ContainMatch("*overwrite*");
+            Application(prompter).Run(["skills", "install", "--output", Path.Combine(root, "missing")], interactive: false).Should().Be(1);
         }
         finally
         {
