@@ -28,6 +28,12 @@ See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview
 
 ## Releases
 
+### 1.1.1
+
+- docs(packages): identify each package's pillar and layer
+- build(packages): attribute the copyright to Leandro Melão Medeiros
+- build: relicense under Apache-2.0 and update the package metadata
+
 ### 1.1.0
 
 - feat: `LocalPorts` (moved from Build.Cli), now generic, with a configurable first port, `IsAvailable` and `FindAvailable`

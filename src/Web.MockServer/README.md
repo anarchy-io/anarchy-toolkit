@@ -97,6 +97,13 @@ return await MockServerEntryPoint.RunAsync(args, server => server
 
 ## Releases
 
+### 1.0.1
+
+- docs(packages): identify each package's pillar and layer
+- build(packages): attribute the copyright to Leandro Melão Medeiros
+- build: relicense under Apache-2.0 and update the package metadata
+- fix(mock-server): default to port 6001, which browsers allow
+
 ### 1.0.0
 
 - Initial release.
