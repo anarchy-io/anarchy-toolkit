@@ -159,10 +159,12 @@ internal static class UiTemplate
                         <nav class="navbar">
                             <div class="navbar-content">
                                 <div class="navbar-brand">
+                                    <a href="@Presenter.GetUiRoute()"><img class="navbar-logo" src="@Presenter.GetRoute("images/logo-dark.png")" alt="Anarchy I/O" /></a>
                                     <h1><a href="@Presenter.GetUiRoute()">{{title}}</a></h1>
                                 </div>
                                 <ul class="navbar-nav">
                                     <li><SessionBadge /></li>
+                                    <li><ThemeToggle /></li>
                                 </ul>
                             </div>
                         </nav>
