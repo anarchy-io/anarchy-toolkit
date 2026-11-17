@@ -36,7 +36,7 @@ Run the API locally:
 dotnet run --project samples/Samples.Api --environment Development
 ```
 
-Run the UI locally, then open https://localhost:5101 and log in with client ID `samples-ui` and secret `samples-ui-secret` (the stub's test credentials, overridable through `StubClientId`/`StubClientSecret`):
+Run the UI locally, then open https://localhost:5101 and log in with client ID `anarchy` and secret `secret` (the stub's test credentials, overridable through `StubClientId`/`StubClientSecret`):
 
 ```bash
 dotnet run --project samples/Samples.Ui --environment Development

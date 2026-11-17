@@ -12,7 +12,7 @@ public sealed class AppSettings : IAppSettings
     [Required] public Uri StubBaseUrl { get; init; } = new("https://localhost:5101/");
 
     /// <summary>Client credentials the stub auth service accepts. Test values, not a real secret.</summary>
-    [Required] public string StubClientId { get; init; } = "samples-ui";
+    [Required] public string StubClientId { get; init; } = "anarchy";
 
-    [Required] public string StubClientSecret { get; init; } = "samples-ui-secret";
+    [Required] public string StubClientSecret { get; init; } = "secret";
 }
