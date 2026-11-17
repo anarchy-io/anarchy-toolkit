@@ -16,6 +16,10 @@ Follow @.github/CONTRIBUTING.md. It is the source of truth for:
 
 Never stage or revert changes you did not make: the working tree may hold the developer's own work in progress.
 
+Once all local pending changes are committed, write a pull request title and description for them: the title follows
+the commit title rules in @.github/CONTRIBUTING.md, and the description follows @.github/pull_request_template.md
+(what and why, how it was tested, and the checklist with each item ticked or explained), ready to paste.
+
 ## Where code goes
 
 - @docs/guides/architecture.md: the layers (`Core < Infrastructure < Configuration < Hosting < Web < Build`), project
