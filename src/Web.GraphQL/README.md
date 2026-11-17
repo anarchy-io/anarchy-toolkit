@@ -34,6 +34,10 @@ See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/guides/exp
 
 ## Releases
 
+### 1.1.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+
 ### 1.0.6
 
 - docs: expand XML docblocks across all projects for the DocFX API reference
