@@ -24,13 +24,16 @@ public class SamplesUiTests(WebApplicationFactory<Startup> factory) : IClassFixt
     {
         var html = await _client.GetStringAsync("ui/login", TestContext.Current.CancellationToken);
 
-        html.Should().Contain("toolkit-ui.css").And.Contain("samples-ui.css").And.Contain("_framework/blazor.web.js");
+        html.Should().Contain("css/toolkit-ui.css").And.Contain("css/samples-ui.css").And.Contain("_framework/blazor.web.js");
     }
 
     [Theory]
-    [InlineData("toolkit-ui.css")]
-    [InlineData("toolkit-ui.js")]
+    [InlineData("css/toolkit-ui.css")]
+    [InlineData("js/toolkit-ui.js")]
     [InlineData("favicon.png")]
+    [InlineData("favicon.svg")]
+    [InlineData("images/logo.png")]
+    [InlineData("images/logo-dark.png")]
     public async Task ToolkitAssets_AreServed(string path)
     {
         using var response = await _client.GetAsync(path, TestContext.Current.CancellationToken);
