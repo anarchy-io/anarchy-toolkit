@@ -1,0 +1,14 @@
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="main h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Mock Server / Not found</PageTitle>
+        <MainLayout>
+            <h1>Page not found</h1>
+        </MainLayout>
+    </NotFound>
+</Router>

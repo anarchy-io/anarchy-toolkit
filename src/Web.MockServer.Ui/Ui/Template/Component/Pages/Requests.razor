@@ -1,0 +1,70 @@
+@page "/requests"
+@implements IDisposable
+@inject MockServerUiContext Mock
+
+<PageTitle>Mock Server / Requests</PageTitle>
+
+<div class="page-container">
+    <div class="page-header-row">
+        <h1>Received requests</h1>
+        <button class="btn btn-danger" @onclick="Clear">Clear</button>
+    </div>
+
+    <div class="form-section">
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="filter">Method or path contains</label>
+                <input id="filter" type="text" @bind="_filter" @bind:event="oninput" />
+            </div>
+        </div>
+    </div>
+
+    <p>Recording @(Mock.Recorder.File is { } file ? $"to {file} and" : "") in memory (last @(Mock.Options.RecordLimit == 0 ? "all" : Mock.Options.RecordLimit.ToString())).</p>
+
+    <div class="events-table">
+        <div class="table-scroll">
+            <table class="sticky-edges-table">
+                <thead>
+                <tr><th>#</th><th>Time</th><th>Method</th><th>Path</th><th>Status</th><th>Answered by</th><th>Duration</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var request in Visible)
+                {
+                    <tr @key="request.Sequence">
+                        <td>@request.Sequence</td>
+                        <td class="nowrap">@request.Timestamp.ToString("HH:mm:ss.fff")</td>
+                        <td>@request.Method</td>
+                        <td><code>@(request.Path + request.QueryString)</code></td>
+                        <td>@request.StatusCode</td>
+                        <td>@(request.MatchedExpectation ?? "no expectation matched")</td>
+                        <td class="nowrap">@request.DurationMs.ToString("0") ms</td>
+                        <td><JsonViewLink Title="Request" JsonContent="@JsonSerializer.Serialize(request, MockServerJson.Options)" /></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _filter = "";
+
+    private IEnumerable<RecordedRequest> Visible => Mock.Recorder.All.AsEnumerable().Reverse()
+        .Where(r => _filter.Length == 0
+            || r.Method.Contains(_filter, StringComparison.OrdinalIgnoreCase)
+            || r.Path.Contains(_filter, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Re-renders when a request is recorded.</summary>
+    protected override void OnInitialized() => Mock.Log.EntryWritten += OnEntry;
+
+    private void OnEntry(MockServerLogEntry entry)
+    {
+        if (entry.Request is not null) _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void Clear() => Mock.Recorder.Clear();
+
+    /// <summary>Stops following the log.</summary>
+    public void Dispose() => Mock.Log.EntryWritten -= OnEntry;
+}

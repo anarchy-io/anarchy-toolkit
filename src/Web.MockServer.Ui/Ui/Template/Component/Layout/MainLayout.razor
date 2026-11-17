@@ -1,0 +1,31 @@
+@inherits LayoutComponentBase
+
+@inject BasePresenter Presenter
+
+<div class="layout">
+    <header class="navbar-shell">
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <a href="@Presenter.GetRoute()"><img class="navbar-logo" src="@Presenter.GetRoute("images/logo-dark.png")" alt="Anarchy I/O" /></a>
+                    <h1><a href="@Presenter.GetRoute()">Mock Server</a></h1>
+                </div>
+                <ul class="navbar-nav">
+                    <li><NavLink href="@Presenter.GetRoute()" Match="NavLinkMatch.All">Expectations</NavLink></li>
+                    <li><NavLink href="@Presenter.GetRoute("requests")">Requests</NavLink></li>
+                    <li><NavLink href="@Presenter.GetRoute("middlewares")">Middlewares</NavLink></li>
+                    <li><NavLink href="@Presenter.GetRoute("logs")">Logs</NavLink></li>
+                    <li><ThemeToggle /></li>
+                </ul>
+            </div>
+        </nav>
+
+        <NotificationHost />
+    </header>
+
+    <main class="main-content">
+        @Body
+    </main>
+
+    <JsonModalHost />
+</div>

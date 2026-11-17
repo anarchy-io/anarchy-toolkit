@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Web.MockServer\Web.MockServer.csproj" />
+    <ProjectReference Include="..\..\src\Web.MockServer.Ui\Web.MockServer.Ui.csproj" />
   </ItemGroup>
 
   <ItemGroup>

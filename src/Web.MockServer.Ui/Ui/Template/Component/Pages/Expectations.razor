@@ -1,0 +1,54 @@
+@page "/"
+@inject MockServerUiContext Mock
+@inject NotificationService Notifications
+
+<PageTitle>Mock Server / Expectations</PageTitle>
+
+<div class="page-container">
+    <div class="page-header-row">
+        <h1>Expectations</h1>
+        <button class="btn" @onclick="Reload">Reload files</button>
+    </div>
+
+    <p>@_expectations.Count expectation(s), matched by priority, then path specificity, then runtime before loaded.</p>
+
+    <div class="events-table">
+        <div class="table-scroll">
+            <table class="sticky-edges-table">
+                <thead>
+                <tr><th>Name</th><th>Method</th><th>Path</th><th>Status</th><th>Priority</th><th>Times left</th><th>Source</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var expectation in _expectations)
+                {
+                    <tr>
+                        <td>@expectation.DisplayName</td>
+                        <td class="nowrap">@(expectation.HttpRequest.Method ?? "any")</td>
+                        <td><code>@(expectation.HttpRequest.Path ?? "any")</code></td>
+                        <td>@expectation.HttpResponse.StatusCode</td>
+                        <td>@expectation.Priority</td>
+                        <td>@(expectation.Times is { Unlimited: false } times ? times.RemainingTimes.ToString() : "∞")</td>
+                        <td class="nowrap">@expectation.Source</td>
+                        <td><JsonViewLink Title="Expectation" JsonContent="@JsonSerializer.Serialize(expectation, MockServerJson.Options)" /></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IReadOnlyList<MockExpectation> _expectations = [];
+
+    /// <summary>Reads the current expectations.</summary>
+    protected override void OnInitialized() => _expectations = Mock.Expectations.All;
+
+    private void Reload()
+    {
+        var load = Mock.Host.LoadExpectations();
+        _expectations = Mock.Expectations.All;
+        if (load.Errors.Count == 0) Notifications.Success($"Reloaded {load.Expectations.Count} expectation(s).");
+        else Notifications.Error($"Reloaded with {load.Errors.Count} error(s).", string.Join('\n', load.Errors.Select(e => $"{e.Source}: {e.Error}")));
+    }
+}
