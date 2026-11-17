@@ -92,7 +92,21 @@ Use `--boilerplate-items` for a comma-separated allowlist and `--boilerplate-exc
 
 Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-existing` (or `--apend-existing`) is supplied; packaged content is then appended at most once. Review the result because later rules can change earlier ones. The same option adds the packaged `test` section (`"runner": "Microsoft.Testing.Platform"`, which `dotnet test` needs to run xUnit.net v3 projects) to an existing `global.json` that does not have one; the rest of the file is kept, and a file with comments is left alone. Existing `nuget.config` and `Directory.Build.props` are always preserved, as is `global.json` otherwise. The target refuses to overwrite a solution, selected script, Makefile, starter project, `.gitkeep` or existing `Solution` parameter. If an operation fails partway through, inspect the output before retrying.
 
+## Mock server
+
+`IMockServerBuild` runs an [Anarchy.Toolkit.Web.MockServer](https://www.nuget.org/packages/Anarchy.Toolkit.Web.MockServer) host, a runnable project in the solution whose name ends in `MockServer` (or `MockServerProject`) and whose `Program` calls `MockServerEntryPoint.RunAsync(args)`. It is launched by path with `dotnet run`, so the build does not reference it. Parameters: `MockServerPort` (default 6000, or the next free one), `MockServerExpectations`, `MockServerRecord` (default `artifacts/mock-server/requests.jsonl`), `MockServerVerbosity` (`quiet` to `diagnostic`), `MockServerArgs` and `MockServerTimeout`. The boilerplate's `mock-server.mk` exposes each target to Make:
+
+| Target | Make | What it does |
+|---|---|---|
+| `MockServerRun` | `mock_server` | Runs it in the foreground until Ctrl+C |
+| `MockServerStart`, `MockServerStop` | `mock_server_start`, `mock_server_stop` | Starts it in the background (output in `artifacts/mock-server/mock-server.log`), waiting until it is ready, and stops it |
+| `TestIntegrationWithMockServer`, `TestEndToEndWithMockServer` | `test_integration_mocked`, `test_end_to_end_mocked` | Runs the tests with `MOCKSERVER_URL` set, starting the server for them (and stopping it after) unless one is already running |
+
 ## Releases
+
+### 3.4.0
+
+- feat: `IMockServerBuild`, running a mock server host in the foreground, in the background or around integration and end-to-end tests
 
 ### 3.3.1
 
