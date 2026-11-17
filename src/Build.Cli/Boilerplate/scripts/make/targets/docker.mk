@@ -1,6 +1,7 @@
 ##############################
 ## LOCAL CONTAINER MANAGEMENT
 ##############################
+#@ anarchy-environment
 
 # Requires the build project to implement IDockerBuild. The Compose file defaults to docker/docker-compose.yml.
 DOCKER_TARGET_OPTIONS = --DockerComposeFile "$(DOCKER_COMPOSE_FILE_NAME)" --DockerProjectName "$(DOCKER_PROJECT_NAME)"

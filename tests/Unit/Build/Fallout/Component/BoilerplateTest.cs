@@ -225,6 +225,12 @@ public class BoilerplateTest
             help.Output.Should().Contain("INSTALLATION").And.Contain("Sets up the development environment");
             RunMake("install", "WITH_HOOKS=true").Should().Contain("<bootstrap>\n<Restore>\n<Compile>\n<EnableGitHook>\n<--HookSkipTestRuntime>\n<true>");
             RunMake("install", "ENV=ci").Should().Contain("<Restore>\n<--IsCiBuild>\n<true>\n<Compile>\n<--IsCiBuild>\n<true>").And.NotContain("<bootstrap>");
+            RunMake("validate_release", "RELEASE_BASE=main").Should().Contain("<ValidateLocalRelease>\n<--ReleaseBase>\n<main>");
+            RunMake("container_build", "APP_NAME=Api").Should().Contain("<EcrImageBuild>\n<--AppName>\n<Api>");
+            RunMake("boilerplate", "ITEMS=Makefile,scripts", "APPEND=true")
+                .Should().Contain("<SetupBoilerplate>\n<--BoilerplateItems>\n<Makefile,scripts>\n<--AppendExisting>\n<true>");
+            RunMake("skills_sync", "PREFIX=shop").Should().Contain("<SyncAgentSkills>\n<--AgentSkillsPrefix>\n<shop>");
+            RunMake("install_skills").Should().Contain("<SetupBoilerplate>\n<--BoilerplateItems>\n<skills>");
             RunMake("lint").Should().Be("<Lint>\n");
             RunMake("lint", "ENV=ci").Should().Be("<Lint>\n<--IsCiBuild>\n<true>\n");
             RunMake("compile", "ENV=ci").Should().Be("<Compile>\n<--IsCiBuild>\n<true>\n");

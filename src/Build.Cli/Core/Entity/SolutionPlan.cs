@@ -19,6 +19,11 @@ public sealed record SolutionPlan(string Name, string RootDirectory, SolutionLay
     public SolutionPlan(string name, string rootDirectory) : this(name, rootDirectory, SolutionLayout.Default, []) { }
 
     /// <summary>
+    /// Whether to install the toolkit's agent skills into <c>.agents/skills</c>; off by default.
+    /// </summary>
+    public bool AgentSkills { get; init; }
+
+    /// <summary>
     /// The local HTTP and HTTPS ports of each web host, in the order the applications were added.
     /// </summary>
     public IReadOnlyDictionary<ApplicationSpec, (int Http, int Https)> Ports => LocalPorts.Assign(Applications.Where(app => app.IsWebHost), []);

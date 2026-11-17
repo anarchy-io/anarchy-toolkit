@@ -1,6 +1,7 @@
 #############################
 ## ENVIRONMENT BUILDING
 #############################
+#@ anarchy-develop
 
 .PHONY: install
 install: art_logo #? Sets up the development environment, restores dependencies and compiles

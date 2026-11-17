@@ -6,7 +6,8 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Entity;
 public sealed class ScaffoldOptions
 {
     /// <summary>
-    /// Comma-separated item names or script paths; null means all items.
+    /// Comma-separated item names or script paths; null means all items except the opt-in agent skills,
+    /// which only <c>skills</c> selects.
     /// </summary>
     public string? Items { get; set; }
 

@@ -64,6 +64,7 @@ GIT_HEAD_SHA := $(shell git rev-parse --short HEAD 2>/dev/null)
 
 .PHONY: info
 info: art_logo #? Prints out host-relevant information
+#@ anarchy-develop
 	@$(SCRIPTS_DIR)/console/title.sh 'blue' 'Environment Info'
 	@echo -e "${CL_GREEN}Current Env Rules:${CL_RESET} '$(ENV)'"
 	@echo -e "${CL_GREEN}Project Root:${CL_RESET} '$(PROJECT_ROOT)'"

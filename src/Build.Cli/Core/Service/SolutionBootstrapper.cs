@@ -83,7 +83,7 @@ public static class SolutionBootstrapper
         BuildHostScaffolder.Create(root, null);
 
         report("Installing the scaffold and creating the solution");
-        SolutionScaffolder.Create(root, plan.Name, new ScaffoldOptions { Exclude = "core" });
+        SolutionScaffolder.Create(root, plan.Name, new ScaffoldOptions { Items = plan.AgentSkills ? "all,skills" : null, Exclude = "core" });
         FalloutParameters.Add(root, layout.ToFalloutParameters());
 
         report($"Creating the {string.Join(", ", layout.Layers)} libraries");
