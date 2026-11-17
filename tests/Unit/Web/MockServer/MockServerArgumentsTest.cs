@@ -42,6 +42,20 @@ public class MockServerArgumentsTest : TestCaseBase
     }
 
     [Fact]
+    public void Parse_ReadsUiAndLogBuffer()
+    {
+        Parse([]).Options.Ui.Should().BeTrue();
+
+        var result = Parse(["--no-ui", "--log-buffer", "50"]);
+
+        result.Errors.Should().BeEmpty();
+        result.Options.Ui.Should().BeFalse();
+        result.Options.LogBuffer.Should().Be(50);
+        Parse([], new() { ["MOCKSERVER_UI"] = "false", ["MOCKSERVER_LOG_BUFFER"] = "7" }).Options
+            .Should().BeEquivalentTo(new { Ui = false, LogBuffer = 7 });
+    }
+
+    [Fact]
     public void Parse_ArgumentsOverrideEnvironment()
     {
         var result = Parse(["-p", "7001", "-q"], new Dictionary<string, string> {

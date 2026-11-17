@@ -58,6 +58,8 @@ dotnet Anarchy.Toolkit.Web.MockServer.dll -e "mocks/**/*.json" --record artifact
 | `-w, --watch` | `MOCKSERVER_WATCH` | Reload expectations when the files change. |
 | `-r, --record` | `MOCKSERVER_RECORD` | Append every request to a JSON-lines file. |
 | `--record-limit` | `MOCKSERVER_RECORD_LIMIT` | Requests kept in memory (default 1000, `0` = all). |
+| `--log-buffer` | `MOCKSERVER_LOG_BUFFER` | Log entries kept in memory for the UI and `/__mock/logs` (default 1000, `0` = all). |
+| `--no-ui` | `MOCKSERVER_UI=false` | Do not serve the UI, on hosts that plug one in (`Anarchy.Toolkit.Web.MockServer.Ui`). |
 | `--kill-timeout` | `MOCKSERVER_KILL_TIMEOUT` | Stop after this many seconds. |
 | `--unmatched-status` | `MOCKSERVER_UNMATCHED_STATUS` | Status when nothing matches (default 404). |
 | `-v, --verbosity` | `MOCKSERVER_VERBOSITY` | `quiet`, `minimal`, `normal` (default), `detailed` (headers and bodies) or `diagnostic` (responses and ASP.NET Core logs). |
@@ -81,8 +83,34 @@ return await MockServerEntryPoint.RunAsync(args, server => server
             return;
         }
         await next(context);
-    }));
+    }, name: "stock middleware"));
 ```
+
+Middlewares are listed, in order, by `GET /__mock/middlewares` and the UI: classes by type name, delegates by the
+`name` given (or their method). Extensions such as the UI hook in with `ConfigureWebApplication`, `ExtendPipeline` and
+`AnnounceUi`.
+
+### Recording received requests
+
+Every request that is not for `/__mock` is recorded, standalone or in a host of your own, so tests can assert on what
+the system under test sent:
+
+- **In memory**, always: the last `--record-limit` requests (1000 by default, `0` keeps them all), served by
+  `GET /__mock/requests` and cleared by `DELETE /__mock/requests` or `POST /__mock/reset`. This is what
+  `MockServerClient.GetRequestsAsync` and the `AssertReceivedAsync` assertions of `Anarchy.Toolkit.Testing.MockServer`
+  read, while the server runs.
+- **In a file**, with `--record <file>`: one JSON object per line, truncated at startup and never cleared by the control
+  API. Read it with `RecordedRequestsFile.Read`, e.g. after the server stopped or from another process. The Fallout
+  `IMockServerBuild` targets record to `artifacts/mock-server/requests.jsonl` by default.
+
+Each record has its sequence, timestamp, method, path, query, headers, body, the expectation (or middleware) that
+answered, the status code and the duration.
+
+### Logs
+
+Everything the server writes (startup, requests, warnings, errors, and ASP.NET Core warnings) is also kept in an
+in-memory log of `--log-buffer` entries, whatever the console verbosity, so `--quiet` keeps the CLI silent while the
+UI or `GET /__mock/logs?after=<sequence>` still follows it.
 
 ### Control API
 
@@ -94,8 +122,14 @@ return await MockServerEntryPoint.RunAsync(args, server => server
 | `GET/PUT/DELETE /__mock/expectations` | Lists, adds (one or an array) or removes (`?id=`) runtime expectations. |
 | `POST /__mock/reset` | Forgets requests and runtime expectations. |
 | `POST /__mock/reload` | Reloads expectation files. |
+| `GET /__mock/logs?after=` | Log entries, optionally only those after a sequence number. |
+| `GET /__mock/middlewares` | The consumer middlewares, in pipeline order. |
 
 ## Releases
+
+### 1.1.0
+
+- feat(Web.MockServer): keep an in-memory log and describe plugged-in middlewares
 
 ### 1.0.1
 
