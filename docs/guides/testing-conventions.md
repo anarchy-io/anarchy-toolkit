@@ -202,6 +202,8 @@ When the application under integration or end-to-end test calls HTTP services yo
 2. Implement `IMockServerBuild` in the build and run `make test_integration_mocked EXPECTATIONS=tests/mocks` (or `test_end_to_end_mocked`): the server starts in the background, the tests get its address as `MOCKSERVER_URL`, and it stops afterwards. `make mock_server_start` / `mock_server_stop` keep one running across several runs.
 3. In the tests, use a `MockServerFixture` (it connects to `MOCKSERVER_URL`, or spawns the server when tests run on their own) and assert what the application sent with `mock.Client.AssertReceivedAsync("POST", "/payments/{id}/capture", times: 1)`.
 
+To start or update expectations from a service's OpenAPI specification, run `make mock_server_sync_openapi SPEC=<file or URL> OUT=tests/mocks`: it only adds expectations for endpoints that have none, and lists endpoints that changed or disappeared for you to fix by hand. Review the generated bodies (taken from the specification's examples, or placeholders shaped like its schemas) before committing.
+
 Reset the server (`ResetAsync`) at the start of tests that assert on received requests, and prefer runtime expectations (`AddExpectationAsync`) for scenario-specific answers, keeping the JSON files for the stable defaults.
 
 ## Shared test resources

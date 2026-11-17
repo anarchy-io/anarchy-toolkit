@@ -101,8 +101,13 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 | `MockServerRun` | `mock_server` | Runs it in the foreground until Ctrl+C |
 | `MockServerStart`, `MockServerStop` | `mock_server_start`, `mock_server_stop` | Starts it in the background (output in `artifacts/mock-server/mock-server.log`), waiting until it is ready, and stops it |
 | `TestIntegrationWithMockServer`, `TestEndToEndWithMockServer` | `test_integration_mocked`, `test_end_to_end_mocked` | Runs the tests with `MOCKSERVER_URL` set, starting the server for them (and stopping it after) unless one is already running |
+| `MockServerSyncOpenApi` | `mock_server_sync_openapi SPEC=… [OUT=…] [DRY_RUN=true]` | Adds an expectation for each endpoint of an OpenAPI or Swagger specification (file or URL) that has none, into `<tag>.json` files for you to review and commit. It never changes existing expectations: endpoints that changed, disappeared or answer an undocumented status code are only reported |
 
 ## Releases
+
+### 3.5.0
+
+- feat: `MockServerSyncOpenApi` target (`MockServerOpenApi`, `MockServerOpenApiOutput`, `MockServerOpenApiDryRun`) adding expectations for new OpenAPI endpoints
 
 ### 3.4.0
 

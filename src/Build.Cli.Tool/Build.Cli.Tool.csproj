@@ -6,7 +6,7 @@
     <PackageId>Anarchy.Toolkit.Build.Cli.Tool</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Cli.Tool</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Cli.Tool</RootNamespace>
-    <Version>2.4.0</Version>
+    <Version>2.5.0</Version>
     <Description>The anarchy-toolkit command: bootstrap Anarchy-based .NET solutions and scaffold APIs, jobs and UIs into them from guided wizards.</Description>
     <PackageTags>anarchy bootstrap scaffold dotnet-tool</PackageTags>
   </PropertyGroup>
