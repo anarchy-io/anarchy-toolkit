@@ -11,6 +11,8 @@ namespace Anarchy.Toolkit.Tests.Unit.Web.MockServer;
 
 public class MockServerHostTest : TestCaseBase, IAsyncLifetime
 {
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     private readonly string _directory = Directory.CreateTempSubdirectory("mockserver-").FullName;
     private MockServerHost _host = null!;
     private HttpClient _client = null!;
@@ -58,22 +60,22 @@ public class MockServerHostTest : TestCaseBase, IAsyncLifetime
     [Fact]
     public async Task Request_AnswersWithTheMostSpecificExpectation()
     {
-        var templated = await _client.GetAsync("/orders/1");
-        var exact = await _client.GetAsync("/orders/42");
+        var templated = await _client.GetAsync("/orders/1", Ct);
+        var exact = await _client.GetAsync("/orders/42", Ct);
 
         templated.StatusCode.Should().Be(HttpStatusCode.OK);
         templated.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
-        (await templated.Content.ReadAsStringAsync()).Should().Be("""{ "id": 1 }""");
+        (await templated.Content.ReadAsStringAsync(Ct)).Should().Be("""{ "id": 1 }""");
         exact.StatusCode.Should().Be(HttpStatusCode.Gone);
         exact.Headers.GetValues("X-Gone").Should().Equal("yes");
-        (await exact.Content.ReadAsStringAsync()).Should().Be("gone");
+        (await exact.Content.ReadAsStringAsync(Ct)).Should().Be("gone");
     }
 
     [Fact]
     public async Task Request_HonoursTimes()
     {
-        (await _client.GetAsync("/once")).StatusCode.Should().Be(HttpStatusCode.NoContent);
-        (await _client.GetAsync("/once")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await _client.GetAsync("/once", Ct)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+        (await _client.GetAsync("/once", Ct)).StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -81,8 +83,8 @@ public class MockServerHostTest : TestCaseBase, IAsyncLifetime
     {
         var failing = new HttpRequestMessage(HttpMethod.Get, "/orders/1") { Headers = { { "X-Fail", "1" } } };
 
-        (await _client.SendAsync(failing)).StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
-        (await _client.PostAsync("/code", null)).StatusCode.Should().Be(HttpStatusCode.Created);
+        (await _client.SendAsync(failing, Ct)).StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        (await _client.PostAsync("/code", null, Ct)).StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]
@@ -90,20 +92,20 @@ public class MockServerHostTest : TestCaseBase, IAsyncLifetime
     {
         var put = await _client.PutAsync("/__mock/expectations", new StringContent(
             """{ "httpRequest": { "method": "POST", "path": "/runtime", "body": { "name": "x" } }, "httpResponse": { "statusCode": 202 } }""",
-            Encoding.UTF8, "application/json"));
+            Encoding.UTF8, "application/json"), Ct);
         put.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var post = await _client.PostAsync("/runtime", new StringContent("""{ "name": "x", "extra": 1 }""", Encoding.UTF8, "application/json"));
+        var post = await _client.PostAsync("/runtime", new StringContent("""{ "name": "x", "extra": 1 }""", Encoding.UTF8, "application/json"), Ct);
         post.StatusCode.Should().Be(HttpStatusCode.Accepted);
 
-        var recorded = await _client.GetFromJsonAsync<List<RecordedRequest>>("/__mock/requests?method=POST&path=/runtime");
+        var recorded = await _client.GetFromJsonAsync<List<RecordedRequest>>("/__mock/requests?method=POST&path=/runtime", Ct);
         recorded.Should().ContainSingle().Which.MatchedExpectation.Should().Be("runtime (POST /runtime)");
 
-        var lines = await File.ReadAllLinesAsync(Path.Combine(_directory, "requests.jsonl"));
+        var lines = await File.ReadAllLinesAsync(Path.Combine(_directory, "requests.jsonl"), Ct);
         lines.Select(line => JsonSerializer.Deserialize<JsonElement>(line).GetProperty("path").GetString()).Should().Contain("/runtime");
 
-        await _client.PostAsync("/__mock/reset", null);
-        (await _client.GetFromJsonAsync<List<RecordedRequest>>("/__mock/requests")).Should().BeEmpty();
-        (await _client.PostAsync("/runtime", null)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        await _client.PostAsync("/__mock/reset", null, Ct);
+        (await _client.GetFromJsonAsync<List<RecordedRequest>>("/__mock/requests", Ct)).Should().BeEmpty();
+        (await _client.PostAsync("/runtime", null, Ct)).StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }
