@@ -21,6 +21,16 @@ flowchart TD
 | **Fallout build** | Existing repositories: adds standard compile, lint, test, layering, dependency-map, packaging, release and Docker targets. | [Adding the Fallout build](fallout.md) |
 | **Packages** | Existing applications: add persistence, messaging, observability, hosting or web plumbing one package at a time. | [Using the packages](consuming-packages.md) |
 
+## Let your agent do it
+
+Using a coding agent? Paste this line into it, from the folder or repository to adopt or migrate:
+
+```text
+Follow https://raw.githubusercontent.com/anarchy-io/anarchy-toolkit/main/agents/ADOPT.md to adopt Anarchy Toolkit in this repository, or migrate it to the latest version.
+```
+
+The agent works out which path fits, asks before anything destructive, can install the toolkit's [agent skills](cli-tool.md#agent-skills) and verifies the result with the build.
+
 ## Requirements
 
 - The [.NET 10 SDK](https://dotnet.microsoft.com/download).
