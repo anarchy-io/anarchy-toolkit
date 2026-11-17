@@ -43,6 +43,14 @@ the commit title rules in @.github/CONTRIBUTING.md, and the description follows 
 
 @docs/guides/README.md summarises each guide.
 
+## Agent skills
+
+`.agents/skills` links the distributed skills (`anarchy`, `anarchy-develop`, `anarchy-environment`, `anarchy-release`,
+`anarchy-maintenance`) from `src/Build.Cli/Boilerplate/.agents/skills` and holds `anarchy-monorepo` for this
+repository's own targets. Make targets name their skill with `#@`. When adding or changing a target, update the
+hand-written part of its skill, run `make skills_sync` to refresh the generated commands, and check with
+`make skills_validate`, which CI runs.
+
 ## Practical notes
 
 - The build that matters is Release with warnings as errors:
