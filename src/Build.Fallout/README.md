@@ -107,6 +107,10 @@ Existing `.gitignore` and `.editorconfig` files are untouched unless `--append-e
 
 ## Releases
 
+### 3.7.0
+
+- feat(Build.Fallout): run the mock server with or without its UI
+
 ### 3.6.1
 
 - docs(packages): identify each package's pillar and layer

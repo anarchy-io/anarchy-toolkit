@@ -22,6 +22,10 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.6.0
+
+- feat(Build.Fallout): run the mock server with or without its UI
+
 ### 1.5.1
 
 - docs(packages): identify each package's pillar and layer

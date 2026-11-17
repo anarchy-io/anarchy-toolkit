@@ -80,6 +80,11 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 
 ## Releases
 
+### 3.0.0
+
+- refactor(Web.Ui)!: make the cookie session an opt-in add-on
+- feat(Build.Fallout): run the mock server with or without its UI
+
 ### 2.6.2
 
 - fix(Web.Ui): serve static web assets of unpublished builds outside Development

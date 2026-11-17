@@ -26,6 +26,12 @@ public class MockServerTasksTest
         MockServerTasks.Arguments(null, [], null, null, null).Should().BeEmpty();
     }
 
+    [Fact]
+    public void Arguments_WithoutUi_PassesNoUi()
+    {
+        MockServerTasks.Arguments(null, [], null, null, null, ui: false).Should().Equal("--no-ui");
+    }
+
     [Theory]
     [InlineData("MOCKSERVER_READY port=6001 url=http://localhost:6001", 6001, "http://localhost:6001")]
     [InlineData("something else", null, null)]
