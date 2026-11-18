@@ -41,6 +41,75 @@ public static class FileHelper
         !File.Exists(path) && (!Directory.Exists(path) || !Directory.EnumerateFileSystemEntries(path).Any());
 
     /// <summary>
+    /// The first line of a block of packaged settings that the boilerplate keeps in sync; see <see cref="MergeManagedBlock"/>.
+    /// </summary>
+    public const string ManagedBlockBegin = "# >>> anarchy-toolkit";
+
+    /// <summary>
+    /// The last line of a block of packaged settings that the boilerplate keeps in sync.
+    /// </summary>
+    public const string ManagedBlockEnd = "# <<< anarchy-toolkit";
+
+    /// <summary>
+    /// Merges packaged settings into an existing settings file. The packaged text is wrapped in a managed block (lines
+    /// starting with <see cref="ManagedBlockBegin"/> and <see cref="ManagedBlockEnd"/>): the file's own block is replaced,
+    /// or a new one appended, and everything outside it is kept. With <paramref name="skipExistingLines"/>, setting lines
+    /// (neither blank nor comments) that the file already has outside the block are left out of it.
+    /// </summary>
+    /// <param name="existing">The current content of the file.</param>
+    /// <param name="packaged">The packaged content, with or without its own block markers.</param>
+    /// <param name="skipExistingLines">Whether to leave out lines the file already has, as for <c>.gitignore</c>.</param>
+    /// <returns>The merged content, equal to <paramref name="existing"/> when the file is up to date.</returns>
+    public static string MergeManagedBlock(string existing, string packaged, bool skipExistingLines)
+    {
+        var newline = existing.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
+        var block = SplitLines(packaged);
+        var begin = block.FindIndex(IsBlockBegin);
+        var end = block.FindIndex(IsBlockEnd);
+        var header = begin >= 0 ? block[begin] : ManagedBlockBegin + ": managed by 'make boilerplate'; edit outside the block >>>";
+        var footer = end >= 0 ? block[end] : ManagedBlockEnd + " <<<";
+        var body = begin >= 0 && end > begin ? block[(begin + 1)..end] : block;
+
+        var lines = SplitLines(existing);
+        var start = lines.FindIndex(IsBlockBegin);
+        var stop = start >= 0 ? lines.FindIndex(start, IsBlockEnd) : -1;
+        var before = start >= 0 && stop > start ? lines[..start] : lines;
+        var after = start >= 0 && stop > start ? lines[(stop + 1)..] : [];
+
+        if (skipExistingLines)
+        {
+            var own = before.Concat(after).Select(line => line.Trim()).Where(IsSetting).ToHashSet(StringComparer.Ordinal);
+            body = body.Where(line => !IsSetting(line.Trim()) || !own.Contains(line.Trim())).ToList();
+        }
+
+        var merged = new List<string>(before);
+        if (start < 0 || stop <= start)
+        {
+            while (merged.Count > 0 && merged[^1].Length == 0) merged.RemoveAt(merged.Count - 1);
+            if (merged.Count > 0) merged.Add("");
+        }
+        merged.Add(header);
+        merged.AddRange(body);
+        merged.Add(footer);
+        merged.AddRange(after);
+        var result = string.Join(newline, merged) + newline;
+        return SplitLines(result).SequenceEqual(lines) ? existing : result;
+
+        static bool IsSetting(string line) => line.Length > 0 && !line.StartsWith('#') && !line.StartsWith(';');
+    }
+
+    private static bool IsBlockBegin(string line) => line.StartsWith(ManagedBlockBegin, StringComparison.Ordinal);
+
+    private static bool IsBlockEnd(string line) => line.StartsWith(ManagedBlockEnd, StringComparison.Ordinal);
+
+    private static List<string> SplitLines(string text)
+    {
+        var lines = text.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n').ToList();
+        if (lines.Count > 0 && lines[^1].Length == 0) lines.RemoveAt(lines.Count - 1);
+        return lines;
+    }
+
+    /// <summary>
     /// Appends content to a file, separated by a blank line, unless the file already contains it.
     /// </summary>
     /// <param name="destination">The existing file to append to.</param>

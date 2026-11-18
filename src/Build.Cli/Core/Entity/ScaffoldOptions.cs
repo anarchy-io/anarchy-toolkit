@@ -17,7 +17,7 @@ public sealed class ScaffoldOptions
     public string? Exclude { get; set; }
 
     /// <summary>
-    /// Append the packaged text to existing .gitignore and .editorconfig files, and add the packaged test runner to
+    /// Sync the packaged text into a managed block of existing .gitignore and .editorconfig files, and add the packaged test runner to
     /// an existing global.json that does not choose one.
     /// </summary>
     public bool AppendExisting { get; set; }

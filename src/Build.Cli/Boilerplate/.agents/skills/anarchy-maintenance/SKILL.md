@@ -56,6 +56,6 @@ exempts it; a bare `#@` means `<solution-prefix>-<file>`).
 | `make git_hooks_enable` | Sets up a GIT hook | `OPTIONS` (str): Set to "--help" to display more options |
 | `make git_hooks_disable` | Removes a configured Git Hook | `HOOK_TYPE` (str): Name of the hook (default: pre-commit) |
 | `make git_hooks_show` | Shows content of a configured Git Hook | `HOOK_TYPE` (str): Name of the hook (default: all) |
-| `make boilerplate` | Installs selected boilerplate items (Makefile, scripts, settings files...) without overwriting files | `ITEMS` (str): Comma-separated items, e.g. Makefile,scripts (DEFAULT=all but the agent skills)<br>`EXCLUDE` (str): Comma-separated items to leave out<br>`APPEND` (bool): Append the packaged .gitignore and .editorconfig to existing ones (DEFAULT=false) |
+| `make boilerplate` | Installs selected boilerplate items (Makefile, scripts, settings files...) without overwriting files | `ITEMS` (str): Comma-separated items, e.g. Makefile,scripts (DEFAULT=all but the agent skills)<br>`EXCLUDE` (str): Comma-separated items to leave out<br>`APPEND` (bool): Sync the packaged .gitignore and .editorconfig into a managed block of existing ones (DEFAULT=false) |
 | `make api_reference` | Generates the DocFX API reference website from the compiled packages (needs IApiReferenceBuild) |  |
 <!-- anarchy:commands:end -->

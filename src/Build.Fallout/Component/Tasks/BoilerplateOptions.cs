@@ -19,7 +19,8 @@ public sealed class BoilerplateOptions
     /// </summary>
     public string? Exclude { get; set; }
     /// <summary>
-    /// Whether to append the packaged text to existing <c>.gitignore</c> and <c>.editorconfig</c> files, and add the packaged
+    /// Whether to sync the packaged text into a managed block of existing <c>.gitignore</c> and <c>.editorconfig</c> files
+    /// (see <c>FileHelper.MergeManagedBlock</c>), and add the packaged
     /// <c>test</c> runner section to an existing <c>global.json</c> that has none, instead of leaving them untouched.
     /// </summary>
     public bool AppendExisting { get; set; }

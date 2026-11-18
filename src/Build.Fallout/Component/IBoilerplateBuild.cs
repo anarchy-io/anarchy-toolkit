@@ -34,11 +34,12 @@ public interface IBoilerplateBuild : IFalloutBuild
     string? BoilerplateExclude => TryGetValue(() => BoilerplateExclude);
 
     /// <summary>
-    /// Whether to append to existing <c>.gitignore</c>, <c>.editorconfig</c> and <c>global.json</c> files
-    /// (<c>--append-existing</c>) instead of leaving them untouched. Defaults to <see langword="false"/>.
+    /// Whether to sync the packaged settings into the managed block of existing <c>.gitignore</c> and
+    /// <c>.editorconfig</c> files, and add the packaged test runner to <c>global.json</c> (<c>--append-existing</c>),
+    /// instead of leaving them untouched. Defaults to <see langword="false"/>.
     /// See <see cref="Tasks.BoilerplateOptions.AppendExisting"/>.
     /// </summary>
-    [Parameter("Append packaged .gitignore and .editorconfig to existing files, and add the packaged test runner to global.json")]
+    [Parameter("Sync the packaged .gitignore and .editorconfig into a managed block of existing files, and add the packaged test runner to global.json")]
     bool AppendExisting => TryGetValue<bool?>(() => AppendExisting) ?? false;
 
     /// <summary>

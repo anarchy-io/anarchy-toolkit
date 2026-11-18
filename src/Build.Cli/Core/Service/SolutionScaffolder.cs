@@ -92,8 +92,17 @@ public static class SolutionScaffolder
             {
                 if (options.AppendExisting && resource.Path is ".gitignore" or ".editorconfig")
                 {
-                    FileHelper.AppendOnce(destination, input);
+                    using var reader = new StreamReader(input);
+                    var existing = File.ReadAllText(destination);
+                    var merged = FileHelper.MergeManagedBlock(existing, reader.ReadToEnd(), resource.Path == ".gitignore");
+                    if (merged == existing)
+                    {
+                        log($"{destination} already has the packaged settings");
+                        continue;
+                    }
+                    File.WriteAllText(destination, merged);
                     log($"Applied packaged settings to {destination}");
+                    if (resource.Path == ".gitignore") WarnAboutIgnoredTrackedFiles(root, log);
                 }
                 else if (options.AppendExisting && resource.Path == "global.json" &&
                          FileHelper.AddMissingJsonProperty(destination, input, "test"))
@@ -108,6 +117,7 @@ public static class SolutionScaffolder
             }
 
             using (var output = new FileStream(destination, FileMode.CreateNew)) input.CopyTo(output);
+            if (resource.Path == ".gitignore") WarnAboutIgnoredTrackedFiles(root, log);
             if (!OperatingSystem.IsWindows() && destination.EndsWith(".sh", StringComparison.Ordinal))
                 File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                     UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
@@ -144,6 +154,33 @@ public static class SolutionScaffolder
     }
 
     private static bool IsPreserved(string path) => Preserved.Contains(path, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Lists the files Git tracks although the <c>.gitignore</c> files now ignore them: Git keeps tracking them, but
+    /// new files like them would go unnoticed. Empty outside a Git work tree or without Git.
+    /// </summary>
+    /// <param name="root">The directory to check.</param>
+    /// <returns>The tracked files that are ignored, relative to <paramref name="root"/>.</returns>
+    public static IReadOnlyList<string> FindIgnoredTrackedFiles(string root)
+    {
+        try
+        {
+            var result = LocalProcessTasks.Run(root, "git", ["ls-files", "--cached", "--ignored", "--exclude-standard"]);
+            return result.ExitCode == 0
+                ? result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                : [];
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return [];
+        }
+    }
+
+    private static void WarnAboutIgnoredTrackedFiles(string root, Action<string> log)
+    {
+        foreach (var file in FindIgnoredTrackedFiles(root))
+            log($"Warning: '{file}' is tracked but now matches .gitignore; untrack it (git rm --cached) or add '!{file}' below the managed block");
+    }
 
     private static JsonObject ReadParameters(string root, string parametersPath)
     {

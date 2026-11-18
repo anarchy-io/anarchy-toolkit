@@ -76,7 +76,7 @@ git_hooks_show: #? Shows content of a configured Git Hook
 boilerplate: #? Installs selected boilerplate items (Makefile, scripts, settings files...) without overwriting files
 #+ ITEMS|str|Comma-separated items, e.g. Makefile,scripts (DEFAULT=all but the agent skills)
 #+ EXCLUDE|str|Comma-separated items to leave out
-#+ APPEND|bool|Append the packaged .gitignore and .editorconfig to existing ones (DEFAULT=false)
+#+ APPEND|bool|Sync the packaged .gitignore and .editorconfig into a managed block of existing ones (DEFAULT=false)
 	${MAKE} fallout SKIP_TITLE=true TARGET="SetupBoilerplate$(if $(ITEMS), --BoilerplateItems $(ITEMS),)$(if $(EXCLUDE), --BoilerplateExclude $(EXCLUDE),)$(if $(filter true,$(APPEND)), --AppendExisting true,)"
 
 .PHONY: api_reference
