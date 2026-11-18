@@ -11,7 +11,7 @@ dotnet restore Anarchy.Toolkit.sln
 dotnet build Anarchy.Toolkit.sln -c Release
 ```
 
-Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Fallout commands and the [guides](../docs/guides/README.md) for architecture, coding, and testing conventions. Those conventions are recommendations for applications built on the platform, but rules for contributions to this repository.
+Run `make help` for every target, with its parameters. Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Fallout commands and the [guides](../docs/guides/README.md) for architecture, coding, and testing conventions. Those conventions are recommendations for applications built on the platform, but rules for contributions to this repository.
 
 ## Making a change
 
@@ -23,6 +23,7 @@ Dependencies restore from nuget.org. See the [README](../README.md) for the Make
    make test_unit
    make lint
    make check_layering
+   make skills_validate   # when you changed make targets
    ```
 
    Unit tests use xUnit v3 and Microsoft.Testing.Platform. They live in `tests/Unit/`, with folders mirroring the corresponding `src/` projects. The unit test command also runs on every pull request. Run additional tests relevant to your change when available.
@@ -31,6 +32,12 @@ Dependencies restore from nuget.org. See the [README](../README.md) for the Make
 NuGet dependencies are centrally managed in `Directory.Packages.props`. Review compatibility constraints in that file when updating packages; Dependabot proposes weekly grouped updates for NuGet and GitHub Actions.
 
 Whenever you add a project, a project reference or a package dependency, run `make dependency_map` and commit the regenerated `docs/dependency-map.html` together with the change. Likewise, commit `.fallout/build.schema.json` when the build regenerates it after you add or change Fallout parameters.
+
+Make targets declare the agent skill that documents them with a `#@` comment. When you add or change one, update the written part of that skill (`src/Build.Cli/Boilerplate/.agents/skills` for the distributed targets, `.agents/skills/anarchy-monorepo` for this repository's), then run `make skills_sync` to refresh its generated command table.
+
+## Working with coding agents
+
+Agents are welcome. [`AGENTS.md`](../AGENTS.md) and the skills in `.agents/skills` give them this guide as step-by-step instructions (`anarchy-contribute`), so you can ask an agent to prepare commits and a pull request description that follow it. You stay responsible for what you submit: review the agent's changes and history as you would your own.
 
 ## Branches and commit messages
 
@@ -49,7 +56,7 @@ Shape the history for review:
 
 - Commit at least once per project introduced and per layer touched, so each commit stays focused on one area and its scope is accurate.
 - Keep follow-up fixes to work that is still on the branch out of the history: fold them into the commit that introduced the code (`git commit --fixup=<commit>`, then `git rebase -i --autosquash <base>`). This includes formatting fixes from `make lint_fix` and analyzer fixes found by the Release build.
-- Fold version bumps into the commit of the change that needs them, once `ValidateLocalRelease` passes (see [Publishing packages](#publishing-packages-maintainers)).
+- Fold version bumps into the commit of the change that needs them, once `make validate_release` passes (see [Publishing packages](#publishing-packages-maintainers)).
 
 Prefer a branch name prefixed with the semantic group most relevant to the commits in the pull request. Include the GitHub issue number when available, followed by a brief snake_case description. For example, a pull request containing `feat`, `chore`, and `docs` commits could use `feature/#123/brief_snake_case_description` when feature work is the main purpose. Without an issue number, omit that segment.
 
@@ -65,6 +72,6 @@ When bumping versions:
 - Bump from the base branch's versions, and run the target once per change: it bumps from the current working versions, so repeated runs stack. When several changed projects depend on each other, bump the lowest one only if that already brings the others to the version they need, as dependents get the same kind of bump.
 - Keep a package that has never been published at its initial version (e.g. `1.0.0`), even if the target bumped it as a dependent.
 - Add a release note under `## Releases` in the README of each package changed on purpose. `make release_notes RELEASE_BASE=main` generates the missing ones from the subjects of the commits affecting each package, dependents included, for its current version. It only adds entries, leaving versions already listed untouched, so run it after the changes are committed and the versions bumped, then review the notes and fold them into the relevant commits.
-- Check the result with `make fallout TARGET="ValidateLocalRelease --ReleaseBase main"` before committing.
+- Check the result with `make validate_release RELEASE_BASE=main` before committing.
 
 After merging, the workflow runs unit tests, then uses the Fallout `Publish` target to pack all source projects, validate the batch, and push packages in dependency order. Every version not already on the feed is eligible, including on the first run. A failed push stops the remaining packages but cannot roll back those already pushed; fix the problem and rerun the workflow, which skips versions already on nuget.org. Feed indexing can delay availability. See the [NuGet build guide](../docs/guides/fallout-builds.md#nuget-packages) for details.
