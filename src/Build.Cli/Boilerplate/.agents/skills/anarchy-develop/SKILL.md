@@ -54,7 +54,7 @@ terminal if you need to keep working, and stop them when done.
 | `make test_unit` | Runs unit tests | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
 | `make test_integration` | Runs integration tests (requires local Docker resources) | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
 | `make test_end_to_end` | Runs end-to-end tests | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
-| `make check_layering` | Verifies the layered architecture: references, imports, layer folders | `BY_FOLDER` (bool): Use layer folders instead of project name prefixes (DEFAULT=LayeringByFolder in .fallout/parameters.json, else false)<br>`LAYERING_ROOT` (str): Root folder relative to the solution (DEFAULT=LayeringRoot in .fallout/parameters.json, else src) |
+| `make check_layering` | Verifies the layered architecture: references, imports, layer folders | `BY_FOLDER` (bool): Use layer folders instead of project name prefixes (DEFAULT=LayeringByFolder in .fallout/parameters.json, else false)<br>`LAYERING_ROOT` (str): Root folder relative to the solution (DEFAULT=LayeringRoot in .fallout/parameters.json, else the source root: SourceRoot, else src) |
 | `make dependency_map` | Generates docs/dependency-map.html: project references, layers and where the code lives |  |
 | `make info` | Prints out host-relevant information |  |
 | `make install` | Sets up the development environment, restores dependencies and compiles | `ENV` (str): Defaults to "dev"; "ci" skips local environment setup<br>`WITH_HOOKS` (bool): Enable local GIT hooks (DEFAULT=false) |

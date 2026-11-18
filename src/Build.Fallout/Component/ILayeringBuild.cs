@@ -33,10 +33,11 @@ public interface ILayeringBuild : IStandardBuild
     string[] LayeringLayers => TryGetValue(() => LayeringLayers) ?? LayeringTasks.DefaultLayers.ToArray();
 
     /// <summary>
-    /// Root of projects to check, relative to the solution directory (or an absolute path).
+    /// Root of projects to check, relative to the solution directory (or an absolute path); defaults to
+    /// <see cref="IDefaultBuild.SourceDirectory"/>.
     /// </summary>
-    [Parameter("Root folder for layering checks, relative to the solution (defaults to src)")]
-    string LayeringRoot => TryGetValue(() => LayeringRoot) ?? "src";
+    [Parameter("Root folder for layering checks, relative to the solution (defaults to the source root, src)")]
+    string LayeringRoot => TryGetValue(() => LayeringRoot) ?? Path.GetRelativePath(Solution.Directory, SourceDirectory).Replace('\\', '/');
 
     /// <summary>
     /// Use the first folder under the layering root as the layer instead of the project name prefix.

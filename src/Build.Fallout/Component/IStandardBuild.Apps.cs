@@ -15,7 +15,7 @@ public partial interface IStandardBuild
     /// The runnable app <see cref="RunApp"/> runs (<c>--app-name</c>): the name of a project under <c>src</c> with
     /// <c>OutputType</c> <c>Exe</c>, case-insensitive. Also the app <see cref="IContainerBuild"/> publishes.
     /// </summary>
-    [Parameter("Runnable app name to execute (any src/** project with OutputType=Exe)")]
+    [Parameter("Runnable app name to execute (any project under the source root with OutputType=Exe)")]
     string? AppName => TryGetValue(() => AppName);
 
     /// <summary>
@@ -29,7 +29,7 @@ public partial interface IStandardBuild
     /// </summary>
     /// <remarks>Without <see cref="AppName"/>, or with an unknown one, it lists the runnable apps and fails.</remarks>
     Target RunApp => d => d
-        .Description("Builds the solution and runs one runnable app from src/**")
+        .Description("Builds the solution and runs one runnable app from the source root")
         .Executes(() => {
             if (string.IsNullOrWhiteSpace(AppName))
             {
@@ -54,7 +54,7 @@ public partial interface IStandardBuild
     /// </summary>
     /// <remarks>Without <see cref="AppNames"/>, or with an unknown one, it lists the runnable apps and fails.</remarks>
     Target RunApps => d => d
-        .Description("Builds the solution and runs multiple runnable apps from src/** in parallel")
+        .Description("Builds the solution and runs multiple runnable apps from the source root in parallel")
         .Executes(() => {
             if (string.IsNullOrWhiteSpace(AppNames))
             {

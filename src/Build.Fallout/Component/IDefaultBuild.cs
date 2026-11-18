@@ -96,15 +96,30 @@ public interface IDefaultBuild : IFalloutBuild
     GitRepository? GitRepository => TryGetValue(() => GitRepository);
 
     /// <summary>
-    /// Root directory for all production code projects. Refers to <c>src</c> by default.
+    /// The production code folder relative to the root (<c>--source-root</c>, or <c>SourceRoot</c> in
+    /// <c>.fallout/parameters.json</c>); <see langword="null"/> keeps <c>src</c>. See <see cref="SourceDirectory"/>.
     /// </summary>
-    AbsolutePath SourceDirectory => RootDirectory / "src";
+    [Parameter("Production code folder, relative to the root (default: src)")]
+    string? SourceRoot => TryGetValue(() => SourceRoot);
 
     /// <summary>
-    /// Root directory for all test projects. Refers to <c>test</c> by default; <see cref="IStandardBuild"/>
-    /// overrides it to <c>tests</c>.
+    /// The test folder relative to the root (<c>--tests-root</c>, or <c>TestsRoot</c> in
+    /// <c>.fallout/parameters.json</c>); <see langword="null"/> keeps the default of <see cref="TestsDirectory"/>.
     /// </summary>
-    AbsolutePath TestsDirectory => RootDirectory / "test";
+    [Parameter("Test projects folder, relative to the root (default: tests with IStandardBuild, else test)")]
+    string? TestsRoot => TryGetValue(() => TestsRoot);
+
+    /// <summary>
+    /// Root directory for all production code projects: <see cref="SourceRoot"/>, else <c>src</c>. A build can also
+    /// override it (<c>AbsolutePath IDefaultBuild.SourceDirectory =&gt; RootDirectory / "code";</c>).
+    /// </summary>
+    AbsolutePath SourceDirectory => RootDirectory / (SourceRoot ?? "src");
+
+    /// <summary>
+    /// Root directory for all test projects: <see cref="TestsRoot"/>, else <c>test</c>; <see cref="IStandardBuild"/>
+    /// defaults it to <c>tests</c>. A build can also override it.
+    /// </summary>
+    AbsolutePath TestsDirectory => RootDirectory / (TestsRoot ?? "test");
 
     /// <summary>
     /// Directory where build artifacts are to be stored. Refers to <c>artifacts</c> by default.

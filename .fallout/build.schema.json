@@ -157,7 +157,7 @@
         },
         "AppName": {
           "type": "string",
-          "description": "Runnable app name to execute (any src/** project with OutputType=Exe)"
+          "description": "Runnable app name to execute (any project under the source root with OutputType=Exe)"
         },
         "AppNames": {
           "type": "string",
@@ -296,7 +296,7 @@
         },
         "LayeringRoot": {
           "type": "string",
-          "description": "Root folder for layering checks, relative to the solution (defaults to src)"
+          "description": "Root folder for layering checks, relative to the solution (defaults to the source root, src)"
         },
         "MockServerArgs": {
           "type": "string",
@@ -385,6 +385,14 @@
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
+        },
+        "SourceRoot": {
+          "type": "string",
+          "description": "Production code folder, relative to the root (default: src)"
+        },
+        "TestsRoot": {
+          "type": "string",
+          "description": "Test projects folder, relative to the root (default: tests with IStandardBuild, else test)"
         }
       }
     },

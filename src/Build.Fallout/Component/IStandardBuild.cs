@@ -60,9 +60,9 @@ public partial interface IStandardBuild : IDefaultBuild
     bool IsBuilt => FinishedTargets.Any(t => t.Name == nameof(Compile));
 
     /// <summary>
-    /// Test projects live in <c>tests</c> (plural), as in the toolkit.
+    /// Test projects live in <see cref="IDefaultBuild.TestsRoot"/>, else <c>tests</c> (plural), as in the toolkit.
     /// </summary>
-    AbsolutePath IDefaultBuild.TestsDirectory => RootDirectory / "tests";
+    AbsolutePath IDefaultBuild.TestsDirectory => RootDirectory / (TestsRoot ?? "tests");
 
     /// <summary>
     /// Like <see cref="IDefaultBuild.IsTestProject"/>, but ignores projects under

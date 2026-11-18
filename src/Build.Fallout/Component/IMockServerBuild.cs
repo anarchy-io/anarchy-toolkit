@@ -117,7 +117,7 @@ public interface IMockServerBuild : IStandardBuild
 
     /// <summary>
     /// The directory the synchronized expectations are added to (<c>--mock-server-open-api-output</c>); by default the
-    /// first <see cref="MockServerExpectations"/> entry that is a directory, otherwise <c>tests/mocks</c>.
+    /// first <see cref="MockServerExpectations"/> entry that is a directory, otherwise <c>mocks</c> under <see cref="IDefaultBuild.TestsDirectory"/>.
     /// </summary>
     [Parameter("Directory to add the expectations to (default: the first expectations directory, else tests/mocks)")]
     string? MockServerOpenApiOutput => TryGetValue(() => MockServerOpenApiOutput);
@@ -139,7 +139,7 @@ public interface IMockServerBuild : IStandardBuild
                 : Path.GetFullPath(MockServerOpenApi!, RootDirectory);
             var output = Path.GetFullPath(MockServerOpenApiOutput
                 ?? MockServerExpectations.FirstOrDefault(path => Directory.Exists(Path.GetFullPath(path, RootDirectory)))
-                ?? Path.Combine("tests", "mocks"), RootDirectory);
+                ?? TestsDirectory / "mocks", RootDirectory);
 
             var report = await OpenApiExpectationSync.SyncAsync(specification, output, MockServerOpenApiDryRun);
 

@@ -62,4 +62,24 @@ public class StandardBuildTest
             root.DeleteDirectory();
         }
     }
+
+    [Fact]
+    public void IsRunnableProject_GivenSourceDirectory_OnlyAcceptsProjectsBelowIt()
+    {
+        var root = AbsolutePath.Create(Path.GetTempPath()) / Guid.NewGuid().ToString("N");
+        var inCode = root / "code" / "App" / "App.csproj";
+        var inSrc = root / "src" / "App" / "App.csproj";
+        foreach (var project in new[] { inCode, inSrc })
+            project.WriteAllText("<Project><PropertyGroup><OutputType>Exe</OutputType></PropertyGroup></Project>");
+
+        try
+        {
+            IStandardBuild.IsRunnableProject(inCode, root / "code").Should().BeTrue();
+            IStandardBuild.IsRunnableProject(inSrc, root / "code").Should().BeFalse();
+        }
+        finally
+        {
+            root.DeleteDirectory();
+        }
+    }
 }
