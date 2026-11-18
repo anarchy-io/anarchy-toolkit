@@ -95,7 +95,7 @@ server's default expectations folder all follow them.
 
 ### How `IStandardBuild` finds test projects
 
-`TestUnit`, `TestIntegration` and `TestEndToEnd` run the test projects of their kind. A project is of a kind when its name *is* the kind (a single `Unit` project) or when one of its dot-separated segments is the kind and another is `Tests`: `Tests.Unit.Core.Primitives`, `MyService.Unit.Tests` and `MyService.Tests.Unit` are all unit test projects. Override `IsTestProjectOfKind` to change that. When `Compile` ran first, the tests skip restoring and building.
+`TestUnit`, `TestIntegration` and `TestEndToEnd` run the test projects of their kind. A project is of a kind when its name *is* the kind (a single `Unit` project) or when one of its dot-separated segments is the kind and another is `Tests`: `Tests.Unit.Core.Primitives`, `MyService.Unit.Tests` and `MyService.Tests.Unit` are all unit test projects. `TestKindAliases` (in `.fallout/parameters.json`, e.g. `["EndToEnd=Acceptance"]`) accepts other names for a kind; override `IsTestProjectOfKind` for another scheme. When `Compile` ran first, the tests skip restoring and building. `Pack` and `EcrPublishAppArtifact` run `TestUnit` first, so delivery runs the unit tests and never the integration or end-to-end ones; see [Testing conventions](testing-conventions.md#why-three-kinds-and-one-project-per-kind) for why.
 
 ### Local `appsettings.Development.json`
 

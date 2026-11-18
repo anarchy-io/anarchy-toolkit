@@ -48,6 +48,34 @@ tests/
 
 The Fallout build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on Microsoft.Testing.Platform, AwesomeAssertions, Moq, and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
 
+#### Why three kinds, and one project per kind
+
+- **Unit tests need no external resources**, so they run everywhere, including continuous delivery: `Pack` and
+  `EcrPublishAppArtifact` depend on `TestUnit`. A broken merge (two pull requests that pass alone but not together) is
+  caught before a package or image ships, without Docker or a mock server on the delivery agent.
+- **Integration and end-to-end tests validate against an environment**: the local one while developing
+  (`make start`, the mock server) and the CI pipeline's for pull requests (`make pull_request`). Keeping them in their
+  own kinds keeps them out of delivery, which never runs them.
+- **One project per kind, not one test project per source project.** Test projects do not run in parallel with each
+  other, and suites that start or reach external resources (even mocked ones, or containers) get much slower when
+  split: each project pays its own build, start-up and fixtures. One project per kind lets xUnit run many async tests
+  at the same time in one process and keeps the total runtime low.
+
+This is the default, not a requirement:
+
+- **Other names**: map them to a kind with `TestKindAliases` in `.fallout/parameters.json`, for example
+  `"TestKindAliases": ["EndToEnd=Acceptance"]` makes `*.Tests.Acceptance` projects end-to-end tests.
+- **Another discovery scheme**: override `IsTestProjectOfKind` (or the `Test*` targets) in `build/Build.cs`:
+
+  ```csharp
+  bool IStandardBuild.IsTestProjectOfKind(Project project, string kind) =>
+      kind == IStandardBuild.TestKind.Unit
+          ? project.Name.EndsWith(".UnitTests", StringComparison.Ordinal)
+          : IStandardBuild.MatchesTestKind(project.Name, kind);
+  ```
+
+  Keep unit tests free of external resources, or delivery will need them too.
+
 ## Test naming rules
 
 - Name the test type after its concrete subject under test (SUT), with the singular `Test` suffix: `UserService.cs` becomes `UserServiceTest.cs`.

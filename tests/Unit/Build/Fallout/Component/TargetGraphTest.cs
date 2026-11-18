@@ -36,7 +36,7 @@ public class TargetGraphTest
         DockerWaitRunning||1|0|1
         EcrImageBuild|EcrPublishAppArtifact|1|0|0
         EcrImagePush|EcrImageBuild|1|0|0
-        EcrPublishAppArtifact|Compile|1|0|2
+        EcrPublishAppArtifact|Compile,TestUnit|1|0|2
         EnableGitHook||1|0|0
         GenerateAppSettings||1|0|0
         GenerateDependencyMap||1|0|0
@@ -51,7 +51,7 @@ public class TargetGraphTest
         MockServerStart|Compile|1|0|0
         MockServerStop||1|0|0
         MockServerSyncOpenApi||1|0|1
-        Pack|Compile|1|0|0
+        Pack|Compile,TestUnit|1|0|0
         Publish|Pack|1|0|1
         PullRequest|Lint,CheckLayering,TestAll|0|0|0
         Restore||1|0|0
@@ -90,6 +90,24 @@ public class TargetGraphTest
         target.Actions.Should().HaveCount(actions);
         target.DynamicConditions.Should().HaveCount(conditions);
         target.DelegateRequirements.Should().HaveCount(requirements);
+    }
+
+    [Theory]
+    [InlineData("Pack")]
+    [InlineData("Publish")]
+    [InlineData("EcrPublishAppArtifact")]
+    [InlineData("EcrImageBuild")]
+    [InlineData("EcrImagePush")]
+    public void DeliveryTargets_RunUnitTestsButNoTestsThatNeedAnEnvironment(string name)
+    {
+        var reachable = new HashSet<string>();
+        var pending = new Stack<ExecutableTarget>([Targets.Value.Single(t => t.Name == name)]);
+        while (pending.TryPop(out var target))
+            foreach (var dependency in target.ExecutionDependencies.Concat(target.Triggers))
+                if (reachable.Add(dependency.Name)) pending.Push(dependency);
+
+        reachable.Should().Contain("TestUnit").And.NotContain(["TestIntegration", "TestEndToEnd", "TestAll",
+            "TestIntegrationWithMockServer", "TestEndToEndWithMockServer", "PullRequest"]);
     }
 
     [Fact]

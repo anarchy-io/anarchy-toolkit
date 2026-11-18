@@ -28,6 +28,13 @@ ask the user for the values. Never commit `appsettings.Development.json`.
 `anarchy-environment`) or the mock server (`make test_integration_mocked`). For a subset, run the test project
 directly, e.g. `dotnet run --project tests/Unit -c Release -- -class "*OrderTest"`. `COMPILE=true` rebuilds first.
 
+**Test kinds**: the build finds tests by kind (`Unit`, `Integration`, `EndToEnd`) from project names such as
+`tests/Unit/Unit.csproj` or `Shop.Tests.Unit`. Keep one project per kind: projects do not run in parallel with each
+other, while tests inside one do. Unit tests must not need external resources: packing and container publishing run
+them, and never the other kinds. A repository with other names (e.g. `*.Tests.Acceptance`) maps them with
+`"TestKindAliases": ["EndToEnd=Acceptance"]` in `.fallout/parameters.json` instead of renaming; another scheme means
+overriding `IsTestProjectOfKind` in `build/Build.cs` (ask the user first).
+
 **Run applications**: `make list_projects` shows the names; `make run_app APP_NAME=<name>` or
 `make run_apps APP_NAMES=Api,Ui`. They run in the foreground until stopped: start them in the background or a separate
 terminal if you need to keep working, and stop them when done.

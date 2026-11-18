@@ -50,6 +50,28 @@ public partial interface IStandardBuild : IDefaultBuild
     bool AutoStageLintFixes => TryGetValue<bool?>(() => AutoStageLintFixes) ?? false;
 
     /// <summary>
+    /// Other names accepted for each test kind (<c>--test-kind-aliases</c>, or <c>TestKindAliases</c> in
+    /// <c>.fallout/parameters.json</c>), as <c>Kind=Alias</c> entries such as <c>EndToEnd=Acceptance</c>; empty by default.
+    /// See <see cref="IsTestProjectOfKind"/>.
+    /// </summary>
+    [Parameter("Other names for test kinds, as Kind=Alias (e.g. EndToEnd=Acceptance)")]
+    string[] TestKindAliases => TryGetValue(() => TestKindAliases) ?? [];
+
+    /// <summary>
+    /// Groups <c>Kind=Alias</c> entries by kind (case-insensitive).
+    /// </summary>
+    /// <param name="entries">The entries.</param>
+    /// <returns>The aliases of each kind.</returns>
+    /// <exception cref="ArgumentException">Thrown when an entry is not <c>Kind=Alias</c>.</exception>
+    internal static IReadOnlyDictionary<string, string[]> ParseTestKindAliases(IEnumerable<string> entries) => entries
+        .Select(entry => entry.Split('=', 2, StringSplitOptions.TrimEntries))
+        .Select(parts => parts is [{ Length: > 0 } kind, { Length: > 0 } alias]
+            ? (Kind: kind, Alias: alias)
+            : throw new ArgumentException($"Test kind aliases are Kind=Alias, e.g. EndToEnd=Acceptance; got '{string.Join('=', parts)}'."))
+        .GroupBy(pair => pair.Kind, StringComparer.OrdinalIgnoreCase)
+        .ToDictionary(group => group.Key, group => group.Select(pair => pair.Alias).ToArray(), StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
     /// Whether <see cref="Restore"/> already ran, so later steps can skip restoring.
     /// </summary>
     bool IsRestored => FinishedTargets.Any(t => t.Name == nameof(Restore));
