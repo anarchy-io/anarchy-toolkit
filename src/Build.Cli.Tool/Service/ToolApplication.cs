@@ -23,12 +23,16 @@ namespace Anarchy.Toolkit.Build.Cli.Tool.Service;
 /// The directory relative to which <c>bootstrap</c> resolves its output directory and from which <c>scaffold</c>
 /// searches upwards for a solution.
 /// </param>
+/// <param name="output">
+/// Where <c>boilerplate</c> writes plain, uncoloured output that scripts and agents can read; <see cref="Console.Out"/>
+/// when <see langword="null"/>.
+/// </param>
 /// <example>
 /// <code language="csharp">
 /// return ToolApplication.CreateDefault().Run(args, interactive: !Console.IsInputRedirected);
 /// </code>
 /// </example>
-public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVersions versions, string workingDirectory)
+public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVersions versions, string workingDirectory, TextWriter? output = null)
 {
     private const string ReviewSettings = "Review each application's settings (auth service URLs, client IDs) before running it.";
 
@@ -55,6 +59,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
     public int Run(IReadOnlyList<string> args, bool interactive)
     {
         var command = ToolCommandLine.Parse(args);
+        if (command.Mode == ToolMode.Boilerplate) return Boilerplate(command);
         if (command.Mode != ToolMode.Invalid) prompter.ShowBanner();
         if (command.Mode == ToolMode.Help)
         {
@@ -114,6 +119,38 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         steps.Add("anarchy-toolkit scaffold    # add more APIs, jobs or UIs later");
         prompter.ShowNextSteps($"{plan.Name} is ready", steps, plan.Applications.Count > 0 ? ReviewSettings : null);
         return 0;
+    }
+
+    private int Boilerplate(ToolCommand command)
+    {
+        var writer = output ?? Console.Out;
+        try
+        {
+            switch (command.BoilerplateAction)
+            {
+                case "list":
+                    foreach (var path in BoilerplateCatalog.List()) writer.WriteLine(path);
+                    return 0;
+                case "show":
+                    if (BoilerplateCatalog.Read(command.Paths[0]) is not { } text)
+                        return Fail($"No packaged boilerplate file '{command.Paths[0]}'; 'anarchy-toolkit boilerplate list' lists them.");
+                    writer.Write(text);
+                    return 0;
+                default:
+                    var root = SolutionWorkspace.Find(workingDirectory)?.Root ?? workingDirectory;
+                    var comparisons = BoilerplateCatalog.Compare(root, command.Paths);
+                    foreach (var file in comparisons)
+                    {
+                        if (file.Status == BoilerplateCatalog.FileStatus.Different) writer.Write(file.Diff);
+                        else writer.WriteLine($"{(file.Status == BoilerplateCatalog.FileStatus.Missing ? "missing" : "identical")}: {file.Path}");
+                    }
+                    return comparisons.Any(file => file.Status != BoilerplateCatalog.FileStatus.Identical) ? 1 : 0;
+            }
+        }
+        catch (ArgumentException exception)
+        {
+            return Fail(exception.Message);
+        }
     }
 
     private int InstallSkills(string root)

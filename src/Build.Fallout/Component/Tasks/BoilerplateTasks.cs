@@ -40,7 +40,29 @@ public static class BoilerplateTasks
             Items = options.Items,
             Exclude = options.Exclude,
             AppendExisting = options.AppendExisting,
+            DryRun = options.DryRun,
             Log = message => Log.Information("{Message}", message)
         });
+    }
+
+    /// <summary>
+    /// Logs how the solution's copies of the packaged files differ from the packaged ones, as unified diffs; see
+    /// <see cref="BoilerplateCatalog.Compare"/>.
+    /// </summary>
+    /// <param name="root">The solution root.</param>
+    /// <param name="paths">Comma-separated packaged paths or folders; <see langword="null"/> for every file but the agent skills.</param>
+    /// <returns>The number of files that are missing or differ.</returns>
+    public static int Diff(string root, string? paths)
+    {
+        var selected = paths?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var comparisons = BoilerplateCatalog.Compare(root, selected);
+        foreach (var file in comparisons)
+        {
+            if (file.Status == BoilerplateCatalog.FileStatus.Different)
+                Log.Information("{Path}: differs from the packaged file\n{Diff}", file.Path, file.Diff);
+            else
+                Log.Information("{Path}: {Status}", file.Path, file.Status == BoilerplateCatalog.FileStatus.Missing ? "missing" : "identical");
+        }
+        return comparisons.Count(file => file.Status != BoilerplateCatalog.FileStatus.Identical);
     }
 }

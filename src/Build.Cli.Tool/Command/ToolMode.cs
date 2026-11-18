@@ -26,6 +26,11 @@ public enum ToolMode
     Skills,
 
     /// <summary>
+    /// <c>boilerplate list|show|diff</c>: read the packaged boilerplate files or compare them with the solution's.
+    /// </summary>
+    Boilerplate,
+
+    /// <summary>
     /// An unknown command or malformed arguments; <see cref="ToolCommand.Error"/> says why.
     /// </summary>
     Invalid

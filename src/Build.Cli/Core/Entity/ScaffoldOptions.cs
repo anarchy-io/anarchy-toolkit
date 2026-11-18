@@ -23,6 +23,11 @@ public sealed class ScaffoldOptions
     public bool AppendExisting { get; set; }
 
     /// <summary>
+    /// Only report, through <see cref="Log"/>, what would be created, kept, updated or conflict, without writing.
+    /// </summary>
+    public bool DryRun { get; set; }
+
+    /// <summary>
     /// Receives progress messages; null discards them.
     /// </summary>
     public Action<string>? Log { get; set; }

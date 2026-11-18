@@ -42,12 +42,48 @@ public class ToolkitToolTest
     [InlineData(new[] { "scaffold", "api", "Orders", "--no-swagger-theme" }, ToolMode.Scaffold, false)]
     [InlineData(new[] { "scaffold", "job", "Orders", "--no-swagger-theme" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "scaffold", "api", "Orders", "--unknown" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "boilerplate", "list" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "show", "Makefile" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "show" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "boilerplate", "diff" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "diff", "Makefile", "scripts" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "diff", "--all" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "MyApp" }, ToolMode.Invalid, false)]
     public void CommandLine_SelectsMode(string[] args, ToolMode mode, bool interactive)
     {
         var command = ToolCommandLine.Parse(args);
         command.Mode.Should().Be(mode);
         if (mode != ToolMode.Invalid) command.IsInteractive.Should().Be(interactive);
+    }
+
+    [Fact]
+    public void Boilerplate_PrintsPlainOutputWithoutTheBanner()
+    {
+        var root = TempRoot();
+        try
+        {
+            Directory.CreateDirectory(root);
+            var prompter = new ScriptedPrompter();
+            string Run(int expectedExitCode, params string[] args)
+            {
+                var output = new StringWriter();
+                new ToolApplication(prompter, Versions, root, output).Run(args, interactive: false).Should().Be(expectedExitCode);
+                return output.ToString();
+            }
+
+            Run(0, "boilerplate", "list").Should().Contain("Makefile\n").And.Contain("scripts/build.fallout.sh");
+            Run(0, "boilerplate", "show", "Makefile").Should().Be(BoilerplateCatalog.Read("Makefile"));
+            Run(1, "boilerplate", "diff", "Makefile").Should().Be("missing: Makefile\n");
+            SolutionScaffolder.Create(root, null, new ScaffoldOptions { Items = "Makefile" });
+            Run(0, "boilerplate", "diff", "Makefile").Should().Be("identical: Makefile\n");
+            Run(1, "boilerplate", "show", "nope").Should().BeEmpty();
+            prompter.Errors.Should().ContainSingle().Which.Should().Contain("nope");
+            prompter.BannersShown.Should().Be(0);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
     }
 
     [Fact]

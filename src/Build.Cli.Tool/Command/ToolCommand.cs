@@ -26,6 +26,16 @@ public sealed record ToolCommand(
     public bool AgentSkills { get; init; }
 
     /// <summary>
+    /// The <c>boilerplate</c> subcommand: <c>list</c>, <c>show</c> or <c>diff</c>.
+    /// </summary>
+    public string? BoilerplateAction { get; init; }
+
+    /// <summary>
+    /// The packaged paths given to <c>boilerplate show</c> (exactly one) or <c>boilerplate diff</c> (any).
+    /// </summary>
+    public IReadOnlyList<string> Paths { get; init; } = [];
+
+    /// <summary>
     /// Whether the command needs a wizard, and therefore interactive input.
     /// </summary>
     public bool IsInteractive => (Mode == ToolMode.Bootstrap && SolutionName is null) ||

@@ -46,6 +46,7 @@ Install or update it with `dotnet tool update --global Anarchy.Toolkit.Build.Cli
 | `anarchy-toolkit bootstrap <Name> --output <dir> [--with-skills]` | Creates a layered solution (Fallout build, Makefile, scripts, a library per layer) in an empty or new directory. |
 | `anarchy-toolkit scaffold api\|job\|ui <Name>` | Adds a REST API (`Web`), a job such as a Lambda handler (`Hosting`) or a Blazor UI (`Web.Ui`), placed by the solution's layering settings. `--no-swagger-theme` keeps Swagger UI's own look. |
 | `anarchy-toolkit skills install [--output <dir>]` | Installs these skills into the solution's `.agents/skills`. |
+| `anarchy-toolkit boilerplate list\|show <path>\|diff [<path>...]` | Lists or prints the packaged Makefile, scripts and settings files, or diffs the solution's copies against them, without installing anything. |
 
 - Without arguments, `bootstrap` and `scaffold` start an interactive wizard; only use it in an interactive terminal,
   otherwise ask the user for the names and pass them.

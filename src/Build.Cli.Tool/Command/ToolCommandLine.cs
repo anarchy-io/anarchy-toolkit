@@ -3,7 +3,7 @@ using Anarchy.Toolkit.Build.Cli.Core.Entity;
 namespace Anarchy.Toolkit.Build.Cli.Tool.Command;
 
 /// <summary>
-/// Parses <c>anarchy-toolkit [bootstrap|scaffold|skills] [arguments]</c>.
+/// Parses <c>anarchy-toolkit [bootstrap|scaffold|skills|boilerplate] [arguments]</c>.
 /// </summary>
 /// <example>
 /// <code language="csharp">
@@ -27,6 +27,12 @@ public static class ToolCommandLine
     /// The usage line of the <c>skills</c> command, shown when its arguments are malformed.
     /// </summary>
     public const string SkillsUsage = "anarchy-toolkit skills install [--output <solution-directory>]";
+
+    /// <summary>
+    /// The usage line of the <c>boilerplate</c> command, shown when its arguments are malformed.
+    /// </summary>
+    public const string BoilerplateUsage = "anarchy-toolkit boilerplate list|show <path>|diff [<path>...]";
+
     /// <summary>
     /// The <c>scaffold api</c> flag that generates an API without the toolkit's default Swagger UI theme.
     /// </summary>
@@ -44,7 +50,8 @@ public static class ToolCommandLine
     /// <param name="args">The command-line arguments, without the executable name.</param>
     /// <returns>
     /// The parsed command: <see cref="ToolMode.Help"/> for no arguments or a help flag, <see cref="ToolMode.Bootstrap"/>,
-    /// <see cref="ToolMode.Scaffold"/> or <see cref="ToolMode.Skills"/> (with their optional arguments), or
+    /// <see cref="ToolMode.Scaffold"/>, <see cref="ToolMode.Skills"/> or <see cref="ToolMode.Boilerplate"/> (with their
+    /// optional arguments), or
     /// <see cref="ToolMode.Invalid"/>.
     /// </returns>
     public static ToolCommand Parse(IReadOnlyList<string> args) => args switch {
@@ -52,6 +59,7 @@ public static class ToolCommandLine
         ["bootstrap", ..] => ParseBootstrap(args.Skip(1).ToArray()),
         ["scaffold", ..] => ParseScaffold(args.Skip(1).ToArray()),
         ["skills", ..] => ParseSkills(args.Skip(1).ToArray()),
+        ["boilerplate", ..] => ParseBoilerplate(args.Skip(1).ToArray()),
         [var command, ..] => Invalid($"Unknown command '{command}'.")
     };
 
@@ -84,6 +92,14 @@ public static class ToolCommandLine
         ["install", "--output" or "-o", var output] when !string.IsNullOrWhiteSpace(output) =>
             new ToolCommand(ToolMode.Skills, OutputDirectory: output),
         _ => Invalid("Usage: " + SkillsUsage)
+    };
+
+    private static ToolCommand ParseBoilerplate(IReadOnlyList<string> args) => args switch {
+        ["list"] => new ToolCommand(ToolMode.Boilerplate) { BoilerplateAction = "list" },
+        ["show", var path] when !path.StartsWith('-') => new ToolCommand(ToolMode.Boilerplate) { BoilerplateAction = "show", Paths = [path] },
+        ["diff", ..] when args.Skip(1).All(path => !path.StartsWith('-')) =>
+            new ToolCommand(ToolMode.Boilerplate) { BoilerplateAction = "diff", Paths = args.Skip(1).ToArray() },
+        _ => Invalid("Usage: " + BoilerplateUsage)
     };
 
     private static ToolCommand ParseScaffold(IReadOnlyList<string> args) => args switch {

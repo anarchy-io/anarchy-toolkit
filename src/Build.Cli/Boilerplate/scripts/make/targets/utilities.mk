@@ -77,7 +77,13 @@ boilerplate: #? Installs selected boilerplate items (Makefile, scripts, settings
 #+ ITEMS|str|Comma-separated items, e.g. Makefile,scripts (DEFAULT=all but the agent skills)
 #+ EXCLUDE|str|Comma-separated items to leave out
 #+ APPEND|bool|Sync the packaged .gitignore and .editorconfig into a managed block of existing ones (DEFAULT=false)
-	${MAKE} fallout SKIP_TITLE=true TARGET="SetupBoilerplate$(if $(ITEMS), --BoilerplateItems $(ITEMS),)$(if $(EXCLUDE), --BoilerplateExclude $(EXCLUDE),)$(if $(filter true,$(APPEND)), --AppendExisting true,)"
+#+ DRY_RUN|bool|Only report what would be created, kept, updated or conflict (DEFAULT=false)
+	${MAKE} fallout SKIP_TITLE=true TARGET="SetupBoilerplate$(if $(ITEMS), --BoilerplateItems $(ITEMS),)$(if $(EXCLUDE), --BoilerplateExclude $(EXCLUDE),)$(if $(filter true,$(APPEND)), --AppendExisting true,)$(if $(filter true,$(DRY_RUN)), --BoilerplateDryRun true,)"
+
+.PHONY: boilerplate_diff
+boilerplate_diff: #? Shows how the solution's boilerplate files differ from the packaged ones, without writing
+#+ ITEMS|str|Comma-separated packaged paths or folders, e.g. Makefile,scripts (DEFAULT=all but the agent skills)
+	${MAKE} fallout SKIP_TITLE=true TARGET="DiffBoilerplate$(if $(ITEMS), --BoilerplateItems $(ITEMS),)"
 
 .PHONY: api_reference
 api_reference: #? Generates the DocFX API reference website from the compiled packages (needs IApiReferenceBuild)

@@ -23,6 +23,7 @@ public class TargetGraphTest
         CheckLayering||1|0|0
         Clean||1|0|0
         Compile|Restore|1|0|0
+        DiffBoilerplate||1|0|0
         DisableGitHook||1|0|0
         DockerDestroy||1|0|0
         DockerInfo||1|0|0

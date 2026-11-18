@@ -11,8 +11,6 @@ namespace Anarchy.Toolkit.Build.Cli.Core.Service;
 /// </summary>
 public static class SolutionScaffolder
 {
-    private const string ResourcePrefix = "Anarchy.Boilerplate/";
-
     // These files are never replaced. Text settings and global.json's test runner may be added, but only on request.
     private static readonly string[] Preserved = [".gitignore", ".editorconfig", "global.json", "nuget.config", "Directory.Build.props"];
 
@@ -45,10 +43,7 @@ public static class SolutionScaffolder
         root = Path.GetFullPath(root);
         var log = options.Log ?? (_ => { });
         var assembly = typeof(SolutionScaffolder).Assembly;
-        var resources = assembly.GetManifestResourceNames()
-            .Where(name => name.StartsWith(ResourcePrefix, StringComparison.Ordinal))
-            .Select(name => (Name: name, Path: name[ResourcePrefix.Length..].Replace('\\', '/')))
-            .ToArray();
+        var resources = BoilerplateCatalog.Resources().ToArray();
         var required = new[] { "Makefile", "scripts/build.fallout.sh", ".gitignore", ".editorconfig", "global.json", "nuget.config" };
         if (required.Any(path => resources.All(resource => resource.Path != path)))
             throw new InvalidOperationException("The packaged boilerplate files are missing.");
@@ -75,6 +70,12 @@ public static class SolutionScaffolder
             .Where(Directory.Exists));
         if (createSolution)
             conflicts.AddRange(Directory.EnumerateFiles(root, "*.sln*", SearchOption.TopDirectoryOnly));
+        if (options.DryRun)
+        {
+            ReportPlan(root, solutionName, options, selectedResources.Select(resource => resource.Path), conflicts,
+                createCore, createProps, createSolution, directories, log);
+            return;
+        }
         if (conflicts.Count > 0)
             throw new InvalidOperationException("Boilerplate would overwrite existing files: " + string.Join(", ", conflicts));
 
@@ -151,6 +152,40 @@ public static class SolutionScaffolder
             parameters!["Solution"] = solutionName + ".sln";
             File.WriteAllText(parametersPath, parameters.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n");
         }
+    }
+
+    private static void ReportPlan(string root, string? solutionName, ScaffoldOptions options, IEnumerable<string> paths,
+        IReadOnlyCollection<string> conflicts, bool createCore, bool createProps, bool createSolution, string[] directories,
+        Action<string> log)
+    {
+        log("Dry run: nothing is written.");
+        foreach (var conflict in conflicts)
+            log($"Conflict: {Path.GetRelativePath(root, conflict)} already exists; the install would stop without writing anything");
+        foreach (var path in paths)
+        {
+            var existing = IsPreserved(path) ? FileHelper.ExistingEntryPath(root, path) : Path.Combine(root, path);
+            if (!File.Exists(existing))
+            {
+                if (!Directory.Exists(existing)) log($"Create: {path}");
+                continue;
+            }
+            if (!IsPreserved(path)) continue;
+            var packaged = BoilerplateCatalog.Read(path)!;
+            if (options.AppendExisting && path is ".gitignore" or ".editorconfig")
+            {
+                var current = File.ReadAllText(existing);
+                var merged = FileHelper.MergeManagedBlock(current, packaged, path == ".gitignore");
+                log(merged == current ? $"Up to date: {path}" : $"Update the managed block of {path}:\n{UnifiedDiff.Create(path, current, merged)}");
+            }
+            else if (options.AppendExisting && path == "global.json")
+                log($"Add the packaged test runner to {path} unless it has one");
+            else
+                log($"Keep: {path}");
+        }
+        if (createCore) log(File.Exists(Path.Combine(root, "src", "Core", "Core.csproj")) ? "Keep: src/Core/Core.csproj" : "Create: src/Core/Core.csproj");
+        foreach (var directory in directories) log($"Create: {directory}/.gitkeep");
+        if (createProps) log(File.Exists(FileHelper.ExistingEntryPath(root, "Directory.Build.props")) ? "Keep: Directory.Build.props" : "Create: Directory.Build.props");
+        if (createSolution) log($"Create: {solutionName}.sln, recorded in .fallout/parameters.json");
     }
 
     private static bool IsPreserved(string path) => Preserved.Contains(path, StringComparer.OrdinalIgnoreCase);
