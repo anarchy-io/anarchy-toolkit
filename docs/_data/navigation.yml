@@ -61,6 +61,8 @@ guides:
         url: /guides/database-providers.html
       - title: "Exposing Endpoints"
         url: /guides/exposing-endpoints.html
+      - title: "Mock Server"
+        url: /guides/mock-server.html
       - title: "Building UIs"
         url: /guides/building-uis.html
   - title: "Build Ecosystem"
