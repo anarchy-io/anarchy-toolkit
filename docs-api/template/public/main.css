@@ -13,7 +13,8 @@
   --bs-font-sans-serif: var(--anarchy-font-sans);
   --bs-font-monospace: var(--anarchy-font-mono);
   --bs-border-radius: var(--anarchy-radius);
-  --anarchy-header-height: 64px;
+  --anarchy-header-height: 100px; /* as the Jekyll masthead, accent rule included */
+  --anarchy-content-width: 1280px;
 }
 
 [data-bs-theme="light"] {
@@ -57,27 +58,186 @@ header .navbar {
   --bs-navbar-hover-color: var(--anarchy-orange);
   --bs-navbar-active-color: var(--anarchy-white);
   --bs-navbar-brand-color: var(--anarchy-white);
-  --bs-navbar-brand-hover-color: var(--anarchy-white);
+  --bs-navbar-brand-hover-color: var(--anarchy-orange); /* the title only: the subtitle stays white */
   min-height: var(--anarchy-header-height);
 }
 
-header .navbar-brand {
+/* DocFX fixes the header at 60px and offsets the sticky TOC, the "In this article" panel and anchors by that much */
+@media (min-width: 768px) {
+  body > header,
+  body[data-layout="landing"] > header {
+    height: var(--anarchy-header-height);
+  }
+
+  body > main > .content > article [id],
+  body[data-layout="landing"] > main > .content > article [id] {
+    scroll-margin-top: calc(var(--anarchy-header-height) + 1rem);
+  }
+
+  body:not([data-search]) > main > .toc-offcanvas,
+  body:not([data-search]) > main > .affix {
+    top: calc(var(--anarchy-header-height) + 1.6rem) !important;
+    max-height: calc(100vh - var(--anarchy-header-height) - 1.6rem) !important;
+  }
+}
+
+/* Header and footer contents are as wide as the Jekyll site's */
+body > header .container-xxl,
+body > footer .container-xxl {
+  max-width: var(--anarchy-content-width);
+  padding-right: 22px;
+  padding-left: 22px;
+}
+
+/* Brand, as the Jekyll masthead: the logo, the title and the "Build without limits." subtitle under it */
+/* Sizes measured on the Jekyll masthead, whose root font size is 22px on wide screens */
+body > header .navbar-brand {
+  display: grid !important;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 11px;
+  margin-right: 22px;
+  font-size: 22px;
   font-weight: 700;
+  line-height: 1.25;
   letter-spacing: -0.01em;
 }
 
+body > header .navbar-brand::after {
+  content: "Build without limits.";
+  grid-column: 2;
+  color: var(--anarchy-white);
+  font-size: 13.75px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
 /* Bounded rather than fixed, so any logo keeps its aspect ratio */
-header .navbar-brand #logo {
+body > header .navbar-brand #logo {
+  grid-row: span 2;
   width: auto;
   height: auto;
-  max-height: 32px;
+  max-height: 44px;
   max-width: min(160px, 40vw);
   object-fit: contain;
 }
 
 header .navbar-nav .nav-link {
   position: relative;
-  font-weight: 500;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+@media (min-width: 768px) {
+  header #navbar,
+  header .navbar-nav {
+    align-items: center;
+  }
+
+  header .navbar-nav {
+    --bs-navbar-nav-link-padding-x: 22px;
+  }
+
+  header .navbar-nav .nav-link {
+    white-space: nowrap;
+  }
+
+  header #search {
+    width: 200px;
+  }
+}
+
+/* Narrower screens: tighter links, as the Jekyll masthead collapses them */
+@media (min-width: 768px) and (max-width: 1299.98px) {
+  header .navbar-nav {
+    --bs-navbar-nav-link-padding-x: 10px;
+  }
+
+  header .navbar-nav .nav-link {
+    font-size: 17px;
+  }
+
+  body > header .navbar-brand {
+    font-size: 18px;
+  }
+
+  body > header .navbar-brand::after {
+    font-size: 11px;
+  }
+
+  body > header .navbar-brand #logo {
+    max-height: 36px;
+  }
+
+  header #search {
+    width: 140px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+  header .navbar-nav {
+    --bs-navbar-nav-link-padding-x: 6px;
+  }
+
+  header .navbar-nav .nav-link {
+    font-size: 15px;
+  }
+
+  body > header .navbar-brand {
+    margin-right: 8px;
+    font-size: 16px;
+  }
+
+  body > header .navbar-brand::after {
+    display: none;
+  }
+
+  header #search {
+    width: 96px;
+  }
+}
+
+/* As on the Jekyll site: the links centred between the brand and the right-hand icons, NuGet and GitHub shown as
+   icons (the navbar is generated from toc.yml, so they are matched by their URLs) */
+@media (min-width: 768px) {
+  header #navbar {
+    flex-grow: 1;
+  }
+
+  header .navbar-nav {
+    flex-grow: 1;
+  }
+
+  header .navbar-nav > .nav-item:first-child,
+  header .navbar-nav > .nav-item:has(> a[href*="nuget.org"]) {
+    margin-left: auto;
+  }
+
+  header .navbar-nav > .nav-item > a[href*="nuget.org"],
+  header .navbar-nav > .nav-item > a[href*="github.com"] {
+    font-size: 0;
+  }
+
+  header .navbar-nav > .nav-item > a[href*="nuget.org"]::before,
+  header .navbar-nav > .nav-item > a[href*="github.com"]::before {
+    font-family: "bootstrap-icons";
+    font-size: 25px;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  header .navbar-nav > .nav-item > a[href*="nuget.org"]::before {
+    content: "\f7d2";
+  }
+
+  header .navbar-nav > .nav-item > a[href*="github.com"]::before {
+    content: "\f3ed";
+  }
+
+  header .navbar-nav > .nav-item > a[href*="nuget.org"]::after,
+  header .navbar-nav > .nav-item > a[href*="github.com"]::after {
+    display: none;
+  }
 }
 
 /* The masthead's hover and current-section underline */
@@ -134,15 +294,17 @@ header #navbar form > i.bi {
   }
 }
 
-/* Footer: carbon, with the gradient rule on top, as on the Jekyll site */
-footer {
+/* Footer, as on the Jekyll site: carbon with the gradient rule on top, copyright and license on the left, links on
+   the right. DocFX fixes the footer's height, which cut off the second line. */
+body > footer {
+  height: auto;
   margin-top: 3rem;
   padding: 2rem 0;
   background-color: var(--anarchy-carbon);
   color: var(--anarchy-footer-text) !important;
   border-top: var(--anarchy-accent-width) solid transparent !important;
   border-image: var(--anarchy-gradient) 1;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
 }
 
 footer a {
@@ -154,19 +316,31 @@ footer a:hover {
   color: var(--anarchy-orange);
 }
 
+footer .anarchy-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+footer .anarchy-footer__legal > div + div {
+  margin-top: 0.25rem;
+}
+
 footer .anarchy-footer__links {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem 1.5rem;
-  margin: 0 0 0.75rem;
+  margin: 0;
   padding: 0;
   list-style: none;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-footer .anarchy-footer__links strong {
-  color: var(--anarchy-footer-text);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+footer .anarchy-footer__links i {
+  color: var(--anarchy-white);
 }
 
 /* Headings, as on the Jekyll site */
