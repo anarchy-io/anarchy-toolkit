@@ -26,6 +26,13 @@
           "tokens.css"
         ],
         "dest": "public"
+      },
+      {
+        "src": "../docs/assets/images/logo",
+        "files": [
+          "anarchy-512.png"
+        ],
+        "dest": "images"
       }
     ],
     "output": "../artifacts/docs-api",
@@ -35,13 +42,13 @@
       "template"
     ],
     "globalMetadata": {
-      "_appName": "Toolkit",
+      "_appName": "Anarchy I/O Toolkit",
       "_appTitle": "Anarchy I/O - Toolkit API",
-      "_appLogoPath": "images/logo.png",
+      "_appLogoPath": "images/anarchy-512.png",
       "_appFaviconPath": "images/favicon.png",
       "_enableSearch": true,
       "_disableContribution": false,
-      "_appFooter": "<ul class=\"anarchy-footer__links\"><li><strong>Follow:</strong></li><li><a href=\"https://www.nuget.org/profiles/anarchy-io\" rel=\"nofollow noopener noreferrer\"><i class=\"bi bi-box-seam\" aria-hidden=\"true\"></i> NuGet.org</a></li><li><a href=\"https://github.com/anarchy-io/anarchy-toolkit\" rel=\"nofollow noopener noreferrer\"><i class=\"bi bi-github\" aria-hidden=\"true\"></i> GitHub</a></li></ul><div>&copy; <a href=\"https://anarchy-io.github.io/anarchy-toolkit/\">Anarchy I/O Toolkit</a>. Powered by <a href=\"https://dotnet.github.io/docfx/\" rel=\"nofollow\">DocFX</a>.</div>",
+      "_appFooter": "<div class=\"anarchy-footer\"><div class=\"anarchy-footer__legal\"><div>&copy; 2026 <a href=\"https://github.com/leandrommedeiros\">Leandro Mel&atilde;o Medeiros</a>. Powered by <a href=\"https://dotnet.github.io/docfx/\" rel=\"nofollow\">DocFX</a>.</div><div>Licensed under the <a href=\"https://github.com/anarchy-io/anarchy-toolkit/blob/main/LICENSE\">Apache License 2.0</a>. Third-party components keep their own licenses; see <a href=\"https://github.com/anarchy-io/anarchy-toolkit/blob/main/NOTICE\">NOTICE</a>.</div></div><ul class=\"anarchy-footer__links\"><li><a href=\"https://www.nuget.org/profiles/anarchy-io\" rel=\"nofollow noopener noreferrer\"><i class=\"bi bi-box-fill\" aria-hidden=\"true\"></i> NuGet.org</a></li><li><a href=\"https://github.com/anarchy-io/anarchy-toolkit\" rel=\"nofollow noopener noreferrer\"><i class=\"bi bi-github\" aria-hidden=\"true\"></i> GitHub</a></li></ul></div>",
       "_appLogoUrl": "https://anarchy-io.github.io/anarchy-toolkit/"
     },
     "sitemap": {
