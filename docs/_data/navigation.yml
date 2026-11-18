@@ -8,6 +8,8 @@ main:
     url: /packages/
   - title: "Guides"
     url: /guides/
+  - title: "Conventions"
+    url: /conventions/
   - title: "API"
     url: /api/
   - title: "NuGet"
@@ -25,8 +27,8 @@ start:
         url: /overview/#the-three-pillars
       - title: "Architecture"
         url: /guides/architecture.html
-      - title: "Design Principles"
-        url: /overview/#design-principles
+      - title: "Values and Decisions"
+        url: /decisions/
   - title: "Choose your path"
     children:
       - title: "Getting Started"
@@ -37,6 +39,8 @@ start:
         url: /getting-started/fallout.html
       - title: "Using the Packages"
         url: /getting-started/consuming-packages.html
+      - title: "Adoption Advisor"
+        url: /getting-started/advisor.html
   - title: "Reference"
     children:
       - title: "Samples"
@@ -49,38 +53,104 @@ start:
 guides:
   - title: "Guides"
     url: /guides/
-  - title: "Architecture"
+  - title: "Onboarding"
+    children:
+      - title: "How the Platform Fits Together"
+        url: /guides/mental-model.html
+      - title: "Your First Solution"
+        url: /guides/greenfield-solution.html
+      - title: "Adopting an Existing Solution"
+        url: /guides/adopting-existing-solution.html
+      - title: "Bringing Your Company Stack"
+        url: /guides/bringing-your-company-stack.html
+      - title: "Migration Recipes"
+        url: /guides/migration-recipes.html
+      - title: "Pitfalls"
+        url: /guides/pitfalls.html
+      - title: "Adoption Advisor"
+        url: /getting-started/advisor.html
+  - title: "Platform features"
     children:
       - title: "Layered Architecture"
         url: /guides/architecture.html
-  - title: "Infrastructure"
-    children:
       - title: "Observability"
         url: /guides/observability.html
       - title: "Database Providers"
         url: /guides/database-providers.html
-      - title: "Exposing Endpoints"
-        url: /guides/exposing-endpoints.html
       - title: "Mock Server"
         url: /guides/mock-server.html
       - title: "Building UIs"
         url: /guides/building-uis.html
-  - title: "Build Ecosystem"
-    children:
       - title: "Fallout Builds"
         url: /guides/fallout-builds.html
       - title: "CLI Tool"
         url: /packages/Build.Cli.Tool/
-  - title: "Engineering Practices"
+  - title: "See also"
+    children:
+      - title: "Conventions"
+        url: /conventions/
+      - title: "Values and Decisions"
+        url: /decisions/
+
+conventions:
+  - title: "Conventions"
+    url: /conventions/
+  - title: "Structure"
+    children:
+      - title: "Layering"
+        url: /conventions/layering.html
+      - title: "Dependency Injection"
+        url: /conventions/dependency-injection.html
+      - title: "Endpoints"
+        url: /conventions/endpoints.html
+  - title: "Code"
     children:
       - title: "Async"
-        url: /guides/async-conventions.html
-      - title: "Enums"
-        url: /guides/enum-conventions.html
+        url: /conventions/async.html
       - title: "Exceptions"
-        url: /guides/exception-conventions.html
+        url: /conventions/exceptions.html
+      - title: "Enums"
+        url: /conventions/enums.html
+      - title: "Observability"
+        url: /conventions/observability.html
+  - title: "Tests"
+    children:
       - title: "Testing"
-        url: /guides/testing-conventions.html
+        url: /conventions/testing.html
+  - title: "Why"
+    children:
+      - title: "Values and Decisions"
+        url: /decisions/
+      - title: "Contributing to the toolkit"
+        url: /contributing/
+
+decisions:
+  - title: "Values and Decisions"
+    url: /decisions/
+  - title: "Decisions"
+    children:
+      - title: "0001 Layered architecture"
+        url: /decisions/0001-layered-architecture.html
+      - title: "0002 DI modules"
+        url: /decisions/0002-dependency-injection-modules.html
+      - title: "0003 Validated settings"
+        url: /decisions/0003-validated-app-settings.html
+      - title: "0004 Observer"
+        url: /decisions/0004-observer-abstraction.html
+      - title: "0005 xUnit v3 on MTP"
+        url: /decisions/0005-xunit-v3-on-mtp.html
+      - title: "0006 Fallout build"
+        url: /decisions/0006-fallout-build.html
+      - title: "0007 Mock server"
+        url: /decisions/0007-own-mock-server.html
+      - title: "0008 Test levels"
+        url: /decisions/0008-test-levels.html
+  - title: "See also"
+    children:
+      - title: "Conventions"
+        url: /conventions/
+      - title: "Contributing"
+        url: /contributing/
 
 packages:
   - title: "Packages"

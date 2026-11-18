@@ -8,6 +8,8 @@
   href: https://anarchy-io.github.io/anarchy-toolkit/packages/
 - name: Guides
   href: https://anarchy-io.github.io/anarchy-toolkit/guides/
+- name: Conventions
+  href: https://anarchy-io.github.io/anarchy-toolkit/conventions/
 - name: API
   href: api/
 - name: NuGet

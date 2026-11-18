@@ -6,7 +6,7 @@ permalink: /overview/
 
 ## What is Anarchy I/O Toolkit?
 
-The **Anarchy I/O Toolkit** is a **.NET developer platform**: an integrated ecosystem for building maintainable .NET applications (REST and GraphQL APIs, Blazor WebApps, AWS Lambda jobs and EC2 workers) through consistent architecture, reusable infrastructure and automated development workflows.
+The **Anarchy I/O Toolkit** is a **.NET developer platform**: an integrated ecosystem for building maintainable .NET applications (REST and GraphQL APIs, [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) WebApps, [AWS Lambda](https://aws.amazon.com/lambda/) jobs and EC2 workers) through consistent architecture, reusable infrastructure and automated development workflows.
 
 > **Provide the foundation. Never dictate the destination.** The toolkit ships plumbing, not a framework: your domain, your architecture decisions and your vendors stay yours, and no part of the platform requires adopting the rest.
 
@@ -15,7 +15,7 @@ The **Anarchy I/O Toolkit** is a **.NET developer platform**: an integrated ecos
 | Pillar | What it provides | Start with |
 |---|---|---|
 | **Architecture** | How applications are structured and how dependencies are governed: the layers `Core < Infrastructure < Configuration < Hosting < Web < Build`, DI modules as the unit of composition, and conventions for async code, exceptions, enums, endpoints and tests. | [Layered Architecture](guides/architecture.md), [Guides](guides/README.md) |
-| **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence (PostgreSQL, Oracle, MySQL), messaging (AWS SNS/SQS), observability, configuration and secrets, hosting for jobs and workers, REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
+| **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence ([PostgreSQL](https://www.postgresql.org/), Oracle, MySQL), messaging (AWS SNS/SQS), observability, configuration and secrets, hosting for jobs and workers, REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
 | **Build Ecosystem** | Tools and workflows for developing and delivering applications: the [`Build.Fallout`](packages/Build.Fallout/README.md) build components (compile, lint, test, layering check, dependency map, packaging, versioning, releases, Docker) and the [`anarchy-toolkit`](packages/Build.Cli.Tool/README.md) CLI (solution bootstrap and scaffolding), with a distributed Makefile and scripts. | [Getting Started](getting-started/README.md), [Fallout Builds](guides/fallout-builds.md) |
 
 ## How the pillars work together
@@ -50,7 +50,7 @@ flowchart LR
 | You have | Start with | Page |
 |---|---|---|
 | An empty folder | The `anarchy-toolkit` CLI tool: a layered solution with its build, plus APIs, jobs and UIs. | [New solution with the CLI](getting-started/cli-tool.md) |
-| An existing repository | The Fallout build components: compile, lint, test, layering, packaging and releases. | [Adding the Fallout build](getting-started/fallout.md) |
+| An existing repository | The [Fallout](https://fallout.build/) build components: compile, lint, test, layering, packaging and releases. | [Adding the Fallout build](getting-started/fallout.md) |
 | An existing application | Individual packages, wired through their DI modules. | [Using the packages](getting-started/consuming-packages.md) |
 
 ## Platform architecture and dependency model
@@ -76,10 +76,12 @@ The [Package Catalog](packages/README.md) lists every package by layer, and the 
 
 ## Design principles
 
-- **Pluggable.** Packages with concrete services register them through an `IDependencyInjectionModule` or an `IServiceCollection` extension, so an application wires each one in a single call. Modules never assume a configuration section: options always come from the application.
+- **Pluggable.** Packages with concrete services register them through an `IDependencyInjectionModule` or an [`IServiceCollection`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) extension, so an application wires each one in a single call. Modules never assume a configuration section: options always come from the application.
 - **Domain-free.** Generic code takes strings and generic parameters instead of domain enums. Domain code (repositories, clients, event payloads, message destinations, UI environments) stays in your applications.
 - **Vendor-neutral.** Company-specific conventions plug in through extension points: an overridable `ObserverFactory` for logs and metrics, options and constructor parameters, and `ConfigureAppConfiguration` hooks for configuration sources.
-- **Standalone.** Every dependency restores from nuget.org; test-only libraries such as AwesomeAssertions are confined to the `Testing.*` kits.
+- **Standalone.** Every dependency restores from nuget.org; test-only libraries such as [AwesomeAssertions](https://awesomeassertions.org/) are confined to the `Testing.*` kits.
+
+[Values and Decisions](decisions/README.md) lists every value and the architectural decisions behind the platform.
 
 ## Samples
 
@@ -87,6 +89,8 @@ The [samples](samples/README.md) are runnable applications (a REST API, a Lambda
 
 ## Learn more
 
-- [Guides](guides/README.md): architecture, infrastructure, build ecosystem and engineering practices.
+- [Guides](guides/README.md): how the platform fits together, walkthroughs for new and existing solutions, migration recipes and the platform features.
+- [Conventions](conventions/README.md): recommendations for applications on the platform, and how to opt out of each.
+- [Values and Decisions](decisions/README.md): why the platform is built the way it is.
 - [Package Catalog](packages/README.md) and [NuGet.org](https://www.nuget.org/profiles/anarchy-io): every package, by layer.
 - [API reference](https://anarchy-io.github.io/anarchy-toolkit/api/): the generated reference for every public type.

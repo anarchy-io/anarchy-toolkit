@@ -1,6 +1,6 @@
 # Getting Started
 
-Each pillar of the [platform](../README.md#the-three-pillars) can be adopted on its own. The fastest way to get the whole platform is through its **Build Ecosystem**: the **`anarchy-toolkit` CLI tool** creates a complete solution, and the **Fallout build components** it relies on can also be added to a repository you already have. Individual **Infrastructure** packages work on their own too.
+Each pillar of the [platform](../README.md#the-three-pillars) can be adopted on its own. The fastest way to get the whole platform is through its **Build Ecosystem**: the **`anarchy-toolkit` CLI tool** creates a complete solution, and the **[Fallout](https://fallout.build/) build components** it relies on can also be added to a repository you already have. Individual **Infrastructure** packages work on their own too.
 
 ![Developer workstation with a terminal and code editor, dark theme, red-orange accent lighting, wide banner](../assets/images/headers/getting-started.png)
 
@@ -21,6 +21,8 @@ flowchart TD
 | **Fallout build** | Existing repositories: adds standard compile, lint, test, layering, dependency-map, packaging, release and Docker targets. | [Adding the Fallout build](fallout.md) |
 | **Packages** | Existing applications: add persistence, messaging, observability, hosting or web plumbing one package at a time. | [Using the packages](consuming-packages.md) |
 
+Not sure which fits? The [Adoption Advisor](advisor.md) asks a few questions about your project and suggests the packages, steps and pages, in order. The guides walk through both main paths: [Your First Solution](../guides/greenfield-solution.md) and [Adopting an Existing Solution](../guides/adopting-existing-solution.md).
+
 ## Let your agent do it
 
 Using a coding agent? Paste this line into it, from the folder or repository to adopt or migrate:
@@ -34,7 +36,7 @@ The agent works out which path fits, asks before anything destructive, can insta
 ## Requirements
 
 - The [.NET 10 SDK](https://dotnet.microsoft.com/download).
-- Bash and Make, for the generated Makefile and scripts (macOS, Linux or WSL).
+- Bash and [Make](https://www.gnu.org/software/make/), for the generated Makefile and scripts (macOS, Linux or WSL).
 - Access to nuget.org, where the packages are published under the [`anarchy-io` profile](https://www.nuget.org/profiles/anarchy-io) (or a feed mirroring the `Anarchy.Toolkit.*` packages).
 
 ## See it working

@@ -85,6 +85,21 @@ defaults:
       sidebar:
         nav: "guides"
   - scope:
+      path: "conventions"
+    values:
+      sidebar:
+        nav: "conventions"
+  - scope:
+      path: "contributing"
+    values:
+      sidebar:
+        nav: "conventions"
+  - scope:
+      path: "decisions"
+    values:
+      sidebar:
+        nav: "decisions"
+  - scope:
       path: "packages"
     values:
       sidebar:

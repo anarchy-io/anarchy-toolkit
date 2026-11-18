@@ -81,8 +81,10 @@ Adopt the whole platform, or start with the single piece you need.
 ## Where to go next
 
 - **[Overview](overview/)**: what the platform is, how its three pillars fit together and the ideas behind it.
-- **[Getting Started](getting-started/)**: choose between the CLI tool, the Fallout build and individual packages.
+- **[Getting Started](getting-started/)**: choose between the CLI tool, the [Fallout](https://fallout.build/) build and individual packages.
 - **[NuGet.org](https://www.nuget.org/profiles/anarchy-io)**: every published `Anarchy.Toolkit.*` package and its versions.
-- **[Guides](guides/)**: the architecture, infrastructure, build and engineering-practice guides.
+- **[Adoption Advisor](getting-started/advisor.html)**: a few questions about your project, a suggested adoption plan.
+- **[Guides](guides/)**: how the platform fits together, walkthroughs for new and existing solutions, and the platform features.
+- **[Conventions](conventions/)**: recommendations for your code, each with a way to opt out.
 - **[Samples](samples/)**: runnable applications composed from the platform.
 - **[API reference](api/)**: the generated reference for every public type.
