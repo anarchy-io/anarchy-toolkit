@@ -227,6 +227,8 @@ Use the separate native and Lambda methods for responses with variable fields (t
 
 ### Mock server (`Anarchy.Toolkit.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
 
+See the [Mock Server](mock-server.md) guide for choosing between expectations, middlewares and assertions, recording a real upstream and migrating from a MockServer container.
+
 When the application under integration or end-to-end test calls HTTP services you do not run, stand them in with the mock server instead of mocking the clients:
 
 1. Add a runnable `*.MockServer` project whose `Program` calls `MockServerEntryPoint.RunAsync(args, …)`, plugging in any middlewares that compute answers from the request, and write MockServer-style JSON expectations (e.g. under `tests/mocks`).

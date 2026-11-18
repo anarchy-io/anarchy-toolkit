@@ -17,6 +17,7 @@ Guides for the platform's three pillars (Architecture, Infrastructure and Build 
 | [Observability](observability.md) | `Observer`, call sites, log and metric conventions, runtime sinks per host, plugging in your organization's setup. |
 | [Database Providers](database-providers.md) | The provider-agnostic persistence layer, PostgreSQL/Oracle/MySQL specifics, adding a provider. |
 | [Exposing Endpoints](exposing-endpoints.md) | Presentation contracts, Input/Output DTOs with `ToDto`/`FromDto`, `ActionResult<T>`. |
+| [Mock Server](mock-server.md) | Standing in for HTTP upstreams: expectations, your own host and middlewares, assertions, recording a real upstream, migrating from a MockServer container. |
 | [Building UIs](building-uis.md) | `Web.Ui`: Blazor startup, cookie-session login, environment catalog, downstream API clients, reusable components. |
 
 The [Package Catalog](../packages/README.md) documents each infrastructure package, including the `Testing.*` kits.

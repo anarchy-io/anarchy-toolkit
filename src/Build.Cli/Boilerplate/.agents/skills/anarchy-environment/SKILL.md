@@ -24,6 +24,23 @@ ready, logs in `artifacts/mock-server/mock-server.log`) over `make mock_server`,
 `make mock_server_stop`. `make test_integration_mocked` and `make test_end_to_end_mocked` start and stop it around the
 tests and expose it as `MOCKSERVER_URL`. Recorded requests go to `artifacts/mock-server/requests.jsonl`.
 
+Before concluding the mock server lacks something, check what it already does (guide:
+https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html, and the `Anarchy.Toolkit.Web.MockServer` and
+`Anarchy.Toolkit.Testing.MockServer` package READMEs in the NuGet cache):
+
+| Need | Use |
+|---|---|
+| Fixed answers | Expectation files in MockServer's JSON shape (existing MockServer files load unchanged) |
+| Computed answers, fake auth, proxying | A middleware in the host's `Program.cs`: `MockServerEntryPoint.RunAsync(args, server => server.Use(...))`; `context.GetMockServer().Expectation` is `null` when nothing matched |
+| One answer for one test | `MockServerClient.AddExpectationAsync`, then `ResetAsync` |
+| What the application sent | `AssertReceivedAsync` / `ShouldHaveReceived`, or `RecordedRequestsFile.Read(...)` after the run |
+| Fail on unmocked calls | `RecordedRequestsFile.Read(...).ShouldAllHaveBeenMatched()` |
+| Record a real upstream as expectations | The guide's recording middleware (forward unmatched requests, save each answer as a file); review before committing |
+
+**Migrating from a MockServer container**: keep the expectation files; `/mockserver/verify` becomes
+`AssertReceivedAsync`, `/mockserver/reset` `ResetAsync`, a build's unmatched-request check `ShouldAllHaveBeenMatched`,
+and proxy recording the recording middleware. Then remove the container from Docker Compose and the build.
+
 **OpenAPI changes**: `make mock_server_sync_openapi SPEC=<file-or-url> DRY_RUN=true` first and show the user what
 would be added; then run it without `DRY_RUN`. It only adds expectations for new endpoints and reports changed or
 removed ones: update those by hand, and review and commit the new files.
