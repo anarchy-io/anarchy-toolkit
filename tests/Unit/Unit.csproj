@@ -42,7 +42,6 @@
   <ItemGroup>
     <!-- Brings Microsoft.AspNetCore.TestHost for the ASP.NET Core middleware tests. -->
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>

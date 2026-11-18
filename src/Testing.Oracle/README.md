@@ -28,6 +28,10 @@ See [Infrastructure.Persistence.Oracle](https://www.nuget.org/packages/Anarchy.T
 
 ## Releases
 
+### 1.2.2
+
+- build(deps): drop package references already resolved transitively
+
 ### 1.2.1
 
 - docs(packages): identify each package's pillar and layer

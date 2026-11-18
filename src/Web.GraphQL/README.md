@@ -36,6 +36,10 @@ See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/guides/exp
 
 ## Releases
 
+### 1.1.2
+
+- build(deps): drop package references already resolved transitively
+
 ### 1.1.1
 
 - docs(packages): identify each package's pillar and layer

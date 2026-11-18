@@ -34,6 +34,10 @@ See [Infrastructure.Persistence.Postgres](https://www.nuget.org/packages/Anarchy
 
 ## Releases
 
+### 1.2.2
+
+- build(deps): drop package references already resolved transitively
+
 ### 1.2.1
 
 - docs(packages): identify each package's pillar and layer
