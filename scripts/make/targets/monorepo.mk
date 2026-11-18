@@ -27,6 +27,11 @@ export BUNDLE_PATH ?= $(HOME)/.local/share/gem
 docs_sync: #? Copies the package and sample READMEs into the documentation site
 	@$(DOCS_DIR)/scripts/sync-readmes.sh
 
+.PHONY: skills_docs_sync
+skills_docs_sync: #? Copies the conventions, decisions and onboarding guides into the distributed skills' references
+#+ CHECK|bool|Only check that the skill is up to date, failing otherwise (as CI does)
+	@$(DOCS_DIR)/scripts/sync-skill-docs.sh $(if $(filter true,$(CHECK)),--check,)
+
 .PHONY: docs_install
 docs_install: #? Installs the documentation site's Ruby gems (needs Ruby and Bundler)
 	@cd "$(DOCS_DIR)" && bundle install

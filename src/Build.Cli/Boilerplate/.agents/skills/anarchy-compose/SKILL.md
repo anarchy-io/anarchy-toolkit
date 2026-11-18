@@ -6,8 +6,9 @@ description: "Composing an Anarchy Toolkit application at runtime: writing an ID
 # Runtime composition
 
 How an application built on the toolkit wires itself up. The package READMEs (in the NuGet cache,
-`~/.nuget/packages/anarchy.toolkit.<package>/<version>/README.md`) and the architecture guide
-(https://anarchy-io.github.io/anarchy-toolkit/guides/architecture/) are the reference; this skill is the recipe.
+`~/.nuget/packages/anarchy.toolkit.<package>/<version>/README.md`), the architecture guide
+(https://anarchy-io.github.io/anarchy-toolkit/guides/architecture/) and the `anarchy-conventions` skill
+(dependency injection, observability) are the reference; this skill is the recipe.
 
 ## When to use
 

@@ -99,7 +99,7 @@ To look before writing, `--boilerplate-dry-run` (`make boilerplate DRY_RUN=true`
 
 ## Agent skills
 
-The toolkit ships seven [Agent Skills](https://agentskills.io/) so coding agents run the solution's operations the way the toolkit intends: `anarchy` (the entry point: CLI, rules and which skill to load), `anarchy-adopt` (adoption, upgrades and migrations), `anarchy-compose` (modules, settings, health reports, workers), `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. They are opt-in: `make install_skills` (or `make boilerplate ITEMS=skills`, or `anarchy-toolkit skills install`) copies them to `.agents/skills`, never overwriting existing files.
+The toolkit ships eight [Agent Skills](https://agentskills.io/) so coding agents run the solution's operations the way the toolkit intends: `anarchy` (the entry point: CLI, rules and which skill to load), `anarchy-adopt` (adoption, upgrades and migrations), `anarchy-compose` (modules, settings, health reports, workers), `anarchy-conventions` (the recommended coding conventions and the decisions behind them), `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. They are opt-in: `make install_skills` (or `make boilerplate ITEMS=skills`, or `anarchy-toolkit skills install`) copies them to `.agents/skills`, never overwriting existing files.
 
 A skill is free text (when to use the commands, how to combine them, what to avoid) plus a commands table generated between `<!-- anarchy:commands:begin … -->` and `<!-- anarchy:commands:end -->` from the Makefiles' `#?`, `#+` and `#!` comments. Make targets declare their skill with a `#@` comment, which `make help COMMAND=<target>` also shows:
 
@@ -130,6 +130,10 @@ A bare `#@` names the skill `<prefix>-<file>`. `IAgentSkillsBuild` keeps the ski
 | `MockServerSyncOpenApi` | `mock_server_sync_openapi SPEC=… [OUT=…] [DRY_RUN=true]` | Adds an expectation for each endpoint of an OpenAPI or Swagger specification (file or URL) that has none, into `<tag>.json` files for you to review and commit. It never changes existing expectations: endpoints that changed, disappeared or answer an undocumented status code are only reported |
 
 ## Releases
+
+### 3.10.0
+
+- feat(Build.Cli): ship the conventions and onboarding guides in the agent skills
 
 ### 3.9.0
 

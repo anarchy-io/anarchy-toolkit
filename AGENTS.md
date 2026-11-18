@@ -17,9 +17,11 @@ Ecosystem), delivered from this .NET 10 monorepo as independently published NuGe
 
 `.agents/skills` holds the skills for this repository:
 
-- `anarchy`, `anarchy-adopt`, `anarchy-compose`, `anarchy-develop`, `anarchy-environment`, `anarchy-release`,
+- `anarchy`, `anarchy-adopt`, `anarchy-compose`, `anarchy-conventions`, `anarchy-develop`, `anarchy-environment`, `anarchy-release`,
   `anarchy-maintenance`: the toolkit's distributed skills, linked from `src/Build.Cli/Boilerplate/.agents/skills`.
   Edit them there; they ship to users.
+- `anarchy-conventions`, `anarchy-adopt` and `anarchy` copy pages from `docs/` into their `references/` (conventions,
+  decisions, onboarding guides): edit the docs, then run `make skills_docs_sync` (CI checks it).
 - `anarchy-contribute`: how to contribute to this repository.
 - `anarchy-monorepo`: this repository's own make targets (CLI from source, documentation site, API reference).
 

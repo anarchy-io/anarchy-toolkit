@@ -23,6 +23,10 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.9.0
+
+- feat(Build.Cli): ship the conventions and onboarding guides in the agent skills
+
 ### 1.8.0
 
 - fix(Build.Cli): pack the boilerplate at its source paths

@@ -73,7 +73,7 @@ The `boilerplate` commands print plain text, without the banner, so scripts and 
 
 ## Agent skills
 
-`skills install` (and `bootstrap --with-skills`) copies the toolkit's [Agent Skills](https://agentskills.io/) to `.agents/skills`: `anarchy`, the entry point with this tool's commands and the rules; `anarchy-adopt`, for adopting or upgrading the toolkit (including migrating tests, mocks and DI); `anarchy-compose`, for modules, settings, health reports and workers; and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. Existing files are never overwritten. See [Agent skills](../Build.Fallout/README.md#agent-skills) for keeping them in step with the solution's Makefiles.
+`skills install` (and `bootstrap --with-skills`) copies the toolkit's [Agent Skills](https://agentskills.io/) to `.agents/skills`: `anarchy`, the entry point with this tool's commands and the rules; `anarchy-adopt`, for adopting or upgrading the toolkit (including migrating tests, mocks and DI); `anarchy-compose`, for modules, settings, health reports and workers; `anarchy-conventions`, the recommended coding conventions with the values and decisions behind them and how to opt out; and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. Existing files are never overwritten. See [Agent skills](../Build.Fallout/README.md#agent-skills) for keeping them in step with the solution's Makefiles.
 
 ## Requirements
 
@@ -92,6 +92,11 @@ make check_layering
 The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build.Cli/README.md); see the [Fallout package README](../Build.Fallout/README.md) for the build targets.
 
 ## Releases
+
+### 3.3.0
+
+- docs(conventions): separate adopter recommendations from contributor rules
+- feat(Build.Cli): ship the conventions and onboarding guides in the agent skills
 
 ### 3.2.0
 

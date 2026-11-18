@@ -17,6 +17,30 @@ documentation is at https://anarchy-io.github.io/anarchy-toolkit/.
 - Creating a solution, or adding individual packages to an application.
 - Upgrading the toolkit's packages and boilerplate.
 
+## Bundled guides
+
+| Guide | Use it for |
+|---|---|
+| [adopting-existing-solution](references/guides/adopting-existing-solution.md) | Path B: the ground rules for each pull request and the order of the steps, with what can stay as it is. |
+| [migration-recipes](references/guides/migration-recipes.md) | Each move (tests, mocks, DI, settings, health, workers), its steps and its "done when" check. |
+| [pitfalls](references/guides/pitfalls.md) | An error or surprise during adoption: symptom, cause and fix. |
+| [bringing-your-company-stack](references/guides/bringing-your-company-stack.md) | Where the organization's logging, metrics, auth, feeds and deployment plug in, and where that code goes. |
+
+The guides are written for people: walkthroughs, tables and diagrams. They are copied from the documentation site
+at the toolkit version these skills were installed with, and their layout may change between versions. Read them for
+**order, reasons and checks**; take **commands and parameters** from these skills and `make help`, which match the
+installed build. When a guide and a skill disagree, the skill wins; tell the user. Look for these elements, whatever
+the headings are called:
+
+- **Steps in order**, often numbered or drawn as a flowchart: follow the order, one step per change.
+- **Ground rules or checklists**: apply them to every change.
+- **"Done when" or "Check" lines**: run them before calling a step finished.
+- **Tables of symptom, cause and fix**: match the error you see.
+- **Links to conventions and decisions**: load `anarchy-conventions` for them.
+
+If a page you expect is missing, the published site (https://anarchy-io.github.io/anarchy-toolkit/guides/) has the
+latest version; it may describe features newer than the installed toolkit, so check `make help` before relying on it.
+
 ## Ground rules
 
 - Never overwrite, delete or revert files you did not create; the toolkit's generators refuse to overwrite anything,
@@ -145,15 +169,23 @@ another layering, ask them to run `anarchy-toolkit bootstrap` interactively inst
      the Makefile after the toolkit's and listed in `MAKE_EXTRA_TARGETS` so `make help` shows them (ask before
      replacing the Makefile itself), and mark them `#@ <skill>` for `make skills_sync`.
 
-6. Migrate the rest one concern at a time, with the recipes below.
+6. Migrate the rest one concern at a time, in the order of the
+   [adoption guide](references/guides/adopting-existing-solution.md) (tests, mock server, settings, one module per
+   adapter, startup, observability last), with the recipes below. Each change keeps behaviour and the contract
+   unchanged and passes the guide's checks.
 
 ## Migration recipes
 
-| Moving | Recipe |
+The [migration recipes guide](references/guides/migration-recipes.md) summarises every move with its "done when"
+check. For the commands and code, use the agent instructions below; they win where the guide differs.
+
+| Moving | Agent instructions |
 |---|---|
 | A MockServer container (expectations, `/mockserver/verify`, proxy recording) | The `anarchy-environment` skill, then the [Mock Server guide](https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html#migrating-from-a-mockserver-container) |
 | xUnit v2 + VSTest test projects | [references/xunit-v3-mtp-migration.md](references/xunit-v3-mtp-migration.md) |
-| `Add*` extensions, `GetRequired<T>("Section")`, hand-written health checks and workers | The `anarchy-compose` skill |
+| Test projects named outside the kinds | Step 5 above (`TestKindAliases`) |
+| `Add*` extensions, `GetRequired<T>("Section")`, `IOptions` settings, hand-written health checks and workers | The `anarchy-compose` skill |
+| The organization's logging, metrics or monitoring facade | `anarchy-compose` (Observability), then the [company stack guide](references/guides/bringing-your-company-stack.md) |
 
 ## C. Individual packages
 
@@ -187,8 +219,8 @@ and wire its module as it describes. Build and run the tests afterwards. Offer p
 
 ## 3. Install the agent skills
 
-The toolkit's agent skills live in `.agents/skills`: `anarchy` (the entry point), this one, and one per area
-(develop, environment, compose, release, maintenance). If they are not installed yet, ask the user, then:
+The toolkit's agent skills live in `.agents/skills`: `anarchy` (the entry point), this one, `anarchy-conventions`
+(the coding conventions), and one per area (develop, environment, compose, release, maintenance). If they are not installed yet, ask the user, then:
 
 ```bash
 anarchy-toolkit skills install
