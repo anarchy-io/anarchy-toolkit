@@ -27,6 +27,7 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 - feat(Build.Cli): add opt-in agent skills to the boilerplate
 - fix(Build.Cli): print a plain title on narrow terminals
+- fix(Build.Cli): keep shell completion working for including Makefiles
 
 ### 1.6.0
 

@@ -92,6 +92,7 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build
 - feat(Build.Fallout): validate and sync agent skills
 - feat(Build.Cli.Tool): install agent skills from the CLI
 - fix(Build.Cli): print a plain title on narrow terminals
+- fix(Build.Cli): keep shell completion working for including Makefiles
 
 ### 3.0.0
 
