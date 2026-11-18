@@ -55,7 +55,7 @@ public partial interface IStandardBuild
     /// <returns>An emoji.</returns>
     string GetProjectIcon(Project project, string relativePath)
     {
-        if (IsTestProject(project) || relativePath.StartsWith("tests"))
+        if (IsTestProject(project) || IsInDirectory(project.Path, TestsDirectory))
         {
             return "🧪";
         }
@@ -65,7 +65,7 @@ public partial interface IStandardBuild
             return "🔧";
         }
 
-        return IsRunnableProject(project.Path) ? "🚀" : "📦";
+        return IsRunnableProject(project.Path, SourceDirectory) ? "🚀" : "📦";
     }
 
     /// <summary>
@@ -123,7 +123,7 @@ public partial interface IStandardBuild
     /// </summary>
     /// <returns>The runnable projects.</returns>
     IReadOnlyCollection<Project> GetRunnableProjects() => Solution.AllProjects
-        .Where(project => IsRunnableProject(project.Path))
+        .Where(project => IsRunnableProject(project.Path, SourceDirectory))
         .OrderBy(project => project.Name)
         .ToArray();
 
@@ -141,13 +141,15 @@ public partial interface IStandardBuild
     }
 
     /// <summary>
-    /// Whether the project lives under a <c>src</c> directory and has <c>OutputType</c> <c>Exe</c>.
+    /// Whether the project lives under <paramref name="sourceDirectory"/> (by default, any <c>src</c> directory) and
+    /// has <c>OutputType</c> <c>Exe</c>.
     /// </summary>
     /// <param name="projectPath">The project file, read as XML.</param>
+    /// <param name="sourceDirectory">The production code directory; <see langword="null"/> accepts any <c>src</c> directory.</param>
     /// <returns><see langword="true"/> if the project is runnable; otherwise <see langword="false"/>.</returns>
-    static bool IsRunnableProject(AbsolutePath projectPath)
+    static bool IsRunnableProject(AbsolutePath projectPath, AbsolutePath? sourceDirectory = null)
     {
-        if (!IsInSourceDirectory(projectPath))
+        if (sourceDirectory is null ? !IsInSourceDirectory(projectPath) : !IsInDirectory(projectPath, sourceDirectory))
         {
             return false;
         }
@@ -205,7 +207,7 @@ public partial interface IStandardBuild
         var projects = runnableProjects ?? GetRunnableProjects();
         if (projects.Count == 0)
         {
-            Log.Warning("No runnable apps were found in src/**.csproj with OutputType=Exe");
+            Log.Warning("No runnable apps with OutputType=Exe were found under {SourceDirectory}", SourceDirectory);
             return;
         }
 

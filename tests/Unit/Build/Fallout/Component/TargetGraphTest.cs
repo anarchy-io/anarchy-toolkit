@@ -157,6 +157,22 @@ public class TargetGraphTest
     }
 
     [Fact]
+    public void SourceAndTestsRoots_DefaultToTheToolkitFoldersAndCanBeConfigured()
+    {
+        var build = new TestBuild();
+        var standard = (IStandardBuild)build;
+        standard.SourceDirectory.Should().Be(build.TestRoot / "src");
+        standard.TestsDirectory.Should().Be(build.TestRoot / "tests");
+        ((ILayeringBuild)build).LayeringRoot.Should().Be("src");
+
+        build.SourceRoot = "code";
+        build.TestsRoot = Path.Combine("quality", "tests");
+        standard.SourceDirectory.Should().Be(build.TestRoot / "code");
+        standard.TestsDirectory.Should().Be(build.TestRoot / "quality" / "tests");
+        ((ILayeringBuild)build).LayeringRoot.Should().Be("code");
+    }
+
+    [Fact]
     public void ToolVerbosity_IsMinimalUnlessTheBuildRunsOnCi()
     {
         var build = new TestBuild();
@@ -264,6 +280,8 @@ public class TargetGraphTest
         public string? ReleaseBase { get; set; }
         public string? NuGetSource { get; set; }
         public string? BoilerplateItems { get; set; }
+        public string? SourceRoot { get; set; }
+        public string? TestsRoot { get; set; }
         public AbsolutePath DependencyMapOutput { get; set; } = AbsolutePath.Create(Path.Combine(Directory.GetCurrentDirectory(), "map.html"));
         public string DependencyVersionLock { get; set; } = "Major";
     }

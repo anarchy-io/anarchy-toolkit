@@ -54,7 +54,7 @@ endif
 .PHONY: check_layering
 check_layering: #? Verifies the layered architecture: references, imports, layer folders
 #+ BY_FOLDER|bool|Use layer folders instead of project name prefixes (DEFAULT=LayeringByFolder in .fallout/parameters.json, else false)
-#+ LAYERING_ROOT|str|Root folder relative to the solution (DEFAULT=LayeringRoot in .fallout/parameters.json, else src)
+#+ LAYERING_ROOT|str|Root folder relative to the solution (DEFAULT=LayeringRoot in .fallout/parameters.json, else the source root: SourceRoot, else src)
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Checking Layering'
 	${MAKE} fallout SKIP_TITLE=true TARGET="CheckLayering$(if $(BY_FOLDER), --LayeringByFolder $(BY_FOLDER),)$(if $(LAYERING_ROOT), --LayeringRoot '$(LAYERING_ROOT)',)"
 

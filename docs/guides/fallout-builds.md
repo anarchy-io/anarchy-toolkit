@@ -36,7 +36,7 @@ Reference the package (`<PackageReference Include="Anarchy.Toolkit.Build.Fallout
 |---|---|---|
 | `IDefaultBuild` | `Clean`, `Build` | The base of every component: solution and directory conventions, `Artifacts`, `TestFilter`/`TestingPlatformCommandLineArguments`. |
 | `IVersionedBuild` | — | Adds the `--build-number` parameter. |
-| `IStandardBuild` | `Restore`, `Compile`, `TestUnit`, `TestIntegration`, `TestEndToEnd`, `TestAll`, `Lint`, `LintFix`, `ListProjects`, `RunApp`, `RunApps`, `GenerateAppSettings`, `PullRequest` (`Lint`, `CheckLayering` when `ILayeringBuild` is implemented, and `TestAll`) | Overrides `TestsDirectory` (`tests`) and `IsTestProject` (ignores test kits under `src`). |
+| `IStandardBuild` | `Restore`, `Compile`, `TestUnit`, `TestIntegration`, `TestEndToEnd`, `TestAll`, `Lint`, `LintFix`, `ListProjects`, `RunApp`, `RunApps`, `GenerateAppSettings`, `PullRequest` (`Lint`, `CheckLayering` when `ILayeringBuild` is implemented, and `TestAll`) | Overrides `TestsDirectory` (`tests`) and `IsTestProject` (ignores test kits under the source root). |
 | `INuGetBuild` | `ListPackages`, `GenerateLocalRelease`, `ValidateLocalRelease`, `Pack`, `Publish` | Versions source projects, and packs and publishes the batch in package dependency order. |
 | `IContainerBuild` | `EcrPublishAppArtifact`, `EcrImageBuild`, `EcrImagePush` | ECR flow for `--app-name`. Implement `ContainerRegistry`; image name, tag (short commit SHA), Dockerfile (`docker/ecs/Dockerfile`) and runtime have defaults. |
 | `IDependencyMapBuild` | `GenerateDependencyMap` | Writes a static HTML page (`--dependency-map-output`, default `docs/dependency-map.html`): a Mermaid graph of project references with layering violations highlighted, an onion of the layers (click a ring, or a group outside the chain, to zoom in on the references between its own projects; `#<Group>` in the URL opens it directly) and a table of projects, files and lines per group. Override `DependencyMapLayers` and `GetDependencyMapGroup` for other naming conventions. It carries no timestamp, so CI can regenerate it and commit only when it changed. |
@@ -85,6 +85,13 @@ After bumping, run `make release_notes RELEASE_BASE=origin/main RELEASE_HEAD=HEA
 The workflow checks out the latest `main` and uses the latest automation release commit as its checkpoint, falling back to the push's previous commit on the first run. It records a checkpoint for each comparison, even an empty commit when nothing needs a bump. This lets a later run pick up changes when GitHub replaces a pending concurrency run and prevents a manual bump from covering subsequent changes. A competing push can cause the version-commit push to fail; the newer push's run processes the updated `main`. Force-pushes, a missing baseline, or branch protection that prevents the bot from pushing require manual intervention. Configure GitHub Actions with contents-write access, allow the bot to push through branch protection, and configure NuGet trusted publishing and `NUGET_USER`.
 
 If publishing fails after the version commit, use **Run workflow** without a baseline to retry publishing the current versions; duplicates are skipped. To explicitly generate bumps with a different severity, use **Run workflow** with `release_base` and `release_bump`. Every publish attempts all packages in dependency order, so missing versions can be recovered; a partial NuGet publication cannot be rolled back. Do not retry an old run with a manually selected baseline unless another bump is intended.
+
+### Source and test roots
+
+Production code lives in `src` and tests in `tests` by default. Set `SourceRoot` or `TestsRoot` (relative to the root) in
+`.fallout/parameters.json` (or pass `--source-root` / `--tests-root`), or override `IDefaultBuild.SourceDirectory` /
+`TestsDirectory` in `build/Build.cs`. Packing, runnable apps, test-kit detection, the default layering root and the mock
+server's default expectations folder all follow them.
 
 ### How `IStandardBuild` finds test projects
 
