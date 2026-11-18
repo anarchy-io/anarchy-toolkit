@@ -1,9 +1,13 @@
-# Testing Conventions
+# Testing
 
-This guide explains how test cases and shared test resources are named and organized in the toolkit. A test or fixture must be easy to locate from the type it exercises.
+This convention explains how test cases and shared test resources are named and organized in the toolkit. A test or fixture must be easy to locate from the type it exercises.
 
-> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+> **Recommendation, not a requirement.** The packages work without following this convention. It is a rule only for code in the toolkit repository (see [Contributing](../contributing/README.md)); applications can adopt it, adapt it or skip it. [Opting out or adapting](#opting-out-or-adapting) explains how.
 {: .notice--info}
+
+## Why
+
+One project per test kind lets the build run each level on its own (unit tests before packing, integration with containers, end-to-end with the mock server), and naming that mirrors `src/` makes a test easy to find. See [ADR 0005](../decisions/0005-xunit-v3-on-mtp.md) and [ADR 0008](../decisions/0008-test-levels.md).
 
 ## Test layout
 
@@ -40,13 +44,13 @@ tests/
 
 ### Test kinds
 
-| Kind | Project | Runs | Fallout target |
+| Kind | Project | Runs | [Fallout](https://fallout.build/) target |
 |---|---|---|---|
 | Unit | `tests/Unit/Unit.csproj` | in-process, no infrastructure | `TestUnit` (`make test_unit`) |
-| Integration | `tests/Integration/Integration.csproj` (none yet) | against real local resources (Docker: PostgreSQL, LocalStack) | `TestIntegration` |
+| Integration | `tests/Integration/Integration.csproj` (none yet) | against real local resources (Docker: [PostgreSQL](https://www.postgresql.org/), LocalStack) | `TestIntegration` |
 | End-to-end | `tests/EndToEnd/EndToEnd.csproj` (none yet) | end-to-end through a hosted API or job | `TestEndToEnd` |
 
-The Fallout build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on Microsoft.Testing.Platform, AwesomeAssertions, Moq, and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
+The Fallout build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro), [AwesomeAssertions](https://awesomeassertions.org/), [Moq](https://github.com/devlooped/moq), and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
 
 #### Why three kinds, and one project per kind
 
@@ -227,7 +231,7 @@ Use the separate native and Lambda methods for responses with variable fields (t
 
 ### Mock server (`Anarchy.Toolkit.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
 
-See the [Mock Server](mock-server.md) guide for choosing between expectations, middlewares and assertions, recording a real upstream and migrating from a MockServer container.
+See the [Mock Server](../guides/mock-server.md) guide for choosing between expectations, middlewares and assertions, recording a real upstream and migrating from a [MockServer](https://www.mock-server.com/) container.
 
 When the application under integration or end-to-end test calls HTTP services you do not run, stand them in with the mock server instead of mocking the clients:
 
@@ -306,3 +310,15 @@ Before adding a test or shared test resource, check:
 4. Is the test level appropriate for the SUT and its boundary?
 5. Does a real-object builder use the `Fixture` suffix, a mocking setup `Mocker`/`Mock`, and a stand-in type the `Dummy` prefix?
 6. Is a resource needed by several packages placed in a `src/Testing` kit instead of being copied?
+
+## Opting out or adapting
+
+| You want to... | Do this |
+|---|---|
+| Keep your project names (`*.Tests.Acceptance`, `*.Specs`) | Map them with `TestKindAliases` in `.fallout/parameters.json` (e.g. `["EndToEnd=Acceptance"]`), or override `IsTestProjectOfKind`. See [Fallout builds](../guides/fallout-builds.md#how-istandardbuild-finds-test-projects). |
+| Keep one test project per production project | Fine: projects are matched by name segments, so `MyService.Tests.Unit` and `Other.Tests.Unit` both run in `TestUnit`. |
+| Stay on xUnit v2 / [VSTest](https://github.com/microsoft/vstest) for now | Fallout runs VSTest and Microsoft.Testing.Platform projects side by side; keep the MTP runner out of [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json) until the last project moves. See the [migration recipes](../guides/migration-recipes.md#xunit-v2-and-vstest-to-xunit-v3-and-mtp). |
+| Use [NUnit](https://nunit.org/), [MSTest](https://learn.microsoft.com/dotnet/core/testing/unit-testing-mstest-intro), Moq-free mocks or another assertion library | The build doesn't care. Only the `Testing.*` kits assume [xUnit v3](https://xunit.net/), Moq (≥ 4.21) and AwesomeAssertions. |
+| Use another tests folder | Set `TestsRoot` in `.fallout/parameters.json`. |
+
+**What you lose by opting out:** the `Testing.*` kits' base classes (with another framework), and the per-level make targets when names can't be matched.

@@ -1,13 +1,15 @@
-# Async Conventions
+# Async
 
-This guide defines how asynchronous code is written in the toolkit and in applications built on it, so that APIs and workers behave predictably under load and during shutdown.
+This convention defines how asynchronous code is written in the toolkit and in applications built on it, so that APIs and workers behave predictably under load and during shutdown.
 
-> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+> **Recommendation, not a requirement.** The packages work without following this convention. It is a rule only for code in the toolkit repository (see [Contributing](../contributing/README.md)); applications can adopt it, adapt it or skip it. [Opting out or adapting](#opting-out-or-adapting) explains how.
 {: .notice--info}
 
 ## Why it matters
 
-In a short-lived host such as AWS Lambda, each invocation is bounded by the platform, so missing cancellation support is rarely visible.
+The toolkit's workers, persistence policies and message brokers stop on cancellation; code that ignores tokens holds them up on shutdown and under retries. See the [Predictable at runtime value](../decisions/README.md#values).
+
+In a short-lived host such as [AWS Lambda](https://aws.amazon.com/lambda/), each invocation is bounded by the platform, so missing cancellation support is rarely visible.
 
 Long-lived workers (`Anarchy.Toolkit.Hosting.Workers` on EC2 or ECS) are different. Without cancellation:
 
@@ -86,3 +88,13 @@ In workers built on `WorkerBase` / `MonitoredWorkerBase` / `ResilientWorkerBase`
 - avoid uncancelable network or database calls in shutdown paths.
 
 Following these rules results in prompt shutdowns, fewer stuck operations and more predictable recovery for continuously running workers.
+
+## Opting out or adapting
+
+| You want to... | Do this |
+|---|---|
+| Keep methods without the `Async` suffix | Nothing in the toolkit relies on names; only the analyzers you enable do. |
+| Keep tokens required instead of optional | Fine: the toolkit's bases accept any token you pass. |
+| Ignore cancellation in short-lived hosts (Lambda) | Possible, but workers on `Hosting.Workers` then wait for in-flight calls on shutdown. |
+
+**What you lose by opting out:** fast, clean shutdowns of long-running workers and consistent API signatures between your code and the toolkit's.

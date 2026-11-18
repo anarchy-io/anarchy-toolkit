@@ -25,7 +25,7 @@ Use this package to host a toolkit-based REST API on ASP.NET Core or AWS Lambda 
 
 The [sample API startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/Startup.cs), [native entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Program.cs) and [Lambda entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Web/LambdaEntryPoint.cs) show the complete structure. Test the HTTP pipeline with `Testing.Web`.
 
-See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/guides/exposing-endpoints.html), [API sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Api) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/conventions/endpoints.html), [API sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Api) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Swagger UI theme
 

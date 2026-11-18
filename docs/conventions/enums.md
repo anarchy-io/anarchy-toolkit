@@ -1,11 +1,13 @@
-# Enum Conventions
+# Enums
 
-This guide explains when to use enums in code built on the toolkit, and when to use a more flexible representation to avoid coupling to external systems.
+This convention explains when to use enums in code built on the toolkit, and when to use a more flexible representation to avoid coupling to external systems.
 
-> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+> **Recommendation, not a requirement.** The packages work without following this convention. It is a rule only for code in the toolkit repository (see [Contributing](../contributing/README.md)); applications can adopt it, adapt it or skip it. [Opting out or adapting](#opting-out-or-adapting) explains how.
 {: .notice--info}
 
 ## Why this matters
+
+Enums compiled into a service turn every new value from another system into a deployment. Packages stay [domain-free](../decisions/README.md#values), so values owned by other systems are strings or auxiliary tables, not toolkit enums.
 
 An enum carries an implicit contract: every possible value must be known at compile time.
 
@@ -137,7 +139,7 @@ The same convention is wired into serialization and persistence:
 
 - `DescriptionEnumJsonConverter<TEnum>` / `DescriptionEnumJsonConverterFactory` (System.Text.Json, `Anarchy.Toolkit.Core`),
 - `DescribableEnumJsonConverter` (System.Text.Json factory registered by the Web presentation pipeline),
-- `DescriptionEnumTypeHandler<TEnum>` (Dapper, provider-agnostic, in `Anarchy.Toolkit.Infrastructure.Persistence.Db`).
+- `DescriptionEnumTypeHandler<TEnum>` ([Dapper](https://github.com/DapperLib/Dapper), provider-agnostic, in `Anarchy.Toolkit.Infrastructure.Persistence.Db`).
 
 These are convenient for **stable local mappings**. They should not be used as blanket parsers for arbitrary upstream data you do not own.
 
@@ -156,3 +158,13 @@ Choose the pattern like this:
 - **Auxiliary table**: external or evolving vocabulary that must be accepted without tightly coupling the application to every possible value.
 
 When in doubt, prefer the option that keeps the boundary explicit and avoids letting external systems define your application's runtime behavior.
+
+## Opting out or adapting
+
+| You want to... | Do this |
+|---|---|
+| Use enums for externally owned values | Possible: add a fallback member (`Unknown`) and map unknown strings to it, so new values don't throw. |
+| Skip auxiliary tables | Keep values in configuration or code; `AttributeIdCacheBase` is only needed for the table pattern. |
+| Map with your own attributes or [`JsonStringEnumConverter`](https://learn.microsoft.com/dotnet/api/system.text.json.serialization.jsonstringenumconverter) | Fine: [`[Description]`](https://learn.microsoft.com/dotnet/api/system.componentmodel.descriptionattribute) mapping is a helper, not a requirement of any package. |
+
+**What you lose by opting out:** decoupling from upstream value changes, and the cached auxiliary-table lookups in the persistence packages.

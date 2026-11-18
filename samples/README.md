@@ -4,7 +4,7 @@ Applications built on the [Anarchy I/O Toolkit platform](https://anarchy-io.gith
 
 No single sample covers the whole platform; together they show its three pillars composed:
 
-- **Architecture**: each application registers its services through DI modules (`ModuleLibConfiguration`) and follows the [async](../docs/guides/async-conventions.md), [endpoint](../docs/guides/exposing-endpoints.md) and [testing](../docs/guides/testing-conventions.md) conventions.
+- **Architecture**: each application registers its services through DI modules (`ModuleLibConfiguration`) and follows the [async](../docs/conventions/async.md), [endpoint](../docs/conventions/endpoints.md) and [testing](../docs/conventions/testing.md) conventions.
 - **Infrastructure**: each references only the packages its workload needs (below), plus their dependencies.
 - **Build Ecosystem**: they are part of the solution, so this repository's Fallout build compiles and lints them with the packages they consume.
 

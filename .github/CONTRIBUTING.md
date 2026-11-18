@@ -11,7 +11,7 @@ dotnet restore Anarchy.Toolkit.sln
 dotnet build Anarchy.Toolkit.sln -c Release
 ```
 
-Run `make help` for every target, with its parameters. Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Fallout commands and the [guides](../docs/guides/README.md) for architecture, coding, and testing conventions. Those conventions are recommendations for applications built on the platform, but rules for contributions to this repository.
+Run `make help` for every target, with its parameters. Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Fallout commands. The [conventions](../docs/conventions/README.md) are recommendations for applications built on the platform, but rules for contributions to this repository: [Contributing Conventions](../docs/contributing/README.md) lists them with the rules that only apply here. Choices that shape the packages are recorded in [Values and Decisions](../docs/decisions/README.md).
 
 ## Making a change
 
