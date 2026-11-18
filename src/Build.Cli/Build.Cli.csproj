@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Build.Cli</PackageId>
     <AssemblyName>Anarchy.Toolkit.Build.Cli</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Build.Cli</RootNamespace>
-    <Version>1.7.0</Version>
+    <Version>1.8.0</Version>
     <Description>Command-line foundations for Anarchy solutions: starter solution scaffolding, build hosts, application templates and dotnet CLI helpers.</Description>
     <PackageTags>anarchy cli scaffold</PackageTags>
     <Nullable>enable</Nullable>
@@ -33,8 +33,8 @@
          PackagePath ending in '/', so the PackagePath must not repeat it. -->
     <None Remove="Boilerplate\**" />
     <EmbeddedResource Include="Boilerplate\**" LogicalName="Anarchy.Boilerplate/%(RecursiveDir)%(Filename)%(Extension)" />
-    <EmbeddedResource Include="..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" LogicalName="Anarchy.Boilerplate/%(Filename)%(Extension)" />
-    <None Include="Boilerplate\**;..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" Pack="true" PackagePath="boilerplate/" Visible="false" />
+    <EmbeddedResource Include="..\..\.editorconfig;..\..\global.json;..\..\nuget.config" LogicalName="Anarchy.Boilerplate/%(Filename)%(Extension)" />
+    <None Include="Boilerplate\**;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" Pack="true" PackagePath="boilerplate/" Visible="false" />
   </ItemGroup>
 
 </Project>
