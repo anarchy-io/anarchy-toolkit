@@ -1,3 +1,4 @@
+# >>> anarchy-toolkit: managed by 'make boilerplate'; override settings in sections below the block, not inside it >>>
 # Root file: prevents settings from cascading from higher-level .editorconfig files
 root = true
 
@@ -232,3 +233,8 @@ resharper_remove_redundant_semicolon = true
 resharper_remove_redundant_cast = true
 resharper_remove_redundant_base_qualifier = true
 resharper_remove_redundant_parentheses = true
+# <<< anarchy-toolkit <<<
+
+# Project-specific settings: sections below the managed block override it, for example
+# [*.cs]
+# dotnet_diagnostic.CA1000.severity = none
