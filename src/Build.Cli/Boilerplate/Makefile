@@ -2,9 +2,11 @@ ifndef MAKEFILE_PATH
 MAKEFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 endif
 # Where the scripts live, relative to the project root. An including Makefile or the command line may set it; a
-# value inherited from another project's make (which exports it) is ignored.
+# value inherited from another project's make (which exports it) is ignored. An including Makefile that keeps the
+# scripts elsewhere should prefer SCRIPTS_ROOT (e.g. 'SCRIPTS_ROOT := tools/'): shell completion reads this
+# assignment literally, ignoring the condition, and can only follow the includes below when it resolves here.
 ifneq ($(filter undefined environment,$(origin SCRIPTS_DIR)),)
-SCRIPTS_DIR := scripts
+SCRIPTS_DIR := $(SCRIPTS_ROOT)scripts
 endif
 # Project-specific target files listed by 'make help'; likewise only from an including Makefile or the command line.
 ifneq ($(filter undefined environment,$(origin MAKE_EXTRA_TARGETS)),)
