@@ -1,0 +1,62 @@
+{% comment %}
+  Minimal Mistakes 4.28.0 masthead, extended for this site:
+  - a link with `children` opens a dropdown (hover or keyboard focus); in the collapsed "more" menu the children are
+    listed under it;
+  - a link with `icon` and `icon_only: true` shows only its icon, keeping its title for screen readers and as tooltip,
+    and sits on the right next to the search button. The theme's script doesn't count those icons when it decides
+    which links fit, so below the width where every link fits they are listed among the links instead, and collapse
+    into the "more" menu with them (see .masthead__icon in main.scss).
+{% endcomment %}
+{% assign locale = include.locale | default: site.locale %}
+{% capture logo_path %}{{ site.logo }}{% endcapture %}
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav" aria-label="Primary navigation">
+        {% unless logo_path == empty %}
+          <a class="site-logo" href="{{ '/' | relative_url }}"><img src="{{ logo_path | relative_url }}" alt="{{ site.masthead_title | default: site.title }}"></a>
+        {% endunless %}
+        <a class="site-title" href="{{ '/' | relative_url }}">
+          {{ site.masthead_title | default: site.title | escape_once | strip }}
+          {% if site.subtitle %}<span class="site-subtitle">{{ site.subtitle | escape_once | strip }}</span>{% endif %}
+        </a>
+        <ul class="visible-links">
+          {%- for link in site.data.navigation.main -%}
+            <li class="masthead__menu-item{% if link.children %} masthead__menu-item--dropdown{% endif %}{% if link.icon_only %} masthead__menu-item--icon{% endif %}">
+              <a
+                href="{{ link.url | relative_url }}"
+                {% if link.description %} title="{{ link.description }}"{% elsif link.icon_only %} title="{{ link.title }}"{% endif %}
+                {% if link.target %} target="{{ link.target }}"{% endif %}
+                {% if link.children %} aria-haspopup="true"{% endif %}
+              >{% if link.icon %}<i class="{{ link.icon }}" aria-hidden="true"></i>{% endif %}{% if link.icon_only %}<span class="visually-hidden">{{ link.title }}</span>{% else %}{{ link.title }}{% endif %}</a>
+              {%- if link.children -%}
+              <ul class="masthead__submenu">
+                {%- for child in link.children -%}
+                <li><a href="{{ child.url | relative_url }}">{{ child.title }}{% if child.description %}<span class="masthead__submenu-description">{{ child.description }}</span>{% endif %}</a></li>
+                {%- endfor -%}
+              </ul>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- for link in site.data.navigation.main -%}
+          {%- if link.icon_only -%}
+        <a class="masthead__icon" href="{{ link.url | relative_url }}" title="{{ link.title }}"{% if link.target %} target="{{ link.target }}"{% endif %}><i class="{{ link.icon }}" aria-hidden="true"></i><span class="visually-hidden">{{ link.title }}</span></a>
+          {%- endif -%}
+        {%- endfor %}
+        {% if site.search == true %}
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">{{ site.data.ui-text[locale].search_label | default: "Toggle search" }}</span>
+          <i class="fas fa-search"></i>
+        </button>
+        {% endif %}
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">{{ site.data.ui-text[locale].menu_label | default: "Toggle menu" }}</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>

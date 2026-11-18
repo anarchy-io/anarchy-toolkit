@@ -112,6 +112,11 @@ defaults:
       toc: false
       classes: wide
   - scope:
+      path: "getting-started/advisor.md"
+    values:
+      toc: false
+      classes: wide
+  - scope:
       path: "guides/fallout-builds.md"
     values:
       toc: false

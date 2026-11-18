@@ -1,21 +1,44 @@
-# Masthead links, mirrored by the API reference's navbar (docs-api/toc.yml): keep them in sync
+# Masthead links, mirrored by the API reference's navbar (docs-api/toc.yml): keep them in sync. `children` open a
+# dropdown here (the API navbar has no dropdowns, so it links the top level only); `icon_only` shows just the icon.
 main:
   - title: "Overview"
     url: /overview/
   - title: "Get Started"
     url: /getting-started/
+    children:
+      - title: "Getting Started"
+        url: /getting-started/
+        description: "Choose between the CLI, the Fallout build and the packages"
+      - title: "Adoption Advisor"
+        url: /getting-started/advisor.html
+        description: "A suggested adoption plan for your project"
+      - title: "Guides"
+        url: /guides/
+        description: "How the platform fits together, walkthroughs and recipes"
+      - title: "Conventions"
+        url: /conventions/
+        description: "Recommendations for your code, and how to opt out"
+      - title: "Values and Decisions"
+        url: /decisions/
+        description: "Why the platform is built this way: values and ADRs"
+      - title: "Samples"
+        url: /samples/
+        description: "Runnable applications composed from the platform"
+      - title: "Contributing"
+        url: /contributing/
+        description: "The rules for contributing to the toolkit"
   - title: "Packages"
     url: /packages/
-  - title: "Guides"
-    url: /guides/
-  - title: "Conventions"
-    url: /conventions/
   - title: "API"
     url: /api/
   - title: "NuGet"
     url: https://www.nuget.org/profiles/anarchy-io
+    icon: "fas fa-fw fa-cube"
+    icon_only: true
   - title: "GitHub"
     url: https://github.com/anarchy-io/anarchy-toolkit
+    icon: "fab fa-fw fa-github"
+    icon_only: true
 
 # Sidebars, one per section (assigned by path in _config.yml)
 start:

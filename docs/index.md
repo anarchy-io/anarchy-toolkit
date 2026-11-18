@@ -26,21 +26,21 @@ pillars:
     title: "Architecture"
     excerpt: "Layered application structure where dependencies only point down, DI-module composition and enforceable conventions for async, exceptions, enums, endpoints and tests."
     url: "/guides/architecture.html"
-    btn_class: "btn--pillar btn--pillar-architecture"
+    btn_class: "btn--primary"
     btn_label: "Explore the architecture"
   - image_path: /assets/images/features/pillars-infra.png
     alt: "Reusable infrastructure components illustration"
     title: "Infrastructure"
     excerpt: "Independently published packages for persistence, messaging, observability, configuration, hosting, APIs, UIs and testing: reference only what you use."
     url: "/packages/"
-    btn_class: "btn--pillar btn--pillar-infrastructure"
+    btn_class: "btn--primary"
     btn_label: "Browse the packages"
   - image_path: /assets/images/features/pillars-build.png
     alt: "Build automation pipeline illustration"
     title: "Build Ecosystem"
     excerpt: "Fallout build components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, layering checks, packaging, versioning and releases."
     url: "/guides/fallout-builds.html"
-    btn_class: "btn--pillar btn--pillar-build"
+    btn_class: "btn--primary"
     btn_label: "Automate the build"
 feature_row:
   - image_path: /assets/images/features/cli-tool.png

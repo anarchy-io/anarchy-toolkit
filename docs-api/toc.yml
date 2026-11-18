@@ -1,4 +1,4 @@
-# The navbar, mirroring the Jekyll site's masthead (docs/_data/navigation.yml, `main`): keep them in sync.
+# The navbar, mirroring the Jekyll site's masthead (docs/_data/navigation.yml, `main`, top level only): keep them in sync.
 # API points into this site, so DocFX highlights it and shows the API table of contents under it.
 - name: Overview
   href: https://anarchy-io.github.io/anarchy-toolkit/overview/
@@ -6,10 +6,6 @@
   href: https://anarchy-io.github.io/anarchy-toolkit/getting-started/
 - name: Packages
   href: https://anarchy-io.github.io/anarchy-toolkit/packages/
-- name: Guides
-  href: https://anarchy-io.github.io/anarchy-toolkit/guides/
-- name: Conventions
-  href: https://anarchy-io.github.io/anarchy-toolkit/conventions/
 - name: API
   href: api/
 - name: NuGet
