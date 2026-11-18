@@ -52,6 +52,10 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 - Guides teach, conventions recommend, decisions explain. Put new pages in the matching section: [Guides](../guides/README.md), [Conventions](../conventions/README.md) or [Decisions](../decisions/README.md), and add them to `docs/_data/navigation.yml`.
 - A convention page keeps the same shape: banner, why (linking to a value or ADR), the rules, *Opting out or adapting*.
 - A choice that shapes the packages gets an ADR in `docs/decisions/`.
+- Conventions, decisions and the onboarding guides also ship inside the agent skills (`make skills_docs_sync`, checked
+  in CI). Agents read them without the site: keep links relative, keep the elements they look for (ordered steps, *Why*,
+  *Opting out or adapting*, "Done when" checks, symptom/cause/fix tables), and update the skill's guidance when a
+  page's shape changes.
 
 ## Checks before a pull request
 

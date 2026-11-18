@@ -24,16 +24,19 @@ Docs: https://anarchy-io.github.io/anarchy-toolkit/
 - Never edit `<Version>` by hand; versions go through `make release_bump` (see `anarchy-release`).
 - Generators never overwrite files. On a conflict, report it and ask the user; do not delete to make room.
 - Ask the user before publishing, pushing images, destroying data or anything that affects other projects.
+- Before writing or reviewing code, load `anarchy-conventions` for the toolkit's coding conventions. They are
+  recommendations: the solution's own `AGENTS.md`, ADRs and established code win where they differ.
 - Before finishing a change: `make compile test_unit lint check_layering`.
 
 ## Which skill
 
 | Task | Skill |
 |---|---|
+| Where code goes, naming, async, exceptions, enums, endpoints, logging, tests: the conventions and why | `anarchy-conventions` |
 | Set up, build, run, lint, test, check layering | `anarchy-develop` |
 | Local Docker environment, mock server | `anarchy-environment` |
 | Modules, settings, health reports, workers, observability | `anarchy-compose` |
-| Adopting the toolkit, upgrading it, migrating tests, mocks or DI | `anarchy-adopt` |
+| Adopting the toolkit, upgrading it, migrating tests, mocks or DI; adoption pitfalls | `anarchy-adopt` |
 | Versions, release notes, packages, container images | `anarchy-release` |
 | Dependency upgrades, Git hooks, boilerplate, build targets, these skills | `anarchy-maintenance` |
 | Targets the solution added itself | the solution's own skills in `.agents/skills` |
@@ -55,3 +58,40 @@ Install or update it with `dotnet tool update --global Anarchy.Toolkit.Build.Cli
   default layers; for other layers or name-prefix layout, ask the user to run the wizard.
 - After `bootstrap`: `cd <dir> && make install`. After `scaffold`: `make compile check_layering`, then review the new
   application's settings (auth URLs, client IDs) and run `make appsettings` for local ones.
+
+## Guides
+
+Two guides are bundled with this skill:
+
+| Guide | Use it for |
+|---|---|
+| [mental-model](references/guides/mental-model.md) | Before the first change in an unfamiliar Anarchy solution: the pillars, what is the solution's and what is the toolkit's, and how a request or a job travels through the toolkit's types. |
+| [greenfield-solution](references/guides/greenfield-solution.md) | Creating a solution: the layout choice, the order to add applications, mocks, company pieces and databases, and the checklist to finish with. |
+
+Adoption guides ship with `anarchy-adopt`, conventions and decisions with `anarchy-conventions`. The feature guides
+are online; read them when a task needs the detail:
+
+| Feature | Guide |
+|---|---|
+| Layers, the toolkit's modules, the layering check, the dependency map | https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html |
+| `Observer`, runtime sinks, a custom `ObserverFactory` | https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html |
+| Persistence providers (PostgreSQL, MySQL, Oracle) | https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html |
+| The mock server: expectations, own host, assertions, recording | https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html |
+| Blazor UIs on `Web.Ui` | https://anarchy-io.github.io/anarchy-toolkit/guides/building-uis.html |
+| Fallout components, test discovery, artifacts, releases | https://anarchy-io.github.io/anarchy-toolkit/guides/fallout-builds.html |
+| Packages, one README each (also in the NuGet cache) | https://anarchy-io.github.io/anarchy-toolkit/packages/ |
+
+The guides are written for people: walkthroughs, tables and diagrams. They are copied from the documentation site
+at the toolkit version these skills were installed with, and their layout may change between versions. Read them for
+**order, reasons and checks**; take **commands and parameters** from these skills and `make help`, which match the
+installed build. When a guide and a skill disagree, the skill wins; tell the user. Look for these elements, whatever
+the headings are called:
+
+- **Steps in order**, often numbered or drawn as a flowchart: follow the order, one step per change.
+- **Ground rules or checklists**: apply them to every change.
+- **"Done when" or "Check" lines**: run them before calling a step finished.
+- **Tables of symptom, cause and fix**: match the error you see.
+- **Links to conventions and decisions**: load `anarchy-conventions` for them.
+
+If a page you expect is missing, the published site (https://anarchy-io.github.io/anarchy-toolkit/guides/) has the
+latest version; it may describe features newer than the installed toolkit, so check `make help` before relying on it.

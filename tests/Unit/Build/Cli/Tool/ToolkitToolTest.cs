@@ -358,6 +358,10 @@ public class ToolkitToolTest
             Application(prompter, Path.Combine(root, "build")).Run(["skills", "install"], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
             File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-develop", "SKILL.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-conventions", "references", "conventions", "layering.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-conventions", "references", "decisions", "README.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-adopt", "references", "guides", "migration-recipes.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy", "references", "guides", "mental-model.md")).Should().BeTrue();
 
             Application(prompter, root).Run(["skills", "install"], interactive: false).Should().Be(1);
             prompter.Errors.Should().ContainMatch("*overwrite*");
