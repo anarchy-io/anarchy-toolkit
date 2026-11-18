@@ -38,16 +38,21 @@ Make targets name their skill with `#@`; `make skills_validate` (run in CI) chec
 
 ## Conventions
 
-- @docs/guides/async-conventions.md
-- @docs/guides/exception-conventions.md
-- @docs/guides/enum-conventions.md
-- @docs/guides/observability.md
-- @docs/guides/exposing-endpoints.md
-- @docs/guides/building-uis.md
-- @docs/guides/database-providers.md
-- @docs/guides/testing-conventions.md
+@docs/contributing/README.md: the rules for this repository. Every convention below is required here (the
+"Opting out" sections only apply to adopters):
 
-@docs/guides/README.md summarises each guide.
+- @docs/conventions/layering.md
+- @docs/conventions/dependency-injection.md
+- @docs/conventions/async.md
+- @docs/conventions/exceptions.md
+- @docs/conventions/enums.md
+- @docs/conventions/observability.md
+- @docs/conventions/endpoints.md
+- @docs/conventions/testing.md
+
+Feature guides: @docs/guides/observability.md, @docs/guides/building-uis.md, @docs/guides/database-providers.md,
+@docs/guides/mock-server.md. @docs/guides/README.md summarises each guide; @docs/decisions/README.md lists the values
+and ADRs.
 
 ## Practical notes
 

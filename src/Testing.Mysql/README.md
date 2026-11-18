@@ -24,7 +24,7 @@ Use this package in integration tests that must verify actual MySQL SQL, mapping
 
 `SingletonMysqlHelper` can share a policy across tests; manage shared state and parallel cleanup carefully. Use a disposable test database, not production credentials.
 
-See [Infrastructure.Persistence.Mysql](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Persistence.Mysql), the [MySQL notes](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#mysql) and the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html).
+See [Infrastructure.Persistence.Mysql](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Persistence.Mysql), the [MySQL notes](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#mysql) and the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html).
 
 ## Releases
 

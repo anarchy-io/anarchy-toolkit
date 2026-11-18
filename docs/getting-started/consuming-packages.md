@@ -10,7 +10,7 @@ Each package's README (on NuGet.org and in the [Package Catalog](../packages/REA
 
 ## Registering services
 
-Each package with concrete services ships a dependency-injection entry point, either an `IDependencyInjectionModule` or an `IServiceCollection` extension, so applications don't wire classes by hand:
+Each package with concrete services ships a dependency-injection entry point, either an `IDependencyInjectionModule` or an [`IServiceCollection`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) extension, so applications don't wire classes by hand:
 
 ```csharp
 services.AddLocalEventBus();
@@ -36,9 +36,9 @@ Modules never assume a configuration section or settings type: options always co
 
 | You are building | Start with |
 |---|---|
-| A REST API (Kestrel or AWS Lambda) | [`Web`](../packages/Web/README.md), plus [`Testing.Web`](../packages/Testing.Web/README.md) for tests |
+| A REST API (Kestrel or [AWS Lambda](https://aws.amazon.com/lambda/)) | [`Web`](../packages/Web/README.md), plus [`Testing.Web`](../packages/Testing.Web/README.md) for tests |
 | A GraphQL API | [`Web.GraphQL`](../packages/Web.GraphQL/README.md) |
-| A Blazor WebApp | [`Web.Ui`](../packages/Web.Ui/README.md) and the [Building UIs guide](../guides/building-uis.md) |
+| A [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) WebApp | [`Web.Ui`](../packages/Web.Ui/README.md) and the [Building UIs guide](../guides/building-uis.md) |
 | An AWS Lambda job | [`Hosting`](../packages/Hosting/README.md) |
 | An EC2/systemd worker | [`Hosting.Workers`](../packages/Hosting.Workers/README.md) |
 | Relational persistence | A provider: [`Postgres`](../packages/Infrastructure.Persistence.Postgres/README.md), [`Oracle`](../packages/Infrastructure.Persistence.Oracle/README.md) or [`Mysql`](../packages/Infrastructure.Persistence.Mysql/README.md). See [Database Providers](../guides/database-providers.md) |
@@ -51,8 +51,8 @@ Every host registers [`Configuration`](../packages/Configuration/README.md)'s `M
 
 Organization-specific behavior is not part of the toolkit. Organizations plug their conventions into its extension points instead: an overridable `ObserverFactory` for sinks, log properties and metrics backends; options and constructor parameters; and `ConfigureAppConfiguration` hooks for configuration sources such as the AWS Parameter Store. See [Plugging in an organization's setup](../guides/observability.md#plugging-in-an-organizations-setup).
 
-Domain code (task orchestration, concrete repositories and clients, domain event payloads, message destinations, Swagger scopes, UI environment URLs) belongs in the consuming applications, not in the toolkit. Generic code takes strings and generic parameters instead of domain enums; enum overloads convert values with `EnumExtension.ToDescription()` (see [Enum Conventions](../guides/enum-conventions.md)). Entities are marked with `IEntity`/`IPersistedEntity`.
+Domain code (task orchestration, concrete repositories and clients, domain event payloads, message destinations, Swagger scopes, UI environment URLs) belongs in the consuming applications, not in the toolkit. Generic code takes strings and generic parameters instead of domain enums; enum overloads convert values with `EnumExtension.ToDescription()` (see [Enum Conventions](../conventions/enums.md)). Entities are marked with `IEntity`/`IPersistedEntity`.
 
 ## Assertions in tests
 
-The toolkit uses **AwesomeAssertions** rather than FluentAssertions. Only the `Anarchy.Toolkit.Testing*` packages depend on it, so production packages bring no assertion library into your application.
+The toolkit uses **[AwesomeAssertions](https://awesomeassertions.org/)** rather than FluentAssertions. Only the `Anarchy.Toolkit.Testing*` packages depend on it, so production packages bring no assertion library into your application.

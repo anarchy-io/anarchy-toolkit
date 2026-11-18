@@ -22,9 +22,9 @@ Reference this package from test projects, not production services. It is useful
 2. Derive fixtures from `EntityFixtureBase<T>` and implement `BuildDefaultFixture()`. Call `Build()` for defaults or `Build(new { Property = value })` to vary only the scenario-specific fields. Null overrides require `overrideWithNulls: true`.
 3. Use `TestCaseBase<TAppSettings>` or `TestHelper.TestSettings<TAppSettings>()` for typed settings. Embed `appsettings.json` and `appsettings.Development.json` in the assembly declaring the settings type, and keep real credentials out of test resources.
 
-See the [testing guide](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html) for a test and fixture example.
+See the [testing guide](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html) for a test and fixture example.
 
-See the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html) and [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/).
+See the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html) and [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/).
 
 ## Releases
 

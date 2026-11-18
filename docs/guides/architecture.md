@@ -2,7 +2,7 @@
 
 This guide explains how the toolkit is organized on disk and in namespaces, and the rule that governs its dependencies: **dependencies only point down the layers**.
 
-> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+> **A guide, not a rule.** This page explains how the platform works. The conventions it mentions are recommendations: see [Layering](../conventions/layering.md) and [Dependency Injection](../conventions/dependency-injection.md) for the rules, why they exist and how to opt out.
 {: .notice--info}
 
 ## The layers
@@ -20,7 +20,7 @@ Core < Infrastructure < Configuration < Hosting < Web < Build
 | `Configuration` | Settings contracts, environment/secret handling, the observability bootstrap and the modules that register them. | `Configuration` |
 | `Hosting` | Running a process: the `IStartup` contract and `UseStartup`, job/worker startups and entry points (Lambda and EC2), the worker pipeline and the workers' self-hosted health API. | `Hosting`, `Hosting.Workers` |
 | `Web` | HTTP API and UI pipelines: startups, entry points, middleware, controllers, presentation contracts and DTOs. | `Web`, `Web.GraphQL`, `Web.Ui` |
-| `Build` | Build tooling: the Fallout build components, the command-line operations behind them and the `anarchy-toolkit` .NET tool. On top of the chain so that no shipped project can depend on build tooling. | `Build.Fallout`, `Build.Cli`, `Build.Cli.Tool` |
+| `Build` | Build tooling: the [Fallout](https://fallout.build/) build components, the command-line operations behind them and the `anarchy-toolkit` .NET tool. On top of the chain so that no shipped project can depend on build tooling. | `Build.Fallout`, `Build.Cli`, `Build.Cli.Tool` |
 
 A project's layer is the **prefix of its name** (`src/<Layer>.<Name>/`, or just `src/Core/` for the base project). A project may use anything from its own layer or any layer **below** it, never above. For example, `Infrastructure.Persistence.Postgres` may use `Core` and `Core.*`, but no Core project may import an `Infrastructure.*`, `Configuration.*`, `Hosting.*`, `Web.*` or `Build.*` one.
 
@@ -28,32 +28,7 @@ The test kits (`Testing.*`) and the test projects under `tests/` (one per test k
 
 ## Inside a project
 
-A project's own code sits **directly at its root**, organized by responsibility (`Entity/`, `Service/`, `Repository/`, `Extension/`, `DependencyInjection/`, ...), and namespaces follow folders:
-
-```text
-src/Infrastructure.Persistence.Postgres/
-├── DependencyInjection/Module/ModulePostgres.cs
-├── Entity/Configuration/Storage/Database/PostgresConnectionOptions.cs
-├── Repository/Storage/Database/Postgres/PostgresDbReaderRepositoryBase.cs
-└── Service/Storage/Database/Postgres/PostgresDbUnitOfWork.cs
-```
-
-```csharp
-namespace Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Storage.Database.Postgres;
-```
-
-A root folder named after a layer (`Core/`, `Infrastructure/`, `Configuration/`, `Web/`) is only allowed for a layer **below** the project's own. It holds the classes the project introduces for that inner layer:
-
-| Project layer | Allowed layer folders | Example |
-|---|---|---|
-| `Core.*` | none: a Core project never has a `Core/` folder | `Core.Health/Service/...` |
-| `Infrastructure.*` | `Core/` | `Infrastructure.Persistence.Db/Core/Service/Repository/...` (repository contracts it exposes), but never `Infrastructure/`, `Configuration/` or `Web/` |
-| `Configuration.*` | `Core/`, `Infrastructure/` | `Configuration/Infrastructure/Entity/...` |
-| `Hosting.*` | `Core/`, `Infrastructure/`, `Configuration/` | none yet |
-| `Web.*` | `Core/`, `Infrastructure/`, `Configuration/`, `Hosting/` | `Web.Ui/Core/Service/Ui/...` |
-| `Build.*` | any lower layer | `Build.Fallout/Core/Entity/Build/...` |
-
-So `Infrastructure.Persistence.Oracle` may get a `Core/` folder if it has to expose its own domain entities, but code of its own layer, including its DI modules, goes at the root, never under `Infrastructure/` or `Configuration/`. Layer folders do not change the project's layer either: a `Core/` folder inside an `Infrastructure.*` project is still Infrastructure code, so it may only use projects up to Infrastructure.
+A project's code sits at its root, organized by responsibility folders (`Entity/`, `Service/`, `Repository/`, `DependencyInjection/`, ...), and namespaces follow folders. Folders named after a lower layer hold the classes a project introduces for that layer. The full rules, with the table of allowed layer folders, are in the [Layering convention](../conventions/layering.md#inside-a-project); [Where does a new file go?](../conventions/layering.md#where-does-a-new-file-go) answers the everyday question.
 
 ## Dependency-injection modules
 
@@ -69,39 +44,11 @@ A project that has concrete services to register exposes them through one or mor
 | `Hosting.Workers` | `ModuleApplicationHealth(assembly)` | The workers' health endpoints (`/health/instance`, `/health/services`, `/health/status`) with the build metadata embedded in `assembly`. `AddServiceHealthCheckWorker(assembly)` registers them together with the `ServiceHealthCheckWorker` that serves them. |
 | `Configuration` | `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>(observability?)`, `ModuleObservability(observerFactory?, correlationIdOptions?)`, `ModuleAppSettingsBase<TAppSettings>` | `ModuleLibConfiguration` registers the consumer's settings module (a `ModuleAppSettingsBase` subclass), `ModuleObservability` and the secret management in one go. |
 
-Modules follow two rules:
-
-1. **No hard-coded configuration.** A module never assumes a section name or a settings type. Options come in through constructor parameters, usually as a `Func<IConfiguration, TOptions>` evaluated when the module registers its services:
-
-   ```csharp
-   services.UseModule(
-       new ModulePostgres(
-           config => config.GetSection("Postgres").Get<PostgresConnectionOptions>()!,
-           config => new PostgresResilienceOptions(config.GetValue<int>("Resilience:RetryCount"))),
-       configuration,
-       environment);
-   ```
-
-   Parameterless modules use `services.UseModule<TModule>(configuration, environment)`.
-
-   Code that reads its own section today (`configuration.GetRequired<T>("Section")` inside an `Add*` extension)
-   converts without changing behaviour: the extension becomes a module taking `Func<IConfiguration, T>`, and the
-   composition root passes the old read, `new ModuleCarrierClient(c => c.GetRequired<CarrierClientSettings>("CarrierClient"))`.
-   The section name moves to the one place that knows the configuration, and the module can later take its settings
-   from the validated `AppSettings` (`c => c.Get<AppSettings>()!.CarrierClient`) without changing.
-2. **Modules wrap, they don't replace.** Where a project already has an `Add*` extension (e.g. `AddSnsMessageBroker`), the module calls it, so consumers that don't use modules keep the same entry point.
-
-`Core.*` projects ship plain `IServiceCollection` extensions instead of modules (e.g. `AddLocalEventBus()`).
-
-## Where does a new file go?
-
-1. **Pick the project by layer, then the folder by responsibility.** Code of the project's own layer goes at its root. Only code for an inner layer gets a layer folder: a repository contract is `Core/Service/Repository/...` even when it ships in an Infrastructure package (see `Infrastructure.Persistence.Db/Core/Service/Repository/Storage/Event/`).
-2. **Extension methods on framework types** follow the extended type's namespace below `Extension/` (e.g. `Extension/Microsoft/DependencyInjection/`), and their namespace follows the folder like any other file (`Anarchy.Toolkit.Core.Events.Extension.Microsoft.DependencyInjection`), so consumers add the matching `using`.
-3. **Embedded SQL** sits in a `Queries/` folder next to the repository that loads it, because resources are resolved from the repository's namespace (`<Namespace>.Queries.<Name>.sql`).
-4. **A new project** must be named after its layer (`<Layer>.<Name>`); the layering check rejects unknown prefixes.
-5. **`Composition/` vs `Configuration/`.** An application's composition root (its startup, entry point and DI wiring, e.g. `Web/Composition/WebAppStartupBase.cs` or a sample's `Composition/Startup.cs`) goes under `Composition/`. `Configuration/` is only for settings and options (e.g. `Entity/Configuration/.../PostgresConnectionOptions.cs`).
+How to write your own modules (no hard-coded configuration, wrap existing `Add*` extensions) is covered by the [Dependency Injection convention](../conventions/dependency-injection.md). `Core.*` projects ship plain [`IServiceCollection`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) extensions instead of modules (e.g. `AddLocalEventBus()`).
 
 ## Enforcing the rule
+
+The check is optional: leave `ILayeringBuild` out of your build, or adapt it as described in [Layering: opting out](../conventions/layering.md#opting-out-or-adapting).
 
 The `CheckLayering` Fallout target (`ILayeringBuild` in `src/Build.Fallout`) checks three things, using project-name prefixes by default:
 
@@ -125,19 +72,3 @@ Run it after moving code, adding folders or adding project references.
 
 <iframe src="../dependency-map.html" title="Anarchy.Toolkit dependency map" loading="lazy" style="width: 100%; height: 900px; border: 1px solid #dddcd7; border-radius: 4px;"></iframe>
 
-## Namespace collisions to know about
-
-The responsibility folders produce a few namespace segments that collide with type names:
-
-- **`Event`.** `Core.Events` has both an `Event` entity and `.../Event/...` folders. In files under a namespace that has an `Event` child namespace, add an alias right after the file-scoped namespace line (usings placed there are resolved before parent namespaces):
-
-  ```csharp
-  namespace Anarchy.Toolkit.Core.Events.Service.Event.Domain;
-
-  using Event = Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event;
-  ```
-
-- **`Attribute`.** Under `.../Entity/Attribute/` or `Presentation/Attribute/`, derive from `System.Attribute` explicitly.
-- **`Host`.** A `Host/` folder (e.g. `Hosting/Host/`) can shadow `Microsoft.Extensions.Hosting.Host` for code in neighboring namespaces. If you get `CS0118` on `Host.CreateDefaultBuilder(...)`, use the full type name.
-
-The general fix for `CS0118` ("is a namespace but is used like a type") or `CS0104` (ambiguous reference) is the same: an alias placed right after the file-scoped namespace line.

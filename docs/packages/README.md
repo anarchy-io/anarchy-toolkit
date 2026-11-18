@@ -74,7 +74,7 @@ At the top of the chain, so nothing that ships can depend on it.
 
 ## Testing kits: reusable test helpers
 
-Outside the layer chain: they may reference any layer, but no production package may reference them. See [Testing Conventions](../guides/testing-conventions.md).
+Outside the layer chain: they may reference any layer, but no production package may reference them. See [Testing Conventions](../conventions/testing.md).
 
 | Package | Purpose | Depends on |
 |---|---|---|

@@ -30,7 +30,7 @@ var unitOfWork = PostgresHelper.DbUnitOfWorkFixture<TestAppSettings>();
 
 Here `TestAppSettings` is your own type and its declaring assembly contains the embedded test settings. Register enum handlers as needed, use the fixtures in repository tests, and clean up only dedicated test tables. `SingletonPostgresHelper` shares a policy; coordinate access and cleanup when tests run in parallel.
 
-See [Infrastructure.Persistence.Postgres](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Persistence.Postgres), the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/guides/testing-conventions.html) and the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+See [Infrastructure.Persistence.Postgres](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Persistence.Postgres), the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html) and the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

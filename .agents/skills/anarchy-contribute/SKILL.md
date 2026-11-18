@@ -18,8 +18,8 @@ they disagree, CONTRIBUTING.md wins: report the difference.
 
 - Never stage, revert or discard changes you did not make: the working tree may hold the developer's work in
   progress. Stage files explicitly (`git add <paths>`), never `git add -A` or `git commit -a`.
-- Follow the guides in `docs/guides/` (architecture and the conventions listed in `AGENTS.md`); in this repository
-  they are rules, not recommendations.
+- Follow `docs/contributing/README.md` and the conventions in `docs/conventions/` (listed in `AGENTS.md`); in this
+  repository they are rules, not recommendations. A choice that shapes the packages gets an ADR in `docs/decisions/`.
 
 ## Before committing
 

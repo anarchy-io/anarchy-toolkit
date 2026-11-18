@@ -1,9 +1,13 @@
-# Exception Conventions
+# Exceptions
 
-This guide explains how exceptions are designed, named and placed in the toolkit and in applications built on it. Every failure must be **identifiable by type**, carries **its own message**, and can still be caught by the **native .NET type** that callers already handle.
+This convention explains how exceptions are designed, named and placed in the toolkit and in applications built on it. Every failure must be **identifiable by type**, carries **its own message**, and can still be caught by the **native .NET type** that callers already handle.
 
-> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+> **Recommendation, not a requirement.** The packages work without following this convention. It is a rule only for code in the toolkit repository (see [Contributing](../contributing/README.md)); applications can adopt it, adapt it or skip it. [Opting out or adapting](#opting-out-or-adapting) explains how.
 {: .notice--info}
+
+## Why
+
+Failures identifiable by type can be caught, logged, mapped and alerted on precisely, while wrapping the native types keeps existing `catch` blocks working. See the [Explicit failures value](../decisions/README.md#values).
 
 ## The four rules
 
@@ -149,4 +153,14 @@ These stay native on purpose:
 - [ ] Inner exceptions are preserved.
 - [ ] The class lives in the nearest `Exceptions` folder shared by its throwers and catchers.
 - [ ] The base type keeps the expected HTTP status in `ExceptionMiddleware`.
-- [ ] Tests assert the specific type (AwesomeAssertions' `Throw<T>` also matches derived types).
+- [ ] Tests assert the specific type ([AwesomeAssertions](https://awesomeassertions.org/)' `Throw<T>` also matches derived types).
+
+## Opting out or adapting
+
+| You want to... | Do this |
+|---|---|
+| Throw native exceptions (`ArgumentException`, ...) | Possible; the toolkit catches by native base type, so its behaviour does not change. |
+| Map exceptions to HTTP responses your own way | Don't use `ExceptionMiddleware`: register your own exception handler (or `UseExceptionHandler`) with a mapping per type. Common reasons: problem-details bodies, or `ArgumentException` as `400` instead of `500`. |
+| Keep exception classes next to the code that throws them | Fine for an application; the [where they live](#where-exception-classes-live) table matters most for shared libraries. |
+
+**What you lose by opting out:** precise status codes from `ExceptionMiddleware` and type-based alerting.

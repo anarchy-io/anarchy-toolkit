@@ -1,15 +1,19 @@
-# Exposing Endpoints
+# Endpoints
 
-This guide explains how to expose endpoints from an API built on `Anarchy.Toolkit.Web`, with clear boundaries and low coupling. The objective is to keep HTTP contracts stable while allowing domain models to evolve independently.
+This convention explains how to expose endpoints from an API built on `Anarchy.Toolkit.Web`, with clear boundaries and low coupling. The objective is to keep HTTP contracts stable while allowing domain models to evolve independently.
 
-> **Rules for the toolkit, recommendations for adopters.** The conventions in this guide are mandatory for code in the Anarchy I/O Toolkit repository and are enforced in review. Applications built on the platform are free to adopt, adapt or ignore them: they are offered as recommendations, not requirements.
+> **Recommendation, not a requirement.** The packages work without following this convention. It is a rule only for code in the toolkit repository (see [Contributing](../contributing/README.md)); applications can adopt it, adapt it or skip it. [Opting out or adapting](#opting-out-or-adapting) explains how.
 {: .notice--info}
+
+## Why
+
+Separate presentation DTOs keep HTTP contracts stable while domain types change, and keep Web concerns out of Core, as [layering](layering.md) requires.
 
 The toolkit follows these rules itself (see `HealthController` and the `Health*Output` DTOs in `Anarchy.Toolkit.Web`), and applications built on it may use them as a starting point. The examples below use a `User` resource from a user-management API.
 
 ## Recommended project structure
 
-Use the same layers as the toolkit (see [Layered Architecture](architecture.md)):
+Use the same layers as the toolkit (see [Layered Architecture](../guides/architecture.md)):
 
 ```text
 src/
@@ -48,7 +52,7 @@ src/
 ## Endpoint rules
 
 - Every endpoint must declare explicit response types (`ProducesResponseType`) using Web entities.
-- **Use `ActionResult<T>` for endpoints that return payloads.** This enforces type safety at the interface level and improves API documentation. For example, `Task<ActionResult<UserOutput>>` makes the contract explicit.
+- **Use [`ActionResult<T>`](https://learn.microsoft.com/aspnet/core/web-api/action-return-types) for endpoints that return payloads.** This enforces type safety at the interface level and improves API documentation. For example, `Task<ActionResult<UserOutput>>` makes the contract explicit.
 - Only use bare `IActionResult` for endpoints without a response body (e.g. `204 No Content`, `202 Accepted`).
 - **Never expose Core domain entities (or Core `Api` DTOs) in response payloads.** Every response payload must be a dedicated Web `*Output` type under `Web/Presentation/Entity/Output`, even when its shape mirrors a Core entity/DTO one-to-one.
 - **Never accept Core domain entities (or Core `Api` DTOs) as controller parameters.** Every non-primitive request payload (`[FromBody]`, or an implicit-body complex parameter) must be a dedicated Web `*Input` type under `Web/Presentation/Entity/Input`. Route/query parameters may stay primitive (`string`, `long`, `int`, `double`, `bool`, enums, etc.).
@@ -201,3 +205,13 @@ public class UserController(IUserUseCase useCase) : ControllerBase, IUserControl
     }
 }
 ```
+
+## Opting out or adapting
+
+| You want to... | Do this |
+|---|---|
+| Return domain types directly | Possible for internal or small APIs; nothing in `Web` requires DTOs. |
+| Use minimal APIs instead of controllers | Fine: the toolkit's middlewares and startup work with either. |
+| Use a mapping library ([Mapster](https://github.com/MapsterMapper/Mapster), [AutoMapper](https://automapper.io/)) | Fine: `ToDto`/`FromDto` are a convention, not an interface the toolkit calls. |
+
+**What you lose by opting out:** contracts that survive refactoring the domain, and the clear Web/Core boundary the layering check enforces.
