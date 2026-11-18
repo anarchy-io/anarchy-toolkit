@@ -390,6 +390,13 @@
           "type": "string",
           "description": "Production code folder, relative to the root (default: src)"
         },
+        "TestKindAliases": {
+          "type": "array",
+          "description": "Other names for test kinds, as Kind=Alias (e.g. EndToEnd=Acceptance)",
+          "items": {
+            "type": "string"
+          }
+        },
         "TestsRoot": {
           "type": "string",
           "description": "Test projects folder, relative to the root (default: tests with IStandardBuild, else test)"

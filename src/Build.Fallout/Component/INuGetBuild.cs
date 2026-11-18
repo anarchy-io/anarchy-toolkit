@@ -222,13 +222,14 @@ public interface INuGetBuild : IStandardBuild
         });
 
     /// <summary>
-    /// Packs every project of <see cref="NuGetProjects"/> into <see cref="PackagesDirectory"/>, each in its own
+    /// Runs the unit tests (<see cref="IStandardBuild.TestUnit"/>, the only kind that needs no local environment), then
+    /// packs every project of <see cref="NuGetProjects"/> into <see cref="PackagesDirectory"/>, each in its own
     /// subdirectory, reusing the build of solution projects when <see cref="IStandardBuild.Compile"/> ran. Fails when no
     /// project is selected, no package is produced, or the packages cannot be ordered for publishing.
     /// </summary>
     Target Pack => d => d
-        .Description("Packs source projects into a fresh artifacts/packages directory")
-        .DependsOn(Compile)
+        .Description("Packs source projects into a fresh artifacts/packages directory, after the unit tests")
+        .DependsOn(Compile, TestUnit)
         .Executes(() => {
             var projects = NuGetProjects.ToArray();
             if (projects.Length == 0) throw new InvalidOperationException("No source projects selected for NuGet packing.");

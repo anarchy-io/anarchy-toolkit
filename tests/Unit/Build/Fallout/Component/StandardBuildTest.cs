@@ -28,6 +28,18 @@ public class StandardBuildTest
     }
 
     [Fact]
+    public void ParseTestKindAliases_GroupsAliasesByKind()
+    {
+        var aliases = IStandardBuild.ParseTestKindAliases(["EndToEnd=Acceptance", "endtoend = Smoke", "Integration=Contract"]);
+
+        aliases["ENDTOEND"].Should().Equal("Acceptance", "Smoke");
+        aliases["Integration"].Should().Equal("Contract");
+        aliases["Integration"].Any(alias => IStandardBuild.MatchesTestKind("Api.Tests.Contract", alias)).Should().BeTrue();
+        var invalid = () => IStandardBuild.ParseTestKindAliases(["Acceptance"]);
+        invalid.Should().Throw<ArgumentException>().WithMessage("*Kind=Alias*");
+    }
+
+    [Fact]
     public void ParseAppNames_GivenCommaSeparatedNames_TrimsAndDeduplicates()
     {
         // Act

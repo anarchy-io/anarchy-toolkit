@@ -69,12 +69,12 @@ public interface IContainerBuild : IStandardBuild
         RuntimeInformation.OSArchitecture == Architecture.Arm64 ? "linux-arm64" : "linux-x64";
 
     /// <summary>
-    /// Publishes <see cref="IStandardBuild.AppName"/> framework-dependent for <see cref="ContainerRuntimeIdentifier"/>
+    /// Runs the unit tests (<see cref="IStandardBuild.TestUnit"/>), then publishes <see cref="IStandardBuild.AppName"/> framework-dependent for <see cref="ContainerRuntimeIdentifier"/>
     /// into <see cref="ContainerAppArtifactDirectory"/>. Requires an app name and an image tag (a Git repository).
     /// </summary>
     Target EcrPublishAppArtifact => d => d
-        .Description("Publishes a runnable application (framework-dependent) to be included in a container image")
-        .DependsOn(Compile)
+        .Description("Publishes a runnable application (framework-dependent) to be included in a container image, after the unit tests")
+        .DependsOn(Compile, TestUnit)
         .Requires(() => !string.IsNullOrWhiteSpace(ContainerImageTag))
         .Requires(() => !string.IsNullOrWhiteSpace(AppName))
         .Executes(() => {

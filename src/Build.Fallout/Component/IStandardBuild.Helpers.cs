@@ -93,12 +93,15 @@ public partial interface IStandardBuild
 
     /// <summary>
     /// Whether the test project holds tests of the given kind (<c>Unit</c>, <c>Integration</c> or
-    /// <c>EndToEnd</c>). By default, see <see cref="MatchesTestKind"/>.
+    /// <c>EndToEnd</c>): by default when <see cref="MatchesTestKind"/> matches the kind or one of its
+    /// <see cref="TestKindAliases"/>.
     /// </summary>
     /// <param name="project">The test project.</param>
     /// <param name="kind">The kind of tests, one of the <see cref="TestKind"/> constants.</param>
     /// <returns><see langword="true"/> if the project holds tests of that kind; otherwise <see langword="false"/>.</returns>
-    bool IsTestProjectOfKind(Project project, string kind) => MatchesTestKind(project.Name, kind);
+    bool IsTestProjectOfKind(Project project, string kind) =>
+        MatchesTestKind(project.Name, kind) ||
+        (ParseTestKindAliases(TestKindAliases).TryGetValue(kind, out var aliases) && aliases.Any(alias => MatchesTestKind(project.Name, alias)));
 
     /// <summary>
     /// Whether a project name denotes tests of the given kind: either it is the kind itself (a single
