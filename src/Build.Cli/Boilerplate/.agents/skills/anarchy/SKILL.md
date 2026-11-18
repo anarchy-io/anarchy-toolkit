@@ -13,8 +13,7 @@ Docs: https://anarchy-io.github.io/anarchy-toolkit/
 
 - Creating a solution, or adding an API, job or UI to one: use the CLI below.
 - Starting any work in an Anarchy solution: read the rules, then load the skill for the task.
-- Adopting or upgrading the toolkit in a repository: follow
-  https://raw.githubusercontent.com/anarchy-io/anarchy-toolkit/main/agents/ADOPT.md
+- Adopting or upgrading the toolkit in a repository: load `anarchy-adopt`.
 
 ## Rules
 
@@ -33,6 +32,8 @@ Docs: https://anarchy-io.github.io/anarchy-toolkit/
 |---|---|
 | Set up, build, run, lint, test, check layering | `anarchy-develop` |
 | Local Docker environment, mock server | `anarchy-environment` |
+| Modules, settings, health reports, workers, observability | `anarchy-compose` |
+| Adopting the toolkit, upgrading it, migrating tests, mocks or DI | `anarchy-adopt` |
 | Versions, release notes, packages, container images | `anarchy-release` |
 | Dependency upgrades, Git hooks, boilerplate, build targets, these skills | `anarchy-maintenance` |
 | Targets the solution added itself | the solution's own skills in `.agents/skills` |

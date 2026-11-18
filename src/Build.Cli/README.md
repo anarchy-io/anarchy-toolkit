@@ -23,6 +23,15 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 
 ## Releases
 
+### 1.8.0
+
+- fix(Build.Cli): pack the boilerplate at its source paths
+- feat(Build.Cli): ship a generic .gitignore synced through a managed block
+- feat(Build.Cli): show, diff and dry-run the boilerplate before installing it
+- feat(Build.Cli): keep the packaged .editorconfig in a managed block
+- docs(mock-server): add a guide covering recording and migrating from MockServer
+- feat(Build.Cli): ship adoption and runtime composition skills
+
 ### 1.7.0
 
 - feat(Build.Cli): add opt-in agent skills to the boilerplate

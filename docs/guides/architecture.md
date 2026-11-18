@@ -83,6 +83,12 @@ Modules follow two rules:
    ```
 
    Parameterless modules use `services.UseModule<TModule>(configuration, environment)`.
+
+   Code that reads its own section today (`configuration.GetRequired<T>("Section")` inside an `Add*` extension)
+   converts without changing behaviour: the extension becomes a module taking `Func<IConfiguration, T>`, and the
+   composition root passes the old read, `new ModuleCarrierClient(c => c.GetRequired<CarrierClientSettings>("CarrierClient"))`.
+   The section name moves to the one place that knows the configuration, and the module can later take its settings
+   from the validated `AppSettings` (`c => c.Get<AppSettings>()!.CarrierClient`) without changing.
 2. **Modules wrap, they don't replace.** Where a project already has an `Add*` extension (e.g. `AddSnsMessageBroker`), the module calls it, so consumers that don't use modules keep the same entry point.
 
 `Core.*` projects ship plain `IServiceCollection` extensions instead of modules (e.g. `AddLocalEventBus()`).
