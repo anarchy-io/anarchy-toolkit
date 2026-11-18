@@ -45,6 +45,9 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger-theme[/]", "Add an API whose Swagger UI keeps its own look.");
         grid.AddRow("[blue]anarchy-toolkit skills install [[--output <dir>]][/]", "Install the agent skills into .agents/skills of the solution here (or <dir>).");
+        grid.AddRow("[blue]anarchy-toolkit boilerplate list[/]", "List the packaged boilerplate files (Makefile, scripts, settings, skills).");
+        grid.AddRow("[blue]anarchy-toolkit boilerplate show <path>[/]", "Print a packaged file without installing it.");
+        grid.AddRow("[blue]anarchy-toolkit boilerplate diff [[<path>...]][/]", "Diff the solution's copies against the packaged files (exit code 1 when any differ).");
         grid.AddRow("[blue]anarchy-toolkit [[--help]][/]", "Show this help.");
 
         console.Write(new Panel(grid)

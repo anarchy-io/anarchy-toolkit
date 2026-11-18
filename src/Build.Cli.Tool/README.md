@@ -21,6 +21,9 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 | `anarchy-toolkit scaffold api\|job\|ui <Name>` | Adds one without prompts. |
 | `anarchy-toolkit scaffold api <Name> --no-swagger-theme` | Adds an API whose Swagger UI keeps its own look instead of the toolkit's default theme. |
 | `anarchy-toolkit skills install [--output <dir>]` | Installs the toolkit's agent skills into `.agents/skills` of the solution found from the current directory (or `<dir>`). |
+| `anarchy-toolkit boilerplate list` | Lists the packaged boilerplate files (Makefile, scripts, settings files, agent skills). |
+| `anarchy-toolkit boilerplate show <path>` | Prints a packaged file without installing it. |
+| `anarchy-toolkit boilerplate diff [<path>...]` | Prints a unified diff from the solution's copies to the packaged files (`missing:` or `identical:` otherwise); exits with `1` when any file is missing or differs. Folders such as `scripts` select every file below them. `.gitignore` and `.editorconfig` only compare their managed block. |
 
 ## Bootstrap
 
@@ -63,6 +66,10 @@ Run `anarchy-toolkit scaffold` anywhere inside a solution created by `bootstrap`
 It follows the solution's package management. When the nearest `Directory.Packages.props` above the new project enables central package management (in that file or in `Directory.Build.props`), the package version is added there as a `PackageVersion`, unless the package is already pinned, in which case the existing version is kept, and the project's reference is unversioned. Otherwise the reference carries the version.
 
 Generated APIs use the toolkit's default Swagger UI theme (see the [Web package README](../Web/README.md#swagger-ui-theme)). With `--no-swagger-theme`, the startup disables it with `.Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)`; remove that line to turn it back on.
+
+## Boilerplate
+
+The `boilerplate` commands print plain text, without the banner, so scripts and agents can read the packaged files of this tool's version before deciding what to install: `make boilerplate DRY_RUN=true` then shows what an install would create, keep, update or refuse, and `make boilerplate_diff` does the same comparison as `boilerplate diff` through the solution's build.
 
 ## Agent skills
 

@@ -49,6 +49,13 @@ public interface IBoilerplateBuild : IFalloutBuild
     bool ApendExisting => TryGetValue<bool?>(() => ApendExisting) ?? false;
 
     /// <summary>
+    /// Whether <see cref="SetupBoilerplate"/> only reports what it would do (<c>--boilerplate-dry-run</c>).
+    /// Defaults to <see langword="false"/>.
+    /// </summary>
+    [Parameter("Only report what SetupBoilerplate would create, keep, update or refuse, without writing")]
+    bool BoilerplateDryRun => TryGetValue<bool?>(() => BoilerplateDryRun) ?? false;
+
+    /// <summary>
     /// Creates the starter solution, scripts and Makefile in <see cref="FalloutBuild.RootDirectory"/>
     /// through <see cref="Tasks.BoilerplateTasks.Create(string, string?, Tasks.BoilerplateOptions)"/>. Existing files are
     /// not replaced.
@@ -58,6 +65,16 @@ public interface IBoilerplateBuild : IFalloutBuild
         .Executes(() => BoilerplateTasks.Create(RootDirectory, BoilerplateSolutionName, new BoilerplateOptions {
             Items = BoilerplateItems,
             Exclude = BoilerplateExclude,
-            AppendExisting = AppendExisting || ApendExisting
+            AppendExisting = AppendExisting || ApendExisting,
+            DryRun = BoilerplateDryRun
         }));
+
+    /// <summary>
+    /// Shows how the solution's copies of the packaged boilerplate files (those selected by
+    /// <see cref="BoilerplateItems"/>, or all but the agent skills) differ from the packaged ones, without writing.
+    /// See <see cref="Tasks.BoilerplateTasks.Diff"/>.
+    /// </summary>
+    Target DiffBoilerplate => d => d
+        .Description("Shows how the solution's boilerplate files differ from the packaged ones")
+        .Executes(() => { BoilerplateTasks.Diff(RootDirectory, BoilerplateItems); });
 }

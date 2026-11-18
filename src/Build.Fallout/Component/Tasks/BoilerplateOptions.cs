@@ -24,4 +24,8 @@ public sealed class BoilerplateOptions
     /// <c>test</c> runner section to an existing <c>global.json</c> that has none, instead of leaving them untouched.
     /// </summary>
     public bool AppendExisting { get; set; }
+    /// <summary>
+    /// Whether to only log what would be created, kept, updated or conflict, without writing anything.
+    /// </summary>
+    public bool DryRun { get; set; }
 }

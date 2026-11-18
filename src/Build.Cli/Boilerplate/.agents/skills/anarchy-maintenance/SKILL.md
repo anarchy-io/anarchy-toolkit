@@ -26,8 +26,18 @@ without `--dry-run` once the user agrees. `--force` replaces an existing hook: a
 and parameters, and `make fallout TARGET="<Target> --<Parameter> <value>"` runs one.
 
 **Boilerplate**: `make boilerplate ITEMS=Makefile,scripts APPEND=true` installs packaged files into the solution. It
-never overwrites: on a conflict it writes nothing and lists the files. To pick up a newer Makefile or scripts, compare
-with the packaged ones and propose the changes to the user.
+never overwrites: on a conflict it writes nothing and lists the files. Look before writing:
+
+- `make boilerplate_diff ITEMS=Makefile,scripts` (or `anarchy-toolkit boilerplate diff Makefile scripts`) prints a
+  unified diff from the solution's copies to the packaged ones; `anarchy-toolkit boilerplate list` and
+  `boilerplate show <path>` read the packaged files without installing anything.
+- `make boilerplate ... DRY_RUN=true` reports what an install would create, keep, update or refuse.
+- `.gitignore` and `.editorconfig` hold the toolkit's settings in a managed block (`# >>> anarchy-toolkit` ...
+  `# <<< anarchy-toolkit`): never edit inside it; put the solution's own entries below it. `APPEND=true` replaces
+  only that block, and warns about tracked files the new `.gitignore` ignores: ask the user whether to untrack them
+  or add a `!` exception.
+
+To pick up a newer Makefile or scripts, diff them and propose the changes to the user.
 
 **Agent skills**: skills live in `.agents/skills/<name>/SKILL.md`. A `#@ <skill>` comment ties make targets to a skill:
 at the top of a `.mk` file for all its documented (`#?`) targets, or right below one target for just that one (`#@ -`
@@ -56,6 +66,7 @@ exempts it; a bare `#@` means `<solution-prefix>-<file>`).
 | `make git_hooks_enable` | Sets up a GIT hook | `OPTIONS` (str): Set to "--help" to display more options |
 | `make git_hooks_disable` | Removes a configured Git Hook | `HOOK_TYPE` (str): Name of the hook (default: pre-commit) |
 | `make git_hooks_show` | Shows content of a configured Git Hook | `HOOK_TYPE` (str): Name of the hook (default: all) |
-| `make boilerplate` | Installs selected boilerplate items (Makefile, scripts, settings files...) without overwriting files | `ITEMS` (str): Comma-separated items, e.g. Makefile,scripts (DEFAULT=all but the agent skills)<br>`EXCLUDE` (str): Comma-separated items to leave out<br>`APPEND` (bool): Sync the packaged .gitignore and .editorconfig into a managed block of existing ones (DEFAULT=false) |
+| `make boilerplate` | Installs selected boilerplate items (Makefile, scripts, settings files...) without overwriting files | `ITEMS` (str): Comma-separated items, e.g. Makefile,scripts (DEFAULT=all but the agent skills)<br>`EXCLUDE` (str): Comma-separated items to leave out<br>`APPEND` (bool): Sync the packaged .gitignore and .editorconfig into a managed block of existing ones (DEFAULT=false)<br>`DRY_RUN` (bool): Only report what would be created, kept, updated or conflict (DEFAULT=false) |
+| `make boilerplate_diff` | Shows how the solution's boilerplate files differ from the packaged ones, without writing | `ITEMS` (str): Comma-separated packaged paths or folders, e.g. Makefile,scripts (DEFAULT=all but the agent skills) |
 | `make api_reference` | Generates the DocFX API reference website from the compiled packages (needs IApiReferenceBuild) |  |
 <!-- anarchy:commands:end -->
