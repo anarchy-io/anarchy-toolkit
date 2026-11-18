@@ -28,6 +28,10 @@ See the [worker sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/
 
 ## Releases
 
+### 1.2.0
+
+- fix(Hosting.Workers): let the health API listen on a port the OS chooses
+
 ### 1.1.1
 
 - docs(packages): identify each package's pillar and layer

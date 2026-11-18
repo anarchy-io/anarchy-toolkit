@@ -14,10 +14,9 @@ namespace Anarchy.Toolkit.Tests.Unit.Hosting.Workers.Service.Worker;
 
 public class ServiceHealthCheckWorkerTest : TestCaseBase
 {
-    private readonly int _portNumber = EphemeralPortUtility.FindFreeEphemeralTcpPort();
-
+    // Port 0: the operating system picks a free port when the health API starts.
     private ServiceHealthCheckWorker CreateSut(ServiceProvider provider) =>
-        new(new WorkerHealthCheckAppSettings(_portNumber), FixtureObserver,
+        new(new WorkerHealthCheckAppSettings(0), FixtureObserver,
             provider.GetRequiredService<IServiceScopeFactory>());
 
     [Fact]
@@ -31,9 +30,8 @@ public class ServiceHealthCheckWorkerTest : TestCaseBase
         ]);
         await using var provider = services.BuildServiceProvider(validateScopes: true);
         using var sut = CreateSut(provider);
-        using var client = new HttpClient { BaseAddress = new Uri($"http://localhost:{_portNumber}") };
-
         await sut.StartAsync(TestContext.Current.CancellationToken);
+        using var client = new HttpClient { BaseAddress = new Uri($"http://localhost:{sut.HealthApiPort}") };
         using var response = await client.GetAsync("/health/services", TestContext.Current.CancellationToken);
         var content = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         await sut.StopAsync(TestContext.Current.CancellationToken);

@@ -22,7 +22,7 @@ public class SelfHostTests : IDisposable
     {
         var cancellationToken = TestContext.Current.CancellationToken;
 
-        _healthApi.Start();
+        Start();
 
         var request = new HttpRequestMessage(verb, url);
         using var response = await _httpClient.SendAsync(request, cancellationToken);
@@ -36,6 +36,13 @@ public class SelfHostTests : IDisposable
 
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
         contentAssertion?.Invoke(content);
+    }
+
+    private void Start()
+    {
+        _healthApi.Start();
+        _healthApi.Port.Should().BeGreaterThan(0);
+        _httpClient.BaseAddress = new Uri($"http://localhost:{_healthApi.Port}");
     }
 
     public void Dispose()
@@ -75,7 +82,7 @@ public class SelfHostTests : IDisposable
     public async Task FailingReportsHealthServicesUrlReturnsInternalServerErrorWithHealthCheckReportJson()
     {
         _healthApi = SelfHostedApplicationHealthApi.WithMetadataFromAssembly(
-            _portNumber,
+            AnyFreePort,
             [
                 new StubServiceHealthReport("Health test", HealthCheckResult.Failed)
             ],
@@ -104,7 +111,7 @@ public class SelfHostTests : IDisposable
         using var provider = services.BuildServiceProvider(validateScopes: true);
 
         _healthApi = SelfHostedApplicationHealthApi.WithServices(
-            _portNumber, provider.GetRequiredService<IServiceScopeFactory>());
+            AnyFreePort, provider.GetRequiredService<IServiceScopeFactory>());
 
         await AssertUrlResponseAsync(
             url: "/health/services",
@@ -185,7 +192,7 @@ public class SelfHostTests : IDisposable
     public async Task WithCustomMetadataHealthStatusUrlReturnsOkWithApplicationInformationJson()
     {
         _healthApi = SelfHostedApplicationHealthApi.WithCustomMetadata(
-            _portNumber,
+            AnyFreePort,
             [],
             new DummyBuildMetadata(),
             DateTimeOffset.Now
@@ -204,7 +211,7 @@ public class SelfHostTests : IDisposable
     [Fact]
     public void CanOnlyStartOnce()
     {
-        _healthApi.Start();
+        Start();
 
         _healthApi.Invoking(obj => obj.Start())
             .Should()
@@ -224,7 +231,7 @@ public class SelfHostTests : IDisposable
     [Fact]
     public async Task StopAfterStartStopsListening()
     {
-        _healthApi.Start();
+        Start();
         _healthApi.Stop();
 
         // The legacy test blocked with GetAsync("/").Wait(); awaited here to satisfy the xUnit analyzers.
@@ -237,7 +244,7 @@ public class SelfHostTests : IDisposable
     [Fact]
     public async Task DisposeAfterStartStopsListening()
     {
-        _healthApi.Start();
+        Start();
         _healthApi.Dispose();
 
         Func<Task> act = () => _httpClient.GetAsync("/", TestContext.Current.CancellationToken);
@@ -250,20 +257,17 @@ public class SelfHostTests : IDisposable
     private const string PlainTextMimeType = "text/plain";
     private const string JsonMimeType = "application/json";
 
-    private readonly int _portNumber = EphemeralPortUtility.FindFreeEphemeralTcpPort();
-    private readonly HttpClient _httpClient;
+    // Port 0: the operating system picks a free port when the server starts, so parallel tests never race for one.
+    private const int AnyFreePort = 0;
+    private readonly HttpClient _httpClient = new();
 
     private SelfHostedApplicationHealthApi _healthApi;
 
     public SelfHostTests()
     {
-        _httpClient = new HttpClient {
-            BaseAddress = new Uri($"http://localhost:{_portNumber}")
-        };
-
         _healthApi =
             SelfHostedApplicationHealthApi.WithMetadataFromAssembly(
-                portNumber: _portNumber,
+                portNumber: AnyFreePort,
                 reports: [],
                 assembly: WithMetadataHelper.Assembly,
                 applicationStartTime: DateTimeOffset.Now

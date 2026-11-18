@@ -41,6 +41,12 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
     }
 
     /// <summary>
+    /// The port the health API listens on once started (see <see cref="SelfHostedApplicationHealthApi.Port"/>), which
+    /// is the operating system's choice when <see cref="WorkerHealthCheckSettings.ServicePort"/> is <c>0</c>.
+    /// </summary>
+    public int? HealthApiPort => _healthApi.Port;
+
+    /// <summary>
     /// Verifies that <see cref="ApplicationHealthApi"/> can be resolved and starts the health API.
     /// </summary>
     /// <param name="cancellationToken">Not used.</param>
