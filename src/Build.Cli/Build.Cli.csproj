@@ -29,11 +29,12 @@
 
   <ItemGroup>
     <!-- Everything distributed to consumers: Boilerplate/ (Makefile and scripts) plus the repository's own settings
-         files. Embedded for the scaffolder at runtime and packed for reference. -->
+         files. Embedded for the scaffolder at runtime and packed for reference. NuGet appends %(RecursiveDir) to a
+         PackagePath ending in '/', so the PackagePath must not repeat it. -->
     <None Remove="Boilerplate\**" />
     <EmbeddedResource Include="Boilerplate\**" LogicalName="Anarchy.Boilerplate/%(RecursiveDir)%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" LogicalName="Anarchy.Boilerplate/%(Filename)%(Extension)" />
-    <None Include="Boilerplate\**;..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" Pack="true" PackagePath="boilerplate/%(RecursiveDir)" Visible="false" />
+    <None Include="Boilerplate\**;..\..\.gitignore;..\..\.editorconfig;..\..\global.json;..\..\nuget.config" Pack="true" PackagePath="boilerplate/" Visible="false" />
   </ItemGroup>
 
 </Project>
