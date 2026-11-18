@@ -37,16 +37,24 @@ public class ManagedBlockTest
             .And.EndWith("[*]\r\nindent_size = 4\r\n# <<< anarchy-toolkit <<<\r\n");
     }
 
-    [Fact]
-    public void RepositoryGitignore_StartsWithThePackagedBlock()
+    [Theory]
+    [InlineData(".gitignore")]
+    [InlineData(".editorconfig")]
+    public void RepositorySettings_StartWithThePackagedBlock(string file)
     {
         var root = RepositoryRoot();
-        var packaged = File.ReadAllText(Path.Combine(root, "src", "Build.Cli", "Boilerplate", ".gitignore"));
+        var packaged = File.ReadAllText(Path.Combine(root, "src", "Build.Cli", "Boilerplate", file)).ReplaceLineEndings("\n");
 
-        File.ReadAllText(Path.Combine(root, ".gitignore")).ReplaceLineEndings("\n")
-            .Should().StartWith(packaged.ReplaceLineEndings("\n"));
-        packaged.Should().NotContain("launchSettings").And.NotContain("cdk").And.NotContain("Lambda");
+        packaged.Should().StartWith(FileHelper.ManagedBlockBegin).And.EndWith(FileHelper.ManagedBlockEnd + " <<<\n");
+        File.ReadAllText(Path.Combine(root, file)).ReplaceLineEndings("\n").Should().StartWith(packaged);
+        FileHelper.MergeManagedBlock(File.ReadAllText(Path.Combine(root, file)), packaged, file == ".gitignore")
+            .Should().Be(File.ReadAllText(Path.Combine(root, file)));
     }
+
+    [Fact]
+    public void PackagedGitignore_HasNoProjectSpecificEntries() =>
+        File.ReadAllText(Path.Combine(RepositoryRoot(), "src", "Build.Cli", "Boilerplate", ".gitignore"))
+            .Should().NotContain("launchSettings").And.NotContain("cdk").And.NotContain("Lambda");
 
     [Fact]
     public void Create_GivenTrackedFileThatTheNewGitignoreIgnores_WarnsAboutIt()

@@ -33,7 +33,8 @@ never overwrites: on a conflict it writes nothing and lists the files. Look befo
   `boilerplate show <path>` read the packaged files without installing anything.
 - `make boilerplate ... DRY_RUN=true` reports what an install would create, keep, update or refuse.
 - `.gitignore` and `.editorconfig` hold the toolkit's settings in a managed block (`# >>> anarchy-toolkit` ...
-  `# <<< anarchy-toolkit`): never edit inside it; put the solution's own entries below it. `APPEND=true` replaces
+  `# <<< anarchy-toolkit`): never edit inside it; put the solution's own entries below it (in `.editorconfig`, repeat the
+  section, such as `[*.cs]`, and set the override there: later entries win). `APPEND=true` replaces
   only that block, and warns about tracked files the new `.gitignore` ignores: ask the user whether to untrack them
   or add a `!` exception.
 

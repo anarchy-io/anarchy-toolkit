@@ -542,12 +542,6 @@ public static class ReleaseVersionTasks
         foreach (var rawFile in changedFiles)
         {
             var file = rawFile.Replace('\\', '/').TrimStart('/');
-            // Build.Cli embeds the repository's analyzer settings; its Makefile, scripts and .gitignore live in its own folder.
-            if (file is ".editorconfig")
-            {
-                foreach (var project in projects.Where(p => p.Content.Contains("Anarchy.Boilerplate/", StringComparison.Ordinal)))
-                    directlyAffected.Add(project.Path);
-            }
             if (IsIgnoredFile(file)) continue;
 
             if (IsAffectAllFile(file))

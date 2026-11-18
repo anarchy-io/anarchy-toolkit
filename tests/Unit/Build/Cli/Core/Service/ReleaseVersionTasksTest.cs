@@ -12,7 +12,7 @@ public class ReleaseVersionTasksTest
         IsIgnoredFile(".fallout/parameters.json").Should().BeTrue();
         var project = new Project("/repo/src/Build.Cli/Build.Cli.csproj", "Build.Cli", "1.0.0", [], "Anarchy.Boilerplate/");
         var other = new Project("/repo/src/Core/Core.csproj", "Core", "1.0.0", [], "<Project />");
-        DetectDirectlyAffectedProjects("/repo", [project, other], [".editorconfig"])
+        DetectDirectlyAffectedProjects("/repo", [project, other], ["src/Build.Cli/Boilerplate/.editorconfig"])
             .Should().ContainSingle().Which.Should().Be(project);
         DetectDirectlyAffectedProjects("/repo", [project, other], ["src/Build.Cli/Boilerplate/scripts/build.fallout.sh"])
             .Should().ContainSingle().Which.Should().Be(project);
