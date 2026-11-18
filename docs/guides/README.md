@@ -1,39 +1,32 @@
 # Guides
 
-Guides for the platform's three pillars (Architecture, Infrastructure and Build Ecosystem) and the engineering practices shared by the toolkit and the applications built with it. The conventions they describe are **rules within the toolkit itself** and **recommendations for applications built on it**: adopters can follow, adapt or ignore them. Each guide stands on its own; start with **Layered Architecture**, which explains where code goes.
+Guides help you understand the platform and get work done with it. They teach; the [Conventions](../conventions/README.md) recommend, and the [Values and Decisions](../decisions/README.md) explain why. Contributors to the toolkit itself have their own [rules](../contributing/README.md).
 
 ![Architectural blueprint lines on a dark background with red-orange highlights, wide banner](../assets/images/headers/guides.png)
 
-## Architecture
+Not sure where to start? The [adoption advisor](../getting-started/advisor.md) asks a few questions about your project and suggests packages, steps and pages, in order.
+
+## Onboarding: read in this order
+
+| Guide | Answers |
+|---|---|
+| 1. [How the Platform Fits Together](mental-model.md) | What are the pieces, what is mine, how does a request or a job travel through them? |
+| 2a. [Your First Solution](greenfield-solution.md) | How do I start a new solution, choose a layout and get to a green pull-request gate? |
+| 2b. [Adopting an Existing Solution](adopting-existing-solution.md) | How do I move a running service onto the platform in small, deployable steps? |
+| 3. [Bringing Your Company Stack](bringing-your-company-stack.md) | Where do my logging backend, auth, private feeds and deployment plug in? |
+| 4. [Migration Recipes](migration-recipes.md) | How do I move [xUnit v2](https://xunit.net/), a [MockServer](https://www.mock-server.com/) container, `Add*` extensions, `IOptions`, health checks and hosted services? |
+| 5. [Pitfalls](pitfalls.md) | Why did this break, and what do others do about it? |
+
+## Platform features
 
 | Guide | What it covers |
 |---|---|
-| [Layered Architecture](architecture.md) | `Core < Infrastructure < Configuration < Hosting < Web < Build`, project structure, DI modules, the layering check and the dependency map. |
-
-## Infrastructure
-
-| Guide | What it covers |
-|---|---|
-| [Observability](observability.md) | `Observer`, call sites, log and metric conventions, runtime sinks per host, plugging in your organization's setup. |
-| [Database Providers](database-providers.md) | The provider-agnostic persistence layer, PostgreSQL/Oracle/MySQL specifics, adding a provider. |
-| [Exposing Endpoints](exposing-endpoints.md) | Presentation contracts, Input/Output DTOs with `ToDto`/`FromDto`, `ActionResult<T>`. |
-| [Mock Server](mock-server.md) | Standing in for HTTP upstreams: expectations, your own host and middlewares, assertions, recording a real upstream, migrating from a MockServer container. |
-| [Building UIs](building-uis.md) | `Web.Ui`: Blazor startup, cookie-session login, environment catalog, downstream API clients, reusable components. |
-
-The [Package Catalog](../packages/README.md) documents each infrastructure package, including the `Testing.*` kits.
-
-## Build Ecosystem
-
-| Guide | What it covers |
-|---|---|
-| [Fallout Builds](fallout-builds.md) | The `Build.Fallout` components, test discovery and runners, artifacts, releases and generated CLI tool wrappers. |
+| [Layered Architecture](architecture.md) | The layers, the toolkit's DI modules, the layering check and the dependency map. |
+| [Observability](observability.md) | `Observer`, where telemetry goes at runtime, plugging in your organization's setup, testing telemetry. |
+| [Database Providers](database-providers.md) | The provider-agnostic persistence layer, [PostgreSQL](https://www.postgresql.org/)/Oracle/MySQL specifics, adding a provider. |
+| [Mock Server](mock-server.md) | Standing in for HTTP upstreams: expectations, your own host, assertions, recording, migrating from a MockServer container. |
+| [Building UIs](building-uis.md) | `Web.Ui`: [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) startup, cookie-session login, environment catalog, downstream API clients, components. |
+| [Fallout Builds](fallout-builds.md) | The `Build.Fallout` components, test discovery and runners, artifacts, releases and CLI tool wrappers. |
 | [CLI Tool](../packages/Build.Cli.Tool/README.md) | The `anarchy-toolkit` CLI: bootstrapping a solution and scaffolding APIs, jobs and UIs. |
 
-## Engineering Practices
-
-| Guide | What it covers |
-|---|---|
-| [Async](async-conventions.md) | The `Async` suffix, optional cancellation tokens and how to propagate them, worker shutdowns. |
-| [Enums](enum-conventions.md) | When to use enums, `[Description]` mapping, auxiliary tables and `AttributeIdCacheBase`. |
-| [Exceptions](exception-conventions.md) | Specialized exceptions, the `Core` bases, mid-level exceptions and where exception types live. |
-| [Testing](testing-conventions.md) | Test project layout and naming, test levels, the `Testing.*` kits, fixtures and mocks. |
+The [Package Catalog](../packages/README.md) documents each package, including the `Testing.*` kits.
