@@ -26,7 +26,8 @@ public class AgentSkillTasksTest
             AgentSkillTasks.Validate(directories, actions).Should().BeEmpty();
             AgentSkillTasks.Sync(directories, actions).Should().BeEmpty();
             AgentSkillTasks.ReadSkills(directories, []).Select(skill => skill.Name).Should().BeEquivalentTo(
-                "anarchy", "anarchy-develop", "anarchy-environment", "anarchy-release", "anarchy-maintenance");
+                "anarchy", "anarchy-adopt", "anarchy-compose", "anarchy-develop", "anarchy-environment", "anarchy-release",
+                "anarchy-maintenance");
         }
         finally
         {

@@ -73,7 +73,7 @@ The `boilerplate` commands print plain text, without the banner, so scripts and 
 
 ## Agent skills
 
-`skills install` (and `bootstrap --with-skills`) copies the toolkit's [Agent Skills](https://agentskills.io/) to `.agents/skills`: `anarchy`, the entry point with this tool's commands and the rules, and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. Existing files are never overwritten. See [Agent skills](../Build.Fallout/README.md#agent-skills) for keeping them in step with the solution's Makefiles.
+`skills install` (and `bootstrap --with-skills`) copies the toolkit's [Agent Skills](https://agentskills.io/) to `.agents/skills`: `anarchy`, the entry point with this tool's commands and the rules; `anarchy-adopt`, for adopting or upgrading the toolkit (including migrating tests, mocks and DI); `anarchy-compose`, for modules, settings, health reports and workers; and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. Existing files are never overwritten. See [Agent skills](../Build.Fallout/README.md#agent-skills) for keeping them in step with the solution's Makefiles.
 
 ## Requirements
 
@@ -92,6 +92,15 @@ make check_layering
 The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Build.Cli`](../Build.Cli/README.md); see the [Fallout package README](../Build.Fallout/README.md) for the build targets.
 
 ## Releases
+
+### 3.2.0
+
+- fix(Build.Cli): pack the boilerplate at its source paths
+- feat(Build.Cli): ship a generic .gitignore synced through a managed block
+- feat(Build.Cli): show, diff and dry-run the boilerplate before installing it
+- feat(Build.Cli): keep the packaged .editorconfig in a managed block
+- docs(mock-server): add a guide covering recording and migrating from MockServer
+- feat(Build.Cli): ship adoption and runtime composition skills
 
 ### 3.1.0
 
