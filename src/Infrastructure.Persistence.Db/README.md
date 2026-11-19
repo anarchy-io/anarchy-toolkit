@@ -24,9 +24,22 @@ Use this package when implementing a relational adapter or shared repository beh
 3. Configure reader and writer hosts, credentials, command timeout and resilience settings at the host. `DbConnectionOptions.MaximumPoolSize` defaults to 100 and is applied by the included providers.
 4. Register the provider module and optional health reports, then inject the repository and unit-of-work abstractions into application services. Define transaction and retry boundaries explicitly, especially when an operation has non-database side effects.
 
+A unit-of-work instance rejects nested and concurrent sessions. Caller-requested cancellation propagates after rollback
+and cleanup, which use an uncancelled token. If rollback also fails, inspect the original exception's `Data` for
+`UnitOfWork.RollbackFailure`; if cleanup fails while another exception is already being propagated, inspect that
+exception's `Data` for `UnitOfWork.CleanupFailure`. Connections are discarded after a failed rollback or transaction
+disposal instead of being returned to the pool. Each session can start only one transaction; further calls to
+`BeginAsync` fail rather than replacing an existing transaction. If transaction and connection cleanup both fail, the
+connection failure is available on the transaction failure under `UnitOfWork.ConnectionCleanupFailure`.
+
 See [adding a database provider](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#adding-a-database-provider) and the [persistence notes](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#provider-notes), including known limitations.
 
 ## Releases
+
+### 2.0.0
+
+- Preserve the original session failure when transaction startup, rollback or cleanup fails; propagate caller cancellation and reject concurrent sessions.
+- Reject repeated transaction starts and preserve both failures when transaction and connection cleanup fail.
 
 ### 1.2.1
 

@@ -19,11 +19,16 @@ public sealed class DummyDbTransaction(DummyDbConnection connection) : DbTransac
 
     public override void Commit() => IsCommitted = true;
 
-    public override void Rollback() => IsRolledBack = true;
+    public override void Rollback()
+    {
+        if (connection.RollbackFailure is not null) throw connection.RollbackFailure;
+        IsRolledBack = true;
+    }
 
     protected override void Dispose(bool disposing)
     {
         IsDisposed = true;
+        if (disposing && connection.TransactionDisposeFailure is not null) throw connection.TransactionDisposeFailure;
         base.Dispose(disposing);
     }
 }
