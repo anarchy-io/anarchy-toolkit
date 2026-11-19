@@ -20,7 +20,7 @@ public static class LocalEventServiceCollectionExtensions
     /// </summary>
     /// <remarks>
     /// Handlers are not registered by this method: register each <see cref="ILocalEventHandler{TEvent}"/>
-    /// separately. <see cref="LocalEventBus"/> also depends on the observability <c>Observer</c>, which must be
+    /// separately. <see cref="LocalEventBus"/> also depends on <c>IAppTelemetry</c>, which must be
     /// registered in the container.
     /// </remarks>
     /// <param name="services">The service collection to register into.</param>

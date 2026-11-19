@@ -1,7 +1,7 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Extension.Service.Host.Controller.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.Extension.Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +18,7 @@ public static class ControllerBaseExtensions
     /// <remarks>
     /// When <see cref="ControllerBase.ModelState"/> is invalid, a
     /// <see cref="Anarchy.Toolkit.Web.Extension.Service.Host.Controller.Exceptions.ModelStateValidationException"/>
-    /// is built (not thrown) and logged through <paramref name="observer"/>, and a
+    /// is built (not thrown) and logged through <paramref name="telemetry"/>, and a
     /// <see cref="BadRequestObjectResult"/> carrying the model state is returned.
     /// </remarks>
     /// <example>
@@ -26,7 +26,7 @@ public static class ControllerBaseExtensions
     /// [HttpPost]
     /// public IActionResult Create([FromBody] CreateInput input)
     /// {
-    ///     if (this.BadRequestIfInvalid(input, observer) is { } badRequest)
+    ///     if (this.BadRequestIfInvalid(input, telemetry) is { } badRequest)
     ///         return badRequest;
     ///
     ///     // ... handle valid input
@@ -37,20 +37,21 @@ public static class ControllerBaseExtensions
     /// <typeparam name="T">The type of the received input model.</typeparam>
     /// <param name="this">The controller whose model state is checked.</param>
     /// <param name="input">The received input, included in the logged error for diagnostics.</param>
-    /// <param name="observer">The observer used to log the validation failure; when <see langword="null"/>, nothing is logged.</param>
+    /// <param name="telemetry">Application telemetry used to log the validation failure; when <see langword="null"/>, nothing is logged.</param>
     /// <returns>
     /// A <see cref="BadRequestObjectResult"/> when the model state is invalid; otherwise <see langword="null"/>.
     /// </returns>
-    public static ActionResult? BadRequestIfInvalid<T>(this ControllerBase @this, T input, Observer? observer)
+    public static ActionResult? BadRequestIfInvalid<T>(this ControllerBase @this, T input, IAppTelemetry? telemetry)
     {
         if (@this.ModelState.IsValid)
         {
             return null;
         }
 
-        observer?.LogError(
-            new ModelStateValidationException(@this.ModelState, input),
+        telemetry?.Log(
+            LogLevel.Error,
             @this.CalledFrom(),
+            new ModelStateValidationException(@this.ModelState, input),
             "Bad Request");
 
         return @this.BadRequest(@this.ModelState);

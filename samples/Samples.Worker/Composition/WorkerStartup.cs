@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Hosting.Host;
 using Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 using Anarchy.Toolkit.Samples.Worker.Composition.DependencyInjection;
@@ -18,6 +18,6 @@ public sealed class WorkerStartup(IHostEnvironment environment, IConfiguration c
     protected override IServiceCollection ConfigureJobCustomServices(IServiceCollection services) =>
         services
             .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
-            .AddHostedService(sp => new HeartbeatWorker(sp.GetRequiredService<Observer>()))
+            .AddHostedService(sp => new HeartbeatWorker(sp.GetRequiredService<IAppTelemetry>()))
             .AddHostedService<GreetingWorker>();
 }

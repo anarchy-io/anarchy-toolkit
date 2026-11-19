@@ -4,10 +4,10 @@ using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Anarchy.Toolkit.Core.Health.ValueSet.Service;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.DependencyInjection.Module;
@@ -104,7 +104,7 @@ public class MysqlTest
     public void Module_ResolvesPoolsPoliciesUnitOfWorkAndHealthReports()
     {
         using var provider = new ServiceCollection()
-            .AddSingleton<Observer>(InMemoryObserver.Create())
+            .AddLogging().AddMetrics().AddAppTelemetry()
             .UseModule(new ModuleMysql(_ => Options(), _ => new MysqlResilienceOptions(3)),
                 new ConfigurationBuilder().Build(), Mock.Of<IHostEnvironment>())
             .AddMysqlHealthReports().BuildServiceProvider();
@@ -124,13 +124,13 @@ public class MysqlTest
     public async Task HealthReports_IdentifyReaderAndWriterAndReportFailures()
     {
         var policy = new Mock<IStoragePolicy<MySqlConnection>>();
-        var observer = InMemoryObserver.Create();
-        var reader = await new MysqlHealthReportReader(policy.Object, observer).RunAsync();
+        var telemetry = Mock.Of<IAppTelemetry>();
+        var reader = await new MysqlHealthReportReader(policy.Object, telemetry).RunAsync();
         reader.Name.Should().Be("mysql_connection-reader");
         reader.Result.Should().Be(HealthCheckResult.Passed.ToDescription());
         policy.Setup(x => x.ExecuteAsync(It.IsAny<StoragePolicyCallback<MySqlConnection, DateTime>>(),
                 It.IsAny<string?>(), It.IsAny<CancellationToken?>())).ThrowsAsync(new Exception("unavailable"));
-        var writer = await new MysqlHealthReportWriter(policy.Object, observer).RunAsync();
+        var writer = await new MysqlHealthReportWriter(policy.Object, telemetry).RunAsync();
         writer.Name.Should().Be("mysql_connection-writer");
         writer.Result.Should().Be(HealthCheckResult.Failed.ToDescription());
     }

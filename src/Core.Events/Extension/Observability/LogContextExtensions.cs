@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Events.Entity.Event;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 
 namespace Anarchy.Toolkit.Core.Events.Extension.Observability;
 
@@ -12,7 +12,7 @@ namespace Anarchy.Toolkit.Core.Events.Extension.Observability;
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// using (observer.LogContext.WithEvent(domainEvent))
+/// using (telemetry.WithEvent(domainEvent))
 /// {
 ///     // every log written here carries AggregateId, TypeAggregate and TypeEvent
 /// }
@@ -25,17 +25,17 @@ public static class LogContextExtensions
     /// </summary>
     /// <param name="domainEvent">The event envelope to describe.</param>
     /// <returns>The <c>AggregateId</c>, <c>TypeAggregate</c> and <c>TypeEvent</c> properties.</returns>
-    public static LogContextProperty[] ForEvent(IEventEnvelope domainEvent)
+    public static KeyValuePair<string, object?>[] ForEvent(IEventEnvelope domainEvent)
     {
         return [
-            new LogContextProperty("AggregateId", domainEvent.AggregateId),
-            new LogContextProperty("TypeAggregate", domainEvent.TypeAggregate),
-            new LogContextProperty("TypeEvent", domainEvent.TypeEvent)
+            new("AggregateId", domainEvent.AggregateId),
+            new("TypeAggregate", domainEvent.TypeAggregate),
+            new("TypeEvent", domainEvent.TypeEvent)
         ];
     }
 
-    /// <param name="logContext">The log context to enrich.</param>
-    extension(LogContext logContext)
+    /// <param name="telemetry">The telemetry facade to enrich.</param>
+    extension(IAppTelemetry telemetry)
     {
         /// <summary>
         /// Pushes the properties from <see cref="ForEvent"/> onto the log context.
@@ -44,7 +44,7 @@ public static class LogContextExtensions
         /// <returns>A handle that removes the properties when disposed.</returns>
         public IDisposable WithEvent(IEventEnvelope domainEvent)
         {
-            return logContext.PushProperties(ForEvent(domainEvent));
+            return telemetry.BeginScope(ForEvent(domainEvent));
         }
     }
 }

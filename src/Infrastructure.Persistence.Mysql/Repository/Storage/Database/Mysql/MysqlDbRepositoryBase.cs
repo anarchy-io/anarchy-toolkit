@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Service.Storage.Database.Mysql;
 using MySqlConnector;
@@ -15,6 +15,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Repository.Storage.Da
 /// of the reader/writer contracts.
 /// </remarks>
 /// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
-public abstract class MysqlDbRepositoryBase(IStoragePolicy<MySqlConnection> dbPolicy, Observer observer)
-    : DbStorageRepositoryBase<MySqlConnection, MysqlDbDialect>(dbPolicy, observer);
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
+public abstract class MysqlDbRepositoryBase(IStoragePolicy<MySqlConnection> dbPolicy, IAppTelemetry telemetry)
+    : DbStorageRepositoryBase<MySqlConnection, MysqlDbDialect>(dbPolicy, telemetry);

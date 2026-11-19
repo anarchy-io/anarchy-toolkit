@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Service.Storage.Database.Mysql;
 using Anarchy.Toolkit.Testing.Db.Helper;
@@ -37,8 +38,8 @@ public sealed class MysqlHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static MysqlResilienceDbPolicy DbPolicyFixture<TAppSettings>()
-        where TAppSettings : class, IMysqlAppSettings, IResilienceAppSettings => DbPolicyFixture(TestHelper.TestSettings<TAppSettings>());
+    public static MysqlResilienceDbPolicy DbPolicyFixture<TAppSettings>(IAppTelemetry? telemetry = null)
+        where TAppSettings : class, IMysqlAppSettings, IResilienceAppSettings => DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
 
     /// <summary>
     ///     Build a <see cref="MysqlResilienceDbPolicy" /> fixture from the given settings, which must expose both
@@ -46,32 +47,35 @@ public sealed class MysqlHelper
     /// </summary>
     /// <typeparam name="TSettings">The settings type.</typeparam>
     /// <param name="settings">The settings to build the fixture from.</param>
+    /// <param name="telemetry">Optional application telemetry for the policy.</param>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static MysqlResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings settings)
+    public static MysqlResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings settings, IAppTelemetry? telemetry = null)
         where TSettings : IMysqlAppSettings, IResilienceAppSettings =>
-        new(new MysqlAsyncRetryPolicyBuilder(MysqlOptionsMapper.ResilienceOptions(settings), InMemoryObserver.Create()),
+        new(new MysqlAsyncRetryPolicyBuilder(MysqlOptionsMapper.ResilienceOptions(settings), telemetry),
             new MysqlConnectionPool(DataStorageInstanceType.Writer, new MysqlConnectionString(MysqlOptionsMapper.ConnectionOptions(settings))),
-            new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>(), InMemoryObserver.Create());
+            new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>(), telemetry);
 
     /// <summary>
     ///     Build a <see cref="MysqlDbUnitOfWork" /> fixture from the test settings of
     ///     <typeparamref name="TAppSettings" />.
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
-    public static MysqlDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>() where TAppSettings : class, IMysqlAppSettings =>
-        DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>());
+    public static MysqlDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(IAppTelemetry? telemetry = null) where TAppSettings : class, IMysqlAppSettings =>
+        DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
 
     /// <summary>
     ///     Build a <see cref="MysqlDbUnitOfWork" /> fixture from the given settings.
     /// </summary>
     /// <param name="settings">The settings to build the fixture from.</param>
+    /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
     /// <remarks>
     ///     The unit of work uses its own async flow context, so repositories built from a separate
-    ///     <see cref="DbPolicyFixture{TSettings}(TSettings)" /> do not join its sessions.
+    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, IAppTelemetry)" /> do not join its sessions.
     /// </remarks>
-    public static MysqlDbUnitOfWork DbUnitOfWorkFixture(IMysqlAppSettings settings) =>
+    public static MysqlDbUnitOfWork DbUnitOfWorkFixture(IMysqlAppSettings settings, IAppTelemetry? telemetry = null) =>
         new(new MysqlConnectionPool(DataStorageInstanceType.Writer, new MysqlConnectionString(MysqlOptionsMapper.ConnectionOptions(settings))),
-            new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>(), InMemoryObserver.Create());
+            new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>(), telemetry);
 }

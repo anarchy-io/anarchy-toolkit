@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Ui.Core.Service.Ui;
 using Anarchy.Toolkit.Web.Ui.Entity.Api.Input;
 using Anarchy.Toolkit.Web.Ui.Entity.Ui;
@@ -16,7 +16,7 @@ public class UiSessionHandlerTest
     private readonly Mock<IUiEnvironmentCatalog> _catalog = new();
 
     private UiSessionHandler CreateHandler() => new(
-        new UiAuthHandler(Mock.Of<IHttpClientFactory>(), InMemoryObserver.Create()),
+        new UiAuthHandler(Mock.Of<IHttpClientFactory>(), Mock.Of<IAppTelemetry>()),
         _catalog.Object,
         Mock.Of<IHostEnvironment>(x => x.EnvironmentName == "Development"),
         new UiAuthenticationOptions { LoginPath = "/app/login" });

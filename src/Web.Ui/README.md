@@ -39,6 +39,12 @@ See the [UI guide](https://anarchy-io.github.io/anarchy-toolkit/guides/building-
 
 ## Releases
 
+### 3.0.0
+
+- feat(Core.Telemetry): add provider-neutral telemetry facade
+- feat(Core.Telemetry): route optional metrics through application logging
+- feat(Configuration): register provider-neutral application telemetry
+
 ### 2.0.0
 
 - refactor(Web.Ui)!: make the cookie session an opt-in add-on and allow UIs without a startup base

@@ -28,6 +28,12 @@ See the [sample applications](https://github.com/anarchy-io/anarchy-toolkit/tree
 
 ## Releases
 
+### 1.2.0
+
+- feat(Core.Telemetry): add provider-neutral telemetry facade
+- feat(Core.Telemetry): route optional metrics through application logging
+- feat(Configuration): register provider-neutral application telemetry
+
 ### 1.1.1
 
 - docs(packages): identify each package's pillar and layer

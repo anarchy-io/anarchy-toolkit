@@ -18,7 +18,7 @@ public static class PostgresHealthServiceCollectionExtensions
     /// <returns>The same service collection, for chaining.</returns>
     /// <remarks>
     /// Registers <see cref="PostgresHealthReportReader"/> and <see cref="PostgresHealthReportWriter"/> (scoped). Requires the
-    /// keyed <c>"reader"</c>/<c>"writer"</c> storage policies registered by <c>ModulePostgres</c>, plus an <c>Observer</c>.
+    /// keyed <c>"reader"</c>/<c>"writer"</c> storage policies registered by <c>ModulePostgres</c>, plus an <see cref="Anarchy.Toolkit.Core.Telemetry.IAppTelemetry"/>.
     /// </remarks>
     /// <example>
     /// <code language="csharp">

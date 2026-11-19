@@ -22,10 +22,12 @@
     <ProjectReference Include="..\..\src\Core.Health\Core.Health.csproj" />
     <ProjectReference Include="..\..\src\Core.Messaging.Abstractions\Core.Messaging.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\..\src\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\..\src\Core\Core.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Messaging.Aws\Infrastructure.Messaging.Aws.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Observability.Serilog\Infrastructure.Observability.Serilog.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Telemetry.Serilog\Infrastructure.Telemetry.Serilog.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Mysql\Infrastructure.Persistence.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Oracle\Infrastructure.Persistence.Oracle.csproj" />
@@ -42,6 +44,7 @@
   <ItemGroup>
     <!-- Brings Microsoft.AspNetCore.TestHost for the ASP.NET Core middleware tests. -->
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
   </ItemGroup>
 
   <ItemGroup>

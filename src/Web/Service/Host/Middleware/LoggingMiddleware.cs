@@ -1,8 +1,7 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Extension.Service.Observability.TagBuilderBase;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using CbTagBuilder = Anarchy.Toolkit.Core.Observability.Service.Observability.TagBuilderBase;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
 
@@ -16,10 +15,10 @@ namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
 /// <see cref="ExceptionMiddleware"/>.
 /// </remarks>
 /// <param name="next">The next delegate in the pipeline.</param>
-/// <param name="observer">The observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public class LoggingMiddleware(
     RequestDelegate next,
-    Observer observer)
+    IAppTelemetry telemetry)
 {
     /// <summary>Invokes the rest of the pipeline, then logs the request and records its duration.</summary>
     /// <param name="context">The current HTTP context.</param>
@@ -35,14 +34,16 @@ public class LoggingMiddleware(
         var statusCode = context.Response.StatusCode;
         var request = context.Request;
 
-        observer.LogInformation(
+        telemetry.Log(
+            LogLevel.Information,
             caller,
+            null,
             "Finished {Method} request for route {Path} with code {StatusCode}",
             request.Method,
             request.Path,
             statusCode);
 
-        observer.ExecutionRecordDuration(caller, timer.Elapsed, CbTagBuilder.FromStatusCode(statusCode)
+        telemetry.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, MiddlewareTagsExtensions.FromStatusCode(statusCode)
             .WithController(context)
             .WithAction(context)
             .WithRequestMethod(request)

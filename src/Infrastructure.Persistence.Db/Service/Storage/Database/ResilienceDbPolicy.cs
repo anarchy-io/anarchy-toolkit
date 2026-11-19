@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Polly;
 using System.Data.Common;
 
@@ -15,7 +15,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 /// <param name="retryPolicyBuilder">Builder of the retry pipeline; it is built once, in the constructor.</param>
 /// <param name="dbConnectionPool">Connection pool used when no unit of work session is active.</param>
 /// <param name="asyncFlowContext">Async flow context holding the connection of the active unit of work session, if any.</param>
-/// <param name="observer">Optional observer used for logging and metrics.</param>
+/// <param name="telemetry">Optional application telemetry used for logging and metrics.</param>
 /// <remarks>
 ///     Retries reuse the same connection, which is acquired once per <see cref="DbPolicyBase{TDbConnection}.ExecuteAsync{TDbResult}" />
 ///     call. Inside a transaction a retried statement runs in the same (possibly aborted) transaction, so callbacks
@@ -24,10 +24,10 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 /// <example>
 ///     <code language="csharp">
 ///     var policy = new ResilienceDbPolicy&lt;NpgsqlConnection&gt;(
-///         new DbAsyncRetryPolicyBuilder&lt;NpgsqlConnection, PostgresDbDialect&gt;(new DbResilienceOptions(3), observer),
+///         new DbAsyncRetryPolicyBuilder&lt;NpgsqlConnection, PostgresDbDialect&gt;(new DbResilienceOptions(3), telemetry),
 ///         connectionPool,
 ///         new AsyncLocalFlowContext&lt;StorageConnectionEnvelopeBase&lt;NpgsqlConnection&gt;&gt;(),
-///         observer);
+///         telemetry);
 ///
 ///     var now = await policy.ExecuteAsync(
 ///         (envelope, ct) => envelope.DataStorageConnection.QueryFirstAsync&lt;DateTime&gt;("SELECT now()"),
@@ -38,8 +38,8 @@ public class ResilienceDbPolicy<TDbConnection>(
     IAsyncRetryPolicyBuilder<TDbConnection> retryPolicyBuilder,
     IDbConnectionPool<TDbConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-    Observer? observer = null)
-    : DbPolicyBase<TDbConnection>(dbConnectionPool, asyncFlowContext, observer)
+    IAppTelemetry? telemetry = null)
+    : DbPolicyBase<TDbConnection>(dbConnectionPool, asyncFlowContext, telemetry)
     where TDbConnection : DbConnection
 {
     private readonly ResiliencePipeline _retryPolicy = retryPolicyBuilder.Build();

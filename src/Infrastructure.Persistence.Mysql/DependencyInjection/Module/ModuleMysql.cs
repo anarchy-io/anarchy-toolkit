@@ -1,9 +1,9 @@
 using Anarchy.Toolkit.Core.Composition.Module;
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Service.Storage.Database.Mysql;
@@ -14,7 +14,7 @@ using MySqlConnector;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Mysql.DependencyInjection.Module;
 
-/// <summary>Registers MySQL writer/reader pools and policies, retries and unit of work. Requires an Observer.</summary>
+/// <summary>Registers MySQL writer/reader pools and policies, retries and unit of work. Requires application telemetry.</summary>
 /// <param name="connectionOptions">Factory building the connection options from <see cref="IConfiguration"/>.</param>
 /// <param name="resilienceOptions">Factory building the resilience (retry) options from <see cref="IConfiguration"/>.</param>
 /// <example>
@@ -56,6 +56,6 @@ public sealed class ModuleMysql(
                     sp.GetRequiredService<IAsyncRetryPolicyBuilder<MySqlConnection>>(),
                     sp.GetRequiredKeyedService<IDbConnectionPool<MySqlConnection>>(key),
                     sp.GetRequiredService<IAsyncFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>>(),
-                    sp.GetRequiredService<Observer>()));
+                    sp.GetRequiredService<IAppTelemetry>()));
     }
 }

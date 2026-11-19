@@ -19,7 +19,7 @@ Use this provider when a toolkit application stores relational data in PostgreSQ
 
 ## How to use it
 
-Register an `Observer` first, then configure the module with factories that read the application's configuration. For example, with configuration, environment and section binding already set up:
+Register `IAppTelemetry` through `ModuleTelemetry` (or supply a consumer implementation) before configuring the module with factories that read the application's configuration. For example, with configuration, environment and section binding already set up:
 
 ```csharp
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;

@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
   </ItemGroup>
 

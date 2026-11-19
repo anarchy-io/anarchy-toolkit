@@ -1,15 +1,26 @@
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Hosting.Workers.Service.Worker;
-using Anarchy.Toolkit.Testing;
-using Anarchy.Toolkit.Testing.Helper;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Anarchy.Toolkit.Tests.Unit.Hosting.Workers.Service.Worker;
 
-public class ResilientWorkerBaseTest : TestCaseBase
+public class ResilientWorkerBaseTest
 {
     private const double IntervalInSeconds = 0.01; // 10 ms — kept tiny so the loop iterates quickly
+    private readonly List<string> _logTemplates = [];
 
     private ResilientWorkerFixture CreateSut(ResilientWorkerFixture.PerformWorkResult result) =>
-        new(result, FixtureObserver, IntervalInSeconds, IntervalInSeconds);
+        new(result, CreateTelemetry(), IntervalInSeconds, IntervalInSeconds);
+
+    private IAppTelemetry CreateTelemetry()
+    {
+        var telemetry = new Mock<IAppTelemetry>();
+        telemetry.Setup(instance => instance.Log(It.IsAny<LogLevel>(), It.IsAny<CallSite>(), It.IsAny<Exception?>(),
+                It.IsAny<string>(), It.IsAny<object?[]>()))
+            .Callback<LogLevel, CallSite, Exception?, string, object?[]>((_, _, _, template, _) => _logTemplates.Add(template));
+        return telemetry.Object;
+    }
 
     [Fact(Timeout = 5000)]
     public async Task ExecuteAsync_WhenPerformWorkReturnsTrue_LoopsMultipleTimes()
@@ -48,8 +59,7 @@ public class ResilientWorkerBaseTest : TestCaseBase
 
         Assert.True(sut.Finished);
         Assert.True(sut.PerformWorkCallCount >= 3);
-        Assert.Contains(FixtureObserver.SinkLogs.Messages, x =>
-            x.MessageTemplate.Text.Contains("Worker action failed; retrying"));
+        Assert.Contains(_logTemplates, template => template.Contains("Worker action failed; retrying"));
     }
 
     [Fact(Timeout = 5000)]
@@ -81,10 +91,10 @@ public class ResilientWorkerBaseTest : TestCaseBase
 
     private class ResilientWorkerFixture(
         ResilientWorkerFixture.PerformWorkResult resultPerformWork,
-        InMemoryObserver observer,
+        IAppTelemetry telemetry,
         double recurringIntervalInSeconds,
         double delayedIntervalInSeconds)
-        : ResilientWorkerBase(observer, recurringIntervalInSeconds, delayedIntervalInSeconds)
+        : ResilientWorkerBase(telemetry, recurringIntervalInSeconds, delayedIntervalInSeconds)
     {
         private int _performWorkCallCount;
 

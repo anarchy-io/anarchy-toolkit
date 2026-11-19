@@ -18,18 +18,22 @@ Use the local bus to notify other components within the same process, or use the
 
 ## How to use it
 
-Register an `Observer` and the bus, then register each handler explicitly. For example, with an application-defined `OrderPlaced : ILocalEvent` and `OrderPlacedHandler : ILocalEventHandler<OrderPlaced>`:
+Register `IAppTelemetry` and the bus, then register each handler explicitly. For example, with an application-defined `OrderPlaced : ILocalEvent` and `OrderPlacedHandler : ILocalEventHandler<OrderPlaced>`:
 
 ```csharp
 using Anarchy.Toolkit.Core.Events.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
+using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 
+services.AddLogging();
+services.AddMetrics();
+services.AddAppTelemetry();
 services.AddLocalEventBus();
-services.AddScoped<ILocalEventHandler<TransactionRolledback>, TransactionRolledbackHandler>();
+services.AddScoped<ILocalEventHandler<OrderPlaced>, OrderPlacedHandler>();
 
 // In a service that receives ILocalEventBus via DI:
-await bus.PublishAsync(new TransactionRolledback(), absorbErrors: false, ct: cancellationToken);
+await bus.PublishAsync(new OrderPlaced(), absorbErrors: false, ct: cancellationToken);
 ```
 
 Each publish resolves handlers in a new DI scope and awaits them sequentially. Handler exceptions are logged and absorbed by default; set `absorbErrors: false` to propagate the first failure. No registered handlers is a no-op. For external delivery, compose this package with a broker adapter instead.
@@ -37,6 +41,11 @@ Each publish resolves handlers in a new DI scope and awaits them sequentially. H
 See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [architecture guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html).
 
 ## Releases
+
+### 2.0.0
+
+- Local event bus handler failures use the injected `IAppTelemetry` instead of `Observer`.
+- Domain event processing uses the same facade for event scopes, logs and metrics, removing its Serilog-based dependency.
 
 ### 1.1.1
 

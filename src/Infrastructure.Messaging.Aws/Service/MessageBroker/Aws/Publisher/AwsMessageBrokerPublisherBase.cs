@@ -2,9 +2,8 @@ using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker.Exceptions;
-using Anarchy.Toolkit.Core.Observability.Entity.Service;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher;
@@ -20,7 +19,7 @@ public interface IAwsMessageBrokerPublisher<TRequest> : IMessageBrokerPublisher;
 /// Base class for AWS message-broker publishers. Builds SDK requests via an
 /// <see cref="IAwsPublisherRequestBuilder{TRequest, TBatchRequest}"/>, sends them through the transport-specific
 /// <see cref="SendRequestAsync"/>/<see cref="SendBatchRequestAsync"/>, and records logs and metrics through the
-/// <see cref="Observer"/>.
+/// <see cref="IAppTelemetry"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -41,10 +40,10 @@ public interface IAwsMessageBrokerPublisher<TRequest> : IMessageBrokerPublisher;
 /// <typeparam name="TRequest">The AWS single-message request type.</typeparam>
 /// <typeparam name="TBatchRequest">The AWS batch request type.</typeparam>
 /// <param name="builderPublisherRequest">Builds AWS requests from outbound messages.</param>
-/// <param name="observer">The observer used for logging and metrics.</param>
+/// <param name="telemetry">The application telemetry used for logging and metrics.</param>
 public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     IAwsPublisherRequestBuilder<TRequest, TBatchRequest> builderPublisherRequest,
-    Observer observer) : IAwsMessageBrokerPublisher<TRequest>
+    IAppTelemetry telemetry) : IAwsMessageBrokerPublisher<TRequest>
 {
     private const int MaxBatchSize = 10; // AWS limit for batch operations
 
@@ -62,30 +61,17 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
             await SendRequestAsync(builderPublisherRequest.FromOutboundMessage(outboundMessage),
                 cancellationToken ?? CancellationToken.None);
 
-            observer.LogInformation(
-                (CallSiteEntity)caller,
+            telemetry.Log(LogLevel.Information, caller, null,
                 "Published outbound message for request_type {RequestType} with message_count {MessageCount}",
                 requestType,
                 1);
 
-            observer.ExecutionRecordDuration(
-                (CallSiteEntity)caller,
-                timer.Elapsed,
-                Tags.Success);
-
-            observer.ExecutionIncrementCount((CallSiteEntity)caller, 1, Tags.Success);
+            RecordMetrics(caller.ToMetricPrefix(), timer.Elapsed, 1, true);
         }
         catch (Exception ex)
         {
-            observer.ExecutionRecordDuration(
-                (CallSiteEntity)caller,
-                timer.Elapsed,
-                Tags.Failure);
-
-            observer.ExecutionIncrementCount((CallSiteEntity)caller, 1, Tags.Failure);
-            observer.LogError(
-                ex,
-                (CallSiteEntity)caller,
+            RecordMetrics(caller.ToMetricPrefix(), timer.Elapsed, 1, false);
+            telemetry.Log(LogLevel.Error, caller, ex,
                 "Failed to publish outbound message for request_type {RequestType} with message_count {MessageCount}",
                 requestType,
                 1);
@@ -138,7 +124,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
 
         if (continueOnFailure && outboundMessages.Any(m => m.Destination.IsFifo()))
         {
-            observer.LogWarning(caller,
+            telemetry.Log(LogLevel.Warning, caller, null,
                 "continueOnFailure is enabled but messages contain FIFO destinations. This may lead to out-of-order processing.");
         }
 
@@ -195,7 +181,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     }
 
     private async Task RecordChunkSuccessAsync(
-        CallSiteEntity caller,
+        CallSite caller,
         Stopwatch chunkTimer,
         string requestType,
         OutboundMessageEntity[] batch,
@@ -204,13 +190,12 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     {
         var chunkCaller = $"{caller.ToMetricPrefix()}.chunk";
 
-        observer.LogInformation(caller,
+        telemetry.Log(LogLevel.Information, caller, null,
             "Published outbound message batch for request_type {RequestType} with message_count {MessageCount}",
             requestType,
             batch.Length);
 
-        observer.ExecutionRecordDuration(chunkCaller, chunkTimer.Elapsed, Tags.Success);
-        observer.ExecutionIncrementCount(chunkCaller, batch.Length, Tags.Success);
+        RecordMetrics(chunkCaller, chunkTimer.Elapsed, batch.Length, true);
 
         if (chunkCallbackAsync != null)
         {
@@ -219,7 +204,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     }
 
     private async Task RecordChunkFailureAsync(
-        CallSiteEntity caller,
+        CallSite caller,
         Stopwatch chunkTimer,
         string requestType,
         OutboundMessageEntity[] batch,
@@ -229,12 +214,9 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     {
         var chunkCaller = $"{caller.ToMetricPrefix()}.chunk";
 
-        observer.ExecutionRecordDuration(chunkCaller, chunkTimer.Elapsed, Tags.Failure);
-        observer.ExecutionIncrementCount(chunkCaller, batch.Length, Tags.Failure);
+        RecordMetrics(chunkCaller, chunkTimer.Elapsed, batch.Length, false);
 
-        observer.LogError(
-            ex,
-            caller,
+        telemetry.Log(LogLevel.Error, caller, ex,
             "Failed to publish outbound message batch for request_type {RequestType} with message_count {MessageCount}",
             requestType,
             batch.Length);
@@ -246,23 +228,30 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     }
 
     private void RecordFinalMetrics(
-        CallSiteEntity caller,
+        CallSite caller,
         Stopwatch timer,
         Exception? lastException,
         int totalPublished,
         int totalFailed)
     {
-        observer.ExecutionRecordDuration(caller, timer.Elapsed, lastException == null ? Tags.Success : Tags.Failure);
+        telemetry.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", lastException == null)]);
 
         if (totalPublished > 0)
         {
-            observer.ExecutionIncrementCount(caller, totalPublished, Tags.Success);
+            telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.execution_count", totalPublished, [new("success", true)]);
         }
 
         if (totalFailed > 0)
         {
-            observer.ExecutionIncrementCount(caller, totalFailed, Tags.Failure);
+            telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.execution_count", totalFailed, [new("success", false)]);
         }
+    }
+
+    private void RecordMetrics(string prefix, TimeSpan duration, int count, bool success)
+    {
+        KeyValuePair<string, object?>[] tags = [new("success", success)];
+        telemetry.RecordDuration($"{prefix}.execution_time", duration, tags);
+        telemetry.IncrementCounter($"{prefix}.execution_count", count, tags);
     }
 
     /// <summary>

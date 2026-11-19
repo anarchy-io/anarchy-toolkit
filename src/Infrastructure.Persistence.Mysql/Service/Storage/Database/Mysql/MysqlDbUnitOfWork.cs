@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;
@@ -18,10 +18,10 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Service.Storage.Datab
 /// </remarks>
 /// <param name="dbConnectionPool">The keyed <c>"writer"</c> connection pool.</param>
 /// <param name="asyncFlowContext">Async flow context shared with the storage policies so repositories join the session.</param>
-/// <param name="observer">Optional observer used for logging and metrics.</param>
+/// <param name="telemetry">Optional application telemetry used for logging and metrics.</param>
 /// <param name="localEventBus">Optional bus on which transaction lifecycle events are published.</param>
 public class MysqlDbUnitOfWork(
     [FromKeyedServices("writer")] IDbConnectionPool<MySqlConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>> asyncFlowContext,
-    Observer? observer = null, ILocalEventBus? localEventBus = null)
-    : DbUnitOfWorkBase<MySqlConnection, MySqlTransaction>(dbConnectionPool, asyncFlowContext, observer, localEventBus);
+    IAppTelemetry? telemetry = null, ILocalEventBus? localEventBus = null)
+    : DbUnitOfWorkBase<MySqlConnection, MySqlTransaction>(dbConnectionPool, asyncFlowContext, telemetry, localEventBus);

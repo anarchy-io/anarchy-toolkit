@@ -1,10 +1,10 @@
 using Anarchy.Toolkit.Core.Entity;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using System.Data.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database;
@@ -19,11 +19,11 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <typeparam name="TNewEntity">The entity type accepted for saving.</typeparam>
 /// <typeparam name="TPersistedEntity">The persisted entity type returned after saving.</typeparam>
 /// <param name="dbPolicy">Policy used to execute database operations.</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 /// <example>
 ///     <code language="csharp">
-///     public sealed class OrderWriterRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, Observer observer)
-///         : DbWriterRepositoryBase&lt;NpgsqlConnection, PostgresDbDialect, NewOrder, PersistedOrder&gt;(dbPolicy, observer)
+///     public sealed class OrderWriterRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, IAppTelemetry telemetry)
+///         : DbWriterRepositoryBase&lt;NpgsqlConnection, PostgresDbDialect, NewOrder, PersistedOrder&gt;(dbPolicy, telemetry)
 ///     {
 ///         public override Task&lt;long&gt; GetLatestIdAsync(CancellationToken? cancellationToken = null) =>
 ///             GetLatestSequenceValueAsync("order_id_seq", cancellationToken);
@@ -36,9 +36,9 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </example>
 public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity, TPersistedEntity>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    Observer observer
+    IAppTelemetry telemetry
 )
-    : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, observer),
+    : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, telemetry),
       IStorageWriterRepository<TNewEntity, TPersistedEntity>
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
@@ -64,10 +64,10 @@ public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity
     /// <summary>Log context properties pushed while saving <paramref name="newEntity" />.</summary>
     /// <param name="newEntity">The entity being saved.</param>
     /// <returns>The properties; by default only <c>EntityType</c> with the entity type name.</returns>
-    protected virtual LogContextProperty[] ToLogContext(TNewEntity newEntity)
+    protected virtual KeyValuePair<string, object?>[] ToLogContext(TNewEntity newEntity)
     {
         return [
-            new LogContextProperty("EntityType", typeof(TNewEntity).Name)
+            new("EntityType", typeof(TNewEntity).Name)
         ];
     }
 
@@ -83,7 +83,7 @@ public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity
     protected async Task<TPersistedEntity> SaveAsync(string sqlFileName, TNewEntity entity,
                                                      CancellationToken? cancellationToken = null)
     {
-        using (Observer.LogContext.PushProperties(ToLogContext(entity)))
+        using (Telemetry.LogContext.PushProperties(ToLogContext(entity)))
         {
             var saveInput = await ToSaveInput(entity, cancellationToken);
             var caller = this.CalledFrom();
@@ -97,13 +97,13 @@ public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity
                             parameters: saveInput,
                             cancellationToken: cancellationToken ?? CancellationToken.None));
 
-                    Observer.LogInformation(caller, "Successfully saved entity");
+                    Telemetry.Log(LogLevel.Information, caller, null, "Successfully saved entity");
 
                     return result;
                 }
                 catch (Exception e)
                 {
-                    Observer.LogError(e, caller, "Failed to save entity");
+                    Telemetry.Log(LogLevel.Error, caller, e, "Failed to save entity");
                     throw;
                 }
             }, sqlFileName, cancellationToken);

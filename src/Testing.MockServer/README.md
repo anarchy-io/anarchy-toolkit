@@ -52,6 +52,12 @@ on dispose.
 
 ## Releases
 
+### 1.2.0
+
+- feat(Core.Telemetry): add provider-neutral telemetry facade
+- feat(Core.Telemetry): route optional metrics through application logging
+- feat(Configuration): register provider-neutral application telemetry
+
 ### 1.1.0
 
 - feat(Web.MockServer): keep an in-memory log and describe plugged-in middlewares

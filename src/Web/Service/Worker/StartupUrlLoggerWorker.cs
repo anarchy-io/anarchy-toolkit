@@ -1,11 +1,11 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 
 namespace Anarchy.Toolkit.Web.Service.Worker;
 
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 /// <summary>
 /// Hosted service that, in the <c>Development</c> environment, logs the addresses the server listens on once the
@@ -13,12 +13,12 @@ using Microsoft.Extensions.Hosting;
 /// </summary>
 /// <remarks>Registered by <c>WebAppStartupBase.ConfigureWebCustomServices</c> in development.</remarks>
 /// <param name="server">The server whose addresses are logged.</param>
-/// <param name="logger">The observer used for logging.</param>
+/// <param name="telemetry">Application telemetry used for logging.</param>
 /// <param name="env">The host environment.</param>
 /// <param name="lifetime">The application lifetime, used to wait for <c>ApplicationStarted</c>.</param>
 public sealed class StartupUrlLoggerWorker(
     IServer server,
-    Observer logger,
+    IAppTelemetry telemetry,
     IHostEnvironment env,
     IHostApplicationLifetime lifetime) : IHostedService
 {
@@ -42,14 +42,14 @@ public sealed class StartupUrlLoggerWorker(
         var addresses = server.Features.Get<IServerAddressesFeature>()?.Addresses;
         if (addresses is null || addresses.Count == 0)
         {
-            logger.LogDebug(caller, "Webapp started, but no server addresses were discovered.");
+            telemetry.Log(LogLevel.Debug, caller, null, "Webapp started, but no server addresses were discovered.");
             return;
         }
 
-        logger.LogDebug(caller, "Webapp is listening on:");
+        telemetry.Log(LogLevel.Debug, caller, null, "Webapp is listening on:");
         foreach (var address in addresses.OrderBy(x => x))
         {
-            logger.LogDebug(caller, " ↳ {Address}", address);
+            telemetry.Log(LogLevel.Debug, caller, null, " ↳ {Address}", address);
         }
     }
 

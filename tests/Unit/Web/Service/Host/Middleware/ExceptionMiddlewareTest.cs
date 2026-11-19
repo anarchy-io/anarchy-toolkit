@@ -1,5 +1,4 @@
-using Anarchy.Toolkit.Testing;
-using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Tests.Unit.Web.Fixture;
 using Anarchy.Toolkit.Web.Service.Host.Middleware;
 using AwesomeAssertions;
@@ -9,7 +8,7 @@ using System.Text.Json;
 
 namespace Anarchy.Toolkit.Tests.Unit.Web.Service.Host.Middleware;
 
-public class ExceptionMiddlewareTest : TestCaseBase, IDisposable
+public class ExceptionMiddlewareTest : IDisposable
 {
     private readonly ExceptionMiddleware _sut;
     private readonly Mock<RequestDelegate> _mockNext;
@@ -22,7 +21,7 @@ public class ExceptionMiddlewareTest : TestCaseBase, IDisposable
 
         _sut = new ExceptionMiddleware(
             _mockNext.Object,
-            InMemoryObserver.Create()
+            Mock.Of<IAppTelemetry>()
         );
 
         _httpContextWithIgnoreAttribute = HttpContextFixture.RetrieveIgnoredContext();

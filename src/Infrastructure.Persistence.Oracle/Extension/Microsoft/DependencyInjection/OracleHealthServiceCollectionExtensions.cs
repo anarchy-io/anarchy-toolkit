@@ -18,7 +18,7 @@ public static class OracleHealthServiceCollectionExtensions
     /// <returns>The same service collection, for chaining.</returns>
     /// <remarks>
     /// Registers <see cref="OracleHealthReportReader"/> and <see cref="OracleHealthReportWriter"/> (scoped). Requires the
-    /// keyed <c>"reader"</c>/<c>"writer"</c> storage policies registered by <c>ModuleOracle</c>, plus an <c>Observer</c>.
+    /// keyed <c>"reader"</c>/<c>"writer"</c> storage policies registered by <c>ModuleOracle</c>, plus an <see cref="Anarchy.Toolkit.Core.Telemetry.IAppTelemetry"/>.
     /// </remarks>
     /// <example>
     /// <code language="csharp">

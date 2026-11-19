@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Ser
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Core.Composition.Module;
+using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,12 +10,13 @@ using Microsoft.Extensions.Hosting;
 namespace Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
 
 /// <summary>
-/// Registers the application settings, observability and secret management.
+/// Registers the application settings, telemetry and secret management.
 /// </summary>
 /// <remarks>
-/// The parameterless constructor uses the vendor-neutral <see cref="ObserverFactory"/>; pass a
-/// <see cref="ModuleObservability"/> to plug in an organisation's own observer.
-/// Modules are registered in this order: <typeparamref name="TAppSettingsDiModule"/>, <see cref="ModuleObservability"/>,
+/// The telemetry module is registered after settings and before secret management. Register or configure the host's
+/// preferred logging provider before applying this module, or provide an <see cref="IAppTelemetry"/> implementation
+/// through DI; the default facade does not replace consumer registrations.
+/// Modules are registered in this order: <typeparamref name="TAppSettingsDiModule"/>, <see cref="ModuleTelemetry"/>,
 /// then secret management (<see cref="Anarchy.Toolkit.Configuration.Core.Service.ISecretManagementService"/>).
 /// </remarks>
 /// <typeparam name="TAppSettingsDiModule">The module that binds and registers <typeparamref name="TAppSettings"/>
@@ -29,23 +31,23 @@ public sealed class ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings> :
     where TAppSettingsDiModule : class, IAppSettingsDiModule<TAppSettings>, new()
     where TAppSettings : class, IAppSettings
 {
-    private readonly ModuleObservability _observability;
+    private readonly ModuleTelemetry _telemetry;
 
     /// <summary>
-    /// Creates the module with the default <see cref="ModuleObservability"/>.
+    /// Creates the module with the default <see cref="ModuleTelemetry"/>.
     /// </summary>
-    public ModuleLibConfiguration() : this(new ModuleObservability())
+    public ModuleLibConfiguration() : this(new ModuleTelemetry())
     {
     }
 
     /// <summary>
-    /// Creates the module with a custom observability module.
+    /// Creates the module with a telemetry module, for example to customize correlation-id options.
     /// </summary>
-    /// <param name="observability">The observability module to register.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="observability"/> is <see langword="null"/>.</exception>
-    public ModuleLibConfiguration(ModuleObservability observability)
+    /// <param name="telemetry">The telemetry module to register.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="telemetry"/> is <see langword="null"/>.</exception>
+    public ModuleLibConfiguration(ModuleTelemetry telemetry)
     {
-        _observability = observability ?? throw new ArgumentNullException(nameof(observability));
+        _telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
     }
 
     /// <inheritdoc />
@@ -54,7 +56,7 @@ public sealed class ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings> :
     {
         return services
             .UseModule<TAppSettingsDiModule>(configuration, environment)
-            .UseModule(_observability, configuration, environment)
+            .UseModule(_telemetry, configuration, environment)
             .UseModule<ModuleSecretManagement>(configuration, environment)
             ;
     }

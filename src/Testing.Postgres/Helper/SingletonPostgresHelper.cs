@@ -3,6 +3,7 @@ using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Storage.
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.TypeHandler;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Entity.Configuration.Storage.Database;
@@ -24,7 +25,7 @@ namespace Anarchy.Toolkit.Testing.Postgres.Helper;
 ///     </para>
 ///     <para>
 ///     The retry policy builder is never rebuilt, and refreshing only the connection pool does not rebuild an
-///     already cached policy; call <see cref="DbPolicyFixture{TSettings}(TSettings, bool)" /> with
+///     already cached policy; call <see cref="DbPolicyFixture{TSettings}(TSettings, bool, IAppTelemetry)" /> with
 ///     <c>forceRefresh</c> to rebuild both pool and policy.
 ///     </para>
 /// </remarks>
@@ -93,12 +94,14 @@ public sealed class SingletonPostgresHelper
     /// </summary>
     /// <param name="settings">Settings used when the builder has to be created.</param>
     /// <param name="forceRefresh">Currently ignored: the builder is never rebuilt.</param>
+    /// <param name="telemetry">Optional application telemetry for retry logging.</param>
     /// <returns>The cached retry policy builder.</returns>
-    public static IAsyncRetryPolicyBuilder<NpgsqlConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false)
+    public static IAsyncRetryPolicyBuilder<NpgsqlConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false,
+        IAppTelemetry? telemetry = null)
     {
         _instanceRetryPolicyBuilder ??= new PostgresAsyncRetryPolicyBuilder(
             PostgresOptionsMapper.ResilienceOptions(settings),
-            InMemoryObserver.Create());
+            telemetry);
         return _instanceRetryPolicyBuilder;
     }
 
@@ -108,11 +111,12 @@ public sealed class SingletonPostgresHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy and the connection pool.</param>
+    /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
-    public static IStoragePolicy<NpgsqlConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false)
+    public static IStoragePolicy<NpgsqlConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false, IAppTelemetry? telemetry = null)
         where TAppSettings : class, IPostgresAppSettings, IResilienceAppSettings
     {
-        return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), forceRefresh);
+        return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), forceRefresh, telemetry);
     }
 
     /// <summary>
@@ -122,8 +126,10 @@ public sealed class SingletonPostgresHelper
     /// <typeparam name="TSettings">The settings type.</typeparam>
     /// <param name="settings">Settings used when the policy has to be created.</param>
     /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy and the connection pool.</param>
+    /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
-    public static IStoragePolicy<NpgsqlConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false)
+    public static IStoragePolicy<NpgsqlConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false,
+        IAppTelemetry? telemetry = null)
         where TSettings : IPostgresAppSettings, IResilienceAppSettings
     {
         if (_instanceDbPolicy is not null && forceRefresh)
@@ -132,10 +138,10 @@ public sealed class SingletonPostgresHelper
         }
 
         _instanceDbPolicy ??= new PostgresResilienceDbPolicy(
-            RetryPolicyBuilder(settings, forceRefresh),
+            RetryPolicyBuilder(settings, forceRefresh, telemetry),
             ConnectionPoolFixture(settings, forceRefresh),
             new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>>(),
-            InMemoryObserver.Create());
+            telemetry);
 
         return _instanceDbPolicy;
     }

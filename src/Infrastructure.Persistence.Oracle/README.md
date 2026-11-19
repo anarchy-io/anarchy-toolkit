@@ -19,7 +19,7 @@ Use this adapter when relational persistence runs on Oracle and your application
 
 ## How to use it
 
-1. Register an `Observer`, then use `ModuleOracle` with factories that build `OracleConnectionOptions` and `OracleResilienceOptions` from your host configuration. The [module guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules) shows the equivalent factory pattern for PostgreSQL.
+1. Register `IAppTelemetry`, then use `ModuleOracle` with factories that build `OracleConnectionOptions` and `OracleResilienceOptions` from your host configuration. The [module guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules) shows the equivalent factory pattern for PostgreSQL.
 2. Configure reader and writer hosts, credentials, Oracle service name, time zone and command timeout; set `MaximumPoolSize` if the default of 100 is unsuitable. A null port selects 1521.
 3. Implement concrete repositories using the Oracle bases and Oracle-compatible SQL. Use the `reader` and `writer` keyed policies as appropriate; the unkeyed policy uses the writer.
 4. Add Oracle health reports when the host exposes service health, and exercise the real adapter with `Testing.Oracle` against a dedicated test schema.

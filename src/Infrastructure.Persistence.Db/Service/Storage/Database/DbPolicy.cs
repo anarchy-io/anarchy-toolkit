@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using System.Data.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
@@ -13,7 +13,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 /// <typeparam name="TDbConnection">The type of database connection.</typeparam>
 /// <param name="dbConnectionPool">Connection pool used when no unit of work session is active.</param>
 /// <param name="asyncFlowContext">Async flow context holding the connection of the active unit of work session, if any.</param>
-/// <param name="observer">Optional observer used for logging and metrics.</param>
+/// <param name="telemetry">Optional application telemetry used for logging and metrics.</param>
 /// <remarks>
 ///     Executes the callback once, without retries. Use <see cref="ResilienceDbPolicy{TDbConnection}" /> to retry
 ///     transient failures.
@@ -21,8 +21,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 public class DbPolicy<TDbConnection>(
     IDbConnectionPool<TDbConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-    Observer? observer = null)
-    : DbPolicyBase<TDbConnection>(dbConnectionPool, asyncFlowContext, observer)
+    IAppTelemetry? telemetry = null)
+    : DbPolicyBase<TDbConnection>(dbConnectionPool, asyncFlowContext, telemetry)
     where TDbConnection : DbConnection
 {
     /// <summary>Invokes <paramref name="callback" /> once on <paramref name="connection" />.</summary>

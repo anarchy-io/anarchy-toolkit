@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Oracle.DependencyInjection.Module;
 using Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Entity.Configuration.Storage.Database;
@@ -25,7 +25,7 @@ public class ModuleOracleTest
         var configuration = new ConfigurationBuilder().Build();
 
         return new ServiceCollection()
-            .AddSingleton<Observer>(InMemoryObserver.Create())
+            .AddLogging().AddMetrics().AddAppTelemetry()
             .UseModule(new ModuleOracle(
                     config => {
                         onResolveOptions?.Invoke(config);

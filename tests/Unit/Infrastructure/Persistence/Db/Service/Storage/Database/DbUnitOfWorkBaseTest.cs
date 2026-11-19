@@ -2,10 +2,16 @@ using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage.Exceptions;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
+using Anarchy.Toolkit.Testing.Helper.Observability.Monitoring;
 using Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Db.Dummy;
 using AwesomeAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Moq;
+using Serilog;
 
 namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Db.Service.Storage.Database;
 
@@ -17,10 +23,10 @@ public class DbUnitOfWorkBaseTest
         protected override DummyDbConnection CreateConnection(string connectionString) => new(connectionString);
     }
 
-    private sealed class DummyUnitOfWork(IDbConnectionPool<DummyDbConnection> pool)
+    private sealed class DummyUnitOfWork(IDbConnectionPool<DummyDbConnection> pool, IAppTelemetry? telemetry = null)
         : DbUnitOfWorkBase<DummyDbConnection, DummyDbTransaction>(
             pool,
-            new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<DummyDbConnection>>());
+            new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<DummyDbConnection>>(), telemetry);
 
     private readonly DummyConnectionPool _pool = new();
 
@@ -216,5 +222,28 @@ public class DbUnitOfWorkBaseTest
 
         await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("connection failed");
         (await action()).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RunInManagedSessionAsync_WhenCallbackFails_UsesTheInjectedSink()
+    {
+        var token = TestContext.Current.CancellationToken;
+        var sink = new InMemorySink();
+        using var logger = new LoggerConfiguration().WriteTo.Sink(sink).CreateLogger();
+        var services = new ServiceCollection();
+        services.AddMetrics();
+        services.AddSerilogTelemetry(logger);
+        services.AddTelemetryLogMetrics();
+        using var provider = services.BuildServiceProvider();
+        var listener = provider.GetServices<IHostedService>().Should().ContainSingle().Which;
+        await listener.StartAsync(token);
+        var sut = new DummyUnitOfWork(_pool, provider.GetRequiredService<IAppTelemetry>());
+
+        var action = () => sut.RunInManagedSessionAsync<bool>(_ => Task.FromException<bool>(new InvalidOperationException("failed")), token);
+        await action.Should().ThrowAsync<SessionCallbackException>();
+
+        sink.Messages.Should().Contain(entry => entry.RenderMessage().Contains("Failed to execute session callback"));
+        sink.Messages.Should().Contain(entry => entry.RenderMessage().Contains("start_async.execution_time"));
+        await listener.StopAsync(token);
     }
 }

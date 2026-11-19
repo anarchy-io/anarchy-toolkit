@@ -1,6 +1,6 @@
 using Amazon.SimpleNotificationService;
 using Amazon.SimpleNotificationService.Model;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher;
 
@@ -10,12 +10,12 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws
 /// </summary>
 /// <param name="clientSns">The SNS client.</param>
 /// <param name="builderPublisherRequest">Builds SNS requests from outbound messages.</param>
-/// <param name="observer">The observer used for logging and metrics.</param>
+/// <param name="telemetry">The application telemetry used for logging and metrics.</param>
 public class SnsMessageBrokerPublisher(
     IAmazonSimpleNotificationService clientSns,
     IAwsPublisherRequestBuilder<PublishRequest, PublishBatchRequest> builderPublisherRequest,
-    Observer observer)
-    : AwsMessageBrokerPublisherBase<PublishRequest, PublishBatchRequest>(builderPublisherRequest, observer)
+    IAppTelemetry telemetry)
+    : AwsMessageBrokerPublisherBase<PublishRequest, PublishBatchRequest>(builderPublisherRequest, telemetry)
 {
     /// <inheritdoc/>
     protected override async Task SendRequestAsync(PublishRequest request, CancellationToken cancellationToken)

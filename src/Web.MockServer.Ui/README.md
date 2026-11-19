@@ -47,6 +47,12 @@ return await MockServerEntryPoint.RunAsync(args, server => server
 
 ## Releases
 
+### 2.0.0
+
+- feat(Core.Telemetry): add provider-neutral telemetry facade
+- feat(Core.Telemetry): route optional metrics through application logging
+- feat(Configuration): register provider-neutral application telemetry
+
 ### 1.0.0
 
 - feat(Web.MockServer.Ui): add a browser UI for the mock server with expectations, requests, middlewares and live logs

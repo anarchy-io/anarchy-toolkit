@@ -1,8 +1,8 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database.Exceptions;
+using Microsoft.Extensions.Logging;
 using System.Data.Common;
 using System.Diagnostics;
 
@@ -17,7 +17,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 /// <typeparam name="TDbConnection">The type of database connection.</typeparam>
 /// <remarks>
 ///     Connections acquired from the pool are released after the callback; connections taken from an active unit of
-///     work session are left to the session. Every execution records its duration through the observer, tagged with
+///     work session are left to the session. Every execution records its duration through application telemetry, tagged with
 ///     success/failure and the operation name.
 /// </remarks>
 public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection>
@@ -34,9 +34,9 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
     protected readonly IDbConnectionPool<TDbConnection> DbConnectionPool;
 
     /// <summary>
-    ///     Observer used for logging and metrics
+    ///     Application telemetry used for logging and metrics
     /// </summary>
-    protected readonly Observer? Observer;
+    protected readonly IAppTelemetry? Telemetry;
 
     /// <summary>
     ///     Initializes the policy.
@@ -46,16 +46,16 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
     ///     <c>IAsyncFlowContext</c> that contains active database connections within a unit of work
     ///     session
     /// </param>
-    /// <param name="observer">Logger + MeasurerBase facade</param>
+    /// <param name="telemetry">Application telemetry facade.</param>
     protected DbPolicyBase(
         IDbConnectionPool<TDbConnection> dbConnectionPool,
         IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-        Observer? observer = null
+        IAppTelemetry? telemetry = null
     )
     {
         DbConnectionPool = dbConnectionPool;
         ActiveConnectionContext = asyncFlowContext;
-        Observer = observer;
+        Telemetry = telemetry;
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
 
         if (ActiveConnectionContext.TryGetValue(out var connection))
         {
-            Observer?.LogDebug(caller, "Retrieved active connection from async flow context");
+            Telemetry?.Log(LogLevel.Debug, caller, null, "Retrieved active connection from async flow context");
         }
         else
         {
@@ -94,7 +94,7 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
             {
                 connection = await DbConnectionPool.ConnectAsync(cancellationToken);
                 releaseConnection = true;
-                Observer?.LogDebug(caller, "Retrieved new connection from the pool");
+                Telemetry?.Log(LogLevel.Debug, caller, null, "Retrieved new connection from the pool");
             }
             catch (Exception exception)
             {
@@ -107,21 +107,24 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
         {
             var result = await ExecuteCallbackAsync(callback, connection!, cancellationToken);
 
-            Observer?.LogDebug(caller, "Finished policy execution");
+            Telemetry?.Log(LogLevel.Debug, caller, null, "Finished policy execution");
             success = true;
 
             return result;
         }
         finally
         {
-            var parentCaller = this.ParentCaller();
-            Observer?.ExecutionRecordDuration(caller, timer.Elapsed, success
-                ? Tags.Success.WithTag("operation_name", operationName ?? parentCaller.ToMetricPrefix())
-                : Tags.Failure.WithTag("operation_name", operationName ?? parentCaller.ToMetricPrefix()));
+            KeyValuePair<string, object?>[] tags = [new("success", success)];
+            if (operationName is not null)
+            {
+                tags = [.. tags, new("operation_name", operationName)];
+            }
+
+            Telemetry?.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, tags);
 
             await CleanupAsync(releaseConnection, connection!, cancellationToken);
 
-            Observer?.LogDebug(caller, "Connection released to the pool");
+            Telemetry?.Log(LogLevel.Debug, caller, null, "Connection released to the pool");
         }
     }
 

@@ -79,16 +79,16 @@ internal static class JobTemplate
 
                 """,
             ["Core/Service/JobService.cs"] = $$"""
-                using Anarchy.Toolkit.Core.Observability.Extension;
-                using Anarchy.Toolkit.Core.Observability.Service.Observability;
+                using Anarchy.Toolkit.Core.Telemetry;
+                using Microsoft.Extensions.Logging;
 
                 namespace {{ns}}.Core.Service;
 
-                public sealed class JobService(Observer observer)
+                public sealed class JobService(IAppTelemetry telemetry)
                 {
                     public Task<string> RunAsync(string input) =>
-                        observer.MonitoredActionAsync(this.CalledFrom(), () => {
-                            observer.LogInformation(this.CalledFrom(), "Processing {Input}", input);
+                        telemetry.MonitoredActionAsync(this.CalledFrom(), () => {
+                            telemetry.Log(LogLevel.Information, this.CalledFrom(), null, "Processing {Input}", input);
                             return Task.FromResult($"Processed {input}");
                         });
                 }

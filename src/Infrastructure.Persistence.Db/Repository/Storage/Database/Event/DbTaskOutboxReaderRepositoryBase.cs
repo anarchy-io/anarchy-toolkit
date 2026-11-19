@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Repository.Storage.Event;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Storage.Database.Record;
@@ -16,7 +16,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <typeparam name="TDbConnection">The type of database connection.</typeparam>
 /// <typeparam name="TDialect">The provider dialect.</typeparam>
 /// <param name="dbPolicy">Policy used to execute database operations.</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 /// <remarks>
 /// Providers derive from this class and ship the queries <c>TaskOutbox.Get.ById</c>, <c>TaskOutbox.Get.All</c>,
 /// <c>TaskOutbox.Get.All.Unpublished</c>, <c>TaskOutbox.Get.ByAggregateId</c>, <c>TaskOutbox.Get.ByTypeAggregate</c>,
@@ -24,8 +24,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </remarks>
 public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    Observer observer)
-    : DbReaderRepositoryBase<TDbConnection, TDialect, PersistedEvent>(dbPolicy, observer),
+    IAppTelemetry telemetry)
+    : DbReaderRepositoryBase<TDbConnection, TDialect, PersistedEvent>(dbPolicy, telemetry),
       ITaskOutboxReaderRepository
     where TDbConnection : DbConnection
     where TDialect : IDbDialect

@@ -1,8 +1,8 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Ui.Core.Service.Ui;
 using Anarchy.Toolkit.Web.Ui.Core.Service.Ui.Session;
 using Anarchy.Toolkit.Web.Ui.Infrastructure.Service.Http.Client.Exceptions;
+using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
@@ -14,7 +14,7 @@ namespace Anarchy.Toolkit.Web.Ui.Infrastructure.Service.Http.Client;
 /// </summary>
 /// <remarks>
 /// Requires <c>AddToolkitUiApiHttpClient</c> (named HTTP client) and <c>AddToolkitUiAuthentication</c> (session
-/// context and environment catalog). Every call is monitored through the <see cref="Observer"/>; unsuccessful
+/// context and environment catalog). Every call is monitored through <see cref="IAppTelemetry"/>; unsuccessful
 /// responses throw <see cref="DownstreamHttpRequestException"/>, which <c>NotificationService.Error(Exception)</c>
 /// can display with the response body.
 /// </remarks>
@@ -24,7 +24,7 @@ namespace Anarchy.Toolkit.Web.Ui.Infrastructure.Service.Http.Client;
 ///     IHttpClientFactory httpClientFactory,
 ///     IUiSessionContext sessionContext,
 ///     IUiEnvironmentCatalog environmentCatalog,
-///     Observer observer) : UiApiClientBase(httpClientFactory, sessionContext, environmentCatalog, observer)
+///     IAppTelemetry telemetry) : UiApiClientBase(httpClientFactory, sessionContext, environmentCatalog, telemetry)
 /// {
 ///     public async Task&lt;JsonElement&gt; GetOrderAsync(long id, CancellationToken cancellationToken = default)
 ///     {
@@ -38,12 +38,12 @@ namespace Anarchy.Toolkit.Web.Ui.Infrastructure.Service.Http.Client;
 /// <param name="httpClientFactory">Creates the named HTTP client (<see cref="HttpClientName"/>).</param>
 /// <param name="sessionContext">Provides the access token and target environment of the signed-in session.</param>
 /// <param name="environmentCatalog">Resolves the downstream API base URLs.</param>
-/// <param name="observer">The observer used for logging and monitoring.</param>
+/// <param name="telemetry">Application telemetry used for logging and monitoring.</param>
 public abstract class UiApiClientBase(
     IHttpClientFactory httpClientFactory,
     IUiSessionContext sessionContext,
     IUiEnvironmentCatalog environmentCatalog,
-    Observer observer)
+    IAppTelemetry telemetry)
 {
     /// <summary>
     /// Name of the HttpClient registered by <c>AddToolkitUiApiHttpClient</c>.
@@ -150,7 +150,7 @@ public abstract class UiApiClientBase(
     {
         var caller = this.CalledFrom();
 
-        return await observer.MonitoredActionAsync(caller, async () => {
+        return await telemetry.MonitoredActionAsync(caller, async () => {
             var token = accessToken ?? await sessionContext.GetAccessTokenAsync();
 
             if (string.IsNullOrWhiteSpace(token))
@@ -173,7 +173,7 @@ public abstract class UiApiClientBase(
 
             var result = await readResponse(response, cancellationToken);
 
-            observer.LogInformation(caller, "Downstream API call succeeded for {Endpoint}", endpoint);
+            telemetry.Log(LogLevel.Information, caller, null, "Downstream API call succeeded for {Endpoint}", endpoint);
 
             return result;
         }, cancellationToken: cancellationToken);

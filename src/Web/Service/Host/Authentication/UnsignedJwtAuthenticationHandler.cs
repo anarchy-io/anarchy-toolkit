@@ -1,7 +1,7 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -22,7 +22,7 @@ internal class UnsignedJwtAuthenticationHandler(
     IOptionsMonitor<JwtBearerOptions> options,
     ILoggerFactory logger,
     UrlEncoder encoder,
-    Observer observer)
+    IAppTelemetry telemetry)
     : AuthenticationHandler<JwtBearerOptions>(options, logger, encoder)
 {
     private readonly JwtSecurityTokenHandler _tokenHandler = new();
@@ -53,7 +53,7 @@ internal class UnsignedJwtAuthenticationHandler(
         }
         catch (Exception ex)
         {
-            observer.LogDebug(this.CalledFrom(), "Token validation failed: {ErrorMessage}", ex.Message);
+            telemetry.Log(LogLevel.Debug, this.CalledFrom(), null, "Token validation failed: {ErrorMessage}", ex.Message);
             return Task.FromResult(AuthenticateResult.Fail(ex));
         }
     }
@@ -82,7 +82,7 @@ internal class UnsignedJwtAuthenticationHandler(
         }
         catch (Exception ex)
         {
-            observer.LogError(ex, caller, "Token parsing failed");
+            telemetry.Log(LogLevel.Error, caller, ex, "Token parsing failed");
             throw;
         }
     }

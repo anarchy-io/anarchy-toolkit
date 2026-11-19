@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Core.Exceptions;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Polly;
 using Polly.Retry;
 
@@ -17,13 +16,13 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 /// <para>Each attempt gets a token cancelled when the host stops or after <c>performWorkTimeoutInSeconds</c>; a
 /// timeout surfaces as an <see cref="Anarchy.Toolkit.Core.Exceptions.OperationTimeoutException"/>, which is retried.</para>
 /// </remarks>
-/// <param name="observer">The observer used for logs and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logs and metrics.</param>
 /// <param name="recurringIntervalInSeconds">Delay after an iteration that did work, also the retry back-off base. Defaults to 2 seconds.</param>
 /// <param name="delayedIntervalInSeconds">Delay after an idle iteration. Defaults to 20 seconds.</param>
 /// <param name="performWorkTimeoutInSeconds">Timeout of a single <see cref="PerformWorkAsync"/> attempt. Defaults to 120 seconds.</param>
 /// <example>
 /// <code language="csharp">
-/// public sealed class OrderSyncWorker(Observer observer, IOrderSync sync) : ResilientWorkerBase(observer)
+/// public sealed class OrderSyncWorker(IAppTelemetry telemetry, IOrderSync sync) : ResilientWorkerBase(telemetry)
 /// {
 ///     protected override async Task&lt;bool&gt; PerformWorkAsync(CancellationToken token) =>
 ///         await sync.SyncNextBatchAsync(token) &gt; 0;
@@ -31,11 +30,11 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 /// </code>
 /// </example>
 public abstract class ResilientWorkerBase(
-    Observer observer,
+    IAppTelemetry telemetry,
     double recurringIntervalInSeconds = 2,
     double delayedIntervalInSeconds = 20,
     double performWorkTimeoutInSeconds = 120)
-    : MonitoredWorkerBase(observer, recurringIntervalInSeconds, delayedIntervalInSeconds)
+    : MonitoredWorkerBase(telemetry, recurringIntervalInSeconds, delayedIntervalInSeconds)
 {
     private ResiliencePipeline? _policy;
     private readonly TimeSpan _performWorkTimeout = TimeSpan.FromSeconds(performWorkTimeoutInSeconds);

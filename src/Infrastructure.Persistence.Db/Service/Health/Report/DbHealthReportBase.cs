@@ -2,13 +2,12 @@ using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Health.Entity.Service;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Anarchy.Toolkit.Core.Health.ValueSet.Service;
-using Anarchy.Toolkit.Core.Observability.Entity.Service;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using System.Data.Common;
 using System.Diagnostics;
 
@@ -22,7 +21,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Health.Report;
 /// <typeparam name="TDbConnection">The type of database connection.</typeparam>
 /// <typeparam name="TDialect">The provider dialect supplying the health check SQL and name.</typeparam>
 /// <param name="dbPolicy">Policy used to execute the health check query; should target the instance being checked.</param>
-/// <param name="observer">Observer used to log failures.</param>
+/// <param name="telemetry">Application telemetry used to log failures.</param>
 /// <param name="dbInstanceType">The instance type (reader or writer) being checked, used in the test name.</param>
 /// <remarks>
 ///     Failures never throw: the exception is logged and returned in a failed <see cref="HealthCheckEntity" />.
@@ -31,7 +30,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Health.Report;
 /// </remarks>
 public abstract class DbHealthReportBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    Observer observer,
+    IAppTelemetry telemetry,
     DataStorageInstanceType dbInstanceType) : IServiceHealthReport
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
@@ -56,7 +55,7 @@ public abstract class DbHealthReportBase<TDbConnection, TDialect>(
         }
         catch (Exception exception)
         {
-            observer.LogError(exception, (CallSiteEntity)caller, "Service health test failed for {ServiceName}", testName);
+            telemetry.Log(LogLevel.Error, caller, exception, "Service health test failed for {ServiceName}", testName);
             return new HealthCheckEntity(testName, HealthCheckResult.Failed, timer.Elapsed, exception);
         }
     }

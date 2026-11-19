@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 
@@ -12,9 +12,9 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 /// services.AddHostedService&lt;HeartbeatWorker&gt;();
 /// </code>
 /// </example>
-/// <param name="observer">The observer used for logs and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logs and metrics.</param>
 /// <param name="recurringIntervalInSeconds">Interval between heartbeats. Defaults to 30 seconds.</param>
-public sealed class HeartbeatWorker(Observer observer, double recurringIntervalInSeconds = 30)
+public sealed class HeartbeatWorker(IAppTelemetry telemetry, double recurringIntervalInSeconds = 30)
     : WorkerBase(recurringIntervalInSeconds)
 {
     /// <inheritdoc />
@@ -22,8 +22,8 @@ public sealed class HeartbeatWorker(Observer observer, double recurringIntervalI
     {
         var caller = this.CalledFrom();
 
-        observer.LogInformation(caller, "My heart is still beating...");
-        observer.IncrementCounter(caller, Observer.MetricSuffixHeartbeat, 1, Tags.Success);
+        telemetry.Log(LogLevel.Information, caller, null, "My heart is still beating...");
+        telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.heartbeat", 1, [new("success", true)]);
 
         return Task.FromResult(true);
     }

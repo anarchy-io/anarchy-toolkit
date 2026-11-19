@@ -1,15 +1,15 @@
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Health.ValueSet.Service;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Health.Report.Postgres;
-using Anarchy.Toolkit.Testing;
 using AwesomeAssertions;
 using Moq;
 using Npgsql;
 
 namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Postgres.Infrastructure.Service.Health.Report.Postgres;
 
-public class PostgresHealthReportWriterTest : TestCaseBase
+public class PostgresHealthReportWriterTest
 {
     private PostgresHealthReportWriter Sut(bool success = true)
     {
@@ -20,7 +20,7 @@ public class PostgresHealthReportWriterTest : TestCaseBase
                     It.IsAny<string?>(), It.IsAny<CancellationToken?>()))
                 .ThrowsAsync(new Exception("Mocked Behavior"));
 
-        return new PostgresHealthReportWriter(mockPolicy.Object, FixtureObserver);
+        return new PostgresHealthReportWriter(mockPolicy.Object, Mock.Of<IAppTelemetry>());
     }
 
     [Fact]

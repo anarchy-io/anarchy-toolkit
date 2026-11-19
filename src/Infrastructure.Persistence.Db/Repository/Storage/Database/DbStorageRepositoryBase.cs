@@ -1,7 +1,7 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Dapper;
 using System.Data.Common;
@@ -15,11 +15,11 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <typeparam name="TDbConnection">The type of database connection.</typeparam>
 /// <typeparam name="TDialect">The provider dialect supplying the savepoint SQL.</typeparam>
 /// <param name="dbPolicy">Policy used to execute database operations.</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public abstract class DbStorageRepositoryBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    Observer observer)
-    : DbRepositoryBase<TDbConnection>(dbPolicy, observer), IStorageRepository
+    IAppTelemetry telemetry)
+    : DbRepositoryBase<TDbConnection>(dbPolicy, telemetry), IStorageRepository
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
 {

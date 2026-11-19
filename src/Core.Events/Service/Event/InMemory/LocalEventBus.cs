@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Core.Events.Entity.Event.InMemory;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
 
@@ -43,8 +43,8 @@ public interface ILocalEventBus
 /// sequentially, in registration order, awaiting each one. Publishing with no registered handlers is a no-op.
 /// </remarks>
 /// <param name="serviceProvider">The root service provider used to create a scope per publish.</param>
-/// <param name="observer">The observer used to log handler failures.</param>
-public sealed class LocalEventBus(IServiceProvider serviceProvider, Observer observer) : ILocalEventBus
+/// <param name="telemetry">The application telemetry used to log handler failures.</param>
+public sealed class LocalEventBus(IServiceProvider serviceProvider, IAppTelemetry telemetry) : ILocalEventBus
 {
     /// <summary>
     /// Publishes <paramref name="event"/> to every registered <see cref="ILocalEventHandler{TEvent}"/> for
@@ -81,7 +81,7 @@ public sealed class LocalEventBus(IServiceProvider serviceProvider, Observer obs
             }
             catch (Exception ex)
             {
-                observer.LogError(ex, caller, "Failed to process in-memory event");
+                telemetry.Log(LogLevel.Error, caller, ex, "Failed to process in-memory event");
 
                 if (!absorbErrors) throw;
             }

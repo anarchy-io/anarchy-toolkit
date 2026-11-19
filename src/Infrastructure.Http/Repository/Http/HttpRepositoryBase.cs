@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Http.Entity.Http.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
@@ -23,12 +23,12 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// deserialize responses.
 /// </para>
 /// </remarks>
-/// <param name="observer">The observer used for logging and metrics. Currently not used by the base class itself.</param>
+/// <param name="telemetry">The application telemetry used to monitor requests.</param>
 /// <param name="clientFactory">The factory used to create named clients.</param>
 /// <example>
 /// <code language="csharp">
-/// public class CustomerRepository(Observer observer, IHttpClientFactory factory)
-///     : HttpRepositoryBase(observer, factory)
+/// public class CustomerRepository(IAppTelemetry telemetry, IHttpClientFactory factory)
+///     : HttpRepositoryBase(telemetry, factory)
 /// {
 ///     protected override string GetClientName() =&gt; "customers-api";
 ///
@@ -42,9 +42,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// }
 /// </code>
 /// </example>
-#pragma warning disable CS9113 // Parameter is unread.
-public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory clientFactory)
-#pragma warning restore CS9113 // Parameter is unread.
+public abstract class HttpRepositoryBase(IAppTelemetry telemetry, IHttpClientFactory clientFactory)
 {
     /// <summary>
     /// Gets the name of the <see cref="HttpClient"/> (as registered with <see cref="IHttpClientFactory"/>) used by
@@ -61,7 +59,7 @@ public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory c
     /// <returns>The HTTP response; its status code is not validated.</returns>
     protected Task<HttpResponseMessage> MonitoredGetAsync(string requestUri, CancellationToken cancellationToken = default)
     {
-        return ExecuteAsync(client => client.GetAsync(requestUri, cancellationToken));
+        return ExecuteAsync(client => client.GetAsync(requestUri, cancellationToken), this.CalledFrom(), cancellationToken);
     }
 
     /// <summary>
@@ -78,7 +76,7 @@ public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory c
         var request = GetJsonPostRequest(requestUri, payload);
         request = AddCustomHeaders(request, httpHeaders);
 
-        return ExecuteAsync(client => client.SendAsync(request, cancellationToken));
+        return ExecuteAsync(client => client.SendAsync(request, cancellationToken), this.CalledFrom(), cancellationToken);
     }
 
     /// <summary>
@@ -90,7 +88,8 @@ public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory c
     /// <returns>The HTTP response; its status code is not validated.</returns>
     protected Task<HttpResponseMessage> MonitoredPostAsJsonAsync(string requestUri, HttpContent? payload, CancellationToken cancellationToken = default)
     {
-        return ExecuteAsync(client => client.SendAsync(new HttpRequestMessage(HttpMethod.Post, requestUri) { Content = payload }, cancellationToken));
+        return ExecuteAsync(client => client.SendAsync(new HttpRequestMessage(HttpMethod.Post, requestUri) { Content = payload }, cancellationToken),
+            this.CalledFrom(), cancellationToken);
     }
 
     /// <summary>
@@ -102,7 +101,8 @@ public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory c
     /// <returns>The HTTP response; its status code is not validated.</returns>
     protected Task<HttpResponseMessage> MonitoredPutAsJsonAsync(string requestUri, HttpContent? payload, CancellationToken cancellationToken = default)
     {
-        return ExecuteAsync(client => client.SendAsync(new HttpRequestMessage(HttpMethod.Put, requestUri) { Content = payload }, cancellationToken));
+        return ExecuteAsync(client => client.SendAsync(new HttpRequestMessage(HttpMethod.Put, requestUri) { Content = payload }, cancellationToken),
+            this.CalledFrom(), cancellationToken);
     }
 
     /// <summary>
@@ -145,17 +145,17 @@ public abstract class HttpRepositoryBase(Observer observer, IHttpClientFactory c
         return request;
     }
 
-    private async Task<HttpResponseMessage> ExecuteAsync(Func<HttpClient, Task<HttpResponseMessage>> func)
-    {
-        var client = AcquireClient();
+    private Task<HttpResponseMessage> ExecuteAsync(Func<HttpClient, Task<HttpResponseMessage>> func, CallSite caller, CancellationToken cancellationToken) =>
+        telemetry.MonitoredActionAsync(caller, async () => {
+            var client = AcquireClient();
 
-        try
-        {
-            return await func(client);
-        }
-        finally
-        {
-            ReleaseClient(client);
-        }
-    }
+            try
+            {
+                return await func(client);
+            }
+            finally
+            {
+                ReleaseClient(client);
+            }
+        }, cancellationToken);
 }
