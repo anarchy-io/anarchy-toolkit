@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Entity.Configuration.Storage.Database;
 using Oracle.ManagedDataAccess.Client;
@@ -11,6 +11,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Service.Storage.Data
 /// </summary>
 /// <remarks>Registered as a singleton by <c>ModuleOracle</c>.</remarks>
 /// <param name="options">Resilience options; <c>RetryCount</c> sets the maximum number of retries.</param>
-/// <param name="observer">Observer used to log a warning on every retry.</param>
-public class OracleAsyncRetryPolicyBuilder(OracleResilienceOptions options, Observer observer)
-    : DbAsyncRetryPolicyBuilder<OracleConnection, OracleDbDialect>(options, observer);
+/// <param name="telemetry">Application telemetry used to log a warning on every retry.</param>
+public class OracleAsyncRetryPolicyBuilder(OracleResilienceOptions options, IAppTelemetry? telemetry = null)
+    : DbAsyncRetryPolicyBuilder<OracleConnection, OracleDbDialect>(options, telemetry);

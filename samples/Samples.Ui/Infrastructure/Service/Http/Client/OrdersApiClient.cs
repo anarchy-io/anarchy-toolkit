@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Samples.Ui.Core.Entity;
 using Anarchy.Toolkit.Samples.Ui.Core.Service;
 using Anarchy.Toolkit.Web.Ui.Core.Service.Ui;
@@ -14,8 +14,8 @@ public sealed class OrdersApiClient(
     IHttpClientFactory httpClientFactory,
     IUiSessionContext sessionContext,
     IUiEnvironmentCatalog environmentCatalog,
-    Observer observer)
-    : UiApiClientBase(httpClientFactory, sessionContext, environmentCatalog, observer), IOrdersApiClient
+    IAppTelemetry telemetry)
+    : UiApiClientBase(httpClientFactory, sessionContext, environmentCatalog, telemetry), IOrdersApiClient
 {
     /// <summary>Key of the orders API in <c>UiEnvironment.ApiBaseUrls</c>.</summary>
     public const string ApiName = "Orders";

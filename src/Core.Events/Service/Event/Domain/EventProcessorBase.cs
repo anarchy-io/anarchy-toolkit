@@ -1,8 +1,8 @@
 using Anarchy.Toolkit.Core.Entity;
 using Anarchy.Toolkit.Core.Events.Extension.Observability;
 using Anarchy.Toolkit.Core.Events.Service.Event.Domain.Exceptions;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
+using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
 
 namespace Anarchy.Toolkit.Core.Events.Service.Event.Domain;
@@ -29,11 +29,11 @@ using Event = Entity.Event.Domain.Event;
 /// </remarks>
 /// <typeparam name="T">The aggregate state type.</typeparam>
 /// <param name="eventHandlerBus">The bus that applies events to state.</param>
-/// <param name="observer">The observer used for logging and metrics; exposed to subclasses as <see cref="Observer"/>.</param>
+/// <param name="telemetry">The application telemetry used for logging and metrics.</param>
 /// <example>
 /// <code language="csharp">
-/// public sealed class OrderEventProcessor(EventHandlerBus&lt;Order&gt; bus, Observer observer, IOrderRepository repository)
-///     : EventProcessorBase&lt;Order&gt;(bus, observer)
+/// public sealed class OrderEventProcessor(EventHandlerBus&lt;Order&gt; bus, IAppTelemetry telemetry, IOrderRepository repository)
+///     : EventProcessorBase&lt;Order&gt;(bus, telemetry)
 /// {
 ///     protected override async Task&lt;Dictionary&lt;string, Order&gt;&gt; HydrateStateEntitiesAsync(
 ///         string[] aggregateIds, CancellationToken? cancellationToken = null)
@@ -45,13 +45,13 @@ using Event = Entity.Event.Domain.Event;
 /// }
 /// </code>
 /// </example>
-public abstract class EventProcessorBase<T>(EventHandlerBus<T> eventHandlerBus, Observer observer)
+public abstract class EventProcessorBase<T>(EventHandlerBus<T> eventHandlerBus, IAppTelemetry telemetry)
     where T : IEntity
 {
     /// <summary>
-    /// The observer used for logging and metrics.
+    /// The application telemetry used for logging and metrics.
     /// </summary>
-    protected readonly Observer Observer = observer;
+    protected readonly IAppTelemetry Telemetry = telemetry;
 
     /// <summary>
     /// Processes <paramref name="domainEvents"/> in order and persists the resulting state of each affected aggregate.
@@ -72,7 +72,7 @@ public abstract class EventProcessorBase<T>(EventHandlerBus<T> eventHandlerBus, 
 
         foreach (var domainEvent in domainEvents)
         {
-            using (Observer.LogContext.WithEvent(domainEvent))
+            using (Telemetry.WithEvent(domainEvent))
             {
                 stateEntities.TryGetValue(domainEvent.AggregateId, out var currentState);
                 var handledEventState = await HandleEventAsync(domainEvent, currentState, cancellationToken);
@@ -121,17 +121,16 @@ public abstract class EventProcessorBase<T>(EventHandlerBus<T> eventHandlerBus, 
         }
         catch (EmptyStateAfterHandlerBusException)
         {
-            Observer.LogWarning(caller, "No states were altered after processing event");
-            Observer.IncrementCounter(caller, "empty_state_after_handler_bus", 1, Tags.Failure);
+            Telemetry.Log(LogLevel.Warning, caller, null, "No states were altered after processing event");
+            Telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.empty_state_after_handler_bus", 1, [new("success", false)]);
 
             return default;
         }
         catch (NoHandlersForEventException)
         {
-            Observer.LogWarning(caller, "Event has no matching handler");
-            Observer.IncrementCounter(caller, Observer.MetricSuffixNoHandlers, 1,
-                Tags.Failure
-                    .WithTag("entity_state", entityState is null ? "empty" : "found"));
+            Telemetry.Log(LogLevel.Warning, caller, null, "Event has no matching handler");
+            Telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.no_handlers", 1,
+                new("success", false), new("entity_state", entityState is null ? "empty" : "found"));
 
             throw;
         }

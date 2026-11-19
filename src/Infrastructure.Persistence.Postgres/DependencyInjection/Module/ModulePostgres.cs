@@ -1,9 +1,9 @@
 using Anarchy.Toolkit.Core.Composition.Module;
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Storage.Database.Postgres;
@@ -20,7 +20,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Postgres.DependencyInjectio
 /// The unkeyed <see cref="IStoragePolicy{TStorage}"/> resolves to the writer policy.
 /// </summary>
 /// <remarks>
-/// Requires an <see cref="Observer"/> registration. The options are resolved from the application's configuration
+/// Requires an <see cref="IAppTelemetry"/> registration. The options are resolved from the application's configuration
 /// through the given factories, so the module makes no assumption about section names or settings types.
 /// </remarks>
 /// <param name="connectionOptions">Factory building the connection options from <see cref="IConfiguration"/>.</param>
@@ -74,7 +74,7 @@ public sealed class ModulePostgres(
                     sp.GetRequiredService<IAsyncRetryPolicyBuilder<NpgsqlConnection>>(),
                     sp.GetRequiredKeyedService<IDbConnectionPool<NpgsqlConnection>>(key),
                     sp.GetRequiredService<IAsyncFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>>>(),
-                    sp.GetRequiredService<Observer>()))
+                    sp.GetRequiredService<IAppTelemetry>()))
             ;
     }
 }

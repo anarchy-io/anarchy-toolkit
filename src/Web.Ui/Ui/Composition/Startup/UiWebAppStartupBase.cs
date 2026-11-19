@@ -1,11 +1,11 @@
 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
-using Anarchy.Toolkit.Core.Observability.Entity.Service;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Composition;
 using Anarchy.Toolkit.Web.Ui.Entity.Ui;
 using Anarchy.Toolkit.Web.Ui.Extension.Service.Builder;
 using Anarchy.Toolkit.Web.Ui.Ui.Extension.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.Ui.Ui.Composition.Startup;
 
@@ -126,16 +126,18 @@ public abstract class UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>(
     /// Logs the environment name and the <c>RUNTIME_HOST</c> environment variable (or <c>unknown</c>) once the
     /// application has started. Not called automatically; invoke it from <see cref="Configure"/> overrides if desired.
     /// </summary>
-    /// <param name="app">The application builder, used to resolve the observer and application lifetime.</param>
+    /// <param name="app">The application builder, used to resolve application telemetry and application lifetime.</param>
     /// <param name="caller">The call site attributed to the log entry.</param>
-    protected void LogStartupInformation(IApplicationBuilder app, CallSiteEntity caller)
+    protected void LogStartupInformation(IApplicationBuilder app, CallSite caller)
     {
-        var observer = app.ApplicationServices.GetRequiredService<Observer>();
+        var telemetry = app.ApplicationServices.GetRequiredService<IAppTelemetry>();
         var lifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
 
         lifetime.ApplicationStarted.Register(() => {
-            observer.LogInformation(
+            telemetry.Log(
+                LogLevel.Information,
                 caller,
+                null,
                 "Application has started with environment '{EnvironmentName}' and runtime host '{RuntimeHost}'",
                 Environment.EnvironmentName,
                 System.Environment.GetEnvironmentVariable("RUNTIME_HOST") ?? "unknown");

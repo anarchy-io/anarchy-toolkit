@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Telemetry.Serilog</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Telemetry.Serilog</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Telemetry.Serilog</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Optional Serilog logging provider integration for Anarchy application telemetry.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+  </ItemGroup>
+
+</Project>

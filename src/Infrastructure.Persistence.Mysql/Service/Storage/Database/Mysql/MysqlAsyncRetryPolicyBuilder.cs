@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Entity.Configuration.Storage.Database;
 using MySqlConnector;
@@ -11,6 +11,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Service.Storage.Datab
 /// </summary>
 /// <remarks>Registered as a singleton by <c>ModuleMysql</c>.</remarks>
 /// <param name="options">Resilience options; <c>RetryCount</c> sets the maximum number of retries.</param>
-/// <param name="observer">Observer used to log a warning on every retry.</param>
-public class MysqlAsyncRetryPolicyBuilder(MysqlResilienceOptions options, Observer observer)
-    : DbAsyncRetryPolicyBuilder<MySqlConnection, MysqlDbDialect>(options, observer);
+/// <param name="telemetry">Application telemetry used to log a warning on every retry.</param>
+public class MysqlAsyncRetryPolicyBuilder(MysqlResilienceOptions options, IAppTelemetry? telemetry = null)
+    : DbAsyncRetryPolicyBuilder<MySqlConnection, MysqlDbDialect>(options, telemetry);

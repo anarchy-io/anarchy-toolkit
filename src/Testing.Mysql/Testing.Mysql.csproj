@@ -8,6 +8,7 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\Testing\Testing.csproj" />
     <ProjectReference Include="..\Testing.Db\Testing.Db.csproj" />
     <ProjectReference Include="..\Infrastructure.Persistence.Mysql\Infrastructure.Persistence.Mysql.csproj" />

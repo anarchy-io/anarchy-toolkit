@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Entity.Configuration.Storage.Database;
 using Npgsql;
@@ -11,6 +11,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Storage.Da
 /// </summary>
 /// <remarks>Registered as a singleton by <c>ModulePostgres</c>.</remarks>
 /// <param name="options">Resilience options; <c>RetryCount</c> sets the maximum number of retries.</param>
-/// <param name="observer">Observer used to log a warning on every retry.</param>
-public class PostgresAsyncRetryPolicyBuilder(PostgresResilienceOptions options, Observer observer)
-    : DbAsyncRetryPolicyBuilder<NpgsqlConnection, PostgresDbDialect>(options, observer);
+/// <param name="telemetry">Application telemetry used to log a warning on every retry.</param>
+public class PostgresAsyncRetryPolicyBuilder(PostgresResilienceOptions options, IAppTelemetry? telemetry = null)
+    : DbAsyncRetryPolicyBuilder<NpgsqlConnection, PostgresDbDialect>(options, telemetry);

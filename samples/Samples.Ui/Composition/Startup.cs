@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
 using Anarchy.Toolkit.Configuration.Extension.Microsoft.Hosting;
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Core.Observability.Extension;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Samples.Ui.Composition.DependencyInjection;
 using Anarchy.Toolkit.Samples.Ui.Core.Service;
 using Anarchy.Toolkit.Samples.Ui.Infrastructure.Entity.Configuration;

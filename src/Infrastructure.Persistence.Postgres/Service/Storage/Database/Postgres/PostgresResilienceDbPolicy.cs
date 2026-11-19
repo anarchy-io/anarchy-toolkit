@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Npgsql;
 
@@ -17,10 +17,10 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Storage.Da
 /// <param name="retryPolicyBuilder">Builder of the retry pipeline.</param>
 /// <param name="dbConnectionPool">Connection pool used when no unit of work session is active.</param>
 /// <param name="asyncFlowContext">Async flow context holding the connection of the active unit of work session, if any.</param>
-/// <param name="observer">Optional observer used for logging and metrics.</param>
+/// <param name="telemetry">Optional application telemetry used for logging and metrics.</param>
 public class PostgresResilienceDbPolicy(
     IAsyncRetryPolicyBuilder<NpgsqlConnection> retryPolicyBuilder,
     IDbConnectionPool<NpgsqlConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>> asyncFlowContext,
-    Observer? observer = null)
-    : ResilienceDbPolicy<NpgsqlConnection>(retryPolicyBuilder, dbConnectionPool, asyncFlowContext, observer);
+    IAppTelemetry? telemetry = null)
+    : ResilienceDbPolicy<NpgsqlConnection>(retryPolicyBuilder, dbConnectionPool, asyncFlowContext, telemetry);

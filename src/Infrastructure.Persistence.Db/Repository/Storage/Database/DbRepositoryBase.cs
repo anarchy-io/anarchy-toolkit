@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.Exceptions;
 using System.Collections.Concurrent;
 using System.Reflection;
@@ -38,18 +38,18 @@ public abstract class DbRepositoryBase<TDbConnection>
     /// <summary>Policy used to obtain a connection (pooled or from the active unit of work) and execute queries.</summary>
     protected readonly IStoragePolicy<TDbConnection> DbPolicy;
 
-    /// <summary>Observer used for logging and metrics.</summary>
-    protected readonly Observer Observer;
+    /// <summary>Application telemetry used for logging and metrics.</summary>
+    protected readonly IAppTelemetry Telemetry;
 
     /// <summary>
     /// Initializes the repository and captures the namespaces and assemblies of its inheritance chain for SQL lookup.
     /// </summary>
     /// <param name="dbPolicy">Policy used to execute database operations.</param>
-    /// <param name="observer">Observer used for logging and metrics.</param>
-    protected DbRepositoryBase(IStoragePolicy<TDbConnection> dbPolicy, Observer observer)
+    /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
+    protected DbRepositoryBase(IStoragePolicy<TDbConnection> dbPolicy, IAppTelemetry telemetry)
     {
         DbPolicy = dbPolicy;
-        Observer = observer;
+        Telemetry = telemetry;
 
         _namespaceAssemblies = GetInheritanceChain(GetType())
             .Select(t => (t.Namespace!, t.Assembly))

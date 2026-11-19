@@ -1,8 +1,7 @@
-using Anarchy.Toolkit.Core.Observability.Entity.Service;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Configuration.Storage.Database;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 using System.Data.Common;
@@ -16,12 +15,12 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 /// <typeparam name="TDbConnection">The type of database connection the pipeline is used with.</typeparam>
 /// <typeparam name="TDialect">The provider dialect classifying transient exceptions.</typeparam>
 /// <param name="options">Resilience options; <see cref="DbResilienceOptions.RetryCount" /> sets the maximum retries.</param>
-/// <param name="observer">Observer used to log a warning on every retry.</param>
+/// <param name="telemetry">Application telemetry used to log a warning on every retry.</param>
 /// <remarks>
 ///     The delay before retry attempt <c>n</c> (zero-based) is <c>2^(n + 1)</c> seconds, i.e. 2s, 4s, 8s, ...
 ///     The pipeline is consumed by <see cref="ResilienceDbPolicy{TDbConnection}" />.
 /// </remarks>
-public class DbAsyncRetryPolicyBuilder<TDbConnection, TDialect>(DbResilienceOptions options, Observer observer)
+public class DbAsyncRetryPolicyBuilder<TDbConnection, TDialect>(DbResilienceOptions options, IAppTelemetry? telemetry = null)
     : IAsyncRetryPolicyBuilder<TDbConnection>
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
@@ -41,8 +40,10 @@ public class DbAsyncRetryPolicyBuilder<TDbConnection, TDialect>(DbResilienceOpti
                     var exception = args.Outcome.Exception;
                     if (exception is not null)
                     {
-                        observer.LogWarning(
-                            (CallSiteEntity)caller,
+                        telemetry?.Log(
+                            LogLevel.Warning,
+                            caller,
+                            exception,
                             "Retry operation attempt {RetryCount} after {TimeSpan}s because {Exception}",
                             args.AttemptNumber + 1,
                             args.RetryDelay.TotalSeconds,

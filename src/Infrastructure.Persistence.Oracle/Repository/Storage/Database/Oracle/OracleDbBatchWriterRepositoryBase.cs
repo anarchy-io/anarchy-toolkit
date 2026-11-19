@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Entity;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Service.Storage.Database.Oracle;
 using Oracle.ManagedDataAccess.Client;
@@ -13,9 +13,9 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Repository.Storage.D
 /// </summary>
 /// <typeparam name="TNewEntity">The entity type accepted for saving.</typeparam>
 /// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public abstract class OracleDbBatchWriterRepositoryBase<TNewEntity>(
     IStoragePolicy<OracleConnection> dbPolicy,
-    Observer observer)
-    : DbBatchWriterRepositoryBase<OracleConnection, OracleDbDialect, TNewEntity>(dbPolicy, observer)
+    IAppTelemetry telemetry)
+    : DbBatchWriterRepositoryBase<OracleConnection, OracleDbDialect, TNewEntity>(dbPolicy, telemetry)
     where TNewEntity : IEntity;

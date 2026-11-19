@@ -1,15 +1,15 @@
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Health.ValueSet.Service;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Service.Health.Report.Oracle;
-using Anarchy.Toolkit.Testing;
 using AwesomeAssertions;
 using Moq;
 using Oracle.ManagedDataAccess.Client;
 
 namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Oracle.Infrastructure.Service.Health.Report.Oracle;
 
-public class OracleHealthReportWriterTest : TestCaseBase
+public class OracleHealthReportWriterTest
 {
     private OracleHealthReportWriter Sut(bool success = true)
     {
@@ -20,7 +20,7 @@ public class OracleHealthReportWriterTest : TestCaseBase
                     It.IsAny<string?>(), It.IsAny<CancellationToken?>()))
                 .ThrowsAsync(new Exception("Mocked Behavior"));
 
-        return new OracleHealthReportWriter(mockPolicy.Object, FixtureObserver);
+        return new OracleHealthReportWriter(mockPolicy.Object, Mock.Of<IAppTelemetry>());
     }
 
     [Fact]

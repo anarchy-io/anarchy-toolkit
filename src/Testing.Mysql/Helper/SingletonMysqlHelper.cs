@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Mysql.Service.Storage.Database.Mysql;
@@ -78,8 +79,10 @@ public sealed class SingletonMysqlHelper
     /// </summary>
     /// <param name="settings">Settings used when the builder has to be created.</param>
     /// <param name="forceRefresh">When <c>true</c>, drops the cached builder (and policy) and creates a new one.</param>
+    /// <param name="telemetry">Optional application telemetry for retry logging.</param>
     /// <returns>The cached retry policy builder.</returns>
-    public static IAsyncRetryPolicyBuilder<MySqlConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false)
+    public static IAsyncRetryPolicyBuilder<MySqlConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false,
+        IAppTelemetry? telemetry = null)
     {
         lock (Sync)
         {
@@ -88,7 +91,7 @@ public sealed class SingletonMysqlHelper
                 _retryPolicyBuilder = null;
                 _dbPolicy = null;
             }
-            return _retryPolicyBuilder ??= new MysqlAsyncRetryPolicyBuilder(MysqlOptionsMapper.ResilienceOptions(settings), InMemoryObserver.Create());
+            return _retryPolicyBuilder ??= new MysqlAsyncRetryPolicyBuilder(MysqlOptionsMapper.ResilienceOptions(settings), telemetry);
         }
     }
 
@@ -97,10 +100,11 @@ public sealed class SingletonMysqlHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy, the pool and the retry builder.</param>
+    /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
-    public static IStoragePolicy<MySqlConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false)
+    public static IStoragePolicy<MySqlConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false, IAppTelemetry? telemetry = null)
         where TAppSettings : class, IMysqlAppSettings, IResilienceAppSettings =>
-        DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), forceRefresh);
+        DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), forceRefresh, telemetry);
 
     /// <summary>
     ///     Return the cached resilience policy, creating it on first use. The settings must expose both the
@@ -109,16 +113,18 @@ public sealed class SingletonMysqlHelper
     /// <typeparam name="TSettings">The settings type.</typeparam>
     /// <param name="settings">Settings used when the policy has to be created.</param>
     /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy, the pool and the retry builder.</param>
+    /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
-    public static IStoragePolicy<MySqlConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false)
+    public static IStoragePolicy<MySqlConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false,
+        IAppTelemetry? telemetry = null)
         where TSettings : IMysqlAppSettings, IResilienceAppSettings
     {
         lock (Sync)
         {
             if (forceRefresh) _dbPolicy = null;
-            return _dbPolicy ??= new MysqlResilienceDbPolicy(RetryPolicyBuilder(settings, forceRefresh),
+            return _dbPolicy ??= new MysqlResilienceDbPolicy(RetryPolicyBuilder(settings, forceRefresh, telemetry),
                 ConnectionPoolFixture(settings, forceRefresh), new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>(),
-                InMemoryObserver.Create());
+                telemetry);
         }
     }
 

@@ -1,11 +1,11 @@
 using Anarchy.Toolkit.Core.Events.Service.Event.Domain;
 using Anarchy.Toolkit.Core.Events.Service.Event.Domain.Exceptions;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
-using Anarchy.Toolkit.Testing;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Dummy;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Fixture;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Mock;
 using AwesomeAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Collections.Immutable;
 
@@ -13,15 +13,18 @@ namespace Anarchy.Toolkit.Tests.Unit.Core.Events.Core.Service.Event.Domain;
 
 using Event = Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event;
 
-public class EventProcessorBaseTest : TestCaseBase
+public class EventProcessorBaseTest
 {
     private readonly Mock<EventHandlerBus<DummyStateEntity>> _mockEventHandlerBus;
+    private readonly Mock<IAppTelemetry> _telemetry = new();
     private readonly TestEventProcessor _sut;
 
     public EventProcessorBaseTest()
     {
         _mockEventHandlerBus = EventHandlerBusMocker.Mock(true, new DummyStateEntityFixture().Build());
-        _sut = new TestEventProcessor(_mockEventHandlerBus.Object, FixtureObserver);
+        _telemetry.Setup(t => t.BeginScope(It.IsAny<IReadOnlyCollection<KeyValuePair<string, object?>>>()))
+            .Returns(Moq.Mock.Of<IDisposable>());
+        _sut = new TestEventProcessor(_mockEventHandlerBus.Object, _telemetry.Object);
     }
 
     [Fact]
@@ -38,6 +41,9 @@ public class EventProcessorBaseTest : TestCaseBase
         _mockEventHandlerBus.Verify(bus => bus.ProcessAsync(It.IsAny<Event>(),
             It.IsAny<DummyStateEntity>(), It.IsAny<CancellationToken?>()), Times.Once);
         _sut.StoredEntities.Should().HaveCount(1);
+        _telemetry.Verify(t => t.BeginScope(It.Is<IReadOnlyCollection<KeyValuePair<string, object?>>>(properties =>
+            properties.Any(property => property.Key == "AggregateId" && Equals(property.Value, fixtureEvents[0].AggregateId)) &&
+            properties.Any(property => property.Key == "TypeEvent" && Equals(property.Value, fixtureEvents[0].TypeEvent)))), Times.Once);
     }
 
     [Fact]
@@ -55,8 +61,10 @@ public class EventProcessorBaseTest : TestCaseBase
         // Assert
         result.Should().HaveCount(1, "the hydrated state is returned untouched");
         _sut.StoredEntities.Should().BeEmpty();
-        FixtureObserver.SinkLogs.Messages.Should()
-            .Contain(m => m.MessageTemplate.Text.Contains("No states were altered after processing event"));
+        _telemetry.Verify(t => t.Log(LogLevel.Warning, It.IsAny<CallSite>(), null,
+            "No states were altered after processing event", It.IsAny<object?[]>()), Times.Once);
+        _telemetry.Verify(t => t.IncrementCounter(It.Is<string>(name => name.EndsWith(".empty_state_after_handler_bus")), 1,
+            It.Is<KeyValuePair<string, object?>[]>(tags => tags.Any(tag => tag.Key == "success" && Equals(tag.Value, false)))), Times.Once);
     }
 
     [Fact]
@@ -65,7 +73,7 @@ public class EventProcessorBaseTest : TestCaseBase
         // Arrange: an optional handler without state on a bus processing an aggregate with no hydrated state
         var handler = new Handler.OptionalMutationDummyEventHandlerTest.OptionalMutationDummyEventHandler();
         var bus = new EventHandlerBus<DummyStateEntity>([handler]);
-        var sut = new TestEventProcessor(bus, FixtureObserver, hydrate: false);
+        var sut = new TestEventProcessor(bus, _telemetry.Object, hydrate: false);
 
         var fixtureEvents = ImmutableArray.Create(new Event(
             Handler.OptionalMutationDummyEventHandlerTest.SupportedTypeAggregate,
@@ -99,10 +107,10 @@ public class EventProcessorBaseTest : TestCaseBase
 
     private class TestEventProcessor(
         EventHandlerBus<DummyStateEntity> eventHandlerBus,
-        Observer observer,
+        IAppTelemetry telemetry,
         bool hydrate = true
     )
-        : EventProcessorBase<DummyStateEntity>(eventHandlerBus, observer)
+        : EventProcessorBase<DummyStateEntity>(eventHandlerBus, telemetry)
     {
         public readonly List<DummyStateEntity> StoredEntities = [];
 

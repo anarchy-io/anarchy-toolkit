@@ -3,6 +3,7 @@ using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Storage.
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.TypeHandler;
 using Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Oracle.Service.Storage.Database.Oracle;
@@ -46,10 +47,10 @@ public sealed class OracleHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static OracleResilienceDbPolicy DbPolicyFixture<TAppSettings>()
+    public static OracleResilienceDbPolicy DbPolicyFixture<TAppSettings>(IAppTelemetry? telemetry = null)
         where TAppSettings : class, IOracleAppSettings, IResilienceAppSettings
     {
-        return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>());
+        return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
     }
 
     /// <summary>
@@ -58,8 +59,9 @@ public sealed class OracleHelper
     /// </summary>
     /// <typeparam name="TSettings">The settings type.</typeparam>
     /// <param name="appSettings">The settings to build the fixture from.</param>
+    /// <param name="telemetry">Optional application telemetry for the policy.</param>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static OracleResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings)
+    public static OracleResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings, IAppTelemetry? telemetry = null)
         where TSettings : IOracleAppSettings, IResilienceAppSettings
     {
         var connectionPool = new OracleConnectionPool(
@@ -68,13 +70,13 @@ public sealed class OracleHelper
 
         var retryPolicyBuilder = new OracleAsyncRetryPolicyBuilder(
             OracleOptionsMapper.ResilienceOptions(appSettings),
-            InMemoryObserver.Create());
+            telemetry);
 
         return new OracleResilienceDbPolicy(
             retryPolicyBuilder,
             connectionPool,
             new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<OracleConnection>>(),
-            InMemoryObserver.Create());
+            telemetry);
     }
 
     /// <summary>
@@ -82,29 +84,31 @@ public sealed class OracleHelper
     ///     <typeparamref name="TAppSettings" />.
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
-    public static OracleDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>()
+    public static OracleDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(IAppTelemetry? telemetry = null)
         where TAppSettings : class, IOracleAppSettings
     {
-        return DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>());
+        return DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
     }
 
     /// <summary>
     ///     Build a <see cref="OracleDbUnitOfWork" /> fixture from the given settings.
     /// </summary>
     /// <param name="appSettings">The settings to build the fixture from.</param>
+    /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
     /// <remarks>
     ///     The unit of work uses its own async flow context, so repositories built from a separate
-    ///     <see cref="DbPolicyFixture{TSettings}(TSettings)" /> do not join its sessions.
+    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, IAppTelemetry)" /> do not join its sessions.
     /// </remarks>
-    public static OracleDbUnitOfWork DbUnitOfWorkFixture(IOracleAppSettings appSettings)
+    public static OracleDbUnitOfWork DbUnitOfWorkFixture(IOracleAppSettings appSettings, IAppTelemetry? telemetry = null)
     {
         return new OracleDbUnitOfWork(
             new OracleConnectionPool(
                 DataStorageInstanceType.Writer,
                 new OracleConnectionString(OracleOptionsMapper.ConnectionOptions(appSettings))),
             new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<OracleConnection>>(),
-            InMemoryObserver.Create());
+            telemetry);
     }
 }

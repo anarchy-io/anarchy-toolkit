@@ -18,7 +18,7 @@ Use this package at the composition root when application code depends on `IMess
 
 ## How to use it
 
-Register an `Observer` and the required broker adapters. The example uses explicit options; obtain real account and region values from your host configuration:
+Register `IAppTelemetry` and the required broker adapters. The example uses explicit options; obtain real account and region values from your host configuration:
 
 ```csharp
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Entity.Configuration.Amazon;
@@ -34,6 +34,10 @@ Alternatively, register the modules with options factories using `UseModule`. Re
 See the [registration example](https://anarchy-io.github.io/anarchy-toolkit/getting-started/consuming-packages.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
+
+### 2.0.0
+
+- Route publisher logs and metrics through the host's `IAppTelemetry` instead of `Observer`.
 
 ### 1.1.1
 

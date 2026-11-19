@@ -79,8 +79,8 @@ internal static class ApiTemplate
 
                 """,
             ["Presentation/Controller/PingController.cs"] = $$"""
-                using Anarchy.Toolkit.Core.Observability.Extension;
-                using Anarchy.Toolkit.Core.Observability.Service.Observability;
+                using Anarchy.Toolkit.Core.Telemetry;
+                using Microsoft.Extensions.Logging;
                 using Microsoft.AspNetCore.Authorization;
                 using Microsoft.AspNetCore.Mvc;
 
@@ -88,13 +88,13 @@ internal static class ApiTemplate
 
                 [Route("ping")]
                 [Produces("application/json")]
-                public sealed class PingController(Observer observer) : ControllerBase
+                public sealed class PingController(IAppTelemetry telemetry) : ControllerBase
                 {
                     [HttpGet]
                     [AllowAnonymous]
                     public IActionResult Ping()
                     {
-                        observer.LogInformation(this.CalledFrom(), "Ping");
+                        telemetry.Log(LogLevel.Information, this.CalledFrom(), null, "Ping");
                         return Ok(new { message = "pong" });
                     }
                 }

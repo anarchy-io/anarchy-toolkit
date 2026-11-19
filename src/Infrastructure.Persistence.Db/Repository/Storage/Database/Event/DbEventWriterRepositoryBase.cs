@@ -1,8 +1,8 @@
 using Anarchy.Toolkit.Core.Events.Entity.Event;
 using Anarchy.Toolkit.Core.Exceptions;
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Repository.Storage.Event;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.ValueSet.Storage.Database;
@@ -19,7 +19,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <typeparam name="TDialect">The provider dialect; <see cref="IDbDialect.CanSelectFromInsert"/> selects the get-or-insert strategy.</typeparam>
 /// <typeparam name="TEventEnvelope">The event envelope type persisted by the repository.</typeparam>
 /// <param name="dbPolicy">Policy used to execute database operations.</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 /// <remarks>
 /// <para>
 /// Type identifiers are cached process-wide in <see cref="EventWriterMultiAttributeIdCache"/>. On the first lookup
@@ -34,8 +34,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </remarks>
 public abstract class DbEventWriterRepositoryBase<TDbConnection, TDialect, TEventEnvelope>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    Observer observer) :
-    DbBatchWriterRepositoryBase<TDbConnection, TDialect, TEventEnvelope>(dbPolicy, observer),
+     IAppTelemetry telemetry) :
+    DbBatchWriterRepositoryBase<TDbConnection, TDialect, TEventEnvelope>(dbPolicy, telemetry),
     IEventEnvelopeWriterRepository<TEventEnvelope>
     where TDbConnection : DbConnection
     where TDialect : IDbDialect

@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Ui.Entity.Api.Output;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.Ui.Service.Host.Ui.Session;
 
@@ -11,10 +11,10 @@ namespace Anarchy.Toolkit.Web.Ui.Service.Host.Ui.Session;
 /// credentials provided at runtime by the user on the login page.
 /// </summary>
 /// <param name="httpClientFactory">Creates the <see cref="HttpClientName"/> HTTP client.</param>
-/// <param name="observer">The observer used for logging.</param>
+/// <param name="telemetry">Application telemetry used for logging.</param>
 public class UiAuthHandler(
     IHttpClientFactory httpClientFactory,
-    Observer observer
+     IAppTelemetry telemetry
 )
 {
     /// <summary>
@@ -66,7 +66,7 @@ public class UiAuthHandler(
             using var response = await client.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                observer.LogWarning(caller,
+                telemetry.Log(LogLevel.Warning, caller, null,
                     "Token exchange failed for client {ClientId} in {Environment} with status {StatusCode}",
                     clientId,
                     authServiceBaseUrl,
@@ -78,7 +78,7 @@ public class UiAuthHandler(
             var token = await response.Content.ReadFromJsonAsync<AuthTokenResponse>(cancellationToken);
             if (token == null)
             {
-                observer.LogWarning(caller,
+                telemetry.Log(LogLevel.Warning, caller, null,
                     "Token exchange returned empty response for client {ClientId} in {Environment}",
                     clientId,
                     authServiceBaseUrl);
@@ -88,8 +88,9 @@ public class UiAuthHandler(
         }
         catch (Exception ex)
         {
-            observer.LogError(ex,
+            telemetry.Log(LogLevel.Error,
                 caller,
+                ex,
                 "Token exchange failed for client {ClientId} in {Environment}",
                 clientId,
                 authServiceBaseUrl);

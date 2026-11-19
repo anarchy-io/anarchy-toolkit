@@ -2,25 +2,27 @@
 
 > Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Configuration · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
-Application settings, secrets and observability bootstrap for toolkit-based services.
+Application settings, secrets and provider-neutral telemetry bootstrap for toolkit-based services.
 
 ```bash
 dotnet add package Anarchy.Toolkit.Configuration
 ```
 
 - Implement the settings capability interfaces your application needs, then bind and expose them with a `ModuleAppSettingsBase<TAppSettings>` subclass.
-- Use `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` to register settings, observability and secrets together; customize observability with an `ObserverFactory`.
+- Use `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` to register settings, telemetry, correlation context and secrets together.
+- `ModuleTelemetry` registers `IAppTelemetry` using the host's logging and metrics providers without replacing an existing facade; configure providers in the host or register a custom facade before applying the module.
+- `ModuleObservability` and `ObserverFactory` remain for applications that still use the legacy `Observer` API; new applications should use `ModuleTelemetry` and `IAppTelemetry` instead.
 - Choose configuration sources in the application, including AWS Systems Manager Parameter Store via `AddAwsSystemsManagerParameterStore` when needed. Secret services include KMS, cached and in-memory implementations.
 
 ## When to use it
 
-Use this package at the composition boundary of a service that needs typed settings, secret access and a consistent `Observer`. Application code owns its settings type and the sources used to populate it; the package does not prescribe a configuration file or automatically provision AWS resources.
+Use this package at the composition boundary of a service that needs typed settings, secret access and the shared `IAppTelemetry` facade. Application code owns its settings type, logging providers and configuration sources; the package does not prescribe a configuration file or automatically provision AWS resources.
 
 ## How to use it
 
 1. Define an application settings type implementing `IAppSettings` and whichever capability interfaces the application consumes, such as `IAuthServiceAppSettings` or `IPostgresAppSettings`.
 2. Derive a settings module from `ModuleAppSettingsBase<TAppSettings>`. Override `RegisterAdditionalTypesForSettings` to expose the same settings instance through the capability interfaces your services request.
-3. Register `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` using `UseModule`, passing the host configuration and environment. Supply a customized `ModuleObservability`/`ObserverFactory` if the defaults are not appropriate.
+3. Configure the host's logging and metrics providers, then register `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` using `UseModule`. Register a custom `IAppTelemetry` first when the application needs to replace the default facade.
 4. Choose configuration sources and secret providers in the host. Keep credentials outside committed configuration and grant the AWS permissions needed by any selected remote provider.
 
 The [sample API settings module](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/DependencyInjection/ModuleAppSettings.cs) and [startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/Startup.cs) show the wiring end to end.
@@ -28,6 +30,10 @@ The [sample API settings module](https://github.com/anarchy-io/anarchy-toolkit/b
 See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
+
+### 1.2.0
+
+- Register the provider-neutral telemetry facade alongside legacy observability and preserve application logging providers.
 
 ### 1.1.1
 

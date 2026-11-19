@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
   </ItemGroup>
 

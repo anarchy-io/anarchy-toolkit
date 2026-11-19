@@ -28,6 +28,12 @@ See the [worker sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/
 
 ## Releases
 
+### 1.3.0
+
+- feat(Core.Telemetry): add provider-neutral telemetry facade
+- feat(Core.Telemetry): route optional metrics through application logging
+- feat(Configuration): register provider-neutral application telemetry
+
 ### 1.2.0
 
 - fix(Hosting.Workers): let the health API listen on a port the OS chooses

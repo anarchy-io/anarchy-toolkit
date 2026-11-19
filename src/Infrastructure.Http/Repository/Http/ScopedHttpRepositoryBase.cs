@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 
 namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 
@@ -11,13 +11,13 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// constructor and disposed in <see cref="Dispose"/>, which the DI container calls when the scope ends. Do not register
 /// derived types as singletons.
 /// </remarks>
-/// <param name="observer">The observer used for logging and metrics.</param>
+/// <param name="telemetry">The application telemetry used to monitor requests.</param>
 /// <param name="clientFactory">The factory used to create the named client.</param>
 /// <param name="clientName">The name of the <see cref="HttpClient"/> registered with <see cref="IHttpClientFactory"/>.</param>
 /// <example>
 /// <code language="csharp">
-/// public class OrdersRepository(Observer observer, IHttpClientFactory factory)
-///     : ScopedHttpRepositoryBase(observer, factory, "orders-api")
+/// public class OrdersRepository(IAppTelemetry telemetry, IHttpClientFactory factory)
+///     : ScopedHttpRepositoryBase(telemetry, factory, "orders-api")
 /// {
 ///     public Task&lt;HttpResponseMessage&gt; GetOrderAsync(string id, CancellationToken ct) =&gt;
 ///         MonitoredGetAsync($"orders/{id}", ct);
@@ -25,10 +25,10 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// </code>
 /// </example>
 public abstract class ScopedHttpRepositoryBase(
-    Observer observer,
+    IAppTelemetry telemetry,
     IHttpClientFactory clientFactory,
     string clientName)
-    : HttpRepositoryBase(observer, clientFactory), IDisposable
+    : HttpRepositoryBase(telemetry, clientFactory), IDisposable
 {
     private readonly HttpClient _client = clientFactory.CreateClient(clientName);
 

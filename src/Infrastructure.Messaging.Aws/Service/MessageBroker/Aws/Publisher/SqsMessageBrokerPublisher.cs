@@ -1,6 +1,6 @@
 using Amazon.SQS;
 using Amazon.SQS.Model;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher;
 
@@ -10,12 +10,12 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws
 /// </summary>
 /// <param name="clientSqs">The SQS client.</param>
 /// <param name="builderPublisherRequest">Builds SQS requests from outbound messages.</param>
-/// <param name="observer">The observer used for logging and metrics.</param>
+/// <param name="telemetry">The application telemetry used for logging and metrics.</param>
 public class SqsMessageBrokerPublisher(
     IAmazonSQS clientSqs,
     IAwsPublisherRequestBuilder<SendMessageRequest, SendMessageBatchRequest> builderPublisherRequest,
-    Observer observer)
-    : AwsMessageBrokerPublisherBase<SendMessageRequest, SendMessageBatchRequest>(builderPublisherRequest, observer)
+    IAppTelemetry telemetry)
+    : AwsMessageBrokerPublisherBase<SendMessageRequest, SendMessageBatchRequest>(builderPublisherRequest, telemetry)
 {
     /// <inheritdoc/>
     protected override async Task SendRequestAsync(SendMessageRequest request, CancellationToken cancellationToken)

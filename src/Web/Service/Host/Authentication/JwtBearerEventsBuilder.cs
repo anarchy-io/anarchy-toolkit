@@ -1,13 +1,13 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Authentication;
 
 /// <summary>
 /// Builds the <see cref="JwtBearerEvents"/> used by the toolkit JWT bearer authentication, logging token validation
 /// successes, authentication failures and challenges through the
-/// <see cref="Anarchy.Toolkit.Core.Observability.Service.Observability.Observer"/> resolved from request services.
+/// <see cref="IAppTelemetry"/> resolved from request services.
 /// </summary>
 public static class JwtBearerEventsBuilder
 {
@@ -20,9 +20,11 @@ public static class JwtBearerEventsBuilder
                 context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<Observer>()
-                    .LogInformation(
+                    .GetRequiredService<IAppTelemetry>()
+                    .Log(
+                        LogLevel.Information,
                         context.CalledFrom(),
+                        null,
                         "JWT authentication succeeded, client '{ClientId}' authorized",
                         context.Principal?.Identity?.Name ?? "unknown");
                 return Task.CompletedTask;
@@ -31,10 +33,11 @@ public static class JwtBearerEventsBuilder
                 context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<Observer>()
-                    .LogError(
-                        context.Exception,
+                    .GetRequiredService<IAppTelemetry>()
+                    .Log(
+                        LogLevel.Error,
                         context.CalledFrom(),
+                        context.Exception,
                         "JWT authentication failed");
                 return Task.CompletedTask;
             },
@@ -42,9 +45,11 @@ public static class JwtBearerEventsBuilder
                 context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<Observer>()
-                    .LogWarning(
+                    .GetRequiredService<IAppTelemetry>()
+                    .Log(
+                        LogLevel.Warning,
                         context.CalledFrom(),
+                        null,
                         "JWT challenge triggered. Error: {Error}, Description: {Description}",
                         context.Error,
                         context.ErrorDescription);

@@ -57,7 +57,7 @@ public sealed class ModuleObservability : IDependencyInjectionModule
     /// <inheritdoc />
     /// <remarks>
     /// Reads <see cref="ObservabilityOptions"/> from the <c>Observability</c> section to resolve the application name,
-    /// registers the correlation-id module, <see cref="IApplicationContext"/>, clears the Microsoft logging providers,
+    /// registers the correlation-id module, <see cref="IApplicationContext"/>, preserves Microsoft logging providers,
     /// and registers <see cref="Observer"/> as a singleton built by the <see cref="ObserverFactory"/> (using the
     /// <see cref="AppRunner"/> from DI when present).
     /// </remarks>
@@ -72,7 +72,7 @@ public sealed class ModuleObservability : IDependencyInjectionModule
         return services
             .UseModule(new ModuleCorrelationId(_correlationIdOptions), configuration, environment)
             .AddSingleton<IApplicationContext, ApplicationContext>()
-            .AddLogging(builder => builder.ClearProviders())
+            .AddLogging()
             .AddSingleton<Observer>(sp => _observerFactory.Create(new ObserverContext(
                 sp, configuration, environment, appName, sp.GetService<AppRunner>()?.Type)));
     }

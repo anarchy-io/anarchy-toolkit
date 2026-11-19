@@ -3,6 +3,7 @@ using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Storage.
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.TypeHandler;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Storage.Database.Postgres;
@@ -46,10 +47,10 @@ public sealed class PostgresHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static PostgresResilienceDbPolicy DbPolicyFixture<TAppSettings>()
+    public static PostgresResilienceDbPolicy DbPolicyFixture<TAppSettings>(IAppTelemetry? telemetry = null)
         where TAppSettings : class, IPostgresAppSettings, IResilienceAppSettings
     {
-        return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>());
+        return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
     }
 
     /// <summary>
@@ -58,8 +59,9 @@ public sealed class PostgresHelper
     /// </summary>
     /// <typeparam name="TSettings">The settings type.</typeparam>
     /// <param name="appSettings">The settings to build the fixture from.</param>
+    /// <param name="telemetry">Optional application telemetry for the policy.</param>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static PostgresResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings)
+    public static PostgresResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings, IAppTelemetry? telemetry = null)
         where TSettings : IPostgresAppSettings, IResilienceAppSettings
     {
         var connectionPool = new PostgresConnectionPool(
@@ -68,13 +70,13 @@ public sealed class PostgresHelper
 
         var retryPolicyBuilder = new PostgresAsyncRetryPolicyBuilder(
             PostgresOptionsMapper.ResilienceOptions(appSettings),
-            InMemoryObserver.Create());
+            telemetry);
 
         return new PostgresResilienceDbPolicy(
             retryPolicyBuilder,
             connectionPool,
             new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>>(),
-            InMemoryObserver.Create());
+            telemetry);
     }
 
     /// <summary>
@@ -82,29 +84,31 @@ public sealed class PostgresHelper
     ///     <typeparamref name="TAppSettings" />.
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
+    /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
-    public static PostgresDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>()
+    public static PostgresDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(IAppTelemetry? telemetry = null)
         where TAppSettings : class, IPostgresAppSettings
     {
-        return DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>());
+        return DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
     }
 
     /// <summary>
     ///     Build a <see cref="PostgresDbUnitOfWork" /> fixture from the given settings.
     /// </summary>
     /// <param name="appSettings">The settings to build the fixture from.</param>
+    /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
     /// <remarks>
     ///     The unit of work uses its own async flow context, so repositories built from a separate
-    ///     <see cref="DbPolicyFixture{TSettings}(TSettings)" /> do not join its sessions.
+    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, IAppTelemetry)" /> do not join its sessions.
     /// </remarks>
-    public static PostgresDbUnitOfWork DbUnitOfWorkFixture(IPostgresAppSettings appSettings)
+    public static PostgresDbUnitOfWork DbUnitOfWorkFixture(IPostgresAppSettings appSettings, IAppTelemetry? telemetry = null)
     {
         return new PostgresDbUnitOfWork(
             new PostgresConnectionPool(
                 DataStorageInstanceType.Writer,
                 new PostgresConnectionString(PostgresOptionsMapper.ConnectionOptions(appSettings))),
             new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>>(),
-            InMemoryObserver.Create());
+            telemetry);
     }
 }

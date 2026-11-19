@@ -1,11 +1,11 @@
 using Anarchy.Toolkit.Core.Entity;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage.Exceptions;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Dapper;
+using Microsoft.Extensions.Logging;
 using System.Data.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database;
@@ -19,11 +19,11 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <typeparam name="TDialect">The provider dialect, used for batch parameter binding, savepoints and error classification.</typeparam>
 /// <typeparam name="TNewEntity">The entity type accepted for saving.</typeparam>
 /// <param name="dbPolicy">Policy used to execute database operations.</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public abstract class DbBatchWriterRepositoryBase<TDbConnection, TDialect, TNewEntity>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    Observer observer)
-    : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, observer),
+    IAppTelemetry telemetry)
+    : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, telemetry),
       IStorageBatchWriterRepository<TNewEntity>
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
@@ -42,10 +42,10 @@ public abstract class DbBatchWriterRepositoryBase<TDbConnection, TDialect, TNewE
     /// <summary>Log context properties pushed while saving <paramref name="newEntity" /> in <see cref="SaveAllLoopAsync" />.</summary>
     /// <param name="newEntity">The entity being saved.</param>
     /// <returns>The properties; by default only <c>EntityType</c> with the entity type name.</returns>
-    protected virtual LogContextProperty[] ToLogContext(TNewEntity newEntity)
+    protected virtual KeyValuePair<string, object?>[] ToLogContext(TNewEntity newEntity)
     {
         return [
-            new LogContextProperty("EntityType", typeof(TNewEntity).Name)
+            new("EntityType", typeof(TNewEntity).Name)
         ];
     }
 
@@ -78,7 +78,7 @@ public abstract class DbBatchWriterRepositoryBase<TDbConnection, TDialect, TNewE
         await DbPolicy.ExecuteAsync(async (connEnvelope, _) => {
             foreach (var entity in entities)
             {
-                using (Observer.LogContext.PushProperties(ToLogContext(entity)))
+                using (Telemetry.LogContext.PushProperties(ToLogContext(entity)))
                 {
                     await SavePointCreateAsync(connEnvelope, transactionSavepoint, cancellationToken);
 
@@ -90,7 +90,7 @@ public abstract class DbBatchWriterRepositoryBase<TDbConnection, TDialect, TNewE
                             cancellationToken: cancellationToken ?? CancellationToken.None));
                         await SavePointReleaseAsync(connEnvelope, transactionSavepoint, cancellationToken);
                         insertCount++;
-                        Observer.LogInformation(caller, "Successfully saved entity");
+                        Telemetry.Log(LogLevel.Information, caller, null, "Successfully saved entity");
                     }
                     catch (Exception exception) when (TDialect.IsServerError(exception))
                     {
@@ -102,7 +102,7 @@ public abstract class DbBatchWriterRepositoryBase<TDbConnection, TDialect, TNewE
                         }
                         else
                         {
-                            Observer.LogError(exception, caller, "Failed to save entity");
+                            Telemetry.Log(LogLevel.Error, caller, exception, "Failed to save entity");
                             throw;
                         }
                     }

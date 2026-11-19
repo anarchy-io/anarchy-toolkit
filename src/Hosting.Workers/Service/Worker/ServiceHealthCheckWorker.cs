@@ -1,10 +1,10 @@
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Api;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health.SelfHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 
@@ -17,7 +17,7 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 public class ServiceHealthCheckWorker : IHostedService, IDisposable
 {
     private readonly IWorkerHealthCheckAppSettings _appSettings;
-    private readonly Observer _observer;
+    private readonly IAppTelemetry _telemetry;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly SelfHostedApplicationHealthApi _healthApi;
 
@@ -25,15 +25,15 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
     /// Creates the worker and prepares (without starting) the self-hosted health API.
     /// </summary>
     /// <param name="appSettings">Settings providing <see cref="WorkerHealthCheckSettings.ServicePort"/>.</param>
-    /// <param name="observer">The observer used for logs.</param>
+    /// <param name="telemetry">Application telemetry used for logs.</param>
     /// <param name="scopeFactory">Creates a scope per health request in the worker's container.</param>
     /// <exception cref="ArgumentNullException">Thrown if any argument is <see langword="null"/>.</exception>
     public ServiceHealthCheckWorker(IWorkerHealthCheckAppSettings appSettings,
-                                    Observer observer,
+                                     IAppTelemetry telemetry,
                                     IServiceScopeFactory scopeFactory)
     {
         _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
-        _observer = observer ?? throw new ArgumentNullException(nameof(observer));
+        _telemetry = telemetry ?? throw new ArgumentNullException(nameof(telemetry));
         _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
 
         _healthApi = SelfHostedApplicationHealthApi.WithServices(_appSettings.WorkerHealthCheck.ServicePort,
@@ -67,8 +67,10 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
 
         _healthApi.Start();
 
-        _observer.LogInformation(
+        _telemetry.Log(
+            LogLevel.Information,
             caller,
+            null,
             "Started listening for health requests on {Uri}",
             new Uri($"http://localhost:{_appSettings.WorkerHealthCheck.ServicePort}"));
 

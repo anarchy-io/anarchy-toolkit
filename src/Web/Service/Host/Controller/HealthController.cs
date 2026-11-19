@@ -1,10 +1,10 @@
 using Anarchy.Toolkit.Core.Health.Entity.Api.Output;
 using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Presentation.Entity.Output.Health;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Controller;
@@ -17,12 +17,12 @@ namespace Anarchy.Toolkit.Web.Service.Host.Controller;
 /// <see cref="HealthCheckReportOutput"/>. Anonymous access is allowed.
 /// </remarks>
 /// <param name="reports">The health reports to run.</param>
-/// <param name="observer">The observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 [Route("health")]
 [Produces("application/json")]
 public class HealthController(
     IReadOnlyCollection<IServiceHealthReport> reports,
-    Observer observer) : ControllerBase
+    IAppTelemetry telemetry) : ControllerBase
 {
     /// <summary>Runs all registered health checks.</summary>
     /// <param name="cancellationToken">Token to cancel the checks.</param>
@@ -46,7 +46,7 @@ public class HealthController(
             var report = await HealthCheckReport.RunAsync(reports, cancellationToken);
             var response = HealthCheckReportOutput.FromDto(report);
 
-            observer.ExecutionRecordDuration(caller, timer.Elapsed, response.Passed ? Tags.Success : Tags.Failure);
+            telemetry.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", response.Passed)]);
 
             return response.Passed
                 ? Ok(response)
@@ -54,8 +54,8 @@ public class HealthController(
         }
         catch (Exception ex)
         {
-            observer.ExecutionRecordDuration(caller, timer.Elapsed, Tags.Failure);
-            observer.LogError(ex, caller, "Failed to check health for registered services");
+            telemetry.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", false)]);
+            telemetry.Log(LogLevel.Error, caller, ex, "Failed to check health for registered services");
             return Problem(ex.Message);
         }
     }

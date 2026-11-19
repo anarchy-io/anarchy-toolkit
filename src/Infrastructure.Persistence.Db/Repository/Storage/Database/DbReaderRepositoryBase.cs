@@ -1,8 +1,8 @@
 using Anarchy.Toolkit.Core.Entity;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage.Exceptions;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Dapper;
 using System.Data.Common;
@@ -17,7 +17,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <typeparam name="TDialect">The provider dialect, used to classify "no data" errors.</typeparam>
 /// <typeparam name="TPersistedEntity">The persisted entity type returned by the repository.</typeparam>
 /// <param name="dbPolicy">Policy used to execute database operations.</param>
-/// <param name="observer">Observer used for logging and metrics.</param>
+/// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 /// <remarks>
 ///     Queries are resolved by name with <see cref="DbRepositoryBase{TDbConnection}.LoadSql" /> and mapped by Dapper
 ///     directly onto <typeparamref name="TPersistedEntity" />. Paged queries receive <c>Limit</c> and <c>Offset</c>
@@ -25,8 +25,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </remarks>
 /// <example>
 ///     <code language="csharp">
-///     public sealed class OrderReaderRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, Observer observer)
-///         : DbReaderRepositoryBase&lt;NpgsqlConnection, PostgresDbDialect, PersistedOrder&gt;(dbPolicy, observer)
+///     public sealed class OrderReaderRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, IAppTelemetry telemetry)
+///         : DbReaderRepositoryBase&lt;NpgsqlConnection, PostgresDbDialect, PersistedOrder&gt;(dbPolicy, telemetry)
 ///     {
 ///         public override Task&lt;long&gt; GetLatestIdAsync(CancellationToken? cancellationToken = null) =>
 ///             GetLatestSequenceValueAsync("order_id_seq", cancellationToken);
@@ -43,8 +43,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </example>
 public abstract class DbReaderRepositoryBase<TDbConnection, TDialect, TPersistedEntity>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    Observer observer)
-    : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, observer),
+    IAppTelemetry telemetry)
+    : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, telemetry),
       IStorageReaderRepository<TPersistedEntity>
     where TDbConnection : DbConnection
     where TDialect : IDbDialect

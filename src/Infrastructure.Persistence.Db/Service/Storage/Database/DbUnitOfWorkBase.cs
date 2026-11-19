@@ -1,10 +1,10 @@
 using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage.Exceptions;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.LocalEvent.Service.Storage.UnitOfWork;
+using Microsoft.Extensions.Logging;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Transactions;
@@ -24,7 +24,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 ///     Async flow context in which the session connection is stored; it must be the same instance used by the
 ///     <see cref="DbPolicyBase{TDbConnection}" /> of the repositories so they join the session.
 /// </param>
-/// <param name="observer">Optional observer used for logging and metrics.</param>
+/// <param name="telemetry">Optional application telemetry used for logging and metrics.</param>
 /// <param name="localEventBus">
 ///     Optional bus on which <see cref="StartedUowTransactionLocalEvent" />, <see cref="CommittedUowTransactionLocalEvent" />
 ///     and <see cref="RolledBackUowTransactionLocalEvent" /> are published.
@@ -58,7 +58,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     IDbConnectionPool<TDbConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-    Observer? observer = null,
+    IAppTelemetry? telemetry = null,
     ILocalEventBus? localEventBus = null)
     : IUnitOfWork
     where TDbConnection : DbConnection where TDbTransaction : DbTransaction
@@ -76,8 +76,8 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// <summary>Connection pool of the database</summary>
     protected readonly IDbConnectionPool<TDbConnection> DbConnectionPool = dbConnectionPool;
 
-    /// <summary>Observer used for logging and metrics</summary>
-    protected readonly Observer? Observer = observer;
+    /// <summary>Application telemetry used for logging and metrics.</summary>
+    protected readonly IAppTelemetry? Telemetry = telemetry;
 
     /// <summary>Optional in-process event bus for transaction lifecycle events.</summary>
     protected readonly ILocalEventBus? LocalEventBus = localEventBus;
@@ -337,10 +337,10 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                     if (enableTransaction)
                     {
                         await BeginAsync(cancellationToken);
-                        Observer?.LogDebug(caller, "Transaction started");
+                        Telemetry?.Log(LogLevel.Debug, caller, null, "Transaction started");
                     }
 
-                    Observer?.LogInformation(caller, "Session started");
+                    Telemetry?.Log(LogLevel.Information, caller, null, "Session started");
 
                     var sessionResult = await callback(cancellationToken);
 
@@ -348,11 +348,11 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                     if (autoManage && enableTransaction)
                     {
                         await CommitAsync(cancellationToken: cancellationToken);
-                        Observer?.LogDebug(caller, "Transaction committed");
+                        Telemetry?.Log(LogLevel.Debug, caller, null, "Transaction committed");
                     }
 
-                    Observer?.LogInformation(caller, "Session finished successfully");
-                    Observer?.ExecutionRecordDuration(caller, timer.Elapsed, Tags.Success);
+                    Telemetry?.Log(LogLevel.Information, caller, null, "Session finished successfully");
+                    Telemetry?.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", true)]);
 
                     return sessionResult;
                 }
@@ -364,7 +364,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                         try
                         {
                             await RollbackAsync(ex, cancellationToken: CancellationToken.None);
-                            Observer?.LogDebug(caller, "Rolled back transaction");
+                            Telemetry?.Log(LogLevel.Debug, caller, null, "Rolled back transaction");
                         }
                         catch (Exception rollbackFailure)
                         {
@@ -373,8 +373,8 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                         }
                     }
 
-                    Observer?.LogError(ex, caller, "Failed to execute session callback");
-                    Observer?.ExecutionRecordDuration(caller, timer.Elapsed, Tags.Failure);
+                    Telemetry?.Log(LogLevel.Error, caller, ex, "Failed to execute session callback");
+                    Telemetry?.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", false)]);
 
                     // Re-throw the error
                     if (ex is OperationCanceledException && cancellationToken?.IsCancellationRequested == true)
@@ -391,7 +391,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                     try
                     {
                         await FinishSessionAsync(CancellationToken.None);
-                        Observer?.LogDebug(caller, "Released connection back to the pool");
+                        Telemetry?.Log(LogLevel.Debug, caller, null, "Released connection back to the pool");
                     }
                     catch (Exception cleanupFailure) when (sessionFailure is not null)
                     {

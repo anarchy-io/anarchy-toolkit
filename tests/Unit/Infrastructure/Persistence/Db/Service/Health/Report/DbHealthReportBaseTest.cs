@@ -1,13 +1,12 @@
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Anarchy.Toolkit.Core.Health.ValueSet.Service;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Health.Report;
-using Anarchy.Toolkit.Testing;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -15,7 +14,7 @@ using System.Data.Common;
 
 namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Db.Service.Health.Report;
 
-public class DbHealthReportBaseTest : TestCaseBase
+public class DbHealthReportBaseTest
 {
     private sealed class DummyDialect : IDbDialect
     {
@@ -27,15 +26,15 @@ public class DbHealthReportBaseTest : TestCaseBase
 
     private sealed class DummyHealthReport(
         IStoragePolicy<DbConnection> dbPolicy,
-        Observer observer,
+        IAppTelemetry telemetry,
         DataStorageInstanceType instanceType)
-        : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, observer, instanceType);
+        : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, telemetry, instanceType);
 
-    private sealed class ReaderReport(IStoragePolicy<DbConnection> dbPolicy, Observer observer)
-        : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, observer, DataStorageInstanceType.Reader);
+    private sealed class ReaderReport(IStoragePolicy<DbConnection> dbPolicy, IAppTelemetry telemetry)
+        : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, telemetry, DataStorageInstanceType.Reader);
 
-    private sealed class WriterReport(IStoragePolicy<DbConnection> dbPolicy, Observer observer)
-        : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, observer, DataStorageInstanceType.Writer);
+    private sealed class WriterReport(IStoragePolicy<DbConnection> dbPolicy, IAppTelemetry telemetry)
+        : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, telemetry, DataStorageInstanceType.Writer);
 
     private DummyHealthReport Sut(DataStorageInstanceType instanceType, bool success = true)
     {
@@ -46,7 +45,7 @@ public class DbHealthReportBaseTest : TestCaseBase
                     It.IsAny<string?>(), It.IsAny<CancellationToken?>()))
                 .ThrowsAsync(new Exception("Mocked Behavior"));
 
-        return new DummyHealthReport(mockPolicy.Object, FixtureObserver, instanceType);
+        return new DummyHealthReport(mockPolicy.Object, Mock.Of<IAppTelemetry>(), instanceType);
     }
 
     [Theory]
@@ -76,7 +75,7 @@ public class DbHealthReportBaseTest : TestCaseBase
     {
         var provider = new ServiceCollection()
             .AddSingleton(new Mock<IStoragePolicy<DbConnection>>().Object)
-            .AddSingleton<Observer>(FixtureObserver)
+            .AddSingleton(Mock.Of<IAppTelemetry>())
             .AddDbHealthReports<ReaderReport, WriterReport>()
             .BuildServiceProvider();
 

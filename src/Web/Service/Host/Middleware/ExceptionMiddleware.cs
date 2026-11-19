@@ -1,9 +1,9 @@
 using Anarchy.Toolkit.Core.Health.Entity.Api.Output;
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage.Exceptions;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Presentation.Attribute;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
@@ -27,10 +27,10 @@ namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
 /// </para>
 /// </remarks>
 /// <param name="next">The next delegate in the pipeline.</param>
-/// <param name="observability">The observer used to log errors.</param>
+/// <param name="telemetry">Application telemetry used to log errors.</param>
 public class ExceptionMiddleware(
     RequestDelegate next,
-    Observer observability)
+    IAppTelemetry telemetry)
 {
     /// <summary>Invokes the rest of the pipeline, converting unhandled exceptions into an error response.</summary>
     /// <param name="context">The current HTTP context.</param>
@@ -64,7 +64,7 @@ public class ExceptionMiddleware(
         };
 
         httpContext.Response.StatusCode = statusCode;
-        observability.LogError(exception, caller, "Request failed with an unhandled exception in middleware");
+        telemetry.Log(LogLevel.Error, caller, exception, "Request failed with an unhandled exception in middleware");
 
         await httpContext.Response.WriteAsJsonAsync(new ExceptionReport(exception));
     }
