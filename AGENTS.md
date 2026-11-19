@@ -18,7 +18,7 @@ Ecosystem), delivered from this .NET 10 monorepo as independently published NuGe
 `.agents/skills` holds the skills for this repository:
 
 - `anarchy`, `anarchy-adopt`, `anarchy-compose`, `anarchy-conventions`, `anarchy-develop`, `anarchy-environment`, `anarchy-release`,
-  `anarchy-maintenance`: the toolkit's distributed skills, linked from `src/Build.Cli/Boilerplate/.agents/skills`.
+  `anarchy-maintenance`: the toolkit's distributed skills, linked from `src/Automation/Boilerplate/.agents/skills`.
   Edit them there; they ship to users.
 - `anarchy-conventions`, `anarchy-adopt` and `anarchy` copy pages from `docs/` into their `references/` (conventions,
   decisions, onboarding guides): edit the docs, then run `make skills_docs_sync` (CI checks it).
@@ -29,13 +29,13 @@ Make targets name their skill with `#@`; `make skills_validate` (run in CI) chec
 
 ## Where code goes
 
-- @docs/guides/architecture.md: the layers (`Core < Infrastructure < Configuration < Hosting < Web < Build`), project
+- @docs/guides/architecture.md: the layers (`Core < Infrastructure < Configuration < Hosting < Web < Automation`), project
   structure and DI modules. Projects only reference lower layers; `make check_layering` enforces it.
-- @docs/guides/fallout-builds.md: the `Build.Fallout` components, targets and release process.
+- @docs/guides/fallout-builds.md: the `Automation.Build` components, targets and release process.
 - @docs/packages/README.md: the package catalog; add new packages to it. Each package has its own `src/<Project>/README.md`
   with a `## Releases` section. The copies under `docs/packages/<Project>/` are generated and git-ignored.
 - @samples/README.md: the sample applications; samples are not packed and are ignored by the layering check.
-- The distributed Makefile, scripts and skills live in `src/Build.Cli/Boilerplate/`; this repository's @Makefile
+- The distributed Makefile, scripts and skills live in `src/Automation/Boilerplate/`; this repository's @Makefile
   includes them in place.
 
 ## Conventions

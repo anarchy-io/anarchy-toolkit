@@ -1,0 +1,405 @@
+using Anarchy.Toolkit.Automation.Build.Cli.Command;
+using Anarchy.Toolkit.Automation.Build.Cli.Service;
+using Anarchy.Toolkit.Automation.Build.Cli.Wizard;
+using Anarchy.Toolkit.Automation.Core.Entity;
+using Anarchy.Toolkit.Automation.Core.Service;
+using AwesomeAssertions;
+using System.Text.Json.Nodes;
+
+namespace Anarchy.Toolkit.Tests.Unit.Automation.Build.Cli;
+
+public class ToolkitToolTest
+{
+    private static readonly ToolkitPackageVersions Versions = new(new Dictionary<string, string> {
+        ["Anarchy.Toolkit.Automation.Build"] = "1.2.3",
+        ["Anarchy.Toolkit.Web"] = "2.0.0",
+        ["Anarchy.Toolkit.Web.Ui"] = "2.1.0",
+        ["Anarchy.Toolkit.Hosting"] = "3.0.0"
+    });
+
+    private static string TempRoot() => Path.Combine(Path.GetTempPath(), "anarchy-tool-" + Guid.NewGuid());
+
+    private static ToolApplication Application(ScriptedPrompter prompter, string? workingDirectory = null) =>
+        new(prompter, Versions, workingDirectory ?? Path.GetTempPath());
+
+    [Theory]
+    [InlineData(new string[0], ToolMode.Help, false)]
+    [InlineData(new[] { "-h" }, ToolMode.Help, false)]
+    [InlineData(new[] { "bootstrap" }, ToolMode.Bootstrap, true)]
+    [InlineData(new[] { "bootstrap", "MyApp" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--output", "dir" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--output" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--with-skills", "--output", "dir" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--with-skills", "--with-skills" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "folder" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "prefix" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "other" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "folder", "--layering", "prefix" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "--with-skills" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "skills", "install" }, ToolMode.Skills, false)]
+    [InlineData(new[] { "skills", "install", "--output", "dir" }, ToolMode.Skills, false)]
+    [InlineData(new[] { "skills" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "skills", "remove" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "scaffold" }, ToolMode.Scaffold, true)]
+    [InlineData(new[] { "scaffold", "API", "Orders" }, ToolMode.Scaffold, false)]
+    [InlineData(new[] { "scaffold", "worker", "Orders" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "scaffold", "api", "Orders", "--no-swagger-theme" }, ToolMode.Scaffold, false)]
+    [InlineData(new[] { "scaffold", "job", "Orders", "--no-swagger-theme" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "scaffold", "api", "Orders", "--unknown" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "boilerplate", "list" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "show", "Makefile" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "show" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "boilerplate", "diff" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "diff", "Makefile", "scripts" }, ToolMode.Boilerplate, false)]
+    [InlineData(new[] { "boilerplate", "diff", "--all" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "MyApp" }, ToolMode.Invalid, false)]
+    public void CommandLine_SelectsMode(string[] args, ToolMode mode, bool interactive)
+    {
+        var command = ToolCommandLine.Parse(args);
+        command.Mode.Should().Be(mode);
+        if (mode != ToolMode.Invalid) command.IsInteractive.Should().Be(interactive);
+    }
+
+    [Fact]
+    public void Boilerplate_PrintsPlainOutputWithoutTheBanner()
+    {
+        var root = TempRoot();
+        try
+        {
+            Directory.CreateDirectory(root);
+            var prompter = new ScriptedPrompter();
+            string Run(int expectedExitCode, params string[] args)
+            {
+                var output = new StringWriter();
+                new ToolApplication(prompter, Versions, root, output).Run(args, interactive: false).Should().Be(expectedExitCode);
+                return output.ToString();
+            }
+
+            Run(0, "boilerplate", "list").Should().Contain("Makefile\n").And.Contain("scripts/build.fallout.sh");
+            Run(0, "boilerplate", "show", "Makefile").Should().Be(BoilerplateCatalog.Read("Makefile"));
+            Run(1, "boilerplate", "diff", "Makefile").Should().Be("missing: Makefile\n");
+            SolutionScaffolder.Create(root, null, new ScaffoldOptions { Items = "Makefile" });
+            Run(0, "boilerplate", "diff", "Makefile").Should().Be("identical: Makefile\n");
+            Run(1, "boilerplate", "show", "nope").Should().BeEmpty();
+            prompter.Errors.Should().ContainSingle().Which.Should().Contain("nope");
+            prompter.BannersShown.Should().Be(0);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Layout_PlacesProjectsByFolderOrPrefix()
+    {
+        var api = new ApplicationSpec(ApplicationKind.Api, "Orders");
+        var job = new ApplicationSpec(ApplicationKind.Job, "Reports");
+
+        SolutionLayout.Default.ProjectPath(api).Should().Be("src/Api/Orders/Orders.csproj");
+        SolutionLayout.Default.RootNamespace(job).Should().Be("Jobs.Reports");
+        SolutionLayout.Default.LibraryProjectPath("Core").Should().Be("src/Library/Core/Core.csproj");
+        SolutionLayout.Default.ToFalloutParameters()["LayeringApplicationFolders"]
+            .Should().BeEquivalentTo(new[] { "src/Api=Web", "src/Jobs=Hosting", "src/Ui=Web" });
+
+        var prefix = SolutionLayout.Default with { Mode = LayeringMode.Prefix };
+        prefix.ProjectPath(job).Should().Be("src/Hosting.Job.Reports/Hosting.Job.Reports.csproj");
+        prefix.LibraryProjectPath("Core").Should().Be("src/Core/Core.csproj");
+        (prefix with { Layers = ["Core", "Web"] }).Supports(ApplicationKind.Job).Should().BeFalse();
+    }
+
+    [Fact]
+    public void BootstrapWizard_ValidatesAnswersAndPlansApplicationsInKindOrder()
+    {
+        var root = TempRoot();
+        var prompter = new ScriptedPrompter(
+            "bad name", "MyApp", root,
+            LayeringMode.Folder, "Core, Testing", "",
+            new object[] { ApplicationKind.Ui, ApplicationKind.Api },
+            "Orders", true, "orders", "Billing", false,
+            "Billing", "Admin", false,
+            false, true);
+
+        var plan = new BootstrapWizard(prompter).Run();
+
+        plan.Should().NotBeNull();
+        plan!.Name.Should().Be("MyApp");
+        plan.RootDirectory.Should().Be(Path.GetFullPath(root));
+        plan.Layout.Should().BeEquivalentTo(SolutionLayout.Default);
+        plan.Applications.Select(plan.Layout.ProjectPath).Should().Equal(
+            "src/Api/Orders/Orders.csproj", "src/Api/Billing/Billing.csproj", "src/Ui/Admin/Admin.csproj");
+        prompter.ValidationErrors.Should().HaveCount(4)
+            .And.ContainMatch("Solution names*").And.ContainMatch("*reserved*").And.ContainMatch("*orders already exists*")
+            .And.ContainMatch("*Billing already exists*");
+        prompter.ShownPlan.Should().Be(plan);
+        plan.Ports.Values.Should().Equal((5000, 5001), (5002, 5003), (5004, 5005));
+    }
+
+    [Fact]
+    public void BootstrapWizard_DefaultsDirectoryToSolutionNameAndRejectsNonEmptyDirectories()
+    {
+        var existing = TempRoot();
+        Directory.CreateDirectory(existing);
+        File.WriteAllText(Path.Combine(existing, "keep"), "");
+        try
+        {
+            var prompter = new ScriptedPrompter("MyApp", existing, "", LayeringMode.Prefix, "Core Web", Array.Empty<object>(), false, true);
+            var plan = new BootstrapWizard(prompter).Run();
+            plan!.RootDirectory.Should().Be(Path.GetFullPath("MyApp"));
+            plan.Layout.Should().BeEquivalentTo(new SolutionLayout(LayeringMode.Prefix, ["Core", "Web"]));
+            plan.Applications.Should().BeEmpty();
+            prompter.ValidationErrors.Should().ContainSingle().Which.Should().Contain("empty");
+        }
+        finally
+        {
+            Directory.Delete(existing, true);
+        }
+    }
+
+    [Fact]
+    public void Run_WhenWizardIsDeclined_WritesNothing()
+    {
+        var root = TempRoot();
+        var prompter = new ScriptedPrompter("MyApp", root, LayeringMode.Folder, "", Array.Empty<object>(), false, false);
+
+        Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(1);
+
+        Directory.Exists(root).Should().BeFalse();
+        prompter.Messages.Should().ContainMatch("Cancelled*");
+    }
+
+    [Fact]
+    public void Run_RejectsWizardsWithoutInteractiveInputAndInvalidArguments()
+    {
+        var prompter = new ScriptedPrompter();
+        var application = Application(prompter);
+
+        application.Run([], interactive: false).Should().Be(0);
+        application.Run(["bootstrap"], interactive: false).Should().Be(1);
+        application.Run(["scaffold"], interactive: false).Should().Be(1);
+        application.Run(["bootstrap", "../bad"], interactive: false).Should().Be(1);
+        application.Run(["scaffold", "api", "Orders"], interactive: false).Should().Be(1);
+        application.Run(["--help"], interactive: false).Should().Be(0);
+
+        prompter.Errors.Should().ContainMatch("Interactive input is unavailable*").And.ContainMatch("No Anarchy solution*");
+        prompter.ShowedHelp.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Run_GivenNonEmptyOutput_FailsWithoutTouchingIt()
+    {
+        var root = TempRoot();
+        Directory.CreateDirectory(root);
+        File.WriteAllText(Path.Combine(root, "existing"), "keep");
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(1);
+            Directory.GetFileSystemEntries(root).Should().ContainSingle();
+            prompter.Errors.Should().ContainMatch("*empty*");
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_BootstrapsByFolderThenScaffoldsIntoTheSolution()
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter(
+                "MyApp", root, LayeringMode.Folder, "",
+                new object[] { ApplicationKind.Api, ApplicationKind.Job },
+                "Orders", false, "Billing", false,
+                false, true);
+
+            Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
+
+            prompter.BannersShown.Should().Be(1);
+            prompter.Progress.Should().Contain("Creating src/Api/Orders/Orders.csproj");
+            var solution = File.ReadAllText(Path.Combine(root, "MyApp.sln"));
+            solution.Should().Contain("_build.csproj").And.Contain("Configuration.csproj").And.Contain("Orders.csproj").And.Contain("Billing.csproj");
+            File.Exists(Path.Combine(root, "src", "Core", "Core.csproj")).Should().BeFalse();
+            Directory.Exists(Path.Combine(root, ".agents")).Should().BeFalse();
+            File.ReadAllText(Path.Combine(root, "src", "Library", "Web", "Web.csproj")).Should().Contain(@"..\Hosting\Hosting.csproj");
+            var packages = File.ReadAllText(Path.Combine(root, "Directory.Packages.props"));
+            packages.Should().Contain("<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>")
+                .And.Contain("<PackageVersion Include=\"Anarchy.Toolkit.Automation.Build\" Version=\"1.2.3\" />")
+                .And.Contain("<PackageVersion Include=\"Anarchy.Toolkit.Web\" Version=\"2.0.0\" />")
+                .And.Contain("<PackageVersion Include=\"Anarchy.Toolkit.Hosting\" Version=\"3.0.0\" />")
+                .And.NotContain("Anarchy.Toolkit.Web.Ui");
+            File.ReadAllText(Path.Combine(root, "build", "_build.csproj"))
+                .Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Automation.Build\" />").And.NotContain("Version=");
+            var api = File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Orders.csproj"));
+            api.Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Web\" />").And.NotContain("Version=").And.Contain("<IsPackable>false</IsPackable>")
+                .And.Contain("<RootNamespace>Api.Orders</RootNamespace>").And.Contain(@"..\..\Library\Web\Web.csproj");
+            File.ReadAllText(Path.Combine(root, "src", "Jobs", "Billing", "Billing.csproj"))
+                .Should().Contain(@"..\..\Library\Hosting\Hosting.csproj").And.NotContain("<OutputType>");
+            var parameters = JsonNode.Parse(File.ReadAllText(Path.Combine(root, ".fallout", "parameters.json")))!;
+            parameters["Solution"]!.GetValue<string>().Should().Be("MyApp.sln");
+            parameters["LayeringByFolder"]!.GetValue<bool>().Should().BeTrue();
+            parameters["LayeringRoot"]!.GetValue<string>().Should().Be("src/Library");
+
+            // Scaffold from a subdirectory: the solution is found upwards and its layout and ports are respected.
+            var scaffold = new ScriptedPrompter(ApplicationKind.Ui, "Orders", "Admin", true);
+            Application(scaffold, Path.Combine(root, "src", "Api")).Run(["scaffold"], interactive: true)
+                .Should().Be(0, string.Join("\n", scaffold.Errors));
+
+            scaffold.ValidationErrors.Should().ContainSingle().Which.Should().Contain("Orders already exists");
+            File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "Program.cs")).Should().Contain("args, 5002, 5003");
+            File.ReadAllText(Path.Combine(root, "MyApp.sln")).Should().Contain("Admin.csproj");
+            File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "Admin.csproj")).Should().NotContain("Version=");
+            var updated = File.ReadAllText(Path.Combine(root, "Directory.Packages.props"));
+            updated.Should().Contain("    <PackageVersion Include=\"Anarchy.Toolkit.Web.Ui\" Version=\"2.1.0\" />\n");
+            updated.Split("Include=\"Anarchy.Toolkit.Web\"").Should().HaveCount(2);
+
+            var direct = new ScriptedPrompter();
+            Application(direct, root).Run(["scaffold", "api", "Admin"], interactive: false).Should().Be(1);
+            direct.Errors.Should().ContainMatch("*Admin already exists*");
+            Application(direct, root).Run(["scaffold", "job", "Exports"], interactive: false).Should().Be(0);
+            SolutionWorkspace.Load(root).ProjectNames.Should().Contain("Exports");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_BootstrapsBaselineByPrefixWhenAsked()
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter("MyApp", root, LayeringMode.Prefix, "Core, Web",
+                new object[] { ApplicationKind.Api }, "Orders", false, true, true);
+
+            Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
+
+            File.ReadAllText(Path.Combine(root, "src", "Web.Api.Orders", "Web.Api.Orders.csproj")).Should().Contain(@"..\Web\Web.csproj");
+            File.Exists(Path.Combine(root, "src", "Core", "Core.csproj")).Should().BeTrue();
+            var workspace = SolutionWorkspace.Load(root);
+            workspace.Layout.Should().BeEquivalentTo(new SolutionLayout(LayeringMode.Prefix, ["Core", "Web"]));
+            workspace.UsedPorts.Should().BeEquivalentTo(new[] { 5000, 5001 });
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy", "SKILL.md")).Should().BeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_ScaffoldsVersionedReferencesWhenTheSolutionManagesNoVersionsCentrally()
+    {
+        var root = TempRoot();
+        try
+        {
+            Application(new ScriptedPrompter()).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            File.Delete(Path.Combine(root, "Directory.Packages.props"));
+
+            var prompter = new ScriptedPrompter();
+            Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Orders.csproj"))
+                .Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Web\" Version=\"2.0.0\" />");
+            File.Exists(Path.Combine(root, "Directory.Packages.props")).Should().BeFalse();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_ScaffoldsAnApiWithOrWithoutTheSwaggerTheme()
+    {
+        var root = TempRoot();
+        try
+        {
+            Application(new ScriptedPrompter()).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+
+            var prompter = new ScriptedPrompter();
+            Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            Application(prompter, root).Run(["scaffold", "api", "Billing", "--no-swagger-theme"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Composition", "Startup.cs"))
+                .Should().NotContain("SwaggerThemeOptions");
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Billing", "Composition", "Startup.cs"))
+                .Should().Contain("using Anarchy.Toolkit.Web.Entity.Swagger;")
+                .And.Contain("            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false);");
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void CommandLine_ReadsBootstrapSkillsAndOutput()
+    {
+        var command = ToolCommandLine.Parse(["bootstrap", "MyApp", "-o", "dir", "--with-skills"]);
+        command.Should().BeEquivalentTo(new ToolCommand(ToolMode.Bootstrap, "MyApp", "dir") { AgentSkills = true });
+        ToolCommandLine.Parse(["bootstrap", "MyApp"]).AgentSkills.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("folder", LayeringMode.Folder)]
+    [InlineData("prefix", LayeringMode.Prefix)]
+    public void Run_BootstrapsAndScaffoldsUsingTheSelectedLayeringMode(string mode, LayeringMode expected)
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "MyApp", "--output", root, "--layering", mode], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            SolutionWorkspace.Load(root).Layout.Mode.Should().Be(expected);
+
+            Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            var layout = SolutionLayout.Default with { Mode = expected };
+            File.Exists(Path.Combine(root, layout.ProjectPath(new ApplicationSpec(ApplicationKind.Api, "Orders"))))
+                .Should().BeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_InstallsSkillsIntoTheSolutionWithoutOverwriting()
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            Directory.Exists(Path.Combine(root, ".agents")).Should().BeFalse();
+
+            Application(prompter, Path.Combine(root, "build")).Run(["skills", "install"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-develop", "SKILL.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-conventions", "references", "conventions", "layering.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-conventions", "references", "decisions", "README.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy-adopt", "references", "guides", "migration-recipes.md")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".agents", "skills", "anarchy", "references", "guides", "mental-model.md")).Should().BeTrue();
+
+            Application(prompter, root).Run(["skills", "install"], interactive: false).Should().Be(1);
+            prompter.Errors.Should().ContainMatch("*overwrite*");
+            Application(prompter).Run(["skills", "install", "--output", Path.Combine(root, "missing")], interactive: false).Should().Be(1);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+}

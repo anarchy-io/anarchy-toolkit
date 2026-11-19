@@ -29,8 +29,8 @@ tests/
 ```
 
 - **One test project per kind**: `tests/<Kind>/<Kind>.csproj` (`tests/Unit/Unit.csproj`). It references every `src/` project it tests.
-- **One folder per tested project**, built from the `src/` project name with each dot-separated segment as a nested folder: `src/Core` → `Core/`, `src/Core.Events` → `Core/Events/`, `src/Infrastructure.Persistence.Postgres` → `Infrastructure/Persistence/Postgres/`, `src/Web.Ui` → `Web/Ui/`. The tests of a project therefore sit next to the folders of the projects that extend its name (`Core/` holds `src/Core`'s tests alongside `Events/`, `Health/`, …).
-- **Inside that folder, mirror the SUT's path** in its project. Do not invent folders that do not exist in the source namespace. Some suites (the `Core.*` projects, `Hosting.Workers` and parts of `Infrastructure.Persistence.Postgres`) still wrap that path in a layer folder (`Core/`, `Configuration/`, `Infrastructure/`), as in the example above; follow the layout already used by the suite you are adding to.
+- **One folder per tested project**, built from the `src/` project name with each dot-separated segment as a nested folder: `src/Core` → `Core/`, `src/Core.Events` → `Core/Events/`, `src/Infrastructure.Persistence.Db.Postgres` → `Infrastructure/Persistence/Postgres/`, `src/Web.Ui` → `Web/Ui/`. The tests of a project therefore sit next to the folders of the projects that extend its name (`Core/` holds `src/Core`'s tests alongside `Events/`, `Health/`, …).
+- **Inside that folder, mirror the SUT's path** in its project. Do not invent folders that do not exist in the source namespace. Some suites (the `Core.*` projects, `Hosting.Workers` and parts of `Infrastructure.Persistence.Db.Postgres`) still wrap that path in a layer folder (`Core/`, `Configuration/`, `Infrastructure/`), as in the example above; follow the layout already used by the suite you are adding to.
 - **The namespace follows the folder**, with `Anarchy.Toolkit.Tests.<Kind>` as root:
 
   ```csharp
@@ -149,7 +149,7 @@ var state = new DummyStateEntityFixture().Build(new {
 
 Classes that wrap external resources need integration tests: adapters around APIs, queues, databases, storage and other infrastructure, usually in the `Infrastructure` layer or above.
 
-An integration test is structured like a unit test, but it reaches the real resource instead of a mock. Run those resources locally through Docker and use the shared helpers from the test kits (`Anarchy.Toolkit.Testing.Postgres`, `Anarchy.Toolkit.Testing.Oracle`, `Anarchy.Toolkit.Testing.Aws`) to start, prepare, clean up and query them consistently.
+An integration test is structured like a unit test, but it reaches the real resource instead of a mock. Run those resources locally through Docker and use the shared helpers from the test kits (`Anarchy.Toolkit.Testing.Db.Postgres`, `Anarchy.Toolkit.Testing.Db.Oracle`, `Anarchy.Toolkit.Testing.Aws`) to start, prepare, clean up and query them consistently.
 
 Mocks can still be used for dependencies outside the boundary under test, but do not mock the API, queue, database or other resource the integration test is meant to validate.
 
@@ -200,7 +200,7 @@ public class UserServiceTest : TestCaseBase
 
 Keep scenario-defining values explicit. For example, use `const long userId = 1001L` when the assertion depends on that id, and `TestHelper.RandomId<long>()` for a unique value whose exact content does not matter.
 
-### `PostgresHelper` (`Anarchy.Toolkit.Testing.Postgres`)
+### `PostgresHelper` (`Anarchy.Toolkit.Testing.Db.Postgres`)
 
 `PostgresHelper` creates PostgreSQL dependencies backed by the local database configured in the test settings of your settings type:
 
@@ -211,7 +211,7 @@ Each also has an overload taking the settings instance directly.
 
 Use them in database integration tests, so the concrete repository reaches PostgreSQL with the same connection configuration as the test environment. `SingletonPostgresHelper` shares a single policy across a test run, and `RegisterEnumTypeHandler<TEnum>()` wires up `[Description]`-based enum columns.
 
-`OracleHelper` / `SingletonOracleHelper` (`Anarchy.Toolkit.Testing.Oracle`) offer the same helpers for Oracle. Both delegate the provider-agnostic parts (enum type handlers, `TruncateTableAsync`, `ClearTableAsync`, options mapping) to `DbTestHelper` and `DbOptionsMapper` in `Anarchy.Toolkit.Testing.Db`.
+`OracleHelper` / `SingletonOracleHelper` (`Anarchy.Toolkit.Testing.Db.Oracle`) offer the same helpers for Oracle. Both delegate the provider-agnostic parts (enum type handlers, `TruncateTableAsync`, `ClearTableAsync`, options mapping) to `DbTestHelper` and `DbOptionsMapper` in `Anarchy.Toolkit.Testing.Db`.
 
 ### AWS helpers (`Anarchy.Toolkit.Testing.Aws`)
 

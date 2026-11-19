@@ -12,7 +12,7 @@
           "next": "upstreams",
           "suggestions": [
             { "title": "Read how the platform fits together", "text": "Ten minutes on the pieces, what stays yours and how a request travels through them.", "link": "guides/mental-model.html" },
-            { "title": "Bootstrap the solution with the CLI", "text": "dotnet tool install --global Anarchy.Toolkit.Build.Cli.Tool, then anarchy-toolkit bootstrap. You get the layered solution, the Fallout build, the Makefile and your first applications.", "link": "getting-started/cli-tool.html", "packages": ["Build.Cli.Tool", "Build.Fallout"] },
+            { "title": "Bootstrap the solution with the CLI", "text": "dotnet tool install --global Anarchy.Toolkit.Automation.Build.Cli, then anarchy-toolkit bootstrap. You get the layered solution, the Fallout build, the Makefile and your first applications.", "link": "getting-started/cli-tool.html", "packages": ["Automation.Build.Cli", "Automation.Build"] },
             { "title": "Follow the greenfield walkthrough", "text": "Layout choices, applications, mock server and the pull-request gate, step by step.", "link": "guides/greenfield-solution.html" }
           ]
         },
@@ -56,9 +56,9 @@
       "text": "Does your pipeline call build or make targets that must keep their names?",
       "multiple": false,
       "answers": [
-        { "id": "yes", "label": "Yes, and the pipeline is hard to change", "suggestions": [ { "title": "Add Fallout next to your targets", "text": "Install the Makefile and scripts with --append-existing, move your targets to your own .mk files listed in MAKE_EXTRA_TARGETS, and keep their names.", "link": "guides/adopting-existing-solution.html#the-fallout-build-next-to-what-you-have", "packages": ["Build.Fallout"] } ] },
-        { "id": "deploys", "label": "Yes, and our build also deploys", "suggestions": [ { "title": "Split release from build", "text": "Move the deploying build unchanged to a separate release host first, then add Fallout for development and the pull-request gate.", "link": "decisions/0006-fallout-build.html", "packages": ["Build.Fallout"] } ] },
-        { "id": "no", "label": "No, we can change it freely", "suggestions": [ { "title": "Add the Fallout build", "text": "A build host with IStandardBuild, then make pull_request as the pipeline's single command.", "link": "getting-started/fallout.html", "packages": ["Build.Fallout"] } ] }
+        { "id": "yes", "label": "Yes, and the pipeline is hard to change", "suggestions": [ { "title": "Add Fallout next to your targets", "text": "Install the Makefile and scripts with --append-existing, move your targets to your own .mk files listed in MAKE_EXTRA_TARGETS, and keep their names.", "link": "guides/adopting-existing-solution.html#the-fallout-build-next-to-what-you-have", "packages": ["Automation.Build"] } ] },
+        { "id": "deploys", "label": "Yes, and our build also deploys", "suggestions": [ { "title": "Split release from build", "text": "Move the deploying build unchanged to a separate release host first, then add Fallout for development and the pull-request gate.", "link": "decisions/0006-fallout-build.html", "packages": ["Automation.Build"] } ] },
+        { "id": "no", "label": "No, we can change it freely", "suggestions": [ { "title": "Add the Fallout build", "text": "A build host with IStandardBuild, then make pull_request as the pipeline's single command.", "link": "getting-started/fallout.html", "packages": ["Automation.Build"] } ] }
       ]
     },
     {
@@ -130,9 +130,9 @@
       "text": "Which relational database do you use?",
       "multiple": true,
       "answers": [
-        { "id": "postgres", "label": "PostgreSQL", "suggestions": [ { "title": "Use the PostgreSQL provider", "text": "ModulePostgres, reader/writer repositories and a container-backed test kit.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Postgres", "Testing.Postgres"] } ] },
-        { "id": "mysql", "label": "MySQL", "suggestions": [ { "title": "Use the MySQL provider", "text": "ModuleMysql on MySqlConnector. Moving from MySql.Data changes the driver: test it against your database first.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Mysql", "Testing.Mysql"] } ] },
-        { "id": "oracle", "label": "Oracle", "suggestions": [ { "title": "Use the Oracle provider", "text": "ModuleOracle, retry policy and a test kit for an oracle-free container.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Oracle", "Testing.Oracle"] } ] },
+        { "id": "postgres", "label": "PostgreSQL", "suggestions": [ { "title": "Use the PostgreSQL provider", "text": "ModulePostgres, reader/writer repositories and a container-backed test kit.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db.Postgres", "Testing.Db.Postgres"] } ] },
+        { "id": "mysql", "label": "MySQL", "suggestions": [ { "title": "Use the MySQL provider", "text": "ModuleMysql on MySqlConnector. Moving from MySql.Data changes the driver: test it against your database first.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db.Mysql", "Testing.Db.Mysql"] } ] },
+        { "id": "oracle", "label": "Oracle", "suggestions": [ { "title": "Use the Oracle provider", "text": "ModuleOracle, retry policy and a test kit for an oracle-free container.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db.Oracle", "Testing.Db.Oracle"] } ] },
         { "id": "none", "label": "None", "suggestions": [] }
       ]
     },

@@ -14,9 +14,9 @@ The **Anarchy I/O Toolkit** is a **.NET developer platform**: an integrated ecos
 
 | Pillar | What it provides | Start with |
 |---|---|---|
-| **Architecture** | How applications are structured and how dependencies are governed: the layers `Core < Infrastructure < Configuration < Hosting < Web < Build`, DI modules as the unit of composition, and conventions for async code, exceptions, enums, endpoints and tests. | [Layered Architecture](guides/architecture.md), [Guides](guides/README.md) |
+| **Architecture** | How applications are structured and how dependencies are governed: the layers `Core < Infrastructure < Configuration < Hosting < Web < Automation` in the toolkit, DI modules as the unit of composition, and conventions for async code, exceptions, enums, endpoints and tests. | [Layered Architecture](guides/architecture.md), [Guides](guides/README.md) |
 | **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence ([PostgreSQL](https://www.postgresql.org/), Oracle, MySQL), messaging (AWS SNS/SQS), observability, configuration and secrets, hosting for jobs and workers, REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
-| **Build Ecosystem** | Tools and workflows for developing and delivering applications: the [`Build.Fallout`](packages/Build.Fallout/README.md) build components (compile, lint, test, layering check, dependency map, packaging, versioning, releases, Docker) and the [`anarchy-toolkit`](packages/Build.Cli.Tool/README.md) CLI (solution bootstrap and scaffolding), with a distributed Makefile and scripts. | [Getting Started](getting-started/README.md), [Fallout Builds](guides/fallout-builds.md) |
+| **Build Ecosystem** | Tools and workflows for developing and delivering applications: the [`Automation.Build`](packages/Automation.Build/README.md) build components (compile, lint, test, layering check, dependency map, packaging, versioning, releases, Docker) and the [`anarchy-toolkit`](packages/Automation.Build.Cli/README.md) CLI (solution bootstrap and scaffolding), with a distributed Makefile and scripts. | [Getting Started](getting-started/README.md), [Fallout Builds](guides/fallout-builds.md) |
 
 ## How the pillars work together
 

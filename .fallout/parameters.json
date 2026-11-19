@@ -1,4 +1,5 @@
 {
   "Solution": "Anarchy.Toolkit.sln",
-  "Configuration": "Release"
+  "Configuration": "Release",
+  "LayeringLayers": ["Core", "Infrastructure", "Configuration", "Hosting", "Web", "Automation"]
 }

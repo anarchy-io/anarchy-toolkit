@@ -14,9 +14,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
-    <ProjectReference Include="..\..\src\Build.Fallout\Build.Fallout.csproj" />
-    <ProjectReference Include="..\..\src\Build.Cli.Tool\Build.Cli.Tool.csproj" />
-    <ProjectReference Include="..\..\src\Build.Cli\Build.Cli.csproj" />
+    <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
+    <ProjectReference Include="..\..\src\Automation.Build.Cli\Automation.Build.Cli.csproj" />
+    <ProjectReference Include="..\..\src\Automation\Automation.csproj" />
     <ProjectReference Include="..\..\src\Hosting.Workers\Hosting.Workers.csproj" />
     <ProjectReference Include="..\..\src\Core.Events\Core.Events.csproj" />
     <ProjectReference Include="..\..\src\Core.Health\Core.Health.csproj" />
@@ -29,11 +29,11 @@
     <ProjectReference Include="..\..\src\Infrastructure.Observability.Serilog\Infrastructure.Observability.Serilog.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Telemetry.Serilog\Infrastructure.Telemetry.Serilog.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
-    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Mysql\Infrastructure.Persistence.Mysql.csproj" />
-    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Oracle\Infrastructure.Persistence.Oracle.csproj" />
-    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Postgres\Infrastructure.Persistence.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Mysql\Infrastructure.Persistence.Db.Mysql.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Oracle\Infrastructure.Persistence.Db.Oracle.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Postgres\Infrastructure.Persistence.Db.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Testing.Aws\Testing.Aws.csproj" />
-    <ProjectReference Include="..\..\src\Testing.Mysql\Testing.Mysql.csproj" />
+    <ProjectReference Include="..\..\src\Testing.Db.Mysql\Testing.Db.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Testing.MockServer\Testing.MockServer.csproj" />
     <ProjectReference Include="..\..\src\Web\Web.csproj" />
     <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />

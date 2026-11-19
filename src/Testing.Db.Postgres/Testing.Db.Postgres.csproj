@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Testing.Db.Postgres</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Testing.Db.Postgres</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Testing.Db.Postgres</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>PostgreSQL integration-test fixtures: connection string, connection pool, retry/resilience policy and Unit of Work fixtures, options mapping, enum type handlers, and table reset helpers.</Description>
+    <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
+    <ProjectReference Include="..\Testing\Testing.csproj" />
+    <ProjectReference Include="..\Testing.Db\Testing.Db.csproj" />
+    <ProjectReference Include="..\Infrastructure.Persistence.Db.Postgres\Infrastructure.Persistence.Db.Postgres.csproj" />
+  </ItemGroup>
+
+</Project>

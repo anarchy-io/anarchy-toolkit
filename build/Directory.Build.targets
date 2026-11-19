@@ -6,6 +6,6 @@
 
   <!-- A ProjectReference does not bring in buildTransitive files the way the package does, so import them
        explicitly: they serve the NuGet.* assemblies from the installed SDK (see the file for why). -->
-  <Import Project="..\src\Build.Fallout\buildTransitive\Anarchy.Toolkit.Build.Fallout.targets" />
+  <Import Project="..\src\Automation.Build\buildTransitive\Anarchy.Toolkit.Automation.Build.targets" />
 
 </Project>

@@ -8,7 +8,7 @@ on:
       - 'docs-api/**'
       - 'src/**/*.cs'
       - 'src/**/*.csproj'
-      - 'src/Build.Fallout/**'
+      - 'src/Automation.Build/**'
       - 'src/*/README.md'
       - 'samples/README.md'
       - '.github/workflows/publish-docs.yml'
@@ -47,7 +47,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Build API reference with DocFX
-        run: ./src/Build.Cli/Boilerplate/scripts/build.fallout.sh GenerateApiReference
+        run: ./src/Automation/Boilerplate/scripts/build.fallout.sh GenerateApiReference
 
       - name: Add API reference to the site
         run: |

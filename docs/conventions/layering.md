@@ -2,6 +2,8 @@
 
 How code is split into layers, projects and folders, so that every file has one obvious place and dependencies only point down: `Core < Infrastructure < Configuration < Hosting < Web < Build`. The [Layered Architecture guide](../guides/architecture.md) explains the layers themselves and the tooling around them.
 
+That chain is the build tooling's default for existing solutions. The toolkit repository configures its top layer as `Automation`, matching its renamed projects; adopters may configure their own layer names.
+
 > **Recommendation, not a requirement.** The packages work without following this convention. It is a rule only for code in the toolkit repository (see [Contributing](../contributing/README.md)); applications can adopt it, adapt it or skip it. [Opting out or adapting](#opting-out-or-adapting) explains how.
 {: .notice--info}
 
@@ -31,7 +33,7 @@ from this choice. `LayeringApplicationFolders` maps application paths to layers 
 A project's own code sits **directly at its root**, organized by responsibility (`Entity/`, `Service/`, `Repository/`, `Extension/`, `DependencyInjection/`, ...), and namespaces follow folders:
 
 ```text
-src/Infrastructure.Persistence.Postgres/
+src/Infrastructure.Persistence.Db.Postgres/
 ├── DependencyInjection/Module/ModulePostgres.cs
 ├── Entity/Configuration/Storage/Database/PostgresConnectionOptions.cs
 ├── Repository/Storage/Database/Postgres/PostgresDbReaderRepositoryBase.cs
@@ -39,7 +41,7 @@ src/Infrastructure.Persistence.Postgres/
 ```
 
 ```csharp
-namespace Anarchy.Toolkit.Infrastructure.Persistence.Postgres.Service.Storage.Database.Postgres;
+namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Storage.Database.Postgres;
 ```
 
 A root folder named after a layer (`Core/`, `Infrastructure/`, `Configuration/`, `Web/`) is only allowed for a layer **below** the project's own. It holds the classes the project introduces for that inner layer:
@@ -51,9 +53,9 @@ A root folder named after a layer (`Core/`, `Infrastructure/`, `Configuration/`,
 | `Configuration.*` | `Core/`, `Infrastructure/` | `Configuration/Infrastructure/Entity/...` |
 | `Hosting.*` | `Core/`, `Infrastructure/`, `Configuration/` | none yet |
 | `Web.*` | `Core/`, `Infrastructure/`, `Configuration/`, `Hosting/` | `Web.Ui/Core/Service/Ui/...` |
-| `Build.*` | any lower layer | `Build.Fallout/Core/Entity/Build/...` |
+| `Build.*` | any lower layer | `Automation.Build/Core/Entity/Build/...` |
 
-So `Infrastructure.Persistence.Oracle` may get a `Core/` folder if it has to expose its own domain entities, but code of its own layer, including its DI modules, goes at the root, never under `Infrastructure/` or `Configuration/`. Layer folders do not change the project's layer either: a `Core/` folder inside an `Infrastructure.*` project is still Infrastructure code, so it may only use projects up to Infrastructure.
+So `Infrastructure.Persistence.Db.Oracle` may get a `Core/` folder if it has to expose its own domain entities, but code of its own layer, including its DI modules, goes at the root, never under `Infrastructure/` or `Configuration/`. Layer folders do not change the project's layer either: a `Core/` folder inside an `Infrastructure.*` project is still Infrastructure code, so it may only use projects up to Infrastructure.
 
 ## Where does a new file go?
 

@@ -3,7 +3,7 @@
 #############################
 #@ anarchy-monorepo
 
-TOOL_PROJECT := $(abspath src/Build.Cli.Tool/Build.Cli.Tool.csproj)
+TOOL_PROJECT := $(abspath src/Automation.Build.Cli/Automation.Build.Cli.csproj)
 
 .PHONY: run_dotnet_tool
 run_dotnet_tool: #? Runs the anarchy-toolkit tool from source, to test it locally

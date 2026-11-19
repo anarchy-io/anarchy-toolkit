@@ -33,7 +33,7 @@ NuGet dependencies are centrally managed in `Directory.Packages.props`. Review c
 
 Whenever you add a project, a project reference or a package dependency, run `make dependency_map` and commit the regenerated `docs/dependency-map.html` together with the change. Likewise, commit `.fallout/build.schema.json` when the build regenerates it after you add or change Fallout parameters.
 
-Make targets declare the agent skill that documents them with a `#@` comment. When you add or change one, update the written part of that skill (`src/Build.Cli/Boilerplate/.agents/skills` for the distributed targets, `.agents/skills/anarchy-monorepo` for this repository's), then run `make skills_sync` to refresh its generated command table.
+Make targets declare the agent skill that documents them with a `#@` comment. When you add or change one, update the written part of that skill (`src/Automation/Boilerplate/.agents/skills` for the distributed targets, `.agents/skills/anarchy-monorepo` for this repository's), then run `make skills_sync` to refresh its generated command table.
 
 ## Working with coding agents
 
@@ -44,7 +44,7 @@ Agents are welcome. [`AGENTS.md`](../AGENTS.md) and the skills in `.agents/skill
 Use scoped semantic commit titles in the form `type(scope): description`. Choose the type that best describes the change, such as `feat`, `fix`, `docs`, `test`, `build`, `ci`, `chore`, or `revert`, and use a scope that identifies the affected area. For example:
 
 ```text
-feat(Build.Fallout): add configurable solution boilerplate
+feat(Automation.Build): add configurable solution boilerplate
 docs(contributing): document commit conventions
 ```
 

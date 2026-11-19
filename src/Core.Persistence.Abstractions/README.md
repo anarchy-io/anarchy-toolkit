@@ -20,7 +20,7 @@ Reference this package from application and domain-facing code that needs reposi
 
 1. Define application-specific repository interfaces and expose only the operations your use cases need. Implement them in an infrastructure project using the supplied reader, writer or batch contracts where appropriate.
 2. Coordinate related writes through the unit-of-work abstraction, and use the storage-policy and flow-context contracts when implementing an adapter.
-3. In the host, register a concrete provider such as `Infrastructure.Persistence.Postgres`, `Infrastructure.Persistence.Oracle` or `Infrastructure.Persistence.Mysql`. Supply connection and resilience options there, not in application code.
+3. In the host, register a concrete provider such as `Infrastructure.Persistence.Db.Postgres`, `Infrastructure.Persistence.Db.Oracle` or `Infrastructure.Persistence.Db.Mysql`. Supply connection and resilience options there, not in application code.
 
 Select transaction boundaries deliberately: the abstractions do not provision databases, retry entire business operations or make external side effects transactional.
 

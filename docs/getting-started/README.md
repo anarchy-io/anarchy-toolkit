@@ -8,7 +8,7 @@ Each pillar of the [platform](../README.md#the-three-pillars) can be adopted on 
 flowchart TD
     Start{"What do you have?"}
     Start -->|"An empty folder"| CLI["<b>anarchy-toolkit bootstrap</b><br/>solution + build + apps"]
-    Start -->|"A repository, no build tooling"| Fallout["<b>Anarchy.Toolkit.Build.Fallout</b><br/>build targets for your solution"]
+    Start -->|"A repository, no build tooling"| Fallout["<b>Anarchy.Toolkit.Automation.Build</b><br/>build targets for your solution"]
     Start -->|"An application that needs a capability"| Packages["<b>Individual packages</b><br/>dotnet add package + UseModule"]
     CLI --> Scaffold["anarchy-toolkit scaffold<br/>api · job · ui"]
     Fallout --> Make["make compile · test · check_layering · pack"]

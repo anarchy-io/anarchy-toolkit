@@ -107,7 +107,7 @@ guides:
       - title: "Fallout Builds"
         url: /guides/fallout-builds.html
       - title: "CLI Tool"
-        url: /packages/Build.Cli.Tool/
+        url: /packages/Automation.Build.Cli/
   - title: "See also"
     children:
       - title: "Conventions"
@@ -199,6 +199,6 @@ packages:
       - title: "Build packages"
         url: /packages/#build-build-tooling
       - title: "CLI Tool"
-        url: /packages/Build.Cli.Tool/
+        url: /packages/Automation.Build.Cli/
       - title: "Fallout Build"
-        url: /packages/Build.Fallout/
+        url: /packages/Automation.Build/
