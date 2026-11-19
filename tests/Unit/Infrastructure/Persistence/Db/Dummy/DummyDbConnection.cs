@@ -14,6 +14,11 @@ public sealed class DummyDbConnection(string connectionString) : DbConnection
 
     public int OpenCount { get; private set; }
 
+    public Exception? BeginFailure { get; set; }
+    public Exception? RollbackFailure { get; set; }
+    public Exception? TransactionDisposeFailure { get; set; }
+    public Exception? DisposeFailure { get; set; }
+
     [System.Diagnostics.CodeAnalysis.AllowNull]
     public override string ConnectionString { get; set; } = connectionString;
     public override string Database => "dummy";
@@ -35,6 +40,7 @@ public sealed class DummyDbConnection(string connectionString) : DbConnection
 
     protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
     {
+        if (BeginFailure is not null) throw BeginFailure;
         var transaction = new DummyDbTransaction(this);
         Transactions.Add(transaction);
         return transaction;
@@ -46,6 +52,7 @@ public sealed class DummyDbConnection(string connectionString) : DbConnection
     {
         _state = ConnectionState.Closed;
         IsDisposed = true;
+        if (disposing && DisposeFailure is not null) throw DisposeFailure;
         base.Dispose(disposing);
     }
 }

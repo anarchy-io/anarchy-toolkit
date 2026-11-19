@@ -33,6 +33,10 @@ See the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conve
 
 ## Releases
 
+### 2.0.0
+
+- fix(Infrastructure.Persistence.Db)!: preserve unit of work failures
+
 ### 1.2.1
 
 - docs(packages): identify each package's pillar and layer

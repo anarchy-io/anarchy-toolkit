@@ -37,8 +37,12 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 ///         <item><see cref="RunInAdhocSessionAsync{TResult}" />: shared connection without a transaction.</item>
 ///     </list>
 ///     <para>
-///     Sessions cannot be nested within the same async flow. The transaction is stored on the instance, so a single
-///     instance must not run concurrent sessions; register it with a scoped (or transient) lifetime.
+///     Sessions cannot be nested within the same async flow or run concurrently on one instance; register the unit
+///     of work with a scoped (or transient) lifetime. Cancellation requested by the caller is propagated after
+///     rollback and cleanup, which use an uncancelled token. If rollback or cleanup also fails, the original failure
+///     is retained. A rollback failure is available in the original exception's <see cref="Exception.Data"/> under
+///     <c>UnitOfWork.RollbackFailure</c>; a cleanup failure is on the propagated exception under
+///     <c>UnitOfWork.CleanupFailure</c>. A session can start only one transaction.
 ///     </para>
 /// </remarks>
 /// <example>
@@ -59,6 +63,9 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     : IUnitOfWork
     where TDbConnection : DbConnection where TDbTransaction : DbTransaction
 {
+    private int _sessionActive;
+    private bool _discardConnection;
+
     /// <summary>The transaction of the active session, or <see langword="null" /> when none is active.</summary>
     protected TDbTransaction? Transaction;
 
@@ -88,8 +95,12 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
 
         try
         {
+            if (Transaction is not null)
+                throw new InvalidOperationException("The session already has a transaction.");
+
             Transaction = (TDbTransaction)await connection.BeginTransactionAsync(
                 cancellationToken ?? CancellationToken.None);
+            ActiveConnectionStorage.Value.IsInTransaction = true;
 
             if (LocalEventBus is not null)
             {
@@ -99,7 +110,10 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                     ct: cancellationToken ?? CancellationToken.None);
             }
 
-            ActiveConnectionStorage.Value.IsInTransaction = true;
+        }
+        catch (OperationCanceledException) when (cancellationToken?.IsCancellationRequested == true)
+        {
+            throw;
         }
         catch (Exception exception)
         {
@@ -123,7 +137,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     public virtual async Task CommitAsync(bool suppressNoActiveTransactionException = false,
                                           CancellationToken? cancellationToken = null)
     {
-        if (Transaction == null)
+        if (Transaction == null || !ActiveConnectionStorage.Value.IsInTransaction)
         {
             if (suppressNoActiveTransactionException)
             {
@@ -136,6 +150,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
         try
         {
             await Transaction.CommitAsync(cancellationToken ?? CancellationToken.None);
+            ActiveConnectionStorage.Value.IsInTransaction = false;
 
             if (LocalEventBus is not null)
             {
@@ -144,7 +159,10 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                         GetType().Name),
                     ct: cancellationToken ?? CancellationToken.None);
             }
-            ActiveConnectionStorage.Value.IsInTransaction = false;
+        }
+        catch (OperationCanceledException) when (cancellationToken?.IsCancellationRequested == true)
+        {
+            throw;
         }
         catch (Exception exception)
         {
@@ -170,7 +188,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                                             bool suppressNoActiveTransactionException = false,
                                             CancellationToken? cancellationToken = null)
     {
-        if (Transaction == null)
+        if (Transaction == null || !ActiveConnectionStorage.Value.IsInTransaction)
         {
             if (suppressNoActiveTransactionException)
             {
@@ -183,6 +201,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
         try
         {
             await Transaction.RollbackAsync(cancellationToken ?? CancellationToken.None);
+            ActiveConnectionStorage.Value.IsInTransaction = false;
 
             if (LocalEventBus is not null)
             {
@@ -192,10 +211,15 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                                 GetType().Name, reason),
                             ct: cancellationToken ?? CancellationToken.None);
             }
-            ActiveConnectionStorage.Value.IsInTransaction = false;
+        }
+        catch (OperationCanceledException) when (cancellationToken?.IsCancellationRequested == true)
+        {
+            _discardConnection = true;
+            throw;
         }
         catch (Exception exception)
         {
+            _discardConnection = true;
             throw new TransactionRollbackException(exception);
         }
     }
@@ -293,63 +317,94 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
         var caller = this.CalledFrom();
 
         // Make sure we are not starting a new session within an active session
-        if (ActiveConnectionStorage.HasValue)
+        if (ActiveConnectionStorage.HasValue || Interlocked.CompareExchange(ref _sessionActive, 1, 0) != 0)
         {
             throw new SessionAlreadyActiveException();
         }
 
-        // Retrieve a new connection for the session
-        var connectionEnvelope = await DbConnectionPool.ConnectAsync(cancellationToken);
+        try
+        {
+            // Retrieve a new connection for the session
+            var connectionEnvelope = await DbConnectionPool.ConnectAsync(cancellationToken);
 
-        // All the DbPolicies can now use this connection when retrieving
-        // it within the same scope of the callback.
-        return await ActiveConnectionStorage.RunAsync(connectionEnvelope, async Task<TResult> () => {
-            try
-            {
-                // Begin a new transaction
-                if (enableTransaction)
+            // All the DbPolicies can now use this connection when retrieving
+            // it within the same scope of the callback.
+            return await ActiveConnectionStorage.RunAsync(connectionEnvelope, async Task<TResult> () => {
+                Exception? sessionFailure = null;
+                try
                 {
-                    await BeginAsync(cancellationToken);
-                    Observer?.LogDebug(caller, "Transaction started");
+                    // Begin a new transaction
+                    if (enableTransaction)
+                    {
+                        await BeginAsync(cancellationToken);
+                        Observer?.LogDebug(caller, "Transaction started");
+                    }
+
+                    Observer?.LogInformation(caller, "Session started");
+
+                    var sessionResult = await callback(cancellationToken);
+
+                    // Auto commit
+                    if (autoManage && enableTransaction)
+                    {
+                        await CommitAsync(cancellationToken: cancellationToken);
+                        Observer?.LogDebug(caller, "Transaction committed");
+                    }
+
+                    Observer?.LogInformation(caller, "Session finished successfully");
+                    Observer?.ExecutionRecordDuration(caller, timer.Elapsed, Tags.Success);
+
+                    return sessionResult;
                 }
-
-                Observer?.LogInformation(caller, "Session started");
-
-                var sessionResult = await callback(cancellationToken);
-
-                // Auto commit
-                if (autoManage && enableTransaction)
+                catch (Exception ex)
                 {
-                    await CommitAsync(cancellationToken: cancellationToken);
-                    Observer?.LogDebug(caller, "Transaction committed");
+                    // Auto rollback
+                    if (autoManage && enableTransaction && Transaction is not null && ActiveConnectionStorage.Value.IsInTransaction)
+                    {
+                        try
+                        {
+                            await RollbackAsync(ex, cancellationToken: CancellationToken.None);
+                            Observer?.LogDebug(caller, "Rolled back transaction");
+                        }
+                        catch (Exception rollbackFailure)
+                        {
+                            _discardConnection = true;
+                            ex.Data["UnitOfWork.RollbackFailure"] = rollbackFailure;
+                        }
+                    }
+
+                    Observer?.LogError(ex, caller, "Failed to execute session callback");
+                    Observer?.ExecutionRecordDuration(caller, timer.Elapsed, Tags.Failure);
+
+                    // Re-throw the error
+                    if (ex is OperationCanceledException && cancellationToken?.IsCancellationRequested == true)
+                    {
+                        sessionFailure = ex;
+                        throw;
+                    }
+
+                    sessionFailure = new SessionCallbackException(ex);
+                    throw sessionFailure;
                 }
-
-                Observer?.LogInformation(caller, "Session finished successfully");
-                Observer?.ExecutionRecordDuration(caller, timer.Elapsed, Tags.Success);
-
-                return sessionResult;
-            }
-            catch (Exception ex)
-            {
-                // Auto rollback
-                if (autoManage && enableTransaction)
+                finally
                 {
-                    await RollbackAsync(ex, cancellationToken: cancellationToken);
-                    Observer?.LogDebug(caller, "Rolled back transaction");
+                    try
+                    {
+                        await FinishSessionAsync(CancellationToken.None);
+                        Observer?.LogDebug(caller, "Released connection back to the pool");
+                    }
+                    catch (Exception cleanupFailure) when (sessionFailure is not null)
+                    {
+                        sessionFailure.Data["UnitOfWork.CleanupFailure"] = cleanupFailure;
+                    }
                 }
-
-                Observer?.LogError(ex, caller, "Failed to execute session callback");
-                Observer?.ExecutionRecordDuration(caller, timer.Elapsed, Tags.Failure);
-
-                // Re-throw the error
-                throw new SessionCallbackException(ex);
-            }
-            finally
-            {
-                await FinishSessionAsync(cancellationToken);
-                Observer?.LogDebug(caller, "Released connection back to the pool");
-            }
-        }, cancellationToken);
+            }, cancellationToken);
+        }
+        finally
+        {
+            _discardConnection = false;
+            Volatile.Write(ref _sessionActive, 0);
+        }
     }
 
     /// <summary>
@@ -362,27 +417,46 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// <exception cref="SessionFinishException">Throws when unable to release the connection back to the pool</exception>
     protected async Task FinishSessionAsync(CancellationToken? cancellationToken = null)
     {
+        Exception? failure = null;
         try
         {
-            try
+            if (Transaction is not null)
             {
-                if (Transaction is not null)
-                {
-                    var transaction = Transaction;
-                    Transaction = null;
-                    await transaction.DisposeAsync();
-                }
+                var transaction = Transaction;
+                Transaction = null;
+                await transaction.DisposeAsync();
             }
-            finally
+        }
+        catch (Exception exception)
+        {
+            _discardConnection = true;
+            failure = exception;
+        }
+
+        try
+        {
+            if (_discardConnection)
+            {
+                await ActiveConnectionStorage.Value.DataStorageConnection.DisposeAsync();
+            }
+            else
             {
                 await DbConnectionPool.ReleaseAsync(ActiveConnectionStorage.Value, cancellationToken);
             }
-
-            ActiveConnectionStorage.Clear();
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            throw new SessionFinishException(ex);
+            if (failure is null) failure = exception;
+            else failure.Data["UnitOfWork.ConnectionCleanupFailure"] = exception;
         }
+
+        try { ActiveConnectionStorage.Clear(); }
+        catch (Exception exception)
+        {
+            if (failure is null) failure = exception;
+            else failure.Data["UnitOfWork.ContextCleanupFailure"] = exception;
+        }
+
+        if (failure is not null) throw new SessionFinishException(failure);
     }
 }
