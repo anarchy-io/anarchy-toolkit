@@ -25,7 +25,11 @@ The wizard's first real decision is how projects map to layers.
 | Layout | Looks like | Pick it when |
 |---|---|---|
 | **By folder** (default) | `src/Library/Core/Core.csproj`, `src/Library/Web/Web.csproj`, `src/Api/Orders/...` | One or several applications share a library per layer; few, larger projects. |
-| **By name prefix** | `src/Core.Orders/`, `src/Infrastructure.Orders.Postgres/` | Many small, separately packaged projects (like the toolkit itself). |
+| **By name prefix** | `src/Core.Orders/`, `src/Infrastructure.Orders.Postgres/` | Useful for separately packaged projects (like the toolkit itself), but available to any solution. |
+
+Choose one mode for the entire solution; the check does not mix modes or fall back between them. Folder-based layering
+is recommended for adopters. For a single application, layer projects can sit directly under `src/` rather than under
+`src/Library/`. Shared Web is optional. See [Code Organization](https://anarchy-io.github.io/anarchy-toolkit/conventions/code-organization.html) for the layouts.
 
 With folder layering, set where the libraries are and which layer each application folder belongs to, in `.fallout/parameters.json`:
 
@@ -38,6 +42,10 @@ With folder layering, set where the libraries are and which layer each applicati
 ```
 
 A job then cannot use web code, and no library can reference an application. Several domains can share one project per layer, side by side in folders (`Core/Orders/`, `Core/Billing/`, `Core/Common/`). See the [Layering convention](https://anarchy-io.github.io/anarchy-toolkit/conventions/layering.html) for the rules and how to bend them.
+
+Prefer placing Anarchy and other third-party dependencies in the shared libraries, with DI modules or wrappers where
+useful, so applications can build on a common base. This can pull unused transitive assemblies into an application's
+artifacts; the solution developer decides when application-local dependencies are a better trade-off.
 
 ## Add applications
 

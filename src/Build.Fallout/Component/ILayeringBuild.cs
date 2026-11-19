@@ -47,7 +47,7 @@ public interface ILayeringBuild : IStandardBuild
 
     /// <summary>
     /// Folders whose projects all belong to one layer, as <c>folder=Layer</c> relative to the solution (e.g.
-    /// <c>src/Api=Web</c>), checked before <see cref="LayeringRoot"/>: applications grouped by kind rather than layer.
+    /// <c>src/Api=Web</c>), checked before <see cref="LayeringRoot"/> in folder mode. Ignored in prefix mode.
     /// </summary>
     [Parameter("Folders whose projects belong to one layer, as folder=Layer (e.g. src/Api=Web)")]
     string[] LayeringApplicationFolders => TryGetValue(() => LayeringApplicationFolders) ?? [];
@@ -55,7 +55,7 @@ public interface ILayeringBuild : IStandardBuild
     /// <summary>
     /// The layer of a project, or <c>null</c> to leave it out of the check. By default, projects under <see cref="LayeringRoot"/>
     /// use their name prefix, or their first folder under that root if <see cref="LayeringByFolder"/> is set; projects in
-    /// one of the <see cref="LayeringApplicationFolders"/> get that folder's layer.
+    /// one of the <see cref="LayeringApplicationFolders"/> get that folder's layer in folder mode.
     /// An unknown layer is a violation.
     /// </summary>
     /// <param name="project">The solution project.</param>

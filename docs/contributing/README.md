@@ -12,6 +12,7 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 | Convention | Enforced by |
 |---|---|
 | [Layering](../conventions/layering.md) | `make check_layering` (CI), the [dependency map](../guides/architecture.md#dependency-map) |
+| [Code Organization](../conventions/code-organization.md) | Review; existing names and folders are migrated selectively |
 | [Dependency Injection](../conventions/dependency-injection.md) | Review |
 | [Observability](../conventions/observability.md) | Review |
 | [Async](../conventions/async.md) | Review |

@@ -122,6 +122,8 @@ conventions:
     children:
       - title: "Layering"
         url: /conventions/layering.html
+      - title: "Code Organization"
+        url: /conventions/code-organization.html
       - title: "Dependency Injection"
         url: /conventions/dependency-injection.html
       - title: "Endpoints"

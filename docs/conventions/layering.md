@@ -11,6 +11,21 @@ How code is split into layers, projects and folders, so that every file has one 
 - **One place per file.** Layer, then responsibility, then namespace: no team debate per pull request.
 - **Checked, not reviewed.** `make check_layering` turns the rule into a failing build instead of a review comment.
 
+## Choose one project-layering mode
+
+For adopters, the recommended layout determines a project's layer from its folder: for example,
+`src/Library/Core/Core.csproj` and `src/Library/Infrastructure/Infrastructure.csproj`. A single-application solution
+can put its layer projects directly under `src/`. See [Code Organization](code-organization.md) for the layouts and
+the trade-offs of shared library dependencies.
+
+The alternative is project-name prefixes, such as `Core.Orders` and `Infrastructure.Orders.Postgres`. The toolkit
+itself uses this mode, which is useful for separately distributed packages but available to any solution.
+
+Choose one mode for the whole solution. Folder mode determines layers from configured paths; prefix mode determines
+them from project names. Neither mode falls back to the other. Mixing detection modes is unsupported; bypassing the
+checks to mix them is strongly discouraged. Layer-named folders inside a project organize its code and are separate
+from this choice. `LayeringApplicationFolders` maps application paths to layers when using folder mode.
+
 ## Inside a project
 
 A project's own code sits **directly at its root**, organized by responsibility (`Entity/`, `Service/`, `Repository/`, `Extension/`, `DependencyInjection/`, ...), and namespaces follow folders:
@@ -43,9 +58,12 @@ So `Infrastructure.Persistence.Oracle` may get a `Core/` folder if it has to exp
 ## Where does a new file go?
 
 1. **Pick the project by layer, then the folder by responsibility.** Code of the project's own layer goes at its root. Only code for an inner layer gets a layer folder: a repository contract is `Core/Service/Repository/...` even when it ships in an Infrastructure package (see `Infrastructure.Persistence.Db/Core/Service/Repository/Storage/Event/`).
-2. **Extension methods on framework types** follow the extended type's namespace below `Extension/` (e.g. `Extension/Microsoft/DependencyInjection/`), and their namespace follows the folder like any other file (`Anarchy.Toolkit.Core.Events.Extension.Microsoft.DependencyInjection`), so consumers add the matching `using`.
+2. **Extension classes** live under `Extensions/`, organized by subject, and use the subject's namespace. Existing
+   toolkit extensions under `Extension/` and their published namespaces are legacy APIs being migrated selectively;
+   see [Code Organization](code-organization.md#names-and-responsibilities).
 3. **Embedded SQL** sits in a `Queries/` folder next to the repository that loads it, because resources are resolved from the repository's namespace (`<Namespace>.Queries.<Name>.sql`).
-4. **A new project** must be named after its layer (`<Layer>.<Name>`); the layering check rejects unknown prefixes.
+4. **A new project** must follow the solution's selected layering mode: its name needs a known layer prefix in prefix
+   mode; in folder mode its path must map to a layer or a configured application folder.
 5. **`Composition/` vs `Configuration/`.** An application's composition root (its startup, entry point and DI wiring, e.g. `Web/Composition/WebAppStartupBase.cs` or a sample's `Composition/Startup.cs`) goes under `Composition/`. `Configuration/` is only for settings and options (e.g. `Entity/Configuration/.../PostgresConnectionOptions.cs`).
 
 ## Namespace collisions to know about

@@ -98,7 +98,8 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         }
         else if (NameRules.IsValidSolutionName(command.SolutionName))
         {
-            plan = new SolutionPlan(command.SolutionName, Path.GetFullPath(command.OutputDirectory ?? workingDirectory, workingDirectory)) {
+            var layout = command.Layering is { } mode ? SolutionLayout.Default with { Mode = mode } : SolutionLayout.Default;
+            plan = new SolutionPlan(command.SolutionName, Path.GetFullPath(command.OutputDirectory ?? workingDirectory, workingDirectory), layout, []) {
                 AgentSkills = command.AgentSkills
             };
         }

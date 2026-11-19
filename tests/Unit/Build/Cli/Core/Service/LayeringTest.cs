@@ -76,8 +76,17 @@ public class LayeringTest
     [Fact]
     public void GetLayer_GivenMalformedApplicationFolder_Throws()
     {
-        var act = () => LayeringTasks.GetLayer("App", "src/Api/App/App.csproj", "src", false, ["src/Api"]);
+        var act = () => LayeringTasks.GetLayer("App", "src/Api/App/App.csproj", "src", true, ["src/Api"]);
         act.Should().Throw<ArgumentException>().WithMessage("*folder=Layer*");
+    }
+
+    [Fact]
+    public void GetLayer_GivenPrefixMode_DoesNotUseFolderMappings()
+    {
+        LayeringTasks.GetLayer("Core.Orders", "src/Api/Orders/Orders.csproj", "src", false, ["src/Api=Web"])
+            .Should().Be("Core");
+        LayeringTasks.GetLayer("Orders", "apps/Orders/Orders.csproj", "src", false, ["apps=Web"])
+            .Should().BeNull();
     }
 
     [Theory]

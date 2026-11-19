@@ -49,9 +49,9 @@ public static partial class LayeringTasks
     public static string? GetFolderLayer(string relativePath) => GetFolderLayer(relativePath, "src");
 
     /// <summary>
-    /// The layer of a project: the layer mapped to the first <paramref name="applicationFolders"/> entry
-    /// (<c>folder=Layer</c>, e.g. <c>src/Api=Web</c>) containing it, else its folder under <paramref name="root"/> when
-    /// <paramref name="byFolder"/> is set, else its name prefix if it is under <paramref name="root"/>.
+    /// The layer of a project: when <paramref name="byFolder"/> is set, the layer mapped to the first
+    /// <paramref name="applicationFolders"/> entry (<c>folder=Layer</c>, e.g. <c>src/Api=Web</c>) containing it,
+    /// or its folder under <paramref name="root"/>. Otherwise, its name prefix if it is under <paramref name="root"/>.
     /// </summary>
     /// <exception cref="System.ArgumentException">Thrown when an application folder entry is not <c>folder=Layer</c>.</exception>
     /// <param name="projectName">The project name.</param>
@@ -62,6 +62,8 @@ public static partial class LayeringTasks
     /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
     public static string? GetLayer(string projectName, string relativePath, string root, bool byFolder, IEnumerable<string> applicationFolders)
     {
+        if (!byFolder) return GetDefaultLayer(projectName, relativePath, root);
+
         foreach (var entry in applicationFolders)
         {
             var parts = entry.Split('=', 2, StringSplitOptions.TrimEntries);
@@ -70,7 +72,7 @@ public static partial class LayeringTasks
             if (PathUnderRoot(relativePath, parts[0]) is not null) return parts[1];
         }
 
-        return byFolder ? GetFolderLayer(relativePath, root) : GetDefaultLayer(projectName, relativePath, root);
+        return GetFolderLayer(relativePath, root);
     }
 
     /// <summary>

@@ -31,6 +31,11 @@ public class ToolkitToolTest
     [InlineData(new[] { "bootstrap", "MyApp", "--output" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--with-skills", "--output", "dir" }, ToolMode.Bootstrap, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--with-skills", "--with-skills" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "folder" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "prefix" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "other" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layering", "folder", "--layering", "prefix" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "bootstrap", "--with-skills" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "skills", "install" }, ToolMode.Skills, false)]
     [InlineData(new[] { "skills", "install", "--output", "dir" }, ToolMode.Skills, false)]
@@ -343,6 +348,31 @@ public class ToolkitToolTest
         var command = ToolCommandLine.Parse(["bootstrap", "MyApp", "-o", "dir", "--with-skills"]);
         command.Should().BeEquivalentTo(new ToolCommand(ToolMode.Bootstrap, "MyApp", "dir") { AgentSkills = true });
         ToolCommandLine.Parse(["bootstrap", "MyApp"]).AgentSkills.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("folder", LayeringMode.Folder)]
+    [InlineData("prefix", LayeringMode.Prefix)]
+    public void Run_BootstrapsAndScaffoldsUsingTheSelectedLayeringMode(string mode, LayeringMode expected)
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "MyApp", "--output", root, "--layering", mode], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            SolutionWorkspace.Load(root).Layout.Mode.Should().Be(expected);
+
+            Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            var layout = SolutionLayout.Default with { Mode = expected };
+            File.Exists(Path.Combine(root, layout.ProjectPath(new ApplicationSpec(ApplicationKind.Api, "Orders"))))
+                .Should().BeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
     }
 
     [Fact]
