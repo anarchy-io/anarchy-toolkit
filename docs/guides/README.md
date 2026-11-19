@@ -26,7 +26,7 @@ Not sure where to start? The [adoption advisor](../getting-started/advisor.md) a
 | [Database Providers](database-providers.md) | The provider-agnostic persistence layer, [PostgreSQL](https://www.postgresql.org/)/Oracle/MySQL specifics, adding a provider. |
 | [Mock Server](mock-server.md) | Standing in for HTTP upstreams: expectations, your own host, assertions, recording, migrating from a MockServer container. |
 | [Building UIs](building-uis.md) | `Web.Ui`: [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) startup, cookie-session login, environment catalog, downstream API clients, components. |
-| [Fallout Builds](fallout-builds.md) | The `Build.Fallout` components, test discovery and runners, artifacts, releases and CLI tool wrappers. |
-| [CLI Tool](../packages/Build.Cli.Tool/README.md) | The `anarchy-toolkit` CLI: bootstrapping a solution and scaffolding APIs, jobs and UIs. |
+| [Fallout Builds](fallout-builds.md) | The `Automation.Build` components, test discovery and runners, artifacts, releases and CLI tool wrappers. |
+| [CLI Tool](../packages/Automation.Build.Cli/README.md) | The `anarchy-toolkit` CLI: bootstrapping a solution and scaffolding APIs, jobs and UIs. |
 
 The [Package Catalog](../packages/README.md) documents each package, including the `Testing.*` kits.

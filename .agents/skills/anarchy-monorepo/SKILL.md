@@ -1,24 +1,24 @@
 ---
 name: anarchy-monorepo
-description: "Working on the Anarchy Toolkit repository itself: try the anarchy-toolkit CLI from source, build or serve the Jekyll documentation site and the DocFX API reference, and regenerate Build.Fallout's CLI tool wrappers. Use it for toolkit development tasks on top of the anarchy and anarchy-develop skills."
+description: "Working on the Anarchy Toolkit repository itself: try the anarchy-toolkit CLI from source, build or serve the Jekyll documentation site and the DocFX API reference, and regenerate Automation.Build's CLI tool wrappers. Use it for toolkit development tasks on top of the anarchy and anarchy-develop skills."
 ---
 
 # Anarchy Toolkit monorepo
 
 This repository builds the toolkit with its own boilerplate: the Makefile, scripts and skills under
-`src/Build.Cli/Boilerplate` are used in place, and `AGENTS.md` and `.github/CONTRIBUTING.md` hold the rules for
+`src/Automation/Boilerplate` are used in place, and `AGENTS.md` and `.github/CONTRIBUTING.md` hold the rules for
 contributions (commit titles, history shape, version bumps).
 
 ## When to use
 
 - Trying the `anarchy-toolkit` CLI before releasing it: `make run_dotnet_tool TOOL_ARGS="bootstrap Demo --output /tmp/demo"`.
 - Checking documentation changes: `make docs_serve` (needs Ruby and Bundler) or `make docs_api_serve`.
-- After editing `src/Build.Fallout/specification/*.json`: `make fallout TARGET=GenerateTools` regenerates the CLI tool wrappers.
+- After editing `src/Automation.Build/specification/*.json`: `make fallout TARGET=GenerateTools` regenerates the CLI tool wrappers.
 - After editing `docs/conventions`, `docs/decisions` or a bundled guide: `make skills_docs_sync` copies them into the
   distributed skills' `references/` (`anarchy-conventions`, `anarchy-adopt`, `anarchy`; the list is in
   `docs/scripts/sync-skill-docs.sh`). CI fails when they are out of date; commit both.
 - Changing a toolkit make target: update the hand-written part of the matching `anarchy-*` skill in
-  `src/Build.Cli/Boilerplate/.agents/skills`, then `make skills_sync skills_validate`.
+  `src/Automation/Boilerplate/.agents/skills`, then `make skills_sync skills_validate`.
 
 ## Commands
 

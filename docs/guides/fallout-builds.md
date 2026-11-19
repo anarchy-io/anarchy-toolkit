@@ -1,15 +1,15 @@
 # Fallout Builds
 
-`Anarchy.Toolkit.Build.Fallout` (`src/Build.Fallout`) holds the toolkit's [Fallout](https://fallout.build/) build components. They are distributed as a package so that every repository uses the same targets. The toolkit's own `./build` project consumes them as well.
+`Anarchy.Toolkit.Automation.Build` (`src/Automation.Build`) holds the toolkit's [Fallout](https://fallout.build/) build components. They are distributed as a package so that every repository uses the same targets. The toolkit's own `./build` project consumes them as well.
 
 ## Using it
 
 A build project is a `partial` class that implements the components it needs; anything specific to the repository goes in its own `Build.*.cs` files:
 
 ```csharp
-using Anarchy.Toolkit.Build.Fallout.Component;
-using Anarchy.Toolkit.Build.Fallout.Core.Entity.Build;
-using Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Component;
+using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
+using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
 using Fallout.Common;
 using Fallout.Common.CI;
 using Fallout.Common.Tools.DotNet;
@@ -28,7 +28,7 @@ internal sealed partial class Build : FalloutBuild, IStandardBuild, ILayeringBui
 }
 ```
 
-Reference the package (`<PackageReference Include="Anarchy.Toolkit.Build.Fallout" />`) from `build/_build.csproj`. The package carries a `buildTransitive` targets file that selects compatible `NuGet.*` assemblies from the installed SDK where appropriate. A `ProjectReference`, as the toolkit's own build uses, does not import it automatically: import `buildTransitive/Anarchy.Toolkit.Build.Fallout.targets` from `build/Directory.Build.targets`.
+Reference the package (`<PackageReference Include="Anarchy.Toolkit.Automation.Build" />`) from `build/_build.csproj`. The package carries a `buildTransitive` targets file that selects compatible `NuGet.*` assemblies from the installed SDK where appropriate. A `ProjectReference`, as the toolkit's own build uses, does not import it automatically: import `buildTransitive/Anarchy.Toolkit.Automation.Build.targets` from `build/Directory.Build.targets`.
 
 ### Existing builds
 
@@ -52,11 +52,11 @@ result and expect that some conversion errors may need manual work; see the
 | `IContainerBuild` | `EcrPublishAppArtifact`, `EcrImageBuild`, `EcrImagePush` | ECR flow for `--app-name`. Implement `ContainerRegistry`; image name, tag (short commit SHA), Dockerfile (`docker/ecs/Dockerfile`) and runtime have defaults. |
 | `IDependencyMapBuild` | `GenerateDependencyMap` | Writes a static HTML page (`--dependency-map-output`, default `docs/dependency-map.html`): a Mermaid graph of project references with layering violations highlighted, an onion of the layers (click a ring, or a group outside the chain, to zoom in on the references between its own projects; `#<Group>` in the URL opens it directly) and a table of projects, files and lines per group. Override `DependencyMapLayers` and `GetDependencyMapGroup` for other naming conventions. It carries no timestamp, so CI can regenerate it and commit only when it changed. |
 | `IApiReferenceBuild` | `GenerateApiReference` | Builds a [DocFX](https://dotnet.github.io/docfx/) API reference site from the compiled assemblies and XML docs of the packable `src` projects (override `IsApiReferenceProject`), after `Compile`, so nothing is compiled twice. The site is configured by the `build` section of `--api-reference-config` (default `docs-api/docfx.json`), whose content should include the generated `api/**.yml` next to it. Fails on DocFX errors. |
-| `IBoilerplateBuild` | `SetupBoilerplate` | Creates a starter solution, folders, Makefile, scripts and configuration. Select or exclude individual items with `--boilerplate-items` / `--boilerplate-exclude`; `--append-existing` optionally appends the packaged Git and editor settings and adds the packaged test runner to an existing [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json). `--boilerplate-dry-run` only reports what it would do. See the [package README](../packages/Build.Fallout/README.md#choosing-what-to-install) for setup. |
+| `IBoilerplateBuild` | `SetupBoilerplate` | Creates a starter solution, folders, Makefile, scripts and configuration. Select or exclude individual items with `--boilerplate-items` / `--boilerplate-exclude`; `--append-existing` optionally appends the packaged Git and editor settings and adds the packaged test runner to an existing [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json). `--boilerplate-dry-run` only reports what it would do. See the [package README](../packages/Automation.Build/README.md#choosing-what-to-install) for setup. |
 | `ILayeringBuild` | `CheckLayering` | Fails when layering is broken. `--layering-root` selects the solution-relative (or absolute) project root, defaulting to `src/`; `--layering-by-folder true` uses its first folder instead of project-name prefixes, with no fallback (see the [architecture guide](architecture.md#enforcing-the-rule)). Override `LayeringLayers` and `GetLayer` (return `null` to leave a project out) for other conventions. |
 | `IDependencyUpgradeBuild` | `UpgradeDependencies` | Lists outdated packages and optionally runs the global `dotnet-outdated-tool`. |
 | `IGitHooksBuild` | `EnableGitHook`, `DisableGitHook`, `ShowGitHooks` | Manages local hooks; generated hooks invoke the repository's [Make](https://www.gnu.org/software/make/) targets. |
-| `IAgentSkillsBuild` | `ValidateAgentSkills`, `SyncAgentSkills` | Keeps the agent skills in step with the Makefiles: targets marked with `#@` must be listed by a skill, whose commands table is generated from their `#?` comments while the rest stays hand-written. Not part of `PullRequest`: run it as a separate CI step. See [Agent skills](../packages/Build.Fallout/README.md#agent-skills). |
+| `IAgentSkillsBuild` | `ValidateAgentSkills`, `SyncAgentSkills` | Keeps the agent skills in step with the Makefiles: targets marked with `#@` must be listed by a skill, whose commands table is generated from their `#?` comments while the rest stays hand-written. Not part of `PullRequest`: run it as a separate CI step. See [Agent skills](../packages/Automation.Build/README.md#agent-skills). |
 
 Run `make fallout_help` for the full list of targets and parameters, or `make fallout TARGET="--plan"` for the execution plan.
 
@@ -80,7 +80,7 @@ To prepare a release locally, run `make release_bump RELEASE_PROJECT=Core.Events
 
 #### Automatic releases
 
-Pushes to `main` run change detection, bump affected packages, add missing README release notes, run checks, commit the versions and notes, and publish in the same workflow. The default bump is patch. Source-project changes propagate to all transitive package dependents, once each. Shared build settings affect all packages. Changes in tests, samples and build tooling do not normally cause a release; `Build.Cli` is an exception for the root dotfiles it embeds (its Makefile and scripts live in its own `Boilerplate/` folder), and its dependents (`Build.Fallout`, `Tool`) follow. Central package version changes use restored dependency graphs, including transitive packages. Removal of a central pin, conditional entries, and changes to other central settings conservatively affect all packages because the previous restore graph is not available. Missing or invalid restored assets fail rather than silently missing consumers.
+Pushes to `main` run change detection, bump affected packages, add missing README release notes, run checks, commit the versions and notes, and publish in the same workflow. The default bump is patch. Source-project changes propagate to all transitive package dependents, once each. Shared build settings affect all packages. Changes in tests, samples and build tooling do not normally cause a release; `Automation` is an exception for the root dotfiles it embeds (its Makefile and scripts live in its own `Boilerplate/` folder), and its dependents (`Automation.Build`, `Tool`) follow. Central package version changes use restored dependency graphs, including transitive packages. Removal of a central pin, conditional entries, and changes to other central settings conservatively affect all packages because the previous restore graph is not available. Missing or invalid restored assets fail rather than silently missing consumers.
 
 For a local comparison, check out the head commit with clean source/build settings and run:
 

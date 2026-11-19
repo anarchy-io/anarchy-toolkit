@@ -11,7 +11,7 @@ set -euo pipefail
 
 docs_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 repo_dir="$(cd "$docs_dir/.." && pwd)"
-skills_dir="$repo_dir/src/Build.Cli/Boilerplate/.agents/skills"
+skills_dir="$repo_dir/src/Automation/Boilerplate/.agents/skills"
 site_url="https://anarchy-io.github.io/anarchy-toolkit/"
 check=false
 [[ "${1:-}" == "--check" ]] && check=true

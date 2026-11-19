@@ -10,7 +10,7 @@ namespace Anarchy.Toolkit.Testing.Db.Helper;
 ///     Provider-agnostic test helpers working over any <see cref="IStoragePolicy{TStorage}" />.
 /// </summary>
 /// <remarks>
-///     The provider test packages (<c>Testing.Postgres</c>, <c>Testing.Mysql</c>, <c>Testing.Oracle</c>) wrap these
+///     The provider test packages (<c>Testing.Db.Postgres</c>, <c>Testing.Db.Mysql</c>, <c>Testing.Db.Oracle</c>) wrap these
 ///     helpers with their own connection and dialect types. Table names are interpolated verbatim into SQL, so only
 ///     pass trusted values.
 /// </remarks>

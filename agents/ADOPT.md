@@ -17,7 +17,7 @@ install and work without network access afterwards.
    overwrite existing files; ask the user first):
 
    ```bash
-   dotnet tool update --global Anarchy.Toolkit.Build.Cli.Tool
+   dotnet tool update --global Anarchy.Toolkit.Automation.Build.Cli
    anarchy-toolkit skills install
    ```
 

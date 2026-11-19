@@ -4,14 +4,14 @@ The `anarchy-toolkit` .NET global tool is the entry point to the platform's **Bu
 
 ## Install
 
-The tool is published to NuGet.org as [`Anarchy.Toolkit.Build.Cli.Tool`](https://www.nuget.org/packages/Anarchy.Toolkit.Build.Cli.Tool).
+The tool is published to NuGet.org as [`Anarchy.Toolkit.Automation.Build.Cli`](https://www.nuget.org/packages/Anarchy.Toolkit.Automation.Build.Cli).
 
 ```bash
-dotnet tool install --global Anarchy.Toolkit.Build.Cli.Tool
+dotnet tool install --global Anarchy.Toolkit.Automation.Build.Cli
 anarchy-toolkit --help
 ```
 
-Update it later with `dotnet tool update --global Anarchy.Toolkit.Build.Cli.Tool`.
+Update it later with `dotnet tool update --global Anarchy.Toolkit.Automation.Build.Cli`.
 
 ## Bootstrap a solution
 
@@ -97,10 +97,10 @@ The toolkit ships agent skills that teach coding agents (Claude Code, OpenCode, 
 anarchy-toolkit skills install   # or: make install_skills
 ```
 
-Mark your own make targets with `#@ <skill>`, then `make skills_sync` creates their skills from a template and `make skills_validate` checks that the skills are complete and up to date (see [Agent skills](../packages/Build.Fallout/README.md#agent-skills)). To let an agent adopt the toolkit for you, see [Let your agent do it](README.md#let-your-agent-do-it).
+Mark your own make targets with `#@ <skill>`, then `make skills_sync` creates their skills from a template and `make skills_validate` checks that the skills are complete and up to date (see [Agent skills](../packages/Automation.Build/README.md#agent-skills)). To let an agent adopt the toolkit for you, see [Let your agent do it](README.md#let-your-agent-do-it).
 
 ## Next steps
 
 - Learn what the generated build can do in [Adding the Fallout build](fallout.md) and the [Fallout Builds guide](../guides/fallout-builds.md).
 - Follow the [Layered Architecture guide](../guides/architecture.md) as the solution grows.
-- The full reference, including the layering options, is the [`Build.Cli.Tool` package page](../packages/Build.Cli.Tool/README.md).
+- The full reference, including the layering options, is the [`Automation.Build.Cli` package page](../packages/Automation.Build.Cli/README.md).

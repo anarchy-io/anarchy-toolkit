@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Build.Fallout.Component;
-using Anarchy.Toolkit.Build.Fallout.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Component;
+using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
 using Fallout.CodeGeneration;
 using Fallout.Common;
 using Fallout.Common.IO;
@@ -9,22 +9,22 @@ namespace Build;
 
 internal sealed partial class Build
 {
-    private AbsolutePath FalloutProjectDirectory => this.As<IDefaultBuild>().SourceDirectory / "Build.Fallout";
+    private AbsolutePath FalloutProjectDirectory => this.As<IDefaultBuild>().SourceDirectory / "Automation.Build";
 
     private AbsolutePath ToolWrapperDirectory => FalloutProjectDirectory / "Infrastructure" / "Service" / "Tool";
 
     /// <summary>
-    /// Regenerates the CLI wrappers of <c>Anarchy.Toolkit.Build.Fallout</c> from its tool specifications, one type per
+    /// Regenerates the CLI wrappers of <c>Anarchy.Toolkit.Automation.Build</c> from its tool specifications, one type per
     /// file under a folder per tool (matching its namespace)
     /// </summary>
     public Target GenerateTools => d => d
-        .Description("Regenerates Build.Fallout's CLI tool wrappers from specification/*.json")
+        .Description("Regenerates Automation.Build's CLI tool wrappers from specification/*.json")
         .Executes(() => {
             ToolWrapperDirectory.GlobFiles("**/*.Generated.cs").DeleteFiles();
             CodeGenerator.GenerateCodeFromDirectory(
                 specificationDirectory: FalloutProjectDirectory / "specification",
                 outputFileProvider: tool => ToolWrapperDirectory / tool.DefaultOutputFileName,
-                namespaceProvider: tool => $"Anarchy.Toolkit.Build.Fallout.Infrastructure.Service.Tool.{tool.Name}");
+                namespaceProvider: tool => $"Anarchy.Toolkit.Automation.Build.Infrastructure.Service.Tool.{tool.Name}");
             foreach (var file in ToolWrapperDirectory.GlobFiles("*.Generated.cs"))
                 SplitGeneratedTypes(file, ToolWrapperDirectory / file.Name.Replace(".Generated.cs", ""));
         });

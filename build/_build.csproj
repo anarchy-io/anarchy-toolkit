@@ -15,9 +15,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- The build components live in the solution itself (Anarchy.Toolkit.Build.Fallout), so the build always
+    <!-- The build components live in the solution itself (Anarchy.Toolkit.Automation.Build), so the build always
          runs the code it is building and packing. -->
-    <ProjectReference Include="..\src\Build.Fallout\Build.Fallout.csproj" />
+    <ProjectReference Include="..\src\Automation.Build\Automation.Build.csproj" />
   </ItemGroup>
 
   <ItemGroup>

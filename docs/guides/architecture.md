@@ -10,7 +10,7 @@ This guide explains how the toolkit is organized on disk and in namespaces, and 
 From lowest to highest:
 
 ```text
-Core < Infrastructure < Configuration < Hosting < Web < Build
+Core < Infrastructure < Configuration < Hosting < Web < Automation
 ```
 
 | Layer | Owns | Projects |
@@ -20,9 +20,9 @@ Core < Infrastructure < Configuration < Hosting < Web < Build
 | `Configuration` | Settings contracts, environment/secret handling, the observability bootstrap and the modules that register them. | `Configuration` |
 | `Hosting` | Running a process: the `IStartup` contract and `UseStartup`, job/worker startups and entry points (Lambda and EC2), the worker pipeline and the workers' self-hosted health API. | `Hosting`, `Hosting.Workers` |
 | `Web` | HTTP API and UI pipelines: startups, entry points, middleware, controllers, presentation contracts and DTOs. | `Web`, `Web.GraphQL`, `Web.Ui` |
-| `Build` | Build tooling: the [Fallout](https://fallout.build/) build components, the command-line operations behind them and the `anarchy-toolkit` .NET tool. On top of the chain so that no shipped project can depend on build tooling. | `Build.Fallout`, `Build.Cli`, `Build.Cli.Tool` |
+| `Automation` | Build tooling: the [Fallout](https://fallout.build/) build components, the command-line operations behind them and the `anarchy-toolkit` .NET tool. On top of the chain so that lower-layer projects cannot depend on build tooling. | `Automation.Build`, `Automation`, `Automation.Build.Cli` |
 
-In the toolkit, a project's layer is the **prefix of its name** (`src/<Layer>.<Name>/`, or just `src/Core/` for the base project). Adopters can instead determine layers from configured folders, which is the recommended layout for new solutions. A project may use anything from its own layer or any layer **below** it, never above. For example, `Infrastructure.Persistence.Postgres` may use `Core` and `Core.*`, but no Core project may import an `Infrastructure.*`, `Configuration.*`, `Hosting.*`, `Web.*` or `Build.*` one.
+In the toolkit, a project's layer is the **prefix of its name** (`src/<Layer>.<Name>/`, or just `src/Core/` for the base project). The repository configures `Automation` as its top layer; the build tooling's default retains `Build` for existing adopter solutions, which can configure their own layer names. Adopters can instead determine layers from configured folders, which is the recommended layout for new solutions. A project may use anything from its own layer or any layer **below** it, never above. For example, `Infrastructure.Persistence.Db.Postgres` may use `Core` and `Core.*`, but no Core project may import an `Infrastructure.*`, `Configuration.*`, `Hosting.*`, `Web.*` or `Automation.*` one.
 
 The test kits (`Testing.*`) and the test projects under `tests/` (one per test kind, e.g. `tests/Unit/Unit.csproj`) sit outside the chain: they may reference any layer, but no production project may reference them. The same goes for [`samples/`](../samples/README.md) (sample applications), which live outside `src/`.
 
@@ -36,9 +36,9 @@ A project that has concrete services to register exposes them through one or mor
 
 | Project | Module | Notes |
 |---|---|---|
-| `Infrastructure.Persistence.Postgres` | `ModulePostgres(connectionOptions, resilienceOptions)`, `ModulePostgresHealthReport` | Connection string, keyed `writer`/`reader` pools and policies, retry builder, flow context, `IUnitOfWork`; reader/writer health reports. |
-| `Infrastructure.Persistence.Oracle` | `ModuleOracle(connectionOptions, resilienceOptions)`, `ModuleOracleHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
-| `Infrastructure.Persistence.Mysql` | `ModuleMysql(connectionOptions, resilienceOptions)`, `ModuleMysqlHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
+| `Infrastructure.Persistence.Db.Postgres` | `ModulePostgres(connectionOptions, resilienceOptions)`, `ModulePostgresHealthReport` | Connection string, keyed `writer`/`reader` pools and policies, retry builder, flow context, `IUnitOfWork`; reader/writer health reports. |
+| `Infrastructure.Persistence.Db.Oracle` | `ModuleOracle(connectionOptions, resilienceOptions)`, `ModuleOracleHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
+| `Infrastructure.Persistence.Db.Mysql` | `ModuleMysql(connectionOptions, resilienceOptions)`, `ModuleMysqlHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
 | `Infrastructure.Messaging.Aws` | `ModuleSnsMessageBroker(options)`, `ModuleSqsMessageBroker(options)` | Keyed `topic` (SNS) and `queue` (SQS) publishers. |
 | `Infrastructure.CorrelationId` | `ModuleCorrelationId(options?)` | Defaults unless a factory supplies options. |
 | `Hosting.Workers` | `ModuleApplicationHealth(assembly)` | The workers' health endpoints (`/health/instance`, `/health/services`, `/health/status`) with the build metadata embedded in `assembly`. `AddServiceHealthCheckWorker(assembly)` registers them together with the `ServiceHealthCheckWorker` that serves them. |
@@ -50,7 +50,7 @@ How to write your own modules (no hard-coded configuration, wrap existing `Add*`
 
 The check is optional: leave `ILayeringBuild` out of your build, or adapt it as described in [Layering: opting out](../conventions/layering.md#opting-out-or-adapting).
 
-The `CheckLayering` Fallout target (`ILayeringBuild` in `src/Build.Fallout`) checks three things, using project-name prefixes by default:
+The `CheckLayering` Fallout target (`ILayeringBuild` in `src/Automation.Build`) checks three things, using project-name prefixes by default:
 
 1. **Project references**: no project references a project of a higher layer, and no production project references a `Testing.*` kit.
 2. **File imports**: no source file imports a toolkit namespace owned by a project of a higher layer. This also catches upward dependencies that only reach a project transitively.

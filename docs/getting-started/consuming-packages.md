@@ -41,9 +41,9 @@ Modules never assume a configuration section or settings type: options always co
 | A [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) WebApp | [`Web.Ui`](../packages/Web.Ui/README.md) and the [Building UIs guide](../guides/building-uis.md) |
 | An AWS Lambda job | [`Hosting`](../packages/Hosting/README.md) |
 | An EC2/systemd worker | [`Hosting.Workers`](../packages/Hosting.Workers/README.md) |
-| Relational persistence | A provider: [`Postgres`](../packages/Infrastructure.Persistence.Postgres/README.md), [`Oracle`](../packages/Infrastructure.Persistence.Oracle/README.md) or [`Mysql`](../packages/Infrastructure.Persistence.Mysql/README.md). See [Database Providers](../guides/database-providers.md) |
+| Relational persistence | A provider: [`Postgres`](../packages/Infrastructure.Persistence.Db.Postgres/README.md), [`Oracle`](../packages/Infrastructure.Persistence.Db.Oracle/README.md) or [`Mysql`](../packages/Infrastructure.Persistence.Db.Mysql/README.md). See [Database Providers](../guides/database-providers.md) |
 | Messaging over SNS/SQS | [`Infrastructure.Messaging.Aws`](../packages/Infrastructure.Messaging.Aws/README.md) |
-| A new solution from scratch | The [`anarchy-toolkit` tool](../packages/Build.Cli.Tool/README.md) and [`Build.Fallout`](../packages/Build.Fallout/README.md) |
+| A new solution from scratch | The [`anarchy-toolkit` tool](../packages/Automation.Build.Cli/README.md) and [`Automation.Build`](../packages/Automation.Build/README.md) |
 
 Every host registers [`Configuration`](../packages/Configuration/README.md)'s `ModuleLibConfiguration`, which brings settings binding, secrets and the [observability](../guides/observability.md) bootstrap in one module.
 

@@ -5,7 +5,7 @@ A walkthrough from an empty folder to a solution with a shared library per layer
 ## Bootstrap
 
 ```bash
-dotnet tool install --global Anarchy.Toolkit.Build.Cli.Tool
+dotnet tool install --global Anarchy.Toolkit.Automation.Build.Cli
 anarchy-toolkit bootstrap
 ```
 

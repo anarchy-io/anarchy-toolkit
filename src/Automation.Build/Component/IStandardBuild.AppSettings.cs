@@ -1,0 +1,139 @@
+using Anarchy.Toolkit.Automation.Build.Infrastructure.Helper;
+using Anarchy.Toolkit.Automation.Core.Service;
+using Fallout.Common;
+using Fallout.Common.IO;
+using Fallout.Common.Utilities;
+using Serilog;
+using Spectre.Console;
+using System.Text.Json;
+
+namespace Anarchy.Toolkit.Automation.Build.Component;
+
+public partial interface IStandardBuild
+{
+    /// <summary>
+    /// The tracked template listing what a developer has to override locally.
+    /// </summary>
+    const string AppSettingsTemplateFileName = "appsettings.json.template";
+
+    /// <summary>
+    /// The untracked file generated next to each template.
+    /// </summary>
+    const string DevelopmentAppSettingsFileName = "appsettings.Development.json";
+
+    /// <summary>
+    /// Whether <see cref="GenerateAppSettings"/> asks again for every template key, offering the current value as the
+    /// default (<c>--reset-app-settings</c>). Defaults to <see langword="false"/>.
+    /// </summary>
+    [Parameter("Asks again for every appsettings.json.template key, offering the current value as the default")]
+    bool ResetAppSettings => TryGetValue<bool?>(() => ResetAppSettings) ?? false;
+
+    /// <summary>
+    /// The <c>appsettings.json.template</c> files <see cref="GenerateAppSettings"/> works on. By default, every
+    /// one under <see cref="FalloutBuild.RootDirectory"/>, skipping <c>bin</c>, <c>obj</c> and <c>node_modules</c>.
+    /// </summary>
+    IReadOnlyCollection<AbsolutePath> AppSettingsTemplates => RootDirectory
+        .GlobFiles($"**/{AppSettingsTemplateFileName}")
+        .Where(path => !IsInIgnoredDirectory(RootDirectory.GetRelativePathTo(path)))
+        .OrderBy(path => path.ToString(), StringComparer.Ordinal)
+        .ToArray();
+
+    /// <summary>
+    /// <para>
+    /// Generates the untracked <c>appsettings.Development.json</c> next to every
+    /// <c>appsettings.json.template</c> (see <see cref="AppSettingsTemplates"/>).
+    /// </para>
+    ///
+    /// <para>
+    /// A template holds only the keys a developer has to override from the shared <c>appsettings.json</c>; each
+    /// value is a string explaining what is expected and, optionally, where to find it. Every key that is not
+    /// yet set in <c>appsettings.Development.json</c> is prompted for, showing that explanation. Values already
+    /// set, and keys that are not in the template, are kept, so the target can be re-run whenever the template
+    /// gains a key. Pass <c>--reset-app-settings</c> to be asked for every key again.
+    /// </para>
+    ///
+    /// <para>
+    /// Template values that are not strings (numbers, booleans, arrays) are fixed defaults, copied as-is when
+    /// missing. Keys whose name suggests a secret (password, secret, token, API key) are read with masked input.
+    /// Without an interactive console (CI, redirected input) nothing is prompted: the missing keys are only
+    /// reported.
+    /// </para>
+    /// </summary>
+    Target GenerateAppSettings => d => d
+        .Description("Generates the untracked appsettings.Development.json files from their appsettings.json.template")
+        .Executes(() => {
+            var templates = AppSettingsTemplates;
+
+            if (templates.Count == 0)
+            {
+                Log.Warning("No {Template} files found. Skipping", AppSettingsTemplateFileName);
+                return;
+            }
+
+            var interactive = !IsServerBuild && !IsCiBuild && !Console.IsInputRedirected;
+
+            if (!interactive)
+            {
+                Log.Warning("No interactive console: missing settings will only be reported");
+            }
+
+            foreach (var template in templates)
+            {
+                GenerateAppSettingsFrom(template, interactive ? PromptForAppSetting : null);
+            }
+        });
+
+    /// <summary>
+    /// Merges <paramref name="templateFile"/> into the <c>appsettings.Development.json</c> next to it, prompting
+    /// through <paramref name="prompt"/> or, when it is <c>null</c>, only reporting the missing keys.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when the template does not hold a JSON object.</exception>
+    internal void GenerateAppSettingsFrom(AbsolutePath templateFile, AppSettingsMerger.Prompt? prompt)
+    {
+        var outputFile = templateFile.Parent / DevelopmentAppSettingsFileName;
+        var relativeOutput = RootDirectory.GetRelativePathTo(outputFile).ToString().Replace('\\', '/');
+
+        BuildConsole.Section(relativeOutput);
+
+        var template = AppSettingsMerger.ParseJsonObject(templateFile.ReadAllText())
+                       ?? throw new Exception($"'{RootDirectory.GetRelativePathTo(templateFile)}' must hold a JSON object.");
+        var existing = outputFile.FileExists() ? AppSettingsMerger.ParseJsonObject(outputFile.ReadAllText()) : null;
+
+        var result = AppSettingsMerger.Merge(template, existing, ResetAppSettings, prompt);
+
+        if (result.Settings.Count > 0 || existing is not null)
+        {
+            outputFile.WriteAllText(result.Settings.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n");
+            Log.Information("Wrote {Output}", relativeOutput);
+        }
+
+        if (result.Missing.Count > 0)
+        {
+            Log.Warning("{Output} is still missing: {Keys}. Re-run this target to fill them in",
+                relativeOutput, result.Missing.Join(", "));
+        }
+    }
+
+    private static string? PromptForAppSetting(string key, string hint, string? currentValue)
+    {
+        var console = BuildConsole.Out;
+        var sensitive = AppSettingsMerger.IsSensitive(key);
+
+        console.WriteLine();
+        console.MarkupLine($"[bold]{Markup.Escape(key)}[/]");
+        console.MarkupLine($"  [grey]{Markup.Escape(hint)}[/]");
+
+        if (currentValue is not null)
+        {
+            var shown = sensitive ? new string('*', currentValue.Length) : currentValue;
+            console.MarkupLine($"  Current: [green]{Markup.Escape(shown)}[/] [grey](Enter keeps it)[/]");
+        }
+
+        var prompt = new TextPrompt<string>("  [blue]>[/]").AllowEmpty();
+        if (sensitive) prompt.Secret();
+
+        return console.Prompt(prompt);
+    }
+
+    private static bool IsInIgnoredDirectory(RelativePath path) => AppSettingsMerger.IsInIgnoredDirectory(path.ToString());
+}
