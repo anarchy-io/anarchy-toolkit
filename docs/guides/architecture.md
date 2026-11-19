@@ -22,7 +22,7 @@ Core < Infrastructure < Configuration < Hosting < Web < Build
 | `Web` | HTTP API and UI pipelines: startups, entry points, middleware, controllers, presentation contracts and DTOs. | `Web`, `Web.GraphQL`, `Web.Ui` |
 | `Build` | Build tooling: the [Fallout](https://fallout.build/) build components, the command-line operations behind them and the `anarchy-toolkit` .NET tool. On top of the chain so that no shipped project can depend on build tooling. | `Build.Fallout`, `Build.Cli`, `Build.Cli.Tool` |
 
-A project's layer is the **prefix of its name** (`src/<Layer>.<Name>/`, or just `src/Core/` for the base project). A project may use anything from its own layer or any layer **below** it, never above. For example, `Infrastructure.Persistence.Postgres` may use `Core` and `Core.*`, but no Core project may import an `Infrastructure.*`, `Configuration.*`, `Hosting.*`, `Web.*` or `Build.*` one.
+In the toolkit, a project's layer is the **prefix of its name** (`src/<Layer>.<Name>/`, or just `src/Core/` for the base project). Adopters can instead determine layers from configured folders, which is the recommended layout for new solutions. A project may use anything from its own layer or any layer **below** it, never above. For example, `Infrastructure.Persistence.Postgres` may use `Core` and `Core.*`, but no Core project may import an `Infrastructure.*`, `Configuration.*`, `Hosting.*`, `Web.*` or `Build.*` one.
 
 The test kits (`Testing.*`) and the test projects under `tests/` (one per test kind, e.g. `tests/Unit/Unit.csproj`) sit outside the chain: they may reference any layer, but no production project may reference them. The same goes for [`samples/`](../samples/README.md) (sample applications), which live outside `src/`.
 
@@ -60,7 +60,7 @@ The `CheckLayering` Fallout target (`ILayeringBuild` in `src/Build.Fallout`) che
 make check_layering
 ```
 
-For solutions organized by layer folders instead (e.g. `src/Core/Project1/Project1.csproj` and `src/Core/Project2/Project2.csproj`), use `make check_layering BY_FOLDER=true`. The first folder under `src/` determines the layer, including `src/Testing/` for test kits. Projects directly under `src/` or in an unknown layer folder fail. The mode applies to every project under `src/`: it never falls back to name prefixes, and the default mode never falls back to folders. Projects outside `src/` remain excluded. `LayeringLayers` and `GetLayer` can still be overridden for other conventions.
+For solutions organized by layer folders instead (e.g. `src/Core/Project1/Project1.csproj` and `src/Core/Project2/Project2.csproj`), use `make check_layering BY_FOLDER=true`. The first folder under the configured root determines the layer, including `Testing/` for test kits. Configure `LayeringRoot` for a shared library root and `LayeringApplicationFolders` for applications outside it. Projects directly under the root or in an unknown layer folder fail. Choose one mode for the entire solution: the check never falls back from folder to prefix detection or vice versa, and mixing modes by bypassing checks is strongly discouraged. Projects outside the configured scope remain excluded. `LayeringLayers` and `GetLayer` can still be overridden for other conventions.
 
 Set `--layering-root components` (or `make check_layering LAYERING_ROOT=components`) to use another root in either mode. The path is relative to the solution directory, or may be absolute; projects outside it are excluded.
 
@@ -71,4 +71,3 @@ Run it after moving code, adding folders or adding project references.
 `make dependency_map` regenerates [`dependency-map.html`](../dependency-map.html), which draws the toolkit's project references by layer, with violations in red. It uses its own grouping configuration, independent of the layering check. Regenerate and commit it whenever project references change, so the map below stays current.
 
 <iframe src="../dependency-map.html" title="Anarchy.Toolkit dependency map" loading="lazy" style="width: 100%; height: 900px; border: 1px solid #dddcd7; border-radius: 4px;"></iframe>
-

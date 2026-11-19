@@ -16,7 +16,7 @@ public static class ToolCommandLine
     /// <summary>
     /// The usage line of the <c>bootstrap</c> command, shown when its arguments are malformed.
     /// </summary>
-    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills]]";
+    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills] [--layering folder|prefix]]";
 
     /// <summary>
     /// The <c>bootstrap</c> flag that also installs the toolkit's agent skills.
@@ -70,6 +70,7 @@ public static class ToolCommandLine
 
         string? output = null;
         var skills = false;
+        LayeringMode? layering = null;
         for (var index = 1; index < args.Count; index++)
         {
             switch (args[index])
@@ -80,11 +81,19 @@ public static class ToolCommandLine
                 case WithSkills when !skills:
                     skills = true;
                     break;
+                case "--layering" when layering is null && index + 1 < args.Count:
+                    layering = args[++index].ToLowerInvariant() switch {
+                        "folder" => LayeringMode.Folder,
+                        "prefix" => LayeringMode.Prefix,
+                        _ => null
+                    };
+                    if (layering is null) return Invalid("Usage: " + BootstrapUsage);
+                    break;
                 default:
                     return Invalid("Usage: " + BootstrapUsage);
             }
         }
-        return new ToolCommand(ToolMode.Bootstrap, args[0], output) { AgentSkills = skills };
+        return new ToolCommand(ToolMode.Bootstrap, args[0], output) { AgentSkills = skills, Layering = layering };
     }
 
     private static ToolCommand ParseSkills(IReadOnlyList<string> args) => args switch {

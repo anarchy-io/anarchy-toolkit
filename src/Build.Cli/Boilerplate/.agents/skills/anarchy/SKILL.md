@@ -21,6 +21,12 @@ Docs: https://anarchy-io.github.io/anarchy-toolkit/
   names the skill covering it. Prefer a target to hand-written `dotnet` commands: it encodes the solution's settings.
 - Projects only reference their own or a lower layer (by default `Core < Infrastructure < Configuration < Hosting <
   Web`); `make check_layering` enforces it. Put new code in the lowest layer that can hold it.
+- Identify the solution's selected project-layering mode before scaffolding or checking: folder-based is recommended
+  for adopters; project-name prefixes are also supported and used by the toolkit. Use one mode throughout the solution;
+  do not mix detection modes or bypass checks to do so. Inspect the configured roots and application mappings.
+- In a monorepo, prefer shared library dependencies and DI modules or wrappers, but let the developer weigh reuse against
+  unused transitive assemblies and larger artifacts. Shared Web is optional; single applications can place their layer
+  projects directly under `src/`.
 - Never edit `<Version>` by hand; versions go through `make release_bump` (see `anarchy-release`).
 - Generators never overwrite files. On a conflict, report it and ask the user; do not delete to make room.
 - Ask the user before publishing, pushing images, destroying data or anything that affects other projects.
@@ -47,15 +53,15 @@ Install or update it with `dotnet tool update --global Anarchy.Toolkit.Build.Cli
 
 | Command | What it does |
 |---|---|
-| `anarchy-toolkit bootstrap <Name> --output <dir> [--with-skills]` | Creates a layered solution (Fallout build, Makefile, scripts, a library per layer) in an empty or new directory. |
+| `anarchy-toolkit bootstrap <Name> --output <dir> [--with-skills] [--layering folder\|prefix]` | Creates a layered solution (Fallout build, Makefile, scripts, a library per layer) in an empty or new directory. |
 | `anarchy-toolkit scaffold api\|job\|ui <Name>` | Adds a REST API (`Web`), a job such as a Lambda handler (`Hosting`) or a Blazor UI (`Web.Ui`), placed by the solution's layering settings. `--no-swagger-theme` keeps Swagger UI's own look. |
 | `anarchy-toolkit skills install [--output <dir>]` | Installs these skills into the solution's `.agents/skills`. |
 | `anarchy-toolkit boilerplate list\|show <path>\|diff [<path>...]` | Lists or prints the packaged Makefile, scripts and settings files, or diffs the solution's copies against them, without installing anything. |
 
 - Without arguments, `bootstrap` and `scaffold` start an interactive wizard; only use it in an interactive terminal,
   otherwise ask the user for the names and pass them.
-- `bootstrap` lays libraries out by folder (`src/Library/<Layer>`, apps under `src/Api`, `src/Jobs`, `src/Ui`) with the
-  default layers; for other layers or name-prefix layout, ask the user to run the wizard.
+- `bootstrap` defaults to folder-based libraries (`src/Library/<Layer>`, apps under `src/Api`, `src/Jobs`, `src/Ui`);
+  use `--layering prefix` for name-prefix layout. For custom layers, ask the user to run the wizard.
 - After `bootstrap`: `cd <dir> && make install`. After `scaffold`: `make compile check_layering`, then review the new
   application's settings (auth URLs, client IDs) and run `make appsettings` for local ones.
 

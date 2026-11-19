@@ -34,8 +34,11 @@ It asks for:
 It then shows the plan, including each web application's local ports, and writes nothing until you confirm. To skip the questions and create the baseline solution only:
 
 ```bash
-anarchy-toolkit bootstrap MyApp --output ./MyApp [--with-skills]
+anarchy-toolkit bootstrap MyApp --output ./MyApp [--with-skills] [--layering folder|prefix]
 ```
+
+Folder layering is the default. Use `--layering prefix` to choose project-name prefixes without the wizard; later
+scaffolding reads and follows the selected mode. Use the wizard when you need custom layers.
 
 ### What you get
 

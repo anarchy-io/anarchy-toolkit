@@ -33,6 +33,7 @@ what that costs. The published pages may be newer than the installed toolkit: pr
 | Working on | Read |
 |---|---|
 | Where a project, folder or file goes; layer folders; namespace collisions | [layering](references/conventions/layering.md) |
+| Shared project layout, names, helpers, UseCases and aggregates | [code organization](references/conventions/code-organization.md) |
 | Registering services, modules, settings | [dependency-injection](references/conventions/dependency-injection.md) |
 | Controllers, Input/Output DTOs, `ActionResult<T>` | [endpoints](references/conventions/endpoints.md) |
 | `async` methods, cancellation tokens, worker shutdowns | [async](references/conventions/async.md) |

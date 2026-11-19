@@ -16,7 +16,7 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 | Command | What it does |
 |---|---|
 | `anarchy-toolkit bootstrap` | Guided setup of a new solution. |
-| `anarchy-toolkit bootstrap <name> [--output <dir>] [--with-skills]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one), optionally with the agent skills. |
+| `anarchy-toolkit bootstrap <name> [--output <dir>] [--with-skills] [--layering folder\|prefix]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one), optionally with the agent skills. Folder layering is the default. |
 | `anarchy-toolkit scaffold` | Guided addition of an API, job or UI to the current solution. |
 | `anarchy-toolkit scaffold api\|job\|ui <Name>` | Adds one without prompts. |
 | `anarchy-toolkit scaffold api <Name> --no-swagger-theme` | Adds an API whose Swagger UI keeps its own look instead of the toolkit's default theme. |

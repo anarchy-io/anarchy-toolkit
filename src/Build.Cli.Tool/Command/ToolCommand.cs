@@ -26,6 +26,11 @@ public sealed record ToolCommand(
     public bool AgentSkills { get; init; }
 
     /// <summary>
+    /// The layering mode requested for non-interactive bootstrap, or <see langword="null"/> for the default.
+    /// </summary>
+    public LayeringMode? Layering { get; init; }
+
+    /// <summary>
     /// The <c>boilerplate</c> subcommand: <c>list</c>, <c>show</c> or <c>diff</c>.
     /// </summary>
     public string? BoilerplateAction { get; init; }

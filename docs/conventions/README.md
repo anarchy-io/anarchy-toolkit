@@ -15,6 +15,7 @@ Each convention exists for a reason recorded in the [values and decisions](../de
 | Convention | In short | Opt out by |
 |---|---|---|
 | [Layering](layering.md) | Projects in ordered layers, one folder per responsibility, checked by the build. | Not using `ILayeringBuild`, or folder mode and your own layer names. |
+| [Code Organization](code-organization.md) | Shared layers, responsibility-based names, UseCases, aggregates and helpers. | Use the structure that fits your solution and record the choice. |
 | [Dependency Injection](dependency-injection.md) | One module per concern, options supplied by the application, settings validated on start. | Calling the `Add*` extensions directly; keeping [`IOptions<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1). |
 | [Endpoints](endpoints.md) | Input/Output DTOs at the Web boundary, [`ActionResult<T>`](https://learn.microsoft.com/aspnet/core/web-api/action-return-types), contract-first interfaces. | Returning domain types, minimal APIs. |
 

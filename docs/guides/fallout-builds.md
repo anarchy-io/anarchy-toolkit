@@ -30,6 +30,17 @@ internal sealed partial class Build : FalloutBuild, IStandardBuild, ILayeringBui
 
 Reference the package (`<PackageReference Include="Anarchy.Toolkit.Build.Fallout" />`) from `build/_build.csproj`. The package carries a `buildTransitive` targets file that selects compatible `NuGet.*` assemblies from the installed SDK where appropriate. A `ProjectReference`, as the toolkit's own build uses, does not import it automatically: import `buildTransitive/Anarchy.Toolkit.Build.Fallout.targets` from `build/Directory.Build.targets`.
 
+### Existing builds
+
+Existing NUKE targets and components can be brought into an Anarchy build using Fallout's compatibility and
+migration options. Compatibility is not guaranteed for every API: review the
+[Fallout migration guide](https://github.com/Fallout-build/Fallout/blob/main/docs/migration/from-nuke.md), make any
+necessary changes, and test the resulting build before replacing an existing pipeline.
+
+For a Cake build, Fallout's global tool provides `fallout :cake-convert` to translate scripts. Review the generated
+result and expect that some conversion errors may need manual work; see the
+[Fallout conversion guide](https://docs.fallout.build/docs/introduction#coming-from-cake-).
+
 ## Components
 
 | Component | Targets | Notes |
