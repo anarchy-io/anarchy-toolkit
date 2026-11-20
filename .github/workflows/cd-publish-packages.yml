@@ -1,4 +1,4 @@
-name: Publish NuGet packages
+name: "[Continuous Delivery] Publish Upgraded Packages"
 
 on:
   push:
@@ -23,8 +23,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish:
-    name: "[Push] Validate and publish main"
+  packages_publish:
+    name: "Validate and publish all new versions"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -73,17 +73,13 @@ jobs:
 #          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
 #          RELEASE_BUMP: ${{ inputs.release_bump || 'patch' }}
 #        run: |
-#          ./src/Automation/Boilerplate/scripts/build.anarchy.sh GenerateReleaseFromChanges \
-#            --release-base "$RELEASE_BASE" --release-head HEAD --release-bump "$RELEASE_BUMP"
+#          make release_bump_changed RELEASE_BASE="$RELEASE_BASE" RELEASE_HEAD=HEAD RELEASE_BUMP="$RELEASE_BUMP"
 
 #      - name: Generate missing release notes
 #        if: steps.baseline.outputs.base != ''
 #        env:
 #          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
-#        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh GenerateReleaseNotes --release-base "$RELEASE_BASE" --release-head HEAD
-
-      - name: Run code quality checks and tests
-        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh PullRequest
+#        run: make release_notes RELEASE_BASE="$RELEASE_BASE" RELEASE_HEAD=HEAD
 
 #      - name: Commit release versions and notes
 #        if: steps.baseline.outputs.base != ''
@@ -102,6 +98,6 @@ jobs:
         env:
           ANARCHY_RELOAD_ENV: 'false'
         run: |
-          ./src/Automation/Boilerplate/scripts/build.anarchy.sh Publish \
-            --nu-get-source https://api.nuget.org/v3/index.json \
-            --nu-get-api-key "${{steps.login.outputs.NUGET_API_KEY}}"
+          make publish \
+            SOURCE=https://api.nuget.org/v3/index.json \
+            API_KEY="${{steps.login.outputs.NUGET_API_KEY}}"

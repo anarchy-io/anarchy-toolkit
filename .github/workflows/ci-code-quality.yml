@@ -1,0 +1,51 @@
+name: "[Continuous Integration] Code Quality"
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pull_request_checks_linux:
+    name: "[Linux] Pull Request Checks"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Validate release versions
+        env:
+          RELEASE_BASE: ${{ github.event.pull_request.base.sha }}
+        run: make validate_release RELEASE_BASE="$RELEASE_BASE"
+
+      - name: Check package hierarchy
+        run: make check_package_hierarchy
+
+      - name: Validate agent skills
+        run: make skills_validate
+
+      - name: Check the conventions skill matches the docs
+        run: docs/scripts/sync-skill-docs.sh --check
+
+      - name: Run code quality checks
+        run: make pull_request
+
+  pull_request_checks_windows:
+    name: "[Windows] Pull Request Checks"
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run code quality checks
+        run: dotnet run --project build/_build.csproj -- PullRequest
