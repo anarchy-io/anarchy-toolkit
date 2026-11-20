@@ -60,30 +60,30 @@ public class ReleaseNotesTasksTest
             }
             Git("init", "-q");
             foreach (var name in new[] { "A", "B", "C" }) Directory.CreateDirectory(Path.Combine(root, "src", name));
-            var a = Path.Combine(root, "src/A/A.csproj");
-            var b = Path.Combine(root, "src/B/B.csproj");
-            var c = Path.Combine(root, "src/C/C.csproj");
+            var a = Path.Combine(root, "src", "A", "A.csproj");
+            var b = Path.Combine(root, "src", "B", "B.csproj");
+            var c = Path.Combine(root, "src", "C", "C.csproj");
             File.WriteAllText(a, "<Project><Version>1.0.1</Version></Project>");
             File.WriteAllText(b, "<Project><Version>1.0.1</Version><ProjectReference Include='../A/A.csproj'/></Project>");
             File.WriteAllText(c, "<Project><Version>1.0.1</Version></Project>");
             Commit("baseline");
-            File.WriteAllText(Path.Combine(root, "src/A/Source.cs"), "// A");
+            File.WriteAllText(Path.Combine(root, "src", "A", "Source.cs"), "// A");
             Commit("feat: A functionality");
-            File.WriteAllText(Path.Combine(root, "src/C/Source.cs"), "// C");
+            File.WriteAllText(Path.Combine(root, "src", "C", "Source.cs"), "// C");
             Commit("fix: C functionality");
             Directory.CreateDirectory(Path.Combine(root, "tests"));
-            File.WriteAllText(Path.Combine(root, "tests/Test.cs"), "// test");
+            File.WriteAllText(Path.Combine(root, "tests", "Test.cs"), "// test");
             Commit("test: unrelated");
             var projects = ReadProjects([a, b, c], File.ReadAllText);
             var subjects = ReleaseNotesTasks.Collect(root, projects, "HEAD~3", "HEAD");
             subjects[a].Should().Equal("feat: A functionality");
             subjects[b].Should().Equal("feat: A functionality");
             subjects[c].Should().Equal("fix: C functionality");
-            var edits = ReleaseNotesTasks.Plan(projects, subjects, path => path == Path.Combine(root, "src/B/README.md")
+            var edits = ReleaseNotesTasks.Plan(projects, subjects, path => path == Path.Combine(root, "src", "B", "README.md")
                 ? "## Releases\n\n### 1.0.1\n\n- Hand-written\n" : "## Releases\n\n### 1.0.0\n");
             edits.Should().HaveCount(2);
-            edits[Path.Combine(root, "src/A/README.md")].Should().Contain("- feat: A functionality").And.NotContain("fix: C");
-            edits[Path.Combine(root, "src/C/README.md")].Should().Contain("- fix: C functionality");
+            edits[Path.Combine(root, "src", "A", "README.md")].Should().Contain("- feat: A functionality").And.NotContain("fix: C");
+            edits[Path.Combine(root, "src", "C", "README.md")].Should().Contain("- fix: C functionality");
             ((Action)(() => ReleaseNotesTasks.Collect(root, projects, "HEAD", "HEAD~3"))).Should().Throw<InvalidOperationException>();
         }
         finally { TestDirectory.Delete(root); }
@@ -108,14 +108,14 @@ public class ReleaseNotesTasksTest
             }
             void Commit(string message, string content)
             {
-                File.WriteAllText(Path.Combine(root, "src/A/Source.cs"), content);
+                File.WriteAllText(Path.Combine(root, "src", "A", "Source.cs"), content);
                 Git("add", ".");
                 Git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", message);
             }
 
             Git("init", "-q");
-            Directory.CreateDirectory(Path.Combine(root, "src/A"));
-            var project = Path.Combine(root, "src/A/A.csproj");
+            Directory.CreateDirectory(Path.Combine(root, "src", "A"));
+            var project = Path.Combine(root, "src", "A", "A.csproj");
             File.WriteAllText(project, "<Project><Version>1.0.1</Version></Project>");
             Commit("baseline", "// baseline");
             Commit("feat(A): Add functionality", "// feature");
@@ -151,13 +151,13 @@ public class ReleaseNotesTasksTest
             Git("switch", "-qc", "release-test-main");
             Git("config", "user.name", "Test");
             Git("config", "user.email", "test@example.com");
-            Directory.CreateDirectory(Path.Combine(root, "src/A"));
-            var projectPath = Path.Combine(root, "src/A/A.csproj");
+            Directory.CreateDirectory(Path.Combine(root, "src", "A"));
+            var projectPath = Path.Combine(root, "src", "A", "A.csproj");
             File.WriteAllText(projectPath, "<Project><Version>1.0.1</Version></Project>");
             Git("add", ".");
             Git("commit", "-qm", "base");
             Git("switch", "-qc", "release-test-feature");
-            File.WriteAllText(Path.Combine(root, "src/A/Feature.cs"), "// feature");
+            File.WriteAllText(Path.Combine(root, "src", "A", "Feature.cs"), "// feature");
             Git("add", ".");
             Git("commit", "-qm", "feat: add feature");
             Git("switch", "-q", "release-test-main");
@@ -190,8 +190,8 @@ public class ReleaseNotesTasksTest
             Git("config", "user.name", "Test");
             Git("config", "user.email", "test@example.com");
             foreach (var name in new[] { "A", "B" }) Directory.CreateDirectory(Path.Combine(root, "src", name));
-            var a = Path.Combine(root, "src/A/A.csproj");
-            var b = Path.Combine(root, "src/B/B.csproj");
+            var a = Path.Combine(root, "src", "A", "A.csproj");
+            var b = Path.Combine(root, "src", "B", "B.csproj");
             File.WriteAllText(a, "<Project><Version>1.0.1</Version></Project>");
             File.WriteAllText(b, "<Project><Version>1.0.1</Version></Project>");
             var props = Path.Combine(root, "Directory.Packages.props");
@@ -202,8 +202,8 @@ public class ReleaseNotesTasksTest
             Git("add", ".");
             Git("commit", "-qm", "build: update dependency");
             foreach (var name in new[] { "A", "B" }) Directory.CreateDirectory(Path.Combine(root, "src", name, "obj"));
-            File.WriteAllText(Path.Combine(root, "src/A/obj/project.assets.json"), "{\"libraries\":{\"Indirect/2.0.0\":{\"type\":\"package\"}}}");
-            File.WriteAllText(Path.Combine(root, "src/B/obj/project.assets.json"), "{\"libraries\":{}}");
+            File.WriteAllText(Path.Combine(root, "src", "A", "obj", "project.assets.json"), "{\"libraries\":{\"Indirect/2.0.0\":{\"type\":\"package\"}}}");
+            File.WriteAllText(Path.Combine(root, "src", "B", "obj", "project.assets.json"), "{\"libraries\":{}}");
             var projects = ReadProjects([a, b], File.ReadAllText);
             var subjects = ReleaseNotesTasks.Collect(root, projects, "HEAD~1", "HEAD");
             subjects.Should().ContainSingle();
