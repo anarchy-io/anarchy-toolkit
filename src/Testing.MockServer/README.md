@@ -52,11 +52,14 @@ on dispose.
 
 ## Releases
 
-### 1.2.0
+### 2.0.0
 
-- feat(Core.Telemetry): add provider-neutral telemetry facade
-- feat(Core.Telemetry): route optional metrics through application logging
-- feat(Configuration): register provider-neutral application telemetry
+- feat(automation): establish onboarding and layering conventions
+- feat(telemetry)!: introduce provider-neutral application telemetry
+- refactor(packages)!: restructure persistence and automation packages
+- refactor(infrastructure.correlationid)!: decouple correlation scopes from Serilog
+- refactor(core)!: reshape telemetry, event and health contracts
+- refactor(telemetry)!: remove legacy APIs and simplify namespaces
 
 ### 1.1.0
 

@@ -30,9 +30,16 @@ See the [sample tests](https://github.com/anarchy-io/anarchy-toolkit/tree/main/s
 
 ### 2.0.0
 
-- feat(Core.Telemetry): add provider-neutral telemetry facade
-- feat(Core.Telemetry): route optional metrics through application logging
-- feat(Configuration): register provider-neutral application telemetry
+- feat(automation): establish onboarding and layering conventions
+- feat(telemetry)!: introduce provider-neutral application telemetry
+- refactor(packages)!: restructure persistence and automation packages
+- refactor(infrastructure.correlationid)!: decouple correlation scopes from Serilog
+- refactor(core)!: reshape telemetry, event and health contracts
+- fix(persistence)!: preserve unit-of-work transaction ownership
+- refactor(telemetry)!: remove legacy APIs and simplify namespaces
+- feat(automation)!: configure layering and bridge build telemetry
+- refactor(telemetry)!: update consumers and samples
+- docs(onboarding): align package guidance, skills, and architecture
 
 ### 1.2.1
 
