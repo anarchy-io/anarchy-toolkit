@@ -1,5 +1,4 @@
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Web.GraphQL.GraphQL;
 using GraphQL.Server.Ui.GraphiQL;
 using GraphQL.Types;
 

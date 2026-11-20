@@ -16,7 +16,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// <param name="clientName">The name of the <see cref="HttpClient"/> registered with <see cref="IHttpClientFactory"/>.</param>
 /// <example>
 /// <code language="csharp">
-/// public class OrdersRepository(IAppTelemetry telemetry, IHttpClientFactory factory)
+/// public class OrdersRepository(AppTelemetry telemetry, IHttpClientFactory factory)
 ///     : ScopedHttpRepositoryBase(telemetry, factory, "orders-api")
 /// {
 ///     public Task&lt;HttpResponseMessage&gt; GetOrderAsync(string id, CancellationToken ct) =&gt;
@@ -25,7 +25,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// </code>
 /// </example>
 public abstract class ScopedHttpRepositoryBase(
-    IAppTelemetry telemetry,
+    AppTelemetry telemetry,
     IHttpClientFactory clientFactory,
     string clientName)
     : HttpRepositoryBase(telemetry, clientFactory), IDisposable

@@ -19,7 +19,7 @@ Use this package in an infrastructure adapter that calls an external HTTP API an
 ## How to use it
 
 1. Define an application-facing interface for the downstream operations and implement it with a repository derived from the appropriate HTTP repository base.
-2. Configure an `HttpClient` for the remote service and compose the supplied handlers only when needed, such as timeouts or MSAL certificate authentication. Supply the host's `IAppTelemetry` for instrumentation.
+2. Configure an `HttpClient` for the remote service and compose the supplied handlers only when needed, such as timeouts or MSAL certificate authentication. Supply the host's `AppTelemetry` for instrumentation.
 3. Translate downstream responses and errors at the adapter boundary. Configure base addresses, credentials and timeouts per environment rather than embedding them in the repository.
 
 Use mocks for business-rule unit tests and a controlled HTTP endpoint for integration tests that need to verify serialization, authentication and failure handling.
@@ -33,7 +33,7 @@ See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview
 
 ### 2.0.0
 
-- Replace the unused `Observer` constructor argument with `IAppTelemetry` and monitor HTTP operations through the host's telemetry pipeline.
+- Replace the unused `Observer` constructor argument with `AppTelemetry` and monitor HTTP operations through the host's telemetry pipeline.
 
 ### 1.1.1
 

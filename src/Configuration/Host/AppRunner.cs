@@ -1,9 +1,8 @@
 namespace Anarchy.Toolkit.Configuration.Host;
 
 /// <summary>
-/// Describes how the application is run. When registered in DI, it lets observability adapt to the runtime (for
-/// example, <see cref="Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Service.ObserverFactory"/>
-/// adds the AWS request context enricher on <see cref="Types.Lambda"/>).
+/// Describes how the application is run. When registered in DI, it lets composition code (for example an application's
+/// telemetry module) adapt to the runtime.
 /// </summary>
 /// <param name="Type">The runner type.</param>
 public record AppRunner(AppRunner.Types Type)

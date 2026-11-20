@@ -168,7 +168,7 @@ public class OutboundMessageBuilderTest : TestCaseBase
         string expectedMessage,
         string? expectedPartitionKey,
         IReadOnlyDictionary<string, string> expectedAttributes,
-        OutboundMessageEntity fixtureResult)
+        OutboundMessage fixtureResult)
     {
         using (new AssertionScope())
         {

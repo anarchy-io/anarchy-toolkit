@@ -26,7 +26,7 @@ public class SqsAwsPublisherRequestBuilderTest : TestCaseBase
         const string destination = "test-queue";
         const string body = "{\"foo\":\"bar\"}";
 
-        var fixtureOutbound = new OutboundMessageEntity(
+        var fixtureOutbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: destination,
             message: body,
@@ -60,7 +60,7 @@ public class SqsAwsPublisherRequestBuilderTest : TestCaseBase
         const string partitionKey = "partition-key";
         var deduplicationId = TestHelper.RandomId();
 
-        var fixtureOutbound = new OutboundMessageEntity(
+        var fixtureOutbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: destination,
             message: body,
@@ -81,7 +81,7 @@ public class SqsAwsPublisherRequestBuilderTest : TestCaseBase
     {
         // Arrange
         var largeBody = new string('a', 300_000); // > 256 KB
-        var fixtureOutbound = new OutboundMessageEntity(
+        var fixtureOutbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: "large-queue",
             message: largeBody,
@@ -105,7 +105,7 @@ public class SqsAwsPublisherRequestBuilderTest : TestCaseBase
     {
         // Arrange
         var largeBody = new string('a', 300_000); // > 256 KB
-        var fixtureOutbound = new OutboundMessageEntity(
+        var fixtureOutbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: "large-queue",
             message: largeBody,
@@ -139,7 +139,7 @@ public class SqsAwsPublisherRequestBuilderTest : TestCaseBase
     {
         // Arrange
         var target = DateHelper.Now().AddSeconds(30);
-        var fixtureOutbound = new OutboundMessageEntity(
+        var fixtureOutbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: "test-queue",
             message: "{\"foo\":\"bar\"}",
@@ -164,14 +164,14 @@ public class SqsAwsPublisherRequestBuilderTest : TestCaseBase
         // Arrange
         const string destination = "test-queue";
         var messages = new[] {
-            new OutboundMessageEntity(
+            new OutboundMessage(
                 id: TestHelper.RandomId(),
                 destination: destination,
                 message: "{\"foo\":\"bar\"}",
                 partitionKey: null,
                 deduplicationId: TestHelper.RandomId(),
                 attributes: new Dictionary<string, string>()),
-            new OutboundMessageEntity(
+            new OutboundMessage(
                 id: TestHelper.RandomId(),
                 destination: destination,
                 message: "{\"foo\":\"baz\"}",

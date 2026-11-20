@@ -1,16 +1,17 @@
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Testing.Telemetry;
 using Microsoft.Extensions.Hosting;
 using System.Runtime.CompilerServices;
 
 namespace Anarchy.Toolkit.Testing;
 
 /// <summary>
-/// Base class for toolkit-based test cases, providing a test host environment, an in-memory observer for
+/// Base class for toolkit-based test cases, providing a test host environment, an in-memory telemetry capture for
 /// asserting on logs and metrics, and small helpers.
 /// </summary>
 /// <remarks>
-/// A new <see cref="FixtureObserver"/> is created per test class instance (i.e. per test in xUnit).
+/// A new <see cref="FixtureTelemetry"/> is created per test class instance (i.e. per test in xUnit).
 /// Use <see cref="TestCaseBase{TAppSettings}"/> when test settings are needed.
 /// </remarks>
 public abstract class TestCaseBase
@@ -22,10 +23,10 @@ public abstract class TestCaseBase
     protected static IHostEnvironment TestEnvironment() => TestHelper.TestHostEnvironment();
 
     /// <summary>
-    /// An <see cref="InMemoryObserver"/> capturing logs and metrics in memory, to be passed to the code under test
-    /// and asserted upon afterwards.
+    /// A <see cref="TestTelemetry"/> capturing logs and metrics in memory: pass its
+    /// <see cref="TestTelemetry.Telemetry"/> to the code under test and assert on it afterwards.
     /// </summary>
-    protected readonly InMemoryObserver FixtureObserver = InMemoryObserver.Create();
+    protected readonly TestTelemetry FixtureTelemetry = new();
 
     /// <summary>
     /// Returns the name of the calling member, useful to derive unique, test-specific names (e.g. queues or ids).

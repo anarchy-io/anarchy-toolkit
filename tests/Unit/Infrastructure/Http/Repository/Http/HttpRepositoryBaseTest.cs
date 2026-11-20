@@ -1,12 +1,9 @@
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
-using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
-using Anarchy.Toolkit.Testing.Helper.Observability.Monitoring;
+using Anarchy.Toolkit.Testing.Telemetry;
 using AwesomeAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
-using Serilog;
 using System.Net;
 
 namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Http.Repository.Http;
@@ -14,49 +11,40 @@ namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Http.Repository.Http;
 public class HttpRepositoryBaseTest
 {
     [Fact]
-    public async Task GetAsync_UsesInjectedTelemetryAndReturnsTheResponse()
+    public async Task GetAsync_MonitorsTheRequestAndReturnsTheResponse()
     {
         var token = TestContext.Current.CancellationToken;
-        var telemetry = new Mock<IAppTelemetry>();
-        telemetry.Setup(t => t.MonitoredActionAsync(It.IsAny<CallSite>(), It.IsAny<Func<Task<HttpResponseMessage>>>(), token))
-            .Returns((CallSite _, Func<Task<HttpResponseMessage>> action, CancellationToken _) => action());
+        using var telemetry = new TestTelemetry();
         var factory = new Mock<IHttpClientFactory>();
         factory.Setup(f => f.CreateClient("orders")).Returns(() => new HttpClient(new Handler()) { BaseAddress = new Uri("https://example.test/") });
-        var repository = new Repository(telemetry.Object, factory.Object);
+        var repository = new Repository(telemetry.Telemetry, factory.Object);
 
         using var response = await repository.GetAsync(token);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        telemetry.Verify(t => t.MonitoredActionAsync(It.Is<CallSite>(site => site.MethodName == "MonitoredGetAsync"),
-            It.IsAny<Func<Task<HttpResponseMessage>>>(), token), Times.Once);
+        telemetry.Metrics.CounterTotal("repository.monitored_get_async.execution_count").Should().Be(1);
+        telemetry.Metrics.Named("repository.monitored_get_async.execution_time").Should().ContainSingle()
+            .Which.HasTag("success", true).Should().BeTrue();
     }
 
     [Fact]
-    public async Task GetAsync_WhenRequestFails_EmitsTelemetryToTheConsumerSink()
+    public async Task GetAsync_WhenRequestFails_LogsTheFailureAndCountsIt()
     {
         var token = TestContext.Current.CancellationToken;
-        var sink = new InMemorySink();
-        using var logger = new LoggerConfiguration().WriteTo.Sink(sink).CreateLogger();
-        var services = new ServiceCollection();
-        services.AddMetrics();
-        services.AddSerilogTelemetry(logger);
-        services.AddTelemetryLogMetrics();
-        using var provider = services.BuildServiceProvider();
-        var listener = provider.GetServices<IHostedService>().Should().ContainSingle().Which;
-        await listener.StartAsync(token);
+        using var telemetry = new TestTelemetry();
         var factory = new Mock<IHttpClientFactory>();
         factory.Setup(f => f.CreateClient("orders")).Returns(() => new HttpClient(new FailingHandler()) { BaseAddress = new Uri("https://example.test/") });
-        var repository = new Repository(provider.GetRequiredService<IAppTelemetry>(), factory.Object);
+        var repository = new Repository(telemetry.Telemetry, factory.Object);
 
         var action = () => repository.GetAsync(token);
         await action.Should().ThrowAsync<HttpRequestException>();
 
-        sink.Messages.Should().Contain(message => message.RenderMessage().Contains("Service action failed"));
-        sink.Messages.Should().Contain(message => message.RenderMessage().Contains("monitored_get_async.execution_count"));
-        await listener.StopAsync(token);
+        telemetry.Logs.Should().Contain(log => log.Level == LogLevel.Error && log.Message.Contains("Service action failed"));
+        telemetry.Metrics.Named("repository.monitored_get_async.execution_count").Should().ContainSingle()
+            .Which.HasTag("success", false).Should().BeTrue();
     }
 
-    private sealed class Repository(IAppTelemetry telemetry, IHttpClientFactory factory) : HttpRepositoryBase(telemetry, factory)
+    private sealed class Repository(AppTelemetry telemetry, IHttpClientFactory factory) : HttpRepositoryBase(telemetry, factory)
     {
         protected override string GetClientName() => "orders";
         public Task<HttpResponseMessage> GetAsync(CancellationToken token) => MonitoredGetAsync("orders", token);

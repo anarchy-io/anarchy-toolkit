@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Web.Ui.Infrastructure.Service.Http.Client;
+using Anarchy.Toolkit.Web.Ui.Infrastructure.Http.Client;
 using System.Net;
 using System.Net.Http.Headers;
 

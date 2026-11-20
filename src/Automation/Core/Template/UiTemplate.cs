@@ -33,7 +33,7 @@ internal static class UiTemplate
                 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
                 using Anarchy.Toolkit.Web.Ui.Core.Entity.Ui;
                 using Anarchy.Toolkit.Web.Ui.Entity.Ui;
-                using Anarchy.Toolkit.Web.Ui.Ui.Composition.Startup;
+                using Anarchy.Toolkit.Web.Ui.Composition.Startup;
 
                 namespace {{ns}}.Composition;
 
@@ -100,11 +100,11 @@ internal static class UiTemplate
                 """,
             ["Ui/Template/_Imports.razor"] = $"""
                 @using global::{ns}.Ui.Template.Component.Layout
-                @using Anarchy.Toolkit.Web.Ui.Ui.Presentation.Presenter
-                @using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Json
-                @using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Layout
-                @using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Session
-                @using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Shared
+                @using Anarchy.Toolkit.Web.Ui.Presentation.Presenter
+                @using Anarchy.Toolkit.Web.Ui.Template.Component.Json
+                @using Anarchy.Toolkit.Web.Ui.Template.Component.Layout
+                @using Anarchy.Toolkit.Web.Ui.Template.Component.Session
+                @using Anarchy.Toolkit.Web.Ui.Template.Component.Shared
                 @using Microsoft.AspNetCore.Authorization
                 @using Microsoft.AspNetCore.Components
                 @using Microsoft.AspNetCore.Components.Authorization

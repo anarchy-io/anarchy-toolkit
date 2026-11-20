@@ -19,7 +19,7 @@ public interface IAwsMessageBrokerPublisher<TRequest> : IMessageBrokerPublisher;
 /// Base class for AWS message-broker publishers. Builds SDK requests via an
 /// <see cref="IAwsPublisherRequestBuilder{TRequest, TBatchRequest}"/>, sends them through the transport-specific
 /// <see cref="SendRequestAsync"/>/<see cref="SendBatchRequestAsync"/>, and records logs and metrics through the
-/// <see cref="IAppTelemetry"/>.
+/// <see cref="AppTelemetry"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -43,13 +43,13 @@ public interface IAwsMessageBrokerPublisher<TRequest> : IMessageBrokerPublisher;
 /// <param name="telemetry">The application telemetry used for logging and metrics.</param>
 public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     IAwsPublisherRequestBuilder<TRequest, TBatchRequest> builderPublisherRequest,
-    IAppTelemetry telemetry) : IAwsMessageBrokerPublisher<TRequest>
+    AppTelemetry telemetry) : IAwsMessageBrokerPublisher<TRequest>
 {
     private const int MaxBatchSize = 10; // AWS limit for batch operations
 
     /// <inheritdoc/>
     /// <exception cref="MessagePublishException">Building or sending the request failed; wraps the original exception.</exception>
-    public async Task PublishAsync(OutboundMessageEntity outboundMessage,
+    public async Task PublishAsync(OutboundMessage outboundMessage,
                                    CancellationToken? cancellationToken = null)
     {
         var caller = this.CalledFrom();
@@ -83,7 +83,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     /// <inheritdoc/>
     /// <exception cref="MessageBatchPublishException">One or more chunks failed to publish.</exception>
     public async Task PublishAsync(
-        IReadOnlyCollection<OutboundMessageEntity> outboundMessages,
+        IReadOnlyCollection<OutboundMessage> outboundMessages,
         bool continueOnFailure = false,
         CancellationToken? cancellationToken = null)
     {
@@ -98,7 +98,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     /// <inheritdoc/>
     /// <exception cref="MessageBatchPublishException">One or more chunks failed to publish.</exception>
     public async Task PublishAsync(
-        IReadOnlyCollection<OutboundMessageEntity> outboundMessages,
+        IReadOnlyCollection<OutboundMessage> outboundMessages,
         IMessageBrokerPublisher.PublishBatchCallbackBeforeAsync? chunkCallbackBeforeAsync,
         IMessageBrokerPublisher.PublishBatchCallbackAfterAsync? chunkCallbackAfterAsync,
         bool continueOnFailure = false,
@@ -109,7 +109,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
     }
 
     private async Task PublishBatchInternalAsync(
-        IReadOnlyCollection<OutboundMessageEntity> outboundMessages,
+        IReadOnlyCollection<OutboundMessage> outboundMessages,
         bool continueOnFailure,
         IMessageBrokerPublisher.PublishBatchCallbackBeforeAsync? chunkCallbackBeforeAsync = null,
         IMessageBrokerPublisher.PublishBatchCallbackAfterAsync? chunkCallbackAfterAsync = null,
@@ -184,7 +184,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
         CallSite caller,
         Stopwatch chunkTimer,
         string requestType,
-        OutboundMessageEntity[] batch,
+        OutboundMessage[] batch,
         IMessageBrokerPublisher.PublishBatchCallbackAfterAsync? chunkCallbackAsync,
         CancellationToken? cancellationToken)
     {
@@ -207,7 +207,7 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
         CallSite caller,
         Stopwatch chunkTimer,
         string requestType,
-        OutboundMessageEntity[] batch,
+        OutboundMessage[] batch,
         Exception ex,
         IMessageBrokerPublisher.PublishBatchCallbackAfterAsync? chunkCallbackAsync,
         CancellationToken? cancellationToken)
@@ -234,16 +234,16 @@ public abstract class AwsMessageBrokerPublisherBase<TRequest, TBatchRequest>(
         int totalPublished,
         int totalFailed)
     {
-        telemetry.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", lastException == null)]);
+        telemetry.RecordDuration(caller, timer.Elapsed, [new("success", lastException == null)]);
 
         if (totalPublished > 0)
         {
-            telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.execution_count", totalPublished, [new("success", true)]);
+            telemetry.IncrementCounter(caller, MetricSuffixes.ExecutionCount, totalPublished, [new("success", true)]);
         }
 
         if (totalFailed > 0)
         {
-            telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.execution_count", totalFailed, [new("success", false)]);
+            telemetry.IncrementCounter(caller, MetricSuffixes.ExecutionCount, totalFailed, [new("success", false)]);
         }
     }
 

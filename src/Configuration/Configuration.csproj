@@ -5,13 +5,12 @@
     <PackageId>Anarchy.Toolkit.Configuration</PackageId>
     <RootNamespace>Anarchy.Toolkit.Configuration</RootNamespace>
     <Version>1.2.0</Version>
-    <Description>Application configuration: settings contracts, environment and secret handling, and a vendor-neutral observability bootstrap that organisations extend through an ObserverFactory.</Description>
+    <Description>Application configuration: settings contracts, environment and secret handling, and the provider-neutral telemetry bootstrap (ModuleTelemetry) that applications extend through dependency injection.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\Core.Observability\Core.Observability.csproj" />
     <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
   </ItemGroup>
@@ -24,7 +23,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="Microsoft.Identity.Client" />
-    <PackageReference Include="Serilog.Sinks.Console" />
   </ItemGroup>
 
 </Project>

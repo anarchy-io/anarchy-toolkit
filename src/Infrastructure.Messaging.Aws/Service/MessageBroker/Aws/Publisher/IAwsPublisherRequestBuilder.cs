@@ -3,7 +3,7 @@ using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher;
 
 /// <summary>
-/// Translates toolkit <see cref="OutboundMessageEntity"/> instances into AWS SDK request objects.
+/// Translates toolkit <see cref="OutboundMessage"/> instances into AWS SDK request objects.
 /// </summary>
 /// <remarks>
 /// Implemented by
@@ -21,7 +21,7 @@ public interface IAwsPublisherRequestBuilder<out TRequest, out TBatchRequest>
     /// </summary>
     /// <param name="message">The message to publish.</param>
     /// <returns>The AWS request.</returns>
-    TRequest FromOutboundMessage(OutboundMessageEntity message);
+    TRequest FromOutboundMessage(OutboundMessage message);
 
     /// <summary>
     /// Builds a batch request from <paramref name="messages"/>. All messages are expected to share the same
@@ -29,5 +29,5 @@ public interface IAwsPublisherRequestBuilder<out TRequest, out TBatchRequest>
     /// </summary>
     /// <param name="messages">The messages to publish.</param>
     /// <returns>The AWS batch request.</returns>
-    TBatchRequest FromOutboundMessage(OutboundMessageEntity[] messages);
+    TBatchRequest FromOutboundMessage(OutboundMessage[] messages);
 }

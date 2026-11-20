@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Infrastructure.Http.Entity.Http.Common;
+using Anarchy.Toolkit.Infrastructure.Http.Common;
 
 namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 
@@ -9,7 +9,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// <remarks>
 /// <para>
 /// Derived classes provide the client name via <see cref="GetClientName"/>; the client itself is configured by an
-/// <see cref="Anarchy.Toolkit.Infrastructure.Http.Entity.Http.Configuration.Common.IHttpClientConfiguration"/>
+/// <see cref="Anarchy.Toolkit.Infrastructure.Http.Configuration.Common.IHttpClientConfiguration"/>
 /// registered with <see cref="IHttpClientFactory"/>.
 /// </para>
 /// <para>
@@ -27,7 +27,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// <param name="clientFactory">The factory used to create named clients.</param>
 /// <example>
 /// <code language="csharp">
-/// public class CustomerRepository(IAppTelemetry telemetry, IHttpClientFactory factory)
+/// public class CustomerRepository(AppTelemetry telemetry, IHttpClientFactory factory)
 ///     : HttpRepositoryBase(telemetry, factory)
 /// {
 ///     protected override string GetClientName() =&gt; "customers-api";
@@ -42,7 +42,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// }
 /// </code>
 /// </example>
-public abstract class HttpRepositoryBase(IAppTelemetry telemetry, IHttpClientFactory clientFactory)
+public abstract class HttpRepositoryBase(AppTelemetry telemetry, IHttpClientFactory clientFactory)
 {
     /// <summary>
     /// Gets the name of the <see cref="HttpClient"/> (as registered with <see cref="IHttpClientFactory"/>) used by

@@ -1,15 +1,15 @@
+using Anarchy.Toolkit.Configuration.Core.Service;
 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Service;
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
-using Anarchy.Toolkit.Testing.Helper.Observability.Monitoring;
+using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Entity;
+using Anarchy.Toolkit.Testing.Telemetry;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Serilog;
 
 namespace Anarchy.Toolkit.Tests.Unit.Configuration.DependencyInjection.Module.Configuration.Service;
 
@@ -19,58 +19,66 @@ public class ModuleTelemetryTest
     private static readonly IHostEnvironment Environment = Mock.Of<IHostEnvironment>();
 
     [Fact]
-    public void RegisterServices_UsesHostInfrastructureAndPreservesCustomFacade()
-    {
-        var existing = Mock.Of<IAppTelemetry>();
-        var logging = Mock.Of<ILoggerProvider>();
-        var services = new ServiceCollection();
-        services.AddSingleton(existing);
-        services.AddSingleton(logging);
-
-        services.UseModule(new ModuleTelemetry(), Configuration, Environment);
-
-        using var provider = services.BuildServiceProvider();
-        provider.GetRequiredService<IAppTelemetry>().Should().BeSameAs(existing);
-        provider.GetServices<ILoggerProvider>().Should().Contain(logging);
-    }
-
-    [Fact]
-    public void RegisterServices_CreatesDefaultFacadeWithoutAdditionalSetup()
+    public void RegisterServices_CreatesTheDefaultsWithoutAdditionalSetup()
     {
         var services = new ServiceCollection();
         services.UseModule(new ModuleTelemetry(), Configuration, Environment);
 
         using var provider = services.BuildServiceProvider();
-        provider.GetRequiredService<IAppTelemetry>().Should().BeOfType<AppTelemetry>();
+        provider.GetRequiredService<AppTelemetry>().Should().NotBeNull();
+        provider.GetRequiredService<IMetricRecorder>().Should().BeOfType<MeterMetricRecorder>();
+        provider.GetRequiredService<IApplicationContext>().Should().NotBeNull();
+        provider.GetRequiredService<CorrelationIdOptions>().Should().NotBeNull();
+        provider.GetServices<ILoggerProvider>().Should().BeEmpty("no console or other sink is imposed");
     }
 
     [Fact]
-    public void LegacyModule_DoesNotRemoveExistingLoggingProviders()
+    public void RegisterServices_KeepsTheHostLoggingProvidersAndPrimitives()
     {
-        var logging = Mock.Of<ILoggerProvider>();
+        using var capture = new TestTelemetry();
         var services = new ServiceCollection();
-        services.AddSingleton(logging);
+        services.AddSingleton<ILoggerProvider>(capture.LoggerProvider);
+        services.AddSingleton<IMetricRecorder>(capture.Metrics);
 
-        services.UseModule(new ModuleObservability(), Configuration, Environment);
-
-        using var provider = services.BuildServiceProvider();
-        provider.GetServices<ILoggerProvider>().Should().Contain(logging);
-    }
-
-    [Fact]
-    public void ModuleTelemetry_PreservesTheConsumerSerilogSink()
-    {
-        var sink = new InMemorySink();
-        using var logger = new LoggerConfiguration().WriteTo.Sink(sink).CreateLogger();
-        var services = new ServiceCollection();
-        services.AddMetrics();
-        services.AddSerilogTelemetry(logger);
         services.UseModule(new ModuleTelemetry(), Configuration, Environment);
 
         using var provider = services.BuildServiceProvider();
-        provider.GetRequiredService<IAppTelemetry>().Log(LogLevel.Information, new CallSite("Orders", "Handle"), null,
-            "Processing {OrderId}", 42);
+        var telemetry = provider.GetRequiredService<AppTelemetry>();
+        telemetry.LogInformation(new CallSite("Orders", "Handle"), "Processing {OrderId}", 42);
+        telemetry.IncrementCounter("orders.processed");
+        capture.Logs.Should().ContainSingle().Which.Message.Should().Contain("Processing 42");
+        capture.Metrics.CounterTotal("orders.processed").Should().Be(1);
+    }
 
-        sink.Messages.Should().ContainSingle().Which.RenderMessage().Should().Contain("Processing 42");
+    [Fact]
+    public void RegisterServices_AppliesTheApplicationTelemetryModule()
+    {
+        using var capture = new TestTelemetry();
+        var services = new ServiceCollection();
+
+        services.UseModule(new ModuleTelemetry(new CaptureTelemetryModule(capture)), Configuration, Environment);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<AppTelemetry>().IncrementCounter(new CallSite("Orders", "Handle"), MetricSuffixes.ExecutionCount);
+        capture.Metrics.CounterTotal("orders.handle.execution_count").Should().Be(1);
+    }
+
+    [Fact]
+    public void RegisterServices_UsesTheGivenCorrelationOptions()
+    {
+        var services = new ServiceCollection();
+
+        services.UseModule(new ModuleTelemetry(correlationIdOptions: _ => new CorrelationIdOptions { CorrelationIdHeaderName = "X-Acme" }),
+            Configuration, Environment);
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<CorrelationIdOptions>().CorrelationIdHeaderName.Should().Be("X-Acme");
+    }
+
+    private sealed class CaptureTelemetryModule(TestTelemetry capture) : ModuleTelemetryBase
+    {
+        protected override void RegisterCoreTelemetry(IServiceCollection services, IConfiguration configuration,
+                                                      IHostEnvironment environment) =>
+            services.AddTestTelemetry(capture);
     }
 }

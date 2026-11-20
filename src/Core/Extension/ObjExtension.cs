@@ -7,11 +7,6 @@ namespace Anarchy.Toolkit.Core.Extension;
 /// </summary>
 public static class ObjExtension
 {
-    // TODO(generalize): CalledFrom moved to Observability
-    // The original ObjExtension.CalledFrom([CallerMemberName]) returned a CallSiteEntity,
-    // which lives in the Anarchy.Toolkit.Observability package. It is intentionally
-    // omitted here to keep Primitives free of that dependency.
-
     /// <param name="obj">The extended object whose public properties form the base of the merge.</param>
     extension(object obj)
     {

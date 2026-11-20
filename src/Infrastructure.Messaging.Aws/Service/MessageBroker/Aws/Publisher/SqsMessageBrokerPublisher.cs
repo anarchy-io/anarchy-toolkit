@@ -14,7 +14,7 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws
 public class SqsMessageBrokerPublisher(
     IAmazonSQS clientSqs,
     IAwsPublisherRequestBuilder<SendMessageRequest, SendMessageBatchRequest> builderPublisherRequest,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : AwsMessageBrokerPublisherBase<SendMessageRequest, SendMessageBatchRequest>(builderPublisherRequest, telemetry)
 {
     /// <inheritdoc/>

@@ -1,8 +1,8 @@
 using Anarchy.Toolkit.Web.MockServer.Ui.Service;
 using Anarchy.Toolkit.Web.MockServer.Ui.Ui.Template;
 using Anarchy.Toolkit.Web.Ui.Entity.Ui;
+using Anarchy.Toolkit.Web.Ui.Extension.DependencyInjection;
 using Anarchy.Toolkit.Web.Ui.Extension.Service.Builder;
-using Anarchy.Toolkit.Web.Ui.Ui.Extension.DependencyInjection;
 
 namespace Anarchy.Toolkit.Web.MockServer.Ui.Extension;
 

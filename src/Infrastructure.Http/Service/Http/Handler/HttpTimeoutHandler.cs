@@ -9,7 +9,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Service.Http.Handler;
 /// </summary>
 /// <remarks>
 /// Added automatically by
-/// <see cref="Anarchy.Toolkit.Infrastructure.Http.Entity.Http.Configuration.Common.HttpClientConfigurationBase{TClient}"/>.
+/// <see cref="Anarchy.Toolkit.Infrastructure.Http.Configuration.Common.HttpClientConfigurationBase{TClient}"/>.
 /// Note that any <see cref="OperationCanceledException"/> raised by inner handlers is converted, including one caused
 /// by the caller's own cancellation token.
 /// </remarks>

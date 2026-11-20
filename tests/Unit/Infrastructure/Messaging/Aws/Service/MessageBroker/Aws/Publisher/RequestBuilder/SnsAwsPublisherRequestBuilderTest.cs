@@ -23,7 +23,7 @@ public class SnsAwsPublisherRequestBuilderTest : TestCaseBase
         const string destination = "test-topic";
         const string body = "{\"foo\":\"bar\"}";
 
-        var outbound = new OutboundMessageEntity(
+        var outbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: destination,
             message: body,
@@ -58,7 +58,7 @@ public class SnsAwsPublisherRequestBuilderTest : TestCaseBase
         const string partitionKey = "partition-key";
         var deduplicationId = TestHelper.RandomId();
 
-        var outbound = new OutboundMessageEntity(
+        var outbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: destination,
             message: body,
@@ -79,7 +79,7 @@ public class SnsAwsPublisherRequestBuilderTest : TestCaseBase
     {
         // Arrange
         var largeBody = new string('a', 300_000); // > 256 KB
-        var outbound = new OutboundMessageEntity(
+        var outbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: "large-queue",
             message: largeBody,
@@ -102,7 +102,7 @@ public class SnsAwsPublisherRequestBuilderTest : TestCaseBase
     {
         // Arrange
         var largeBody = new string('a', 300_000); // > 256 KB
-        var outbound = new OutboundMessageEntity(
+        var outbound = new OutboundMessage(
             id: TestHelper.RandomId(),
             destination: "large-queue",
             message: largeBody,
@@ -139,14 +139,14 @@ public class SnsAwsPublisherRequestBuilderTest : TestCaseBase
         // Arrange
         const string destination = "test-topic";
         var messages = new[] {
-            new OutboundMessageEntity(
+            new OutboundMessage(
                 id: TestHelper.RandomId(),
                 destination: destination,
                 message: "{\"foo\":\"bar\"}",
                 partitionKey: null,
                 deduplicationId: TestHelper.RandomId(),
                 attributes: new Dictionary<string, string>()),
-            new OutboundMessageEntity(
+            new OutboundMessage(
                 id: TestHelper.RandomId(),
                 destination: destination,
                 message: "{\"foo\":\"baz\"}",

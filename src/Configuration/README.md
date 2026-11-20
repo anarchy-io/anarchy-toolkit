@@ -10,19 +10,18 @@ dotnet add package Anarchy.Toolkit.Configuration
 
 - Implement the settings capability interfaces your application needs, then bind and expose them with a `ModuleAppSettingsBase<TAppSettings>` subclass.
 - Use `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` to register settings, telemetry, correlation context and secrets together.
-- `ModuleTelemetry` registers `IAppTelemetry` using the host's logging and metrics providers without replacing an existing facade; configure providers in the host or register a custom facade before applying the module.
-- `ModuleObservability` and `ObserverFactory` remain for applications that still use the legacy `Observer` API; new applications should use `ModuleTelemetry` and `IAppTelemetry` instead.
+- `ModuleTelemetry` registers the toolkit telemetry (`AppTelemetry`, `ICoreTelemetry`, `IMetricRecorder`), the correlation context and `IApplicationContext`. It adds no sink: logs go to the host's logging providers, and registrations the host made are kept. Pass a `ModuleTelemetryBase` (`new ModuleTelemetry(new CompanyTelemetryModule())`) to register the company's logging and metrics as a module.
 - Choose configuration sources in the application, including AWS Systems Manager Parameter Store via `AddAwsSystemsManagerParameterStore` when needed. Secret services include KMS, cached and in-memory implementations.
 
 ## When to use it
 
-Use this package at the composition boundary of a service that needs typed settings, secret access and the shared `IAppTelemetry` facade. Application code owns its settings type, logging providers and configuration sources; the package does not prescribe a configuration file or automatically provision AWS resources.
+Use this package at the composition boundary of a service that needs typed settings, secret access and the shared `AppTelemetry`. Application code owns its settings type, logging providers and configuration sources; the package does not prescribe a configuration file or automatically provision AWS resources.
 
 ## How to use it
 
 1. Define an application settings type implementing `IAppSettings` and whichever capability interfaces the application consumes, such as `IAuthServiceAppSettings` or `IPostgresAppSettings`.
 2. Derive a settings module from `ModuleAppSettingsBase<TAppSettings>`. Override `RegisterAdditionalTypesForSettings` to expose the same settings instance through the capability interfaces your services request.
-3. Configure the host's logging and metrics providers, then register `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` using `UseModule`. Register a custom `IAppTelemetry` first when the application needs to replace the default facade.
+3. Register `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` using `UseModule`. Configure logging providers, a metric recorder or an `ICoreTelemetry` in the host, or pass them as a `ModuleTelemetryBase` through `new ModuleLibConfiguration<…>(new ModuleTelemetry(…))`.
 4. Choose configuration sources and secret providers in the host. Keep credentials outside committed configuration and grant the AWS permissions needed by any selected remote provider.
 
 The [sample API settings module](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/DependencyInjection/ModuleAppSettings.cs) and [startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/Startup.cs) show the wiring end to end.
@@ -33,7 +32,9 @@ See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guide
 
 ### 1.2.0
 
-- Register the provider-neutral telemetry facade alongside legacy observability and preserve application logging providers.
+- Register the provider-neutral telemetry through `ModuleTelemetry`, extensible with a `ModuleTelemetryBase`, and preserve application logging providers.
+- Removed the Serilog-based observer bootstrap (`ModuleObservability`, `ObserverFactory`, `ObservabilityOptions`, `ConsoleMeasurer`) and its Serilog enrichers; the structured-exception enricher moved to `Infrastructure.Telemetry.Serilog`.
+- `ApplicationContext` and `AmazonRequestContext` moved to the `Anarchy.Toolkit.Configuration.Telemetry` namespace.
 
 ### 1.1.1
 

@@ -28,7 +28,7 @@ public class ModuleLibConfigurationTest
 
         using var provider = services.BuildServiceProvider();
 
-        provider.GetRequiredService<IAppTelemetry>().Should().BeOfType<AppTelemetry>();
+        provider.GetRequiredService<AppTelemetry>().Should().BeOfType<AppTelemetry>();
         provider.GetRequiredService<IApplicationContext>().Should().NotBeNull();
         provider.GetRequiredService<CorrelationIdOptions>().Should().NotBeNull();
     }

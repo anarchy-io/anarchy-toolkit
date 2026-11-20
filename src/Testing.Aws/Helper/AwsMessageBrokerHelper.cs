@@ -7,7 +7,8 @@ using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Amazon;
 using Anarchy.Toolkit.Core.Exceptions;
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker.Exceptions;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
+using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
 namespace Anarchy.Toolkit.Testing.Aws.Helper;
@@ -18,13 +19,13 @@ namespace Anarchy.Toolkit.Testing.Aws.Helper;
 /// </summary>
 /// <remarks>
 /// Every operation sanitizes resource names (invalid characters become <c>-</c>, the <c>.fifo</c> suffix is preserved),
-/// prints progress through <see cref="DevelopmentLogger"/>, and rethrows SDK errors after logging them. Names that are
+/// logs progress through the injected <see cref="AppTelemetry"/>, and rethrows SDK errors after logging them. Names that are
 /// <see langword="null"/> or whitespace cause an <see cref="EmptyArgumentException"/>. Credentials, endpoint and region
 /// come from <see cref="IAwsAppSettings.Aws"/>.
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// using var broker = new AwsMessageBrokerHelper(TestHelper.TestSettings&lt;AppSettings&gt;());
+/// using var broker = new AwsMessageBrokerHelper(TestHelper.TestSettings&lt;AppSettings&gt;(), FixtureTelemetry.Telemetry);
 /// await broker.PrepareTopicAsync("orders.fifo");
 /// await broker.PrepareQueueAsync("orders-consumer.fifo");
 /// await broker.SubscribeSqsQueueToSnsTopicAsync("orders-consumer.fifo", "orders.fifo");
@@ -33,7 +34,6 @@ namespace Anarchy.Toolkit.Testing.Aws.Helper;
 /// </example>
 public class AwsMessageBrokerHelper : IDisposable
 {
-    private const string DevLogPrefix = "AWS Helper";
     private const string FifoSuffix = ".fifo";
 
     /// <summary>The SNS client, configured from <see cref="IAwsAppSettings.Aws"/>.</summary>
@@ -44,6 +44,8 @@ public class AwsMessageBrokerHelper : IDisposable
     /// </summary>
     public readonly AmazonSQSClient ClientSqs;
 
+    private readonly AppTelemetry _telemetry;
+
     /// <summary>
     /// Initializes a new instance of <see cref="AwsMessageBrokerHelper"/> using the provided
     /// <see cref="IAwsAppSettings"/>.
@@ -51,8 +53,11 @@ public class AwsMessageBrokerHelper : IDisposable
     /// <param name="appSettings">
     /// The application settings, for example <c>TestHelper.TestSettings&lt;TAppSettings&gt;()</c>.
     /// </param>
-    public AwsMessageBrokerHelper(IAwsAppSettings appSettings)
+    /// <param name="telemetry">Receives the progress logs; discarded when <see langword="null"/>.</param>
+    public AwsMessageBrokerHelper(IAwsAppSettings appSettings, AppTelemetry? telemetry = null)
     {
+        _telemetry = telemetry ?? AppTelemetry.Null;
+
         ClientSns = new AmazonSimpleNotificationServiceClient(new BasicAWSCredentials(
             appSettings.Aws.AccessKey,
             appSettings.Aws.SecretKey
@@ -68,6 +73,18 @@ public class AwsMessageBrokerHelper : IDisposable
             ServiceURL = appSettings.Aws.EndpointSns,
             AuthenticationRegion = appSettings.Aws.RegionName
         });
+    }
+
+    private void Log(LogLevel level, string message, object? context = null,
+                     [System.Runtime.CompilerServices.CallerMemberName] string methodName = "")
+    {
+        var callSite = new Anarchy.Toolkit.Core.Telemetry.CallSite(nameof(AwsMessageBrokerHelper), methodName);
+        if (context is Exception exception)
+            _telemetry.Log(level, callSite, exception, "{Message}", message);
+        else if (context is not null)
+            _telemetry.Log(level, callSite, null, "{Message} {@Context}", message, context);
+        else
+            _telemetry.Log(level, callSite, null, "{Message}", message);
     }
 
     /// <summary>Disposes the SNS and SQS clients.</summary>
@@ -89,20 +106,14 @@ public class AwsMessageBrokerHelper : IDisposable
     {
         var sanitizedTopicName = SanitizeResourceName(topicName);
 
-        DevelopmentLogger.Print(
-            $"Preparing SNS topic '{sanitizedTopicName}'",
-            DevLogPrefix,
-            DevelopmentLoggerLevel.Info);
+        Log(LogLevel.Information, $"Preparing SNS topic '{sanitizedTopicName}'");
 
         try
         {
             var existingTopic = await ClientSns.FindTopicAsync(sanitizedTopicName);
             if (existingTopic != null)
             {
-                DevelopmentLogger.Print(
-                    $"SNS topic '{sanitizedTopicName}' already exists. Deleting it first...",
-                    DevLogPrefix,
-                    DevelopmentLoggerLevel.Debug);
+                Log(LogLevel.Debug, $"SNS topic '{sanitizedTopicName}' already exists. Deleting it first...");
 
                 await ClientSns.DeleteTopicAsync(existingTopic.TopicArn, cancellationToken);
             }
@@ -129,36 +140,23 @@ public class AwsMessageBrokerHelper : IDisposable
         {
             var sanitizedTopicName = SanitizeResourceName(topicName);
 
-            DevelopmentLogger.Print(
-                $"Deleting SNS topic '{sanitizedTopicName}'",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Info);
+            Log(LogLevel.Information, $"Deleting SNS topic '{sanitizedTopicName}'");
 
             var topic = await ClientSns.FindTopicAsync(sanitizedTopicName);
             if (topic == null)
             {
-                DevelopmentLogger.Print(
-                    $"SNS topic '{sanitizedTopicName}' does not exist. Nothing to delete.",
-                    DevLogPrefix,
-                    DevelopmentLoggerLevel.Debug);
+                Log(LogLevel.Debug, $"SNS topic '{sanitizedTopicName}' does not exist. Nothing to delete.");
 
                 return;
             }
 
             await ClientSns.DeleteTopicAsync(topic.TopicArn, cancellationToken);
 
-            DevelopmentLogger.Print(
-                $"SNS topic '{sanitizedTopicName}' deleted.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Debug);
+            Log(LogLevel.Debug, $"SNS topic '{sanitizedTopicName}' deleted.");
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while deleting SNS topic '{topicName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while deleting SNS topic '{topicName}'.", ex);
 
             throw;
         }
@@ -175,7 +173,7 @@ public class AwsMessageBrokerHelper : IDisposable
     {
         var sanitizedTopicName = SanitizeResourceName(topicName);
 
-        DevelopmentLogger.Print("Creating SNS topic...", DevLogPrefix, DevelopmentLoggerLevel.Info, sanitizedTopicName);
+        Log(LogLevel.Information, "Creating SNS topic...", sanitizedTopicName);
 
         try
         {
@@ -191,20 +189,16 @@ public class AwsMessageBrokerHelper : IDisposable
 
             if (result == null)
             {
-                DevelopmentLogger.Print("Creation Failed!", DevLogPrefix, DevelopmentLoggerLevel.Error);
+                Log(LogLevel.Error, "Creation Failed!");
             }
             else
             {
-                DevelopmentLogger.Print("Topic created:", DevLogPrefix, DevelopmentLoggerLevel.Debug, result);
+                Log(LogLevel.Debug, "Topic created:", result);
             }
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while creating SNS topic '{sanitizedTopicName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while creating SNS topic '{sanitizedTopicName}'.", ex);
 
             throw;
         }
@@ -223,10 +217,7 @@ public class AwsMessageBrokerHelper : IDisposable
         var sanitizedQueueName = SanitizeResourceName(queueName);
         var sanitizedTopicName = SanitizeResourceName(topicName);
 
-        DevelopmentLogger.Print(
-            $"Subscribing queue {sanitizedQueueName} to topic {sanitizedTopicName}",
-            DevLogPrefix,
-            DevelopmentLoggerLevel.Info);
+        Log(LogLevel.Information, $"Subscribing queue {sanitizedQueueName} to topic {sanitizedTopicName}");
 
         try
         {
@@ -240,7 +231,7 @@ public class AwsMessageBrokerHelper : IDisposable
 
             if (subscriptionArn == null)
             {
-                DevelopmentLogger.Print("Subscription Failed!", DevLogPrefix, DevelopmentLoggerLevel.Error);
+                Log(LogLevel.Error, "Subscription Failed!");
                 return;
             }
 
@@ -252,19 +243,11 @@ public class AwsMessageBrokerHelper : IDisposable
                     AttributeValue = "true"
                 }, cancellationToken);
 
-            DevelopmentLogger.Print(
-                "Subscription successfully created with resource name:",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Debug,
-                subscriptionArn);
+            Log(LogLevel.Debug, "Subscription successfully created with resource name:", subscriptionArn);
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while subscribing queue '{queueName}' to topic '{topicName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while subscribing queue '{queueName}' to topic '{topicName}'.", ex);
 
             throw;
         }
@@ -297,10 +280,7 @@ public class AwsMessageBrokerHelper : IDisposable
     {
         var sanitizedQueueName = SanitizeResourceName(queueName);
 
-        DevelopmentLogger.Print(
-            $"Creating queue '{sanitizedQueueName}'",
-            DevLogPrefix,
-            DevelopmentLoggerLevel.Info);
+        Log(LogLevel.Information, $"Creating queue '{sanitizedQueueName}'");
 
         try
         {
@@ -319,20 +299,16 @@ public class AwsMessageBrokerHelper : IDisposable
 
             if (result == null)
             {
-                DevelopmentLogger.Print("Queue creation has failed!", DevLogPrefix, DevelopmentLoggerLevel.Error);
+                Log(LogLevel.Error, "Queue creation has failed!");
             }
             else
             {
-                DevelopmentLogger.Print("Queue created!", DevLogPrefix, DevelopmentLoggerLevel.Debug, result);
+                Log(LogLevel.Debug, "Queue created!", result);
             }
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while creating SQS queue '{sanitizedQueueName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while creating SQS queue '{sanitizedQueueName}'.", ex);
 
             throw;
         }
@@ -346,10 +322,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// <returns>A task that completes when the operation has finished.</returns>
     public async Task PurgeQueueAsync(string queueName, CancellationToken cancellationToken = default)
     {
-        DevelopmentLogger.Print(
-            $"Purging queue '{queueName}'",
-            DevLogPrefix,
-            DevelopmentLoggerLevel.Info);
+        Log(LogLevel.Information, $"Purging queue '{queueName}'");
 
         try
         {
@@ -360,20 +333,16 @@ public class AwsMessageBrokerHelper : IDisposable
 
             if (result == null)
             {
-                DevelopmentLogger.Print("Could not purge queue!", DevLogPrefix, DevelopmentLoggerLevel.Error);
+                Log(LogLevel.Error, "Could not purge queue!");
             }
             else
             {
-                DevelopmentLogger.Print("Queue purged!", DevLogPrefix, DevelopmentLoggerLevel.Debug);
+                Log(LogLevel.Debug, "Queue purged!");
             }
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while purging SQS queue '{queueName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while purging SQS queue '{queueName}'.", ex);
 
             throw;
         }
@@ -387,10 +356,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// <returns>A task that completes when the operation has finished.</returns>
     public async Task DeleteQueueAsync(string queueName, CancellationToken cancellationToken = default)
     {
-        DevelopmentLogger.Print(
-            $"Purging queue '{queueName}'",
-            DevLogPrefix,
-            DevelopmentLoggerLevel.Info);
+        Log(LogLevel.Information, $"Purging queue '{queueName}'");
 
         try
         {
@@ -401,20 +367,16 @@ public class AwsMessageBrokerHelper : IDisposable
 
             if (result == null)
             {
-                DevelopmentLogger.Print("Could not delete queue!", DevLogPrefix, DevelopmentLoggerLevel.Error);
+                Log(LogLevel.Error, "Could not delete queue!");
             }
             else
             {
-                DevelopmentLogger.Print("Queue deleted!", DevLogPrefix, DevelopmentLoggerLevel.Debug);
+                Log(LogLevel.Debug, "Queue deleted!");
             }
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while deleting SQS queue '{queueName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while deleting SQS queue '{queueName}'.", ex);
 
             throw;
         }
@@ -435,30 +397,19 @@ public class AwsMessageBrokerHelper : IDisposable
         }
         catch (QueueDoesNotExistException)
         {
-            DevelopmentLogger.Print(
-                $"Queue '{queueName}' does not exist.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Debug);
+            Log(LogLevel.Debug, $"Queue '{queueName}' does not exist.");
 
             return false;
         }
         catch (AmazonSQSException ex)
         {
-            DevelopmentLogger.Print(
-                $"AmazonSQSException while checking if queue '{queueName}' exists.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"AmazonSQSException while checking if queue '{queueName}' exists.", ex);
 
             throw;
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Unexpected exception while checking if queue '{queueName}' exists.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Unexpected exception while checking if queue '{queueName}' exists.", ex);
 
             throw;
         }
@@ -475,10 +426,7 @@ public class AwsMessageBrokerHelper : IDisposable
     /// <returns>The <see cref="ReceiveMessageResponse"/> from SQS.</returns>
     public async Task<ReceiveMessageResponse> ReceiveMessagesAsync(string queueName, int waitTimeSeconds = 0, CancellationToken cancellationToken = default)
     {
-        DevelopmentLogger.Print(
-            $"Retrieving messages from queue '{queueName}'...",
-            DevLogPrefix,
-            DevelopmentLoggerLevel.Info);
+        Log(LogLevel.Information, $"Retrieving messages from queue '{queueName}'...");
 
         try
         {
@@ -496,11 +444,7 @@ public class AwsMessageBrokerHelper : IDisposable
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while receiving messages from SQS queue '{queueName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while receiving messages from SQS queue '{queueName}'.", ex);
 
             throw;
         }
@@ -540,22 +484,14 @@ public class AwsMessageBrokerHelper : IDisposable
 
             if (response.Failed is { Count: > 0 })
             {
-                DevelopmentLogger.Print(
-                    $"Failed to publish to queue '{queueName}'",
-                    DevLogPrefix,
-                    DevelopmentLoggerLevel.Error,
-                    response.Failed);
+                Log(LogLevel.Error, $"Failed to publish to queue '{queueName}'", response.Failed);
 
                 throw new MessageBatchPublishException(response.Failed.Count, destination: queueName);
             }
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while sending messages to SQS queue '{queueName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while sending messages to SQS queue '{queueName}'.", ex);
 
             throw;
         }
@@ -579,11 +515,7 @@ public class AwsMessageBrokerHelper : IDisposable
         }
         catch (Exception ex)
         {
-            DevelopmentLogger.Print(
-                $"Exception while preparing SQS queue '{queueName}'.",
-                DevLogPrefix,
-                DevelopmentLoggerLevel.Error,
-                ex);
+            Log(LogLevel.Error, $"Exception while preparing SQS queue '{queueName}'.", ex);
 
             throw;
         }

@@ -69,7 +69,7 @@ public sealed class SnsAwsPublisherRequestBuilder(
 
     /// <inheritdoc/>
     /// <exception cref="EmptyArgumentException"><paramref name="messages"/> is empty.</exception>
-    protected override PublishBatchRequest CreateBatchRequest(OutboundMessageEntity[] messages)
+    protected override PublishBatchRequest CreateBatchRequest(OutboundMessage[] messages)
     {
         if (messages.Length == 0)
             throw new EmptyArgumentException(nameof(messages));
@@ -87,7 +87,7 @@ public sealed class SnsAwsPublisherRequestBuilder(
         };
     }
 
-    private PublishBatchRequestEntry CreateBatchEntry(string id, OutboundMessageEntity message)
+    private PublishBatchRequestEntry CreateBatchEntry(string id, OutboundMessage message)
     {
         var entry = new PublishBatchRequestEntry { Id = id };
 
