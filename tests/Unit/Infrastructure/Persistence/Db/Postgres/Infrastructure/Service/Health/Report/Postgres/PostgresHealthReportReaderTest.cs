@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Health.Report.Postgres;
@@ -20,7 +20,7 @@ public class PostgresHealthReportReaderTest
                     It.IsAny<string?>(), It.IsAny<CancellationToken?>()))
                 .ThrowsAsync(new Exception("Mocked Behavior"));
 
-        return new PostgresHealthReportReader(mockPolicy.Object, Mock.Of<IAppTelemetry>());
+        return new PostgresHealthReportReader(mockPolicy.Object, AppTelemetry.Null);
     }
 
     [Fact]

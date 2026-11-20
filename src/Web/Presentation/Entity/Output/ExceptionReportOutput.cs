@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Health.Entity.Api.Output;
+using Anarchy.Toolkit.Core.Health.Reports;
 
 namespace Anarchy.Toolkit.Web.Presentation.Entity.Output;
 

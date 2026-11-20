@@ -1,4 +1,4 @@
-using Domain_Event = Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Repository.Storage.Event;
 
@@ -18,7 +18,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Repository.
 /// <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.Event.DbTaskOutboxWriterRepositoryBase{TDbConnection, TDialect}"/>.
 /// </para>
 /// </remarks>
-public interface ITaskOutboxWriterRepository : IEventEnvelopeWriterRepository<Domain_Event>
+public interface ITaskOutboxWriterRepository : IEventEnvelopeWriterRepository<DomainEventEnvelope>
 {
     /// <summary>
     /// Sets a <c>PublishedAt</c> on the relevant tasks and persists it to the database.
@@ -53,5 +53,5 @@ public interface ITaskOutboxWriterRepository : IEventEnvelopeWriterRepository<Do
     /// <param name="entities">The events to (re)publish</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>The number of tasks published</returns>
-    Task<int> RepublishAllAsync(IReadOnlyCollection<Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event> entities, CancellationToken? cancellationToken = null);
+    Task<int> RepublishAllAsync(IReadOnlyCollection<DomainEventEnvelope> entities, CancellationToken? cancellationToken = null);
 }

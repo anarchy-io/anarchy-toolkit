@@ -10,14 +10,14 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 
 /// <summary>
 /// Serves the worker's health endpoints on <see cref="WorkerHealthCheckSettings.ServicePort"/>. Every request runs
-/// the <see cref="Anarchy.Toolkit.Core.Health.Service.Health.IServiceHealthReport"/>s registered in the worker's
+/// the <see cref="Anarchy.Toolkit.Core.Health.Checks.IHealthCheck"/>s registered in the worker's
 /// container, in a scope of their own. Register it with <c>AddServiceHealthCheckWorker(assembly)</c>, which also
 /// registers the <see cref="ApplicationHealthApi"/> it needs.
 /// </summary>
 public class ServiceHealthCheckWorker : IHostedService, IDisposable
 {
     private readonly IWorkerHealthCheckAppSettings _appSettings;
-    private readonly IAppTelemetry _telemetry;
+    private readonly AppTelemetry _telemetry;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly SelfHostedApplicationHealthApi _healthApi;
 
@@ -29,7 +29,7 @@ public class ServiceHealthCheckWorker : IHostedService, IDisposable
     /// <param name="scopeFactory">Creates a scope per health request in the worker's container.</param>
     /// <exception cref="ArgumentNullException">Thrown if any argument is <see langword="null"/>.</exception>
     public ServiceHealthCheckWorker(IWorkerHealthCheckAppSettings appSettings,
-                                     IAppTelemetry telemetry,
+                                     AppTelemetry telemetry,
                                     IServiceScopeFactory scopeFactory)
     {
         _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));

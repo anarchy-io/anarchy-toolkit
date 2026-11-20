@@ -1,5 +1,5 @@
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
 using Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health.SelfHost;
 using Anarchy.Toolkit.Tests.Unit.Hosting.Workers.TestAssemblies;
@@ -105,7 +105,7 @@ public class SelfHostTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddApplicationHealthEndpoints(WithMetadataHelper.Assembly);
-        services.AddScoped<IReadOnlyCollection<IServiceHealthReport>>(_ =>
+        services.AddScoped<IReadOnlyCollection<IHealthCheck>>(_ =>
             [new StubServiceHealthReport("Scoped report")]);
 
         using var provider = services.BuildServiceProvider(validateScopes: true);

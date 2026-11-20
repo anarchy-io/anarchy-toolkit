@@ -1,20 +1,39 @@
 # Anarchy.Toolkit.Core.Telemetry
 
-Provider-neutral application telemetry built on Microsoft logging and `System.Diagnostics.Metrics`. The application
-chooses and owns the logger and metrics collection pipeline; no Serilog or vendor SDK is required by this package.
+Provider-neutral telemetry built on Microsoft logging and `System.Diagnostics.Metrics`. The application chooses and
+owns the logging and metrics pipeline; no Serilog or vendor SDK is required by this package.
 
-`IAppTelemetry` provides structured logs and scopes, call-site names, counters, gauges, histograms, durations,
-text events and monitored operations. Text events are logged rather than converted to numeric metric labels. Configure
-`ILoggerFactory` and `IMeterFactory` in dependency injection (for example with `AddLogging()` and `AddMetrics()`), then
-call `services.AddAppTelemetry()`. Registration does
-not replace an existing `IAppTelemetry`. A custom implementation can also be registered by the host. The facade does
-not dispose externally supplied loggers or meters.
+```bash
+dotnet add package Anarchy.Toolkit.Core.Telemetry
+```
 
-The meter is named `Anarchy.Toolkit.Telemetry`. Configure a listener such as OpenTelemetry to collect it and route it
-to the host's chosen backend. A hosted application can opt into log-based metric output with
-`services.AddTelemetryLogMetrics()`: measurements flow through its configured logging providers, without creating an
-independent sink, and listeners from separate DI containers only observe their own meters. The existing toolkit packages still use `Core.Observability` until their migration; this
-package does not yet redirect those packages' telemetry.
+- `ICoreTelemetry` holds the two primitives: an `ILogger` and an `IMetricRecorder`. The default `CoreTelemetry` takes
+  them from the application's `ILoggerFactory` and `IMeterFactory`.
+- `IMetricRecorder` records counters, gauges, histograms and durations (in seconds) with tags. The default
+  `MeterMetricRecorder` creates each instrument once on the `Anarchy.Toolkit.Telemetry` meter, so OpenTelemetry collects
+  it with `AddMeter(CoreTelemetry.InstrumentationName)` and no custom code.
+- `AppTelemetry` receives `ICoreTelemetry` and holds the toolkit conventions: call-site attribution (`CallSite`,
+  `this.CalledFrom()`), standard metric names (`{class_name}.{method_name}.{suffix}`, see `MetricSuffixes`),
+  `StartTimer`, `RecordDuration`, `MonitoredActionAsync` (execution count and duration), log helpers and `LogContext`
+  scopes. Toolkit packages depend on `AppTelemetry`.
+
+## How to use it
+
+Call `services.AddCoreTelemetry()`. It registers `IMetricRecorder`, `ICoreTelemetry` and `AppTelemetry` with
+`TryAdd`, so a registration made before it is kept, and one made after it (or with `services.Replace`) wins. It calls
+`AddLogging()` and `AddMetrics()`, which only fill in what is missing; the application's logging providers decide where
+logs go. Nothing is disposed by the toolkit types: instances the application registers stay owned by it, and the
+logger and meter created by default belong to their factories.
+
+To bring the company's logging and metrics, derive a `ModuleTelemetryBase` and register the providers or a recorder in
+`RegisterCoreTelemetry`; the base then completes the registrations other toolkit modules expect. Console tools and
+tests that do not use DI call `AppTelemetry.Create(loggerFactory, meterFactory)`; `AppTelemetry.Null` discards
+everything.
+
+Notable occurrences are structured log events with a stable `EventId`
+(`telemetry.Log(level, callSite, eventId, exception, template, args)`) and, when the count matters, a counter. To send
+them to a vendor's event API (Datadog Events, New Relic custom events), add a logging provider or OpenTelemetry
+exporter that forwards those events, or decorate the registered `IMetricRecorder`; no vendor package is shipped.
 
 For vendor backends, OpenTelemetry can collect this meter and export it using OTLP. Configure the destination according
 to the vendor's instructions: [Datadog's Agent](https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/)
@@ -27,9 +46,10 @@ without vendor credentials; it does not verify delivery to either vendor.
 
 ### 1.0.0
 
-- Introduced a provider-neutral application telemetry facade backed by Microsoft logging and standard .NET metrics.
-- Added an opt-in, DI-isolated listener that forwards toolkit metrics to the configured logging pipeline.
-- Added standard gauge and histogram recording, structured log contexts and text events.
+- Introduced `ICoreTelemetry` (Microsoft logger and metric recorder), the provider-neutral `IMetricRecorder` with its
+  standard .NET metrics implementation, and `AppTelemetry` with call-site attribution, standard metric names, timers,
+  monitored actions, log helpers and structured log contexts.
+- Added `AddCoreTelemetry()`, `ModuleTelemetryBase` and a non-DI construction path.
 
 ### Earlier releases under Anarchy.Toolkit.Core.Observability
 

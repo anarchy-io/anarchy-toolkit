@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health.Middleware;
@@ -32,7 +33,7 @@ public static class ApplicationBuilderExtensions
         /// <param name="buildMetadata">The build metadata provider.</param>
         /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
         /// <returns>The application builder, for chaining.</returns>
-        public IApplicationBuilder UseApplicationHealthEndpointsWithCustomMetadata(IReadOnlyCollection<IServiceHealthReport> reports,
+        public IApplicationBuilder UseApplicationHealthEndpointsWithCustomMetadata(IReadOnlyCollection<IHealthCheck> reports,
                 IBuildMetadata buildMetadata,
                 DateTimeOffset applicationStartTime
         ) =>
@@ -66,7 +67,7 @@ public static class ApplicationBuilderExtensions
         /// <param name="assembly">The assembly containing the embedded build metadata.</param>
         /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
         /// <returns>The application builder, for chaining.</returns>
-        public IApplicationBuilder UseApplicationHealthEndpoints(IReadOnlyCollection<IServiceHealthReport> reports,
+        public IApplicationBuilder UseApplicationHealthEndpoints(IReadOnlyCollection<IHealthCheck> reports,
                                                                  Assembly assembly,
                                                                  DateTimeOffset applicationStartTime
         ) =>

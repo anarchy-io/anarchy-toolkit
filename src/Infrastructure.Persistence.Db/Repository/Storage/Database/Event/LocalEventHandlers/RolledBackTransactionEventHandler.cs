@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
+using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.LocalEvent.Service.Storage.UnitOfWork;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.Event.LocalEventHandlers;

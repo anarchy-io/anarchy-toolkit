@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Core.Health.Entity.Api.Output;
-using Anarchy.Toolkit.Core.Health.Entity.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
+using Anarchy.Toolkit.Core.Health.Reports;
 using Anarchy.Toolkit.Testing;
 using Anarchy.Toolkit.Web.Presentation.Entity.Output.Health;
 using AwesomeAssertions;
@@ -14,7 +14,7 @@ public class HealthCheckReportOutputTest : TestCaseBase
     {
         var problem = new ExceptionReport(new InvalidOperationException("boom"));
 
-        var test = new HealthCheckEntity(
+        var test = new HealthCheckOutcome(
             Name: "Database",
             Result: "failed",
             TestedAt: DateTimeOffset.UtcNow,
@@ -46,7 +46,7 @@ public class HealthCheckReportOutputTest : TestCaseBase
     [Fact]
     public void FromDto_ProblemAbsent_MapsNullProblem()
     {
-        var test = new HealthCheckEntity(
+        var test = new HealthCheckOutcome(
             Name: "Cache",
             Result: "passed",
             TestedAt: DateTimeOffset.UtcNow,

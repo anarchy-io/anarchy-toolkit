@@ -1,7 +1,6 @@
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Health.Entity.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
 using Anarchy.Toolkit.Hosting.Workers.Helper;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health;
 using Anarchy.Toolkit.Tests.Unit.Hosting.Workers.TestAssemblies;
@@ -26,10 +25,10 @@ public class ApplicationHealthApiTests
     [Fact]
     public async Task ReturnsHealthAsHealthCheckReportJson()
     {
-        _reports.Add(new FixedReport(new HealthCheckEntity(
+        _reports.Add(new FixedReport(new HealthCheckOutcome(
             "Health test 1", HealthCheckResult.Failed.ToDescription(),
             new DateTimeOffset(2017, 4, 7, 16, 42, 23, 123, TimeSpan.Zero), TimeSpan.FromMilliseconds(1250))));
-        _reports.Add(new FixedReport(new HealthCheckEntity(
+        _reports.Add(new FixedReport(new HealthCheckOutcome(
             "Health test 2", HealthCheckResult.Passed.ToDescription(),
             new DateTimeOffset(2017, 4, 7, 16, 43, 35, 334, TimeSpan.Zero), TimeSpan.FromMilliseconds(1750))));
 
@@ -52,7 +51,7 @@ public class ApplicationHealthApiTests
     public async Task HealthJsonHasTheSameShapeAsTheWebHealthController()
     {
         _reports.Add(new StubServiceHealthReport("passing"));
-        _reports.Add(new FixedReport(new HealthCheckEntity(
+        _reports.Add(new FixedReport(new HealthCheckOutcome(
             "failing", HealthCheckResult.Failed, TimeSpan.FromMilliseconds(5), new InvalidOperationException("boom"))));
         var sut = CreateSut();
 
@@ -224,12 +223,12 @@ public class ApplicationHealthApiTests
         return attribute!.FrameworkName;
     }
 
-    private readonly List<IServiceHealthReport> _reports = [];
+    private readonly List<IHealthCheck> _reports = [];
     private DateTimeOffset _applicationStartTime = DateTimeOffset.Now;
 
-    private class FixedReport(HealthCheckEntity result) : IServiceHealthReport
+    private class FixedReport(HealthCheckOutcome result) : IHealthCheck
     {
-        public Task<HealthCheckEntity> RunAsync(CancellationToken? cancellationToken = null) => Task.FromResult(result);
+        public Task<HealthCheckOutcome> RunAsync(CancellationToken? cancellationToken = null) => Task.FromResult(result);
     }
 
     private class StubBuildMetadata : IBuildMetadata

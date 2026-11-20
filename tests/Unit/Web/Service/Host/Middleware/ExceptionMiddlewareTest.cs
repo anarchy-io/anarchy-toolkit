@@ -21,7 +21,7 @@ public class ExceptionMiddlewareTest : IDisposable
 
         _sut = new ExceptionMiddleware(
             _mockNext.Object,
-            Mock.Of<IAppTelemetry>()
+            AppTelemetry.Null
         );
 
         _httpContextWithIgnoreAttribute = HttpContextFixture.RetrieveIgnoredContext();

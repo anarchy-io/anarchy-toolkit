@@ -1,9 +1,8 @@
-using Anarchy.Toolkit.Core.Health.Entity.Api.Output;
+using Anarchy.Toolkit.Core.Health.Reports;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage.Exceptions;
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Presentation.Attribute;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
@@ -30,7 +29,7 @@ namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
 /// <param name="telemetry">Application telemetry used to log errors.</param>
 public class ExceptionMiddleware(
     RequestDelegate next,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
 {
     /// <summary>Invokes the rest of the pipeline, converting unhandled exceptions into an error response.</summary>
     /// <param name="context">The current HTTP context.</param>

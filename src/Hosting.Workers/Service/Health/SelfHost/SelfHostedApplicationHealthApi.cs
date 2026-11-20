@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.AspNetCore;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health.SelfHost.Exceptions;
@@ -46,7 +47,7 @@ public class SelfHostedApplicationHealthApi : IDisposable
     /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
     /// <returns>A new, not yet started, health API.</returns>
     public static SelfHostedApplicationHealthApi WithMetadataFromAssembly(int portNumber,
-                                                                          IReadOnlyCollection<IServiceHealthReport> reports,
+                                                                          IReadOnlyCollection<IHealthCheck> reports,
                                                                           Assembly assembly,
                                                                           DateTimeOffset applicationStartTime)
     {
@@ -66,7 +67,7 @@ public class SelfHostedApplicationHealthApi : IDisposable
     /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
     /// <returns>A new, not yet started, health API.</returns>
     public static SelfHostedApplicationHealthApi WithCustomMetadata(int portNumber,
-                                                                    IReadOnlyCollection<IServiceHealthReport> reports,
+                                                                    IReadOnlyCollection<IHealthCheck> reports,
                                                                     IBuildMetadata buildMetadata,
                                                                     DateTimeOffset applicationStartTime)
     {

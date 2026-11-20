@@ -11,5 +11,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Health.Rep
 /// </summary>
 /// <param name="dbPolicy">The keyed <c>"writer"</c> storage policy.</param>
 /// <param name="telemetry">Application telemetry used to log failures.</param>
-public class MysqlHealthReportWriter([FromKeyedServices("writer")] IStoragePolicy<MySqlConnection> dbPolicy, IAppTelemetry telemetry)
+public class MysqlHealthReportWriter([FromKeyedServices("writer")] IStoragePolicy<MySqlConnection> dbPolicy, AppTelemetry telemetry)
     : MysqlHealthReportBase(dbPolicy, telemetry, DataStorageInstanceType.Writer);

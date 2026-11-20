@@ -33,7 +33,7 @@ internal static class ApiTemplate
                 using {{ns}}.Infrastructure.Entity.Configuration;
                 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
                 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-                using Anarchy.Toolkit.Core.Health.Service.Health;
+                using Anarchy.Toolkit.Core.Health.Checks;
                 using Anarchy.Toolkit.Web.Composition.Startup;{{themeUsing}}
                 using Anarchy.Toolkit.Web.Extension.DependencyInjection;
 
@@ -48,7 +48,7 @@ internal static class ApiTemplate
                         base.ConfigureWebCustomServices(services)
                             .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
                             .SetupAuthorization(readScope: "{{scope}}:read", writeScope: "{{scope}}:write", adminScope: "{{scope}}:admin")
-                            .AddSingleton<IReadOnlyCollection<IServiceHealthReport>>([]){{disableTheme}};
+                            .AddSingleton<IReadOnlyCollection<IHealthCheck>>([]){{disableTheme}};
                 }
 
                 """,
@@ -80,7 +80,6 @@ internal static class ApiTemplate
                 """,
             ["Presentation/Controller/PingController.cs"] = $$"""
                 using Anarchy.Toolkit.Core.Telemetry;
-                using Microsoft.Extensions.Logging;
                 using Microsoft.AspNetCore.Authorization;
                 using Microsoft.AspNetCore.Mvc;
 
@@ -88,13 +87,13 @@ internal static class ApiTemplate
 
                 [Route("ping")]
                 [Produces("application/json")]
-                public sealed class PingController(IAppTelemetry telemetry) : ControllerBase
+                public sealed class PingController(AppTelemetry telemetry) : ControllerBase
                 {
                     [HttpGet]
                     [AllowAnonymous]
                     public IActionResult Ping()
                     {
-                        telemetry.Log(LogLevel.Information, this.CalledFrom(), null, "Ping");
+                        telemetry.LogInformation(this.CalledFrom(), "Ping");
                         return Ok(new { message = "pong" });
                     }
                 }

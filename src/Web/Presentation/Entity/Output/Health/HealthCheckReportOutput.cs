@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Health.Entity.Api.Output;
+using Anarchy.Toolkit.Core.Health.Reports;
 
 namespace Anarchy.Toolkit.Web.Presentation.Entity.Output.Health;
 
@@ -9,7 +9,7 @@ namespace Anarchy.Toolkit.Web.Presentation.Entity.Output.Health;
 public record HealthCheckReportOutput(
     bool Passed,
     TimeSpan Duration,
-    IReadOnlyCollection<HealthCheckEntityOutput> Tests
+    IReadOnlyCollection<HealthCheckOutcomeOutput> Tests
 )
 {
     /// <summary>Maps a <see cref="HealthCheckReport"/> to its API output.</summary>
@@ -20,7 +20,7 @@ public record HealthCheckReportOutput(
         return new HealthCheckReportOutput(
             Passed: dto.Passed,
             Duration: dto.Duration,
-            Tests: dto.Tests.Select(HealthCheckEntityOutput.FromDto).ToArray()
+            Tests: dto.Tests.Select(HealthCheckOutcomeOutput.FromDto).ToArray()
         );
     }
 }

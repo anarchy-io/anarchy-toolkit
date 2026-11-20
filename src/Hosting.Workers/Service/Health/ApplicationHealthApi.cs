@@ -1,5 +1,6 @@
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Health.Entity.Api.Output;
+using Anarchy.Toolkit.Core.Health.Checks;
+using Anarchy.Toolkit.Core.Health.Reports;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Anarchy.Toolkit.Hosting.Workers.Entity.Http;
 using System.Net;
@@ -20,7 +21,7 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Health;
 /// </remarks>
 public class ApplicationHealthApi
 {
-    internal IReadOnlyCollection<IServiceHealthReport> Reports { get; }
+    internal IReadOnlyCollection<IHealthCheck> Reports { get; }
     internal ApplicationInformation ApplicationInformation { get; }
 
     /// <summary>
@@ -32,7 +33,7 @@ public class ApplicationHealthApi
     /// Thrown if <paramref name="reports"/> or <paramref name="applicationInformation"/> is <see langword="null"/>.
     /// </exception>
     public ApplicationHealthApi(
-        IReadOnlyCollection<IServiceHealthReport> reports,
+        IReadOnlyCollection<IHealthCheck> reports,
         ApplicationInformation applicationInformation
     )
     {
@@ -49,7 +50,7 @@ public class ApplicationHealthApi
     /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
     /// <returns>The new health API.</returns>
     public static ApplicationHealthApi WithCustomMetadata(
-        IReadOnlyCollection<IServiceHealthReport> reports,
+        IReadOnlyCollection<IHealthCheck> reports,
         IBuildMetadata buildMetadata,
         DateTimeOffset applicationStartTime
     )
@@ -67,7 +68,7 @@ public class ApplicationHealthApi
     /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
     /// <returns>The new health API.</returns>
     public static ApplicationHealthApi WithMetadataFromAssembly(
-        IReadOnlyCollection<IServiceHealthReport> reports,
+        IReadOnlyCollection<IHealthCheck> reports,
         Assembly assembly,
         DateTimeOffset applicationStartTime
     )

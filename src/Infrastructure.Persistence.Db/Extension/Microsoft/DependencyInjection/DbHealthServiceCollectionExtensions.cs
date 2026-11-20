@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Health.Service.Health;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Extension.Microsoft.DependencyInjection;
@@ -10,7 +10,7 @@ public static class DbHealthServiceCollectionExtensions
 {
     /// <summary>
     ///     Registers the given reader and writer health reports and exposes them as an
-    ///     <see cref="IReadOnlyCollection{T}" /> of <see cref="IServiceHealthReport" />.
+    ///     <see cref="IReadOnlyCollection{T}" /> of <see cref="IHealthCheck" />.
     /// </summary>
     /// <typeparam name="TReaderReport">Health report for the reader instance (for example a <c>DbHealthReportBase</c> subclass).</typeparam>
     /// <typeparam name="TWriterReport">Health report for the writer instance.</typeparam>
@@ -28,13 +28,13 @@ public static class DbHealthServiceCollectionExtensions
     /// </example>
     public static IServiceCollection AddDbHealthReports<TReaderReport, TWriterReport>(
         this IServiceCollection services)
-        where TReaderReport : class, IServiceHealthReport
-        where TWriterReport : class, IServiceHealthReport
+        where TReaderReport : class, IHealthCheck
+        where TWriterReport : class, IHealthCheck
     {
         return services
             .AddScoped<TReaderReport>()
             .AddScoped<TWriterReport>()
-            .AddScoped<IReadOnlyCollection<IServiceHealthReport>>(sp =>
+            .AddScoped<IReadOnlyCollection<IHealthCheck>>(sp =>
             [
                 sp.GetRequiredService<TReaderReport>(),
                 sp.GetRequiredService<TWriterReport>(),

@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
 using Anarchy.Toolkit.Core.Telemetry;
@@ -26,14 +25,14 @@ public class DbHealthReportBaseTest
 
     private sealed class DummyHealthReport(
         IStoragePolicy<DbConnection> dbPolicy,
-        IAppTelemetry telemetry,
+        AppTelemetry telemetry,
         DataStorageInstanceType instanceType)
         : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, telemetry, instanceType);
 
-    private sealed class ReaderReport(IStoragePolicy<DbConnection> dbPolicy, IAppTelemetry telemetry)
+    private sealed class ReaderReport(IStoragePolicy<DbConnection> dbPolicy, AppTelemetry telemetry)
         : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, telemetry, DataStorageInstanceType.Reader);
 
-    private sealed class WriterReport(IStoragePolicy<DbConnection> dbPolicy, IAppTelemetry telemetry)
+    private sealed class WriterReport(IStoragePolicy<DbConnection> dbPolicy, AppTelemetry telemetry)
         : DbHealthReportBase<DbConnection, DummyDialect>(dbPolicy, telemetry, DataStorageInstanceType.Writer);
 
     private DummyHealthReport Sut(DataStorageInstanceType instanceType, bool success = true)
@@ -45,7 +44,7 @@ public class DbHealthReportBaseTest
                     It.IsAny<string?>(), It.IsAny<CancellationToken?>()))
                 .ThrowsAsync(new Exception("Mocked Behavior"));
 
-        return new DummyHealthReport(mockPolicy.Object, Mock.Of<IAppTelemetry>(), instanceType);
+        return new DummyHealthReport(mockPolicy.Object, AppTelemetry.Null, instanceType);
     }
 
     [Theory]
@@ -75,13 +74,13 @@ public class DbHealthReportBaseTest
     {
         var provider = new ServiceCollection()
             .AddSingleton(new Mock<IStoragePolicy<DbConnection>>().Object)
-            .AddSingleton(Mock.Of<IAppTelemetry>())
+            .AddSingleton(AppTelemetry.Null)
             .AddDbHealthReports<ReaderReport, WriterReport>()
             .BuildServiceProvider();
 
         using var scope = provider.CreateScope();
 
-        scope.ServiceProvider.GetRequiredService<IReadOnlyCollection<IServiceHealthReport>>()
+        scope.ServiceProvider.GetRequiredService<IReadOnlyCollection<IHealthCheck>>()
             .Should().SatisfyRespectively(
                 first => first.Should().BeOfType<ReaderReport>(),
                 second => second.Should().BeOfType<WriterReport>());
