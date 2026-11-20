@@ -10,19 +10,21 @@ done
 COMMAND="${COMMAND:-}"
 
 # ─── Helper: wrap text with fixed offset for continuation lines ──────────────
+# Stores the result in WRAPPED rather than printing it: help lists every target, and a subshell per line is slow.
 soft_wrap() {
     local text="$1"
     local offset_current="$2"
     local offset_new_lines="${3:-$offset_current}"
     #local max_width=$(TERM=${TERM:-xterm} tput cols || echo 90)
     local max_width=90
-    local line="" word=""
-    local result=""
+    local line="" word="" indent=""
     local available=$((max_width - offset_current))
+    printf -v indent '%*s' "$offset_new_lines" ''
+    WRAPPED=""
 
     for word in $text; do
         if [ $((${#line} + ${#word} + 1)) -gt $available ]; then
-            result+="$line"$'\n'"$(printf '%*s' "$offset_new_lines" '')"
+            WRAPPED+="$line"$'\n'"$indent"
             line="$word"
         else
             if [ -z "$line" ]; then
@@ -33,8 +35,7 @@ soft_wrap() {
         fi
     done
 
-    result+="$line"
-    printf "%s" "$result"
+    WRAPPED+="$line"
 }
 
 # ─── Printing Helpers ─────────────────────────────────────────────────────────
@@ -45,21 +46,24 @@ print_file_section() {
 
 print_target() {
     local name="$1" desc="$2"
-    printf "  %s%-20s%s %s\n" "$CL_CYAN" "$name" "$CL_RESET" "$(soft_wrap "$desc" "20" "23")"
+    soft_wrap "$desc" "20" "23"
+    printf "  %s%-20s%s %s\n" "$CL_CYAN" "$name" "$CL_RESET" "$WRAPPED"
 }
 
 print_warning() {
     local text="$1"
-    printf "    %-26s%s%s\n" "$CL_RED" "$(soft_wrap "$text" "26" "23")" "$CL_RESET"
+    soft_wrap "$text" "26" "23"
+    printf "    %-26s%s%s\n" "$CL_RED" "$WRAPPED" "$CL_RESET"
 }
 
 print_variable() {
     local name="$1" type="$2" desc="$3"
     local formatted_type="$CL_RESET($CL_YELLOW$type$CL_RESET)"
+    soft_wrap "$desc" "23" "27"
     printf "    ↳ %s%-11s %-23s %s%s%s\n" \
         "$CL_MAGENTA" "$name" \
         "$formatted_type" \
-        "$CL_BLUE" "$(soft_wrap "$desc" "23" "27")" "$CL_RESET"
+        "$CL_BLUE" "$WRAPPED" "$CL_RESET"
 }
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -70,52 +74,61 @@ if [[ -z "$COMMAND" ]]; then
 fi
 
 # MAKE_EXTRA_TARGETS: space-separated, project-specific target files to list after the distributed ones.
-for file in "${SCRIPT_DIR}"/targets/*.mk ${MAKE_EXTRA_TARGETS:-}; do
-    filename=$(basename "$file" .mk | tr 'a-z' 'A-Z' | tr '_-' '  ')
-    print_file_section "$filename"
-
-    awk -v COMMAND="${COMMAND}" '
-    function print_targets(    i) {
-        for (i = 1; i <= count; i++) {
-            if (COMMAND == "" || COMMAND == names[i]) {
-                print "TARGET|" names[i] "|" desc
-                if (notes != "") printf "%s", notes
-                if (COMMAND != "" && skill != "-") print "SKILL|" (skill == "" ? "the solution'"'"'s own skill for this file" : skill)
-                print "END"
-            }
+# A single awk run parses every file: one process per file made 'make help' slow.
+# shellcheck disable=SC2086
+awk -v COMMAND="${COMMAND}" '
+function print_targets(    i) {
+    for (i = 1; i <= count; i++) {
+        if (COMMAND == "" || COMMAND == names[i]) {
+            print "TARGET|" names[i] "|" desc
+            if (notes != "") printf "%s", notes
+            if (COMMAND != "" && skill != "-") print "SKILL|" (skill == "" ? "the solution'"'"'s own skill for this file" : skill)
+            print "END"
         }
     }
+}
 
-    /^[a-zA-Z0-9_.-]+([ \t]+[a-zA-Z0-9_.-]+)*:.*#\?/ {
-        print_targets()
-        line=$0
-        sub(/#\? /, "\x1F", line) # use a unit separator
-        split(line, parts, "\x1F")
-        split(parts[1], nameparts, ":")
-        count = split(nameparts[1], names, /[ \t]+/)
-        desc = parts[2]
-        notes = ""
-        skill = fileskill
-        next
-    }
+FNR == 1 {
+    print_targets()
+    count = 0
+    fileskill = ""
+    section = FILENAME
+    sub(/^.*\//, "", section)
+    sub(/\.mk$/, "", section)
+    gsub(/[_-]/, " ", section)
+    print "FILE|" toupper(section)
+}
 
-    count && /^#! / { sub(/^#! /, ""); notes = notes "WARN|" $0 "\n"; next; }
+/^[a-zA-Z0-9_.-]+([ \t]+[a-zA-Z0-9_.-]+)*:.*#\?/ {
+    print_targets()
+    line=$0
+    sub(/#\? /, "\x1F", line) # use a unit separator
+    split(line, parts, "\x1F")
+    split(parts[1], nameparts, ":")
+    count = split(nameparts[1], names, /[ \t]+/)
+    desc = parts[2]
+    notes = ""
+    skill = fileskill
+    next
+}
 
-    count && /^#\+ / { sub(/^#\+ /, ""); notes = notes "VAR|" $0 "\n"; next; }
+count && /^#! / { sub(/^#! /, ""); notes = notes "WARN|" $0 "\n"; next; }
 
-    # #@ names the agent skill describing the targets: before the first target, for the whole file.
-    /^#@/ { sub(/^#@ */, ""); if (count) skill = $0; else fileskill = $0; next; }
+count && /^#\+ / { sub(/^#\+ /, ""); notes = notes "VAR|" $0 "\n"; next; }
 
-    END { print_targets() }
-    ' "$file" | while IFS='|' read -r kind f1 f2 f3; do
-        case "$kind" in
-            TARGET) print_target "$f1" "$f2" ;;
-            WARN)   print_warning "$f1" ;;
-            VAR)    print_variable "$f1" "$f2" "$f3" ;;
-            SKILL)  printf "    %sAgent skill: %s%s\n" "$CL_GREEN" "$f1" "$CL_RESET" ;;
-            END)    if [[ -z "$COMMAND" ]]; then echo ""; fi;;
-        esac
-    done
+# #@ names the agent skill describing the targets: before the first target, for the whole file.
+/^#@/ { sub(/^#@ */, ""); if (count) skill = $0; else fileskill = $0; next; }
+
+END { print_targets() }
+' "${SCRIPT_DIR}"/targets/*.mk ${MAKE_EXTRA_TARGETS:-} | while IFS='|' read -r kind f1 f2 f3; do
+    case "$kind" in
+        FILE)   print_file_section "$f1" ;;
+        TARGET) print_target "$f1" "$f2" ;;
+        WARN)   print_warning "$f1" ;;
+        VAR)    print_variable "$f1" "$f2" "$f3" ;;
+        SKILL)  printf "    %sAgent skill: %s%s\n" "$CL_GREEN" "$f1" "$CL_RESET" ;;
+        END)    if [[ -z "$COMMAND" ]]; then echo ""; fi;;
+    esac
 done
 
 if [[ -z "$COMMAND" ]]; then

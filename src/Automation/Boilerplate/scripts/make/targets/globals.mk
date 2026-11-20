@@ -5,20 +5,8 @@ SHELL := /bin/bash
 
 ###
 # Colors
-CL_RESET := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_RESET")
-CL_RED := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_RED")
-CL_GREEN := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_GREEN")
-CL_YELLOW := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_YELLOW")
-CL_BLUE := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_BLUE")
-CL_MAGENTA := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_MAGENTA")
-CL_CYAN := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_CYAN")
-CL_INVERTED := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$CL_INVERTED")
-BG_RED := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$BG_RED")
-BG_GREEN := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$BG_GREEN")
-BG_YELLOW := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$BG_YELLOW")
-BG_BLUE := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$BG_BLUE")
-BG_MAGENTA := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$BG_MAGENTA")
-BG_CYAN := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$BG_CYAN")
+# One shell for all colors: every make invocation (including recursive ones) parses this file.
+$(foreach color,$(shell source $(SCRIPTS_DIR)/shared/colors.env; printf 'CL_RESET=%s CL_RED=%s CL_GREEN=%s CL_YELLOW=%s CL_BLUE=%s CL_MAGENTA=%s CL_CYAN=%s CL_INVERTED=%s BG_RED=%s BG_GREEN=%s BG_YELLOW=%s BG_BLUE=%s BG_MAGENTA=%s BG_CYAN=%s' "$$CL_RESET" "$$CL_RED" "$$CL_GREEN" "$$CL_YELLOW" "$$CL_BLUE" "$$CL_MAGENTA" "$$CL_CYAN" "$$CL_INVERTED" "$$BG_RED" "$$BG_GREEN" "$$BG_YELLOW" "$$BG_BLUE" "$$BG_MAGENTA" "$$BG_CYAN"),$(eval $(color)))
 
 ###
 # Global Flags
@@ -45,17 +33,9 @@ DOCKER_PROJECT_NAME_DEFAULT := $(shell printf '%s' '$(PROJECT_NAME)' | tr '[:upp
 DOCKER_COMPOSE_FILE_NAME_EFFECTIVE = $(if $(filter undefined,$(origin DOCKER_COMPOSE_FILE_NAME)),$(DOCKER_COMPOSE_FILE_NAME_DEFAULT),$(DOCKER_COMPOSE_FILE_NAME))
 DOCKER_PROJECT_NAME_EFFECTIVE = $(if $(filter undefined,$(origin DOCKER_PROJECT_NAME)),$(DOCKER_PROJECT_NAME_DEFAULT),$(DOCKER_PROJECT_NAME))
 
-# Detect Docker Compose version and assign to DOCKER_COMPOSE variable
-DOCKER_VERSION := $(shell docker version --format '{{.Server.Version}}' 2>/dev/null)
-DOCKER_COMPOSE_VERSION := $(shell docker compose version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "")
-
-# Default to legacy docker-compose if no Compose V2 is found
-ifeq ($(DOCKER_COMPOSE_VERSION),)
-    DOCKER_COMPOSE := docker-compose
-	DOCKER_COMPOSE_VERSION := $(shell docker-compose version 2>/dev/null || echo "unknown")
-else
-    DOCKER_COMPOSE := docker compose
-endif
+# Detected lazily, once, and only by targets that use Docker Compose: probing Docker on every make invocation is slow.
+# Defaults to legacy docker-compose if no Compose V2 is found.
+DOCKER_COMPOSE = $(eval DOCKER_COMPOSE := $(if $(shell docker compose version 2>/dev/null),docker compose,docker-compose))$(DOCKER_COMPOSE)
 
 DOCKER_COMPOSE_COMMAND=DOCKER_ROOT="${DOCKER_ROOT}" ${DOCKER_COMPOSE} -f "${DOCKER_COMPOSE_FILE_NAME_EFFECTIVE}" --project-name "${DOCKER_PROJECT_NAME_EFFECTIVE}"
 DOCKER_COMPOSE_EXEC = ${DOCKER_COMPOSE_COMMAND} exec
@@ -63,7 +43,7 @@ DOCKER_DEV_CONSOLE = ${DOCKER_COMPOSE_EXEC} -e DEV_LOG_LEVEL=${LOGLEVEL} "${DOCK
 
 ###
 # GIT
-GIT_HEAD_SHA := $(shell git rev-parse --short HEAD 2>/dev/null)
+GIT_HEAD_SHA = $(shell git rev-parse --short HEAD 2>/dev/null)
 
 .PHONY: info
 info: art_logo #? Prints out host-relevant information
