@@ -9,8 +9,9 @@ dotnet add package Anarchy.Toolkit.Hosting.Workers
 ```
 
 - Derive from `WorkerBase`, `MonitoredWorkerBase` or `ResilientWorkerBase`; `HeartbeatWorker` provides a heartbeat.
+- `ResilientWorkerBase` gives every iteration a new correlation id and every attempt a new attempt id, through `CorrelationContext.BeginScope`: they reach every logging provider as scope properties and the current activity as tags. Work that carries its own ids (a consumed message) opens `BeginCorrelationScope(correlationId, attemptId)` around its processing.
 - Register the health worker with `AddServiceHealthCheckWorker(assembly)` to serve `/health/instance`, `/health/services` and `/health/status`.
-- Supply an `IReadOnlyCollection<IServiceHealthReport>` for service checks; the services endpoint returns HTTP 500 when a check fails.
+- Supply an `IReadOnlyCollection<IHealthCheck>` for service checks; the services endpoint returns HTTP 500 when a check fails.
 
 ## When to use it
 
@@ -18,9 +19,9 @@ Choose this package for a long-running process that needs hosted workers, operat
 
 ## How to use it
 
-1. Implement a worker using the base that matches the required monitoring or resilience behavior, and register it with the host's `IServiceCollection` as a hosted service. Register an `Observer` for instrumented workers.
+1. Implement a worker using the base that matches the required monitoring or resilience behavior, and register it with the host's `IServiceCollection` as a hosted service. Instrumented workers take the registered `AppTelemetry` (see `ModuleTelemetry` or `AddCoreTelemetry()`).
 2. If health endpoints are required, call `services.AddServiceHealthCheckWorker(typeof(YourWorker).Assembly)` from startup. Register settings implementing `IWorkerHealthCheckAppSettings`, including the health service port, and make the listener reachable only as appropriate for your deployment.
-3. Supply the `IReadOnlyCollection<IServiceHealthReport>` used by the endpoint, or use a provider's health-report registration. Without reports, the package installs an empty collection. Embed build metadata in the supplied assembly if it should appear in status output.
+3. Supply the `IReadOnlyCollection<IHealthCheck>` used by the endpoint, or use a provider's health-report registration. Without reports, the package installs an empty collection. Embed build metadata in the supplied assembly if it should appear in status output.
 
 The [sample worker startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Worker/Composition/WorkerStartup.cs) demonstrates registering a heartbeat and a custom hosted worker.
 

@@ -51,6 +51,18 @@ public class CorrelationIdOptions
     public string AttemptIdHeaderName { get; set; }
 
     /// <summary>
+    /// Gets or sets the structured log property and activity tag name for the correlation id.
+    /// </summary>
+    /// <value>Defaults to <c>CorrelationId</c>.</value>
+    public string CorrelationIdPropertyName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the structured log property and activity tag name for the attempt id.
+    /// </summary>
+    /// <value>Defaults to <c>AttemptId</c>.</value>
+    public string AttemptIdPropertyName { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="CorrelationIdOptions"/> with the default behaviour and header names.
     /// </summary>
     public CorrelationIdOptions()
@@ -58,6 +70,8 @@ public class CorrelationIdOptions
         Behavior = CorrelationIdBehavior.GenerateValues;
         CorrelationIdHeaderName = CorrelationHeaderNames.CorrelationId;
         AttemptIdHeaderName = CorrelationHeaderNames.AttemptId;
+        CorrelationIdPropertyName = CorrelationLogPropertyNames.CorrelationId;
+        AttemptIdPropertyName = CorrelationLogPropertyNames.AttemptId;
     }
 }
 

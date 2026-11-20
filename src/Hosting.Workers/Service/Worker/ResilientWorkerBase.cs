@@ -1,5 +1,7 @@
 using Anarchy.Toolkit.Core.Exceptions;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Entity;
+using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Service;
 using Polly;
 using Polly.Retry;
 
@@ -15,14 +17,19 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 /// <see cref="MonitoredWorkerBase.RecordFailureAction"/>.</para>
 /// <para>Each attempt gets a token cancelled when the host stops or after <c>performWorkTimeoutInSeconds</c>; a
 /// timeout surfaces as an <see cref="Anarchy.Toolkit.Core.Exceptions.OperationTimeoutException"/>, which is retried.</para>
+/// <para>A polling iteration has no inbound ids, so each iteration gets a new correlation id and each attempt a new
+/// attempt id (see <see cref="MonitoredWorkerBase.BeginCorrelationScope"/>); logs written by the work carry both, and
+/// the retry logs written between attempts carry the correlation id. Work that receives its own ids (for example from a message) opens a nested
+/// <see cref="MonitoredWorkerBase.BeginCorrelationScope"/> with them.</para>
 /// </remarks>
 /// <param name="telemetry">Application telemetry used for logs and metrics.</param>
 /// <param name="recurringIntervalInSeconds">Delay after an iteration that did work, also the retry back-off base. Defaults to 2 seconds.</param>
 /// <param name="delayedIntervalInSeconds">Delay after an idle iteration. Defaults to 20 seconds.</param>
 /// <param name="performWorkTimeoutInSeconds">Timeout of a single <see cref="PerformWorkAsync"/> attempt. Defaults to 120 seconds.</param>
+/// <param name="correlationIdOptions">Names the correlation log properties; the defaults when <see langword="null"/>.</param>
 /// <example>
 /// <code language="csharp">
-/// public sealed class OrderSyncWorker(IAppTelemetry telemetry, IOrderSync sync) : ResilientWorkerBase(telemetry)
+/// public sealed class OrderSyncWorker(AppTelemetry telemetry, IOrderSync sync) : ResilientWorkerBase(telemetry)
 /// {
 ///     protected override async Task&lt;bool&gt; PerformWorkAsync(CancellationToken token) =>
 ///         await sync.SyncNextBatchAsync(token) &gt; 0;
@@ -30,11 +37,12 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 /// </code>
 /// </example>
 public abstract class ResilientWorkerBase(
-    IAppTelemetry telemetry,
+    AppTelemetry telemetry,
     double recurringIntervalInSeconds = 2,
     double delayedIntervalInSeconds = 20,
-    double performWorkTimeoutInSeconds = 120)
-    : MonitoredWorkerBase(telemetry, recurringIntervalInSeconds, delayedIntervalInSeconds)
+    double performWorkTimeoutInSeconds = 120,
+    CorrelationIdOptions? correlationIdOptions = null)
+    : MonitoredWorkerBase(telemetry, recurringIntervalInSeconds, delayedIntervalInSeconds, correlationIdOptions)
 {
     private ResiliencePipeline? _policy;
     private readonly TimeSpan _performWorkTimeout = TimeSpan.FromSeconds(performWorkTimeoutInSeconds);
@@ -50,9 +58,10 @@ public abstract class ResilientWorkerBase(
     protected abstract Task<bool> PerformWorkAsync(CancellationToken token);
 
     /// <inheritdoc />
-    protected sealed override Task<bool> RunIterationAsync(CancellationToken stoppingToken)
+    protected sealed override async Task<bool> RunIterationAsync(CancellationToken stoppingToken)
     {
         var caller = this.CalledFrom();
+        var correlationId = CreateCorrelationId();
 
         _policy ??= new ResiliencePipelineBuilder()
             .AddRetry(new RetryStrategyOptions {
@@ -69,7 +78,12 @@ public abstract class ResilientWorkerBase(
             })
             .Build();
 
-        return _policy.ExecuteAsync(async policyToken => {
+        // Between attempts (where the retry is logged) only the correlation id is set.
+        using var iterationScope = CorrelationContext.BeginScope(Telemetry.Logger, correlationId, attemptId: null,
+            CorrelationIdOptions.CorrelationIdPropertyName, CorrelationIdOptions.AttemptIdPropertyName);
+
+        return await _policy.ExecuteAsync(async policyToken => {
+            using var attemptScope = BeginCorrelationScope(correlationId);
             using var timeoutCts = new CancellationTokenSource(_performWorkTimeout);
             using var workCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, policyToken,
                 timeoutCts.Token);
@@ -82,7 +96,7 @@ public abstract class ResilientWorkerBase(
             {
                 throw new OperationTimeoutException(_performWorkTimeout);
             }
-        }, stoppingToken).AsTask();
+        }, stoppingToken);
     }
 
     private TimeSpan GetRetrySleepDuration(int retryCount)

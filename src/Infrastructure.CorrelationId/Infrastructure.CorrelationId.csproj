@@ -5,16 +5,12 @@
     <AssemblyName>Anarchy.Toolkit.Infrastructure.CorrelationId</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.CorrelationId</RootNamespace>
     <Version>1.1.1</Version>
-    <Description>Correlation/attempt id propagation: async-local CorrelationContext, ASP.NET Core middleware, and Serilog enricher.</Description>
+    <Description>Provider-neutral correlation and attempt id propagation through async context, structured logging scopes, activity tags and ASP.NET Core middleware.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Serilog" />
   </ItemGroup>
 
   <ItemGroup>
