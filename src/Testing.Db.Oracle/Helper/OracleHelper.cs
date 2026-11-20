@@ -47,7 +47,7 @@ public sealed class OracleHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static OracleResilienceDbPolicy DbPolicyFixture<TAppSettings>(IAppTelemetry? telemetry = null)
+    public static OracleResilienceDbPolicy DbPolicyFixture<TAppSettings>(AppTelemetry? telemetry = null)
         where TAppSettings : class, IOracleAppSettings, IResilienceAppSettings
     {
         return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
@@ -61,7 +61,7 @@ public sealed class OracleHelper
     /// <param name="appSettings">The settings to build the fixture from.</param>
     /// <param name="telemetry">Optional application telemetry for the policy.</param>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static OracleResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings, IAppTelemetry? telemetry = null)
+    public static OracleResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings, AppTelemetry? telemetry = null)
         where TSettings : IOracleAppSettings, IResilienceAppSettings
     {
         var connectionPool = new OracleConnectionPool(
@@ -86,7 +86,7 @@ public sealed class OracleHelper
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
-    public static OracleDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(IAppTelemetry? telemetry = null)
+    public static OracleDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(AppTelemetry? telemetry = null)
         where TAppSettings : class, IOracleAppSettings
     {
         return DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
@@ -100,9 +100,9 @@ public sealed class OracleHelper
     /// <returns>A new unit of work over a new writer connection pool.</returns>
     /// <remarks>
     ///     The unit of work uses its own async flow context, so repositories built from a separate
-    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, IAppTelemetry)" /> do not join its sessions.
+    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, AppTelemetry)" /> do not join its sessions.
     /// </remarks>
-    public static OracleDbUnitOfWork DbUnitOfWorkFixture(IOracleAppSettings appSettings, IAppTelemetry? telemetry = null)
+    public static OracleDbUnitOfWork DbUnitOfWorkFixture(IOracleAppSettings appSettings, AppTelemetry? telemetry = null)
     {
         return new OracleDbUnitOfWork(
             new OracleConnectionPool(

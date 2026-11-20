@@ -16,5 +16,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Repository.Stor
 /// </remarks>
 /// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
-public abstract class PostgresDbRepositoryBase(IStoragePolicy<NpgsqlConnection> dbPolicy, IAppTelemetry telemetry)
+public abstract class PostgresDbRepositoryBase(IStoragePolicy<NpgsqlConnection> dbPolicy, AppTelemetry telemetry)
     : DbStorageRepositoryBase<NpgsqlConnection, PostgresDbDialect>(dbPolicy, telemetry);

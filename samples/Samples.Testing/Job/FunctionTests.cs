@@ -1,8 +1,8 @@
 using Anarchy.Toolkit.Samples.Job;
-using Anarchy.Toolkit.Samples.Tests.TestingUtilities;
+using Anarchy.Toolkit.Samples.Testing.TestingUtilities;
 using AwesomeAssertions;
 
-namespace Anarchy.Toolkit.Samples.Tests.Job;
+namespace Anarchy.Toolkit.Samples.Testing.Job;
 
 [Collection(EnvironmentVariableCollection.Name)]
 public class FunctionTests

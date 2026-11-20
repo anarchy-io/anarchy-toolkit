@@ -1,7 +1,6 @@
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Extension.Service.Host.Controller.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.Extension.Microsoft.AspNetCore.Mvc;
 
@@ -41,7 +40,7 @@ public static class ControllerBaseExtensions
     /// <returns>
     /// A <see cref="BadRequestObjectResult"/> when the model state is invalid; otherwise <see langword="null"/>.
     /// </returns>
-    public static ActionResult? BadRequestIfInvalid<T>(this ControllerBase @this, T input, IAppTelemetry? telemetry)
+    public static ActionResult? BadRequestIfInvalid<T>(this ControllerBase @this, T input, AppTelemetry? telemetry)
     {
         if (@this.ModelState.IsValid)
         {

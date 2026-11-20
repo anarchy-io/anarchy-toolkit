@@ -17,7 +17,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Repository.Storag
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public abstract class OracleDbWriterRepositoryBase<TNewEntity, TPersistedEntity>(
     IStoragePolicy<OracleConnection> dbPolicy,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : DbWriterRepositoryBase<OracleConnection, OracleDbDialect, TNewEntity, TPersistedEntity>(dbPolicy,
         telemetry)
     where TNewEntity : IEntity

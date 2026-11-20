@@ -1,7 +1,6 @@
 using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -22,7 +21,7 @@ internal class UnsignedJwtAuthenticationHandler(
     IOptionsMonitor<JwtBearerOptions> options,
     ILoggerFactory logger,
     UrlEncoder encoder,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : AuthenticationHandler<JwtBearerOptions>(options, logger, encoder)
 {
     private readonly JwtSecurityTokenHandler _tokenHandler = new();

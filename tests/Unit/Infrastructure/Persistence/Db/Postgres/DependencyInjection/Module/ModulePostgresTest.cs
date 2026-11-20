@@ -5,7 +5,6 @@ using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.DependencyInjection
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Storage.Database.Postgres;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
-using Anarchy.Toolkit.Testing.Helper;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +24,7 @@ public class ModulePostgresTest
         var configuration = new ConfigurationBuilder().Build();
 
         return new ServiceCollection()
-            .AddLogging().AddMetrics().AddAppTelemetry()
+            .AddCoreTelemetry()
             .UseModule(new ModulePostgres(
                     config => {
                         onResolveOptions?.Invoke(config);

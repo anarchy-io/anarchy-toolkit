@@ -1,4 +1,4 @@
-namespace Anarchy.Toolkit.Samples.Tests.TestingUtilities;
+namespace Anarchy.Toolkit.Samples.Testing.TestingUtilities;
 
 /// <summary>
 /// Temporarily sets an environment variable for the duration of a test. Use within

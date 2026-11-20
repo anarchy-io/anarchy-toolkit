@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 
-namespace Anarchy.Toolkit.Samples.Tests.Api;
+namespace Anarchy.Toolkit.Samples.Testing.Api;
 
 /// <summary>
 /// Checks the Swagger document and the default Swagger UI theme served by the example API.

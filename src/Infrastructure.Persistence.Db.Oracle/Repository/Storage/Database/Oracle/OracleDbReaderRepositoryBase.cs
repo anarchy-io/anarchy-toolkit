@@ -21,7 +21,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Repository.Storag
 /// <example>
 /// <code language="csharp">
 /// public sealed class OrderReaderRepository(
-///     [FromKeyedServices("reader")] IStoragePolicy&lt;OracleConnection&gt; dbPolicy, IAppTelemetry telemetry)
+///     [FromKeyedServices("reader")] IStoragePolicy&lt;OracleConnection&gt; dbPolicy, AppTelemetry telemetry)
 ///     : OracleDbReaderRepositoryBase&lt;PersistedOrder&gt;(dbPolicy, telemetry)
 /// {
 ///     public override Task&lt;PersistedOrder&gt; GetByIdAsync(long id, CancellationToken? cancellationToken = null) =&gt;
@@ -32,6 +32,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Repository.Storag
 /// </example>
 public abstract class OracleDbReaderRepositoryBase<TPersistedEntity>(
     IStoragePolicy<OracleConnection> dbPolicy,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : DbReaderRepositoryBase<OracleConnection, OracleDbDialect, TPersistedEntity>(dbPolicy, telemetry)
     where TPersistedEntity : IPersistedEntity;

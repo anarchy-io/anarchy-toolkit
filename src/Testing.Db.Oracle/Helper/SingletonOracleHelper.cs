@@ -25,7 +25,7 @@ namespace Anarchy.Toolkit.Testing.Db.Oracle.Helper;
 ///     </para>
 ///     <para>
 ///     The retry policy builder is never rebuilt, and refreshing only the connection pool does not rebuild an
-///     already cached policy; call <see cref="DbPolicyFixture{TSettings}(TSettings, bool, IAppTelemetry)" /> with
+///     already cached policy; call <see cref="DbPolicyFixture{TSettings}(TSettings, bool, AppTelemetry)" /> with
 ///     <c>forceRefresh</c> to rebuild both pool and policy.
 ///     </para>
 /// </remarks>
@@ -97,7 +97,7 @@ public sealed class SingletonOracleHelper
     /// <param name="telemetry">Optional application telemetry for retry logging.</param>
     /// <returns>The cached retry policy builder.</returns>
     public static IAsyncRetryPolicyBuilder<OracleConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false,
-        IAppTelemetry? telemetry = null)
+        AppTelemetry? telemetry = null)
     {
         _instanceRetryPolicyBuilder ??= new OracleAsyncRetryPolicyBuilder(
             OracleOptionsMapper.ResilienceOptions(settings),
@@ -113,7 +113,7 @@ public sealed class SingletonOracleHelper
     /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy and the connection pool.</param>
     /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
-    public static IStoragePolicy<OracleConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false, IAppTelemetry? telemetry = null)
+    public static IStoragePolicy<OracleConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false, AppTelemetry? telemetry = null)
         where TAppSettings : class, IOracleAppSettings, IResilienceAppSettings
     {
         return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), forceRefresh, telemetry);
@@ -129,7 +129,7 @@ public sealed class SingletonOracleHelper
     /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
     public static IStoragePolicy<OracleConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false,
-        IAppTelemetry? telemetry = null)
+        AppTelemetry? telemetry = null)
         where TSettings : IOracleAppSettings, IResilienceAppSettings
     {
         if (_instanceDbPolicy is not null && forceRefresh)

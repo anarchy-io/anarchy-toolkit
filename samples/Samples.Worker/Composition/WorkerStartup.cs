@@ -18,6 +18,6 @@ public sealed class WorkerStartup(IHostEnvironment environment, IConfiguration c
     protected override IServiceCollection ConfigureJobCustomServices(IServiceCollection services) =>
         services
             .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
-            .AddHostedService(sp => new HeartbeatWorker(sp.GetRequiredService<IAppTelemetry>()))
+            .AddHostedService(sp => new HeartbeatWorker(sp.GetRequiredService<AppTelemetry>()))
             .AddHostedService<GreetingWorker>();
 }

@@ -16,5 +16,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Repository.Storag
 /// </remarks>
 /// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
-public abstract class OracleDbRepositoryBase(IStoragePolicy<OracleConnection> dbPolicy, IAppTelemetry telemetry)
+public abstract class OracleDbRepositoryBase(IStoragePolicy<OracleConnection> dbPolicy, AppTelemetry telemetry)
     : DbStorageRepositoryBase<OracleConnection, OracleDbDialect>(dbPolicy, telemetry);

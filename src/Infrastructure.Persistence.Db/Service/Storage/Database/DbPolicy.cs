@@ -21,7 +21,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 public class DbPolicy<TDbConnection>(
     IDbConnectionPool<TDbConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null)
+    AppTelemetry? telemetry = null)
     : DbPolicyBase<TDbConnection>(dbConnectionPool, asyncFlowContext, telemetry)
     where TDbConnection : DbConnection
 {

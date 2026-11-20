@@ -21,7 +21,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Repository.Storage
 /// <example>
 /// <code language="csharp">
 /// public sealed class OrderReaderRepository(
-///     [FromKeyedServices("reader")] IStoragePolicy&lt;MySqlConnection&gt; dbPolicy, IAppTelemetry telemetry)
+///     [FromKeyedServices("reader")] IStoragePolicy&lt;MySqlConnection&gt; dbPolicy, AppTelemetry telemetry)
 ///     : MysqlDbReaderRepositoryBase&lt;PersistedOrder&gt;(dbPolicy, telemetry)
 /// {
 ///     public override Task&lt;PersistedOrder&gt; GetByIdAsync(long id, CancellationToken? cancellationToken = null) =&gt;
@@ -30,6 +30,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Repository.Storage
 /// }
 /// </code>
 /// </example>
-public abstract class MysqlDbReaderRepositoryBase<TPersistedEntity>(IStoragePolicy<MySqlConnection> dbPolicy, IAppTelemetry telemetry)
+public abstract class MysqlDbReaderRepositoryBase<TPersistedEntity>(IStoragePolicy<MySqlConnection> dbPolicy, AppTelemetry telemetry)
     : DbReaderRepositoryBase<MySqlConnection, MysqlDbDialect, TPersistedEntity>(dbPolicy, telemetry)
     where TPersistedEntity : IPersistedEntity;

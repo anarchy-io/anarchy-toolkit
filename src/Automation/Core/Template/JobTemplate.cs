@@ -80,15 +80,14 @@ internal static class JobTemplate
                 """,
             ["Core/Service/JobService.cs"] = $$"""
                 using Anarchy.Toolkit.Core.Telemetry;
-                using Microsoft.Extensions.Logging;
 
                 namespace {{ns}}.Core.Service;
 
-                public sealed class JobService(IAppTelemetry telemetry)
+                public sealed class JobService(AppTelemetry telemetry)
                 {
                     public Task<string> RunAsync(string input) =>
                         telemetry.MonitoredActionAsync(this.CalledFrom(), () => {
-                            telemetry.Log(LogLevel.Information, this.CalledFrom(), null, "Processing {Input}", input);
+                            telemetry.LogInformation(this.CalledFrom(), "Processing {Input}", input);
                             return Task.FromResult($"Processed {input}");
                         });
                 }

@@ -3,7 +3,7 @@ using Anarchy.Toolkit.Samples.Ui.Core.Entity;
 using Anarchy.Toolkit.Samples.Ui.Core.Service;
 using Anarchy.Toolkit.Web.Ui.Core.Service.Ui;
 using Anarchy.Toolkit.Web.Ui.Core.Service.Ui.Session;
-using Anarchy.Toolkit.Web.Ui.Infrastructure.Service.Http.Client;
+using Anarchy.Toolkit.Web.Ui.Infrastructure.Http.Client;
 
 namespace Anarchy.Toolkit.Samples.Ui.Infrastructure.Service.Http.Client;
 
@@ -14,7 +14,7 @@ public sealed class OrdersApiClient(
     IHttpClientFactory httpClientFactory,
     IUiSessionContext sessionContext,
     IUiEnvironmentCatalog environmentCatalog,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : UiApiClientBase(httpClientFactory, sessionContext, environmentCatalog, telemetry), IOrdersApiClient
 {
     /// <summary>Key of the orders API in <c>UiEnvironment.ApiBaseUrls</c>.</summary>

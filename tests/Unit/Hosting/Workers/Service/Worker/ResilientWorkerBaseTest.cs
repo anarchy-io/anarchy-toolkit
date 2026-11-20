@@ -1,26 +1,22 @@
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Hosting.Workers.Service.Worker;
-using Microsoft.Extensions.Logging;
-using Moq;
+using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Entity;
+using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Service;
+using Anarchy.Toolkit.Testing.Telemetry;
+using AwesomeAssertions;
 
 namespace Anarchy.Toolkit.Tests.Unit.Hosting.Workers.Service.Worker;
 
-public class ResilientWorkerBaseTest
+public sealed class ResilientWorkerBaseTest : IDisposable
 {
     private const double IntervalInSeconds = 0.01; // 10 ms — kept tiny so the loop iterates quickly
-    private readonly List<string> _logTemplates = [];
+    private readonly TestTelemetry _telemetry = new();
 
-    private ResilientWorkerFixture CreateSut(ResilientWorkerFixture.PerformWorkResult result) =>
-        new(result, CreateTelemetry(), IntervalInSeconds, IntervalInSeconds);
+    private ResilientWorkerFixture CreateSut(ResilientWorkerFixture.PerformWorkResult result,
+                                             CorrelationIdOptions? options = null) =>
+        new(result, _telemetry.Telemetry, IntervalInSeconds, IntervalInSeconds, options);
 
-    private IAppTelemetry CreateTelemetry()
-    {
-        var telemetry = new Mock<IAppTelemetry>();
-        telemetry.Setup(instance => instance.Log(It.IsAny<LogLevel>(), It.IsAny<CallSite>(), It.IsAny<Exception?>(),
-                It.IsAny<string>(), It.IsAny<object?[]>()))
-            .Callback<LogLevel, CallSite, Exception?, string, object?[]>((_, _, _, template, _) => _logTemplates.Add(template));
-        return telemetry.Object;
-    }
+    public void Dispose() => _telemetry.Dispose();
 
     [Fact(Timeout = 5000)]
     public async Task ExecuteAsync_WhenPerformWorkReturnsTrue_LoopsMultipleTimes()
@@ -59,7 +55,48 @@ public class ResilientWorkerBaseTest
 
         Assert.True(sut.Finished);
         Assert.True(sut.PerformWorkCallCount >= 3);
-        Assert.Contains(_logTemplates, template => template.Contains("Worker action failed; retrying"));
+        _telemetry.Logs.Should().Contain(log => log.Message.Contains("Worker action failed; retrying"));
+    }
+
+    [Fact(Timeout = 5000)]
+    public async Task ExecuteAsync_GivesEachIterationACorrelationIdAndEachAttemptAnAttemptId()
+    {
+        var sut = CreateSut(ResilientWorkerFixture.PerformWorkResult.FailsOnceThenTrue);
+
+        await sut.StartAsync(TestContext.Current.CancellationToken);
+        await WaitUntilAsync(() => sut.Attempts.Count >= 3);
+        await sut.StopAsync(TestContext.Current.CancellationToken);
+
+        var attempts = sut.Attempts.ToArray();
+        attempts.Should().AllSatisfy(attempt => {
+            attempt.CorrelationId.Should().NotBeNullOrEmpty();
+            attempt.AttemptId.Should().NotBeNullOrEmpty();
+        });
+        attempts[0].CorrelationId.Should().Be(attempts[1].CorrelationId, "a retry belongs to the same iteration");
+        attempts[0].AttemptId.Should().NotBe(attempts[1].AttemptId, "each attempt gets its own id");
+        attempts[2].CorrelationId.Should().NotBe(attempts[1].CorrelationId, "the next iteration gets a new id");
+        _telemetry.Logs.Should().Contain(log => log.Message.Contains("Working")
+                                                && Equals(log.Scopes.GetValueOrDefault("CorrelationId"), attempts[0].CorrelationId)
+                                                && Equals(log.Scopes.GetValueOrDefault("AttemptId"), attempts[0].AttemptId),
+            "the ids reach the logging scope");
+        _telemetry.Logs.Should().Contain(log => log.Message.Contains("Worker action failed; retrying")
+                                                && Equals(log.Scopes.GetValueOrDefault("CorrelationId"), attempts[0].CorrelationId));
+        CorrelationContext.CorrelationId.Should().BeNull("the scope is restored once the iteration ends");
+    }
+
+    [Fact(Timeout = 5000)]
+    public async Task ExecuteAsync_UsesTheConfiguredCorrelationPropertyNames()
+    {
+        var options = new CorrelationIdOptions { CorrelationIdPropertyName = "trace.correlation", AttemptIdPropertyName = "trace.attempt" };
+        var sut = CreateSut(ResilientWorkerFixture.PerformWorkResult.True, options);
+
+        await sut.StartAsync(TestContext.Current.CancellationToken);
+        await WaitUntilAsync(() => sut.Attempts.Count >= 1);
+        await sut.StopAsync(TestContext.Current.CancellationToken);
+
+        _telemetry.Logs.Should().Contain(log => log.Message.Contains("Working")
+                                                && log.Scopes.ContainsKey("trace.correlation")
+                                                && log.Scopes.ContainsKey("trace.attempt"));
     }
 
     [Fact(Timeout = 5000)]
@@ -91,26 +128,33 @@ public class ResilientWorkerBaseTest
 
     private class ResilientWorkerFixture(
         ResilientWorkerFixture.PerformWorkResult resultPerformWork,
-        IAppTelemetry telemetry,
+        AppTelemetry telemetry,
         double recurringIntervalInSeconds,
-        double delayedIntervalInSeconds)
-        : ResilientWorkerBase(telemetry, recurringIntervalInSeconds, delayedIntervalInSeconds)
+        double delayedIntervalInSeconds,
+        CorrelationIdOptions? correlationIdOptions)
+        : ResilientWorkerBase(telemetry, recurringIntervalInSeconds, delayedIntervalInSeconds,
+            correlationIdOptions: correlationIdOptions)
     {
         private int _performWorkCallCount;
 
         public int PerformWorkCallCount => _performWorkCallCount;
+
+        public System.Collections.Concurrent.ConcurrentQueue<(string? CorrelationId, string? AttemptId)> Attempts { get; } = new();
 
         public enum PerformWorkResult
         {
             True,
             False,
             Exception,
-            BlocksUntilCancelled
+            BlocksUntilCancelled,
+            FailsOnceThenTrue
         }
 
         protected override async Task<bool> PerformWorkAsync(CancellationToken token)
         {
-            Interlocked.Increment(ref _performWorkCallCount);
+            var call = Interlocked.Increment(ref _performWorkCallCount);
+            Telemetry.LogInformation(this.CalledFrom(), "Working");
+            Attempts.Enqueue((CorrelationContext.CorrelationId, CorrelationContext.AttemptId));
 
             if (resultPerformWork == PerformWorkResult.BlocksUntilCancelled)
             {
@@ -122,6 +166,8 @@ public class ResilientWorkerBaseTest
                 PerformWorkResult.True => true,
                 PerformWorkResult.False => false,
                 PerformWorkResult.Exception => throw new Exception("Mocked behavior"),
+                PerformWorkResult.FailsOnceThenTrue when call % 2 == 1 => throw new Exception("Transient"),
+                PerformWorkResult.FailsOnceThenTrue => true,
                 _ => throw new ArgumentOutOfRangeException(nameof(PerformWorkResult), resultPerformWork, null)
             };
         }

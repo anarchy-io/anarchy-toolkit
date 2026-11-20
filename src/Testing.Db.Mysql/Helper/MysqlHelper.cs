@@ -38,7 +38,7 @@ public sealed class MysqlHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static MysqlResilienceDbPolicy DbPolicyFixture<TAppSettings>(IAppTelemetry? telemetry = null)
+    public static MysqlResilienceDbPolicy DbPolicyFixture<TAppSettings>(AppTelemetry? telemetry = null)
         where TAppSettings : class, IMysqlAppSettings, IResilienceAppSettings => DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
 
     /// <summary>
@@ -49,7 +49,7 @@ public sealed class MysqlHelper
     /// <param name="settings">The settings to build the fixture from.</param>
     /// <param name="telemetry">Optional application telemetry for the policy.</param>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static MysqlResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings settings, IAppTelemetry? telemetry = null)
+    public static MysqlResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings settings, AppTelemetry? telemetry = null)
         where TSettings : IMysqlAppSettings, IResilienceAppSettings =>
         new(new MysqlAsyncRetryPolicyBuilder(MysqlOptionsMapper.ResilienceOptions(settings), telemetry),
             new MysqlConnectionPool(DataStorageInstanceType.Writer, new MysqlConnectionString(MysqlOptionsMapper.ConnectionOptions(settings))),
@@ -62,7 +62,7 @@ public sealed class MysqlHelper
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
-    public static MysqlDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(IAppTelemetry? telemetry = null) where TAppSettings : class, IMysqlAppSettings =>
+    public static MysqlDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(AppTelemetry? telemetry = null) where TAppSettings : class, IMysqlAppSettings =>
         DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
 
     /// <summary>
@@ -73,9 +73,9 @@ public sealed class MysqlHelper
     /// <returns>A new unit of work over a new writer connection pool.</returns>
     /// <remarks>
     ///     The unit of work uses its own async flow context, so repositories built from a separate
-    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, IAppTelemetry)" /> do not join its sessions.
+    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, AppTelemetry)" /> do not join its sessions.
     /// </remarks>
-    public static MysqlDbUnitOfWork DbUnitOfWorkFixture(IMysqlAppSettings settings, IAppTelemetry? telemetry = null) =>
+    public static MysqlDbUnitOfWork DbUnitOfWorkFixture(IMysqlAppSettings settings, AppTelemetry? telemetry = null) =>
         new(new MysqlConnectionPool(DataStorageInstanceType.Writer, new MysqlConnectionString(MysqlOptionsMapper.ConnectionOptions(settings))),
             new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>(), telemetry);
 }

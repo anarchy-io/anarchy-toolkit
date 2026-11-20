@@ -14,6 +14,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Repository.Storage
 /// <typeparam name="TNewEntity">The entity type accepted for saving.</typeparam>
 /// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
-public abstract class MysqlDbBatchWriterRepositoryBase<TNewEntity>(IStoragePolicy<MySqlConnection> dbPolicy, IAppTelemetry telemetry)
+public abstract class MysqlDbBatchWriterRepositoryBase<TNewEntity>(IStoragePolicy<MySqlConnection> dbPolicy, AppTelemetry telemetry)
     : DbBatchWriterRepositoryBase<MySqlConnection, MysqlDbDialect, TNewEntity>(dbPolicy, telemetry)
     where TNewEntity : IEntity;

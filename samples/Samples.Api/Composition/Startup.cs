@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Core.Health.Service.Health;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Samples.Api.Composition.DependencyInjection;
 using Anarchy.Toolkit.Samples.Api.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Web.Composition.Startup;
@@ -17,5 +17,5 @@ public sealed class Startup(IWebHostEnvironment environment, IConfiguration conf
         base.ConfigureWebCustomServices(services)
             .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
             .SetupAuthorization(readScope: "samples:read", writeScope: "samples:write", adminScope: "samples:admin")
-            .AddSingleton<IReadOnlyCollection<IServiceHealthReport>>([]);
+            .AddSingleton<IReadOnlyCollection<IHealthCheck>>([]);
 }

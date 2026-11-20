@@ -16,5 +16,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Repository.Storage
 /// </remarks>
 /// <param name="dbPolicy">Storage policy used to execute database operations (the writer policy when resolved unkeyed).</param>
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
-public abstract class MysqlDbRepositoryBase(IStoragePolicy<MySqlConnection> dbPolicy, IAppTelemetry telemetry)
+public abstract class MysqlDbRepositoryBase(IStoragePolicy<MySqlConnection> dbPolicy, AppTelemetry telemetry)
     : DbStorageRepositoryBase<MySqlConnection, MysqlDbDialect>(dbPolicy, telemetry);

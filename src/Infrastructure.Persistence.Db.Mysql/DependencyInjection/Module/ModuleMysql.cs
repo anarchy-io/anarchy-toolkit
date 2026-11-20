@@ -56,6 +56,6 @@ public sealed class ModuleMysql(
                     sp.GetRequiredService<IAsyncRetryPolicyBuilder<MySqlConnection>>(),
                     sp.GetRequiredKeyedService<IDbConnectionPool<MySqlConnection>>(key),
                     sp.GetRequiredService<IAsyncFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>>>(),
-                    sp.GetRequiredService<IAppTelemetry>()));
+                    sp.GetRequiredService<AppTelemetry>()));
     }
 }

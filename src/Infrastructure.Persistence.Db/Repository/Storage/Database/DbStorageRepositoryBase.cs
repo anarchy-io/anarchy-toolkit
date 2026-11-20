@@ -18,7 +18,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public abstract class DbStorageRepositoryBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : DbRepositoryBase<TDbConnection>(dbPolicy, telemetry), IStorageRepository
     where TDbConnection : DbConnection
     where TDialect : IDbDialect

@@ -22,7 +22,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 /// <example>
 ///     <code language="csharp">
-///     public sealed class OrderWriterRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, IAppTelemetry telemetry)
+///     public sealed class OrderWriterRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, AppTelemetry telemetry)
 ///         : DbWriterRepositoryBase&lt;NpgsqlConnection, PostgresDbDialect, NewOrder, PersistedOrder&gt;(dbPolicy, telemetry)
 ///     {
 ///         public override Task&lt;long&gt; GetLatestIdAsync(CancellationToken? cancellationToken = null) =>
@@ -36,7 +36,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </example>
 public abstract class DbWriterRepositoryBase<TDbConnection, TDialect, TNewEntity, TPersistedEntity>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    IAppTelemetry telemetry
+    AppTelemetry telemetry
 )
     : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, telemetry),
       IStorageWriterRepository<TNewEntity, TPersistedEntity>

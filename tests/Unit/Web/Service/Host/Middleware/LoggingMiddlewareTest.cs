@@ -1,43 +1,31 @@
-using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
-using Anarchy.Toolkit.Testing.Helper.Observability.Monitoring;
+using Anarchy.Toolkit.Testing.Telemetry;
 using Anarchy.Toolkit.Web.Service.Host.Middleware;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Serilog;
 
 namespace Anarchy.Toolkit.Tests.Unit.Web.Service.Host.Middleware;
 
 public class LoggingMiddlewareTest
 {
     [Fact]
-    public async Task InvokeAsync_EmitsRequestLogsAndMetricsToTheConsumerSink()
+    public async Task InvokeAsync_EmitsRequestLogsAndMetricsThroughTheInjectedTelemetry()
     {
-        var token = TestContext.Current.CancellationToken;
-        var sink = new InMemorySink();
-        using var logger = new LoggerConfiguration().WriteTo.Sink(sink).CreateLogger();
-        var services = new ServiceCollection();
-        services.AddMetrics();
-        services.AddSerilogTelemetry(logger);
-        services.AddTelemetryLogMetrics();
-        using var provider = services.BuildServiceProvider();
-        var listener = provider.GetServices<IHostedService>().Should().ContainSingle().Which;
-        await listener.StartAsync(token);
+        using var telemetry = new TestTelemetry();
         var context = new DefaultHttpContext();
         context.Request.Method = HttpMethods.Post;
         context.Request.Path = "/orders";
         var middleware = new LoggingMiddleware(httpContext => {
             httpContext.Response.StatusCode = StatusCodes.Status201Created;
             return Task.CompletedTask;
-        }, provider.GetRequiredService<IAppTelemetry>());
+        }, telemetry.Telemetry);
 
         await middleware.InvokeAsync(context);
 
-        sink.Messages.Should().Contain(entry => entry.MessageTemplate.Text.Contains("Finished {Method} request"));
-        sink.Messages.Should().Contain(entry => entry.RenderMessage().Contains("execution_time"));
-        sink.Messages.Should().Contain(entry => entry.RenderMessage().Contains("request_method, POST"));
-        await listener.StopAsync(token);
+        telemetry.Logs.Should().Contain(log => log.MessageTemplate!.Contains("Finished {Method} request"));
+        telemetry.Metrics.Metrics.Should().ContainSingle(metric => metric.Kind == MetricKind.Duration
+                                                                 && metric.Name == "logging_middleware.invoke_async.execution_time")
+            .Which.Should().Match<RecordedMetric>(metric => metric.HasTag("request_method", "POST")
+                                                            && metric.HasTag("status_code", "201")
+                                                            && metric.HasTag("success", true));
     }
 }

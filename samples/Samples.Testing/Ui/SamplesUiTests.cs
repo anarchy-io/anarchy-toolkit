@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
-namespace Anarchy.Toolkit.Samples.Tests.Ui;
+namespace Anarchy.Toolkit.Samples.Testing.Ui;
 
 /// <summary>
 /// Smoke tests of the sample UI: the page shell with its assets, and the stub auth service and orders API it

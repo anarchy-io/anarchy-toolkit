@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Samples.Examples</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Samples.Examples</RootNamespace>
+    <Description>Runnable examples: telemetry providers and exporters, a UseCase and an Aggregate.</Description>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\..\src\Core.Persistence.Abstractions\Core.Persistence.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Core.Telemetry\Core.Telemetry.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Telemetry.Serilog\Infrastructure.Telemetry.Serilog.csproj" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+  </ItemGroup>
+
+</Project>
