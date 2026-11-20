@@ -30,11 +30,18 @@ See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guide
 
 ## Releases
 
-### 1.2.0
+### 2.0.0
 
 - Register the provider-neutral telemetry through `ModuleTelemetry`, extensible with a `ModuleTelemetryBase`, and preserve application logging providers.
 - Removed the Serilog-based observer bootstrap (`ModuleObservability`, `ObserverFactory`, `ObservabilityOptions`, `ConsoleMeasurer`) and its Serilog enrichers; the structured-exception enricher moved to `Infrastructure.Telemetry.Serilog`.
 - `ApplicationContext` and `AmazonRequestContext` moved to the `Anarchy.Toolkit.Configuration.Telemetry` namespace.
+
+- feat(automation): establish onboarding and layering conventions
+- feat(telemetry)!: introduce provider-neutral application telemetry
+- refactor(packages)!: restructure persistence and automation packages
+- refactor(infrastructure.correlationid)!: decouple correlation scopes from Serilog
+- refactor(core)!: reshape telemetry, event and health contracts
+- refactor(telemetry)!: remove legacy APIs and simplify namespaces
 
 ### 1.1.1
 

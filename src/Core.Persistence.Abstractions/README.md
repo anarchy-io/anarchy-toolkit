@@ -29,6 +29,15 @@ See the [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/
 
 ## Releases
 
+### 2.0.0
+
+- feat(automation): establish onboarding and layering conventions
+- feat(telemetry)!: introduce provider-neutral application telemetry
+- refactor(packages)!: restructure persistence and automation packages
+- refactor(core)!: reshape telemetry, event and health contracts
+- fix(persistence)!: preserve unit-of-work transaction ownership
+- refactor(telemetry)!: remove legacy APIs and simplify namespaces
+
 ### 1.1.1
 
 - docs(packages): identify each package's pillar and layer

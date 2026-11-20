@@ -36,6 +36,14 @@ See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/convention
 
 ## Releases
 
+### 2.0.0
+
+- feat(automation): establish onboarding and layering conventions
+- feat(telemetry)!: introduce provider-neutral application telemetry
+- refactor(packages)!: restructure persistence and automation packages
+- refactor(core)!: reshape telemetry, event and health contracts
+- refactor(telemetry)!: remove legacy APIs and simplify namespaces
+
 ### 1.1.2
 
 - build(deps): drop package references already resolved transitively

@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Web.MockServer</PackageId>
     <AssemblyName>Anarchy.Toolkit.Web.MockServer</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Web.MockServer</RootNamespace>
-    <Version>1.1.0</Version>
+    <Version>2.0.0</Version>
     <Description>HTTP mock server for integration and end-to-end tests: JSON expectations, pluggable middlewares, request recording and colourful console output. Runs standalone or from a host of your own.</Description>
     <PackageTags>anarchy mock mockserver testing integration e2e</PackageTags>
     <OutputType>Exe</OutputType>
