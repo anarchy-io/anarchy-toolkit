@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
+using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage.Exceptions;
@@ -7,7 +7,7 @@ using Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.LocalEvent.Service.St
 using Microsoft.Extensions.Logging;
 using System.Data.Common;
 using System.Diagnostics;
-using System.Transactions;
+using System.Runtime.ExceptionServices;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 
@@ -35,14 +35,31 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 ///         <item><see cref="RunInManagedSessionAsync{TResult}" />: transaction committed on success, rolled back on failure.</item>
 ///         <item><see cref="RunInSessionAsync{TResult}" />: transaction started, but the callback must call <see cref="CommitAsync" /> / <see cref="RollbackAsync" />; anything left pending is rolled back when the session ends.</item>
 ///         <item><see cref="RunInAdhocSessionAsync{TResult}" />: shared connection without a transaction.</item>
+///         <item><see cref="RunInJoinedSessionAsync{TResult}" />: participates in the caller's transaction without owning it.</item>
+///         <item><see cref="RunInJoinedOrManagedSessionAsync{TResult}" />: joins the caller's transaction, or owns a managed one when there is none.</item>
 ///     </list>
 ///     <para>
 ///     Sessions cannot be nested within the same async flow or run concurrently on one instance; register the unit
-///     of work with a scoped (or transient) lifetime. Cancellation requested by the caller is propagated after
-///     rollback and cleanup, which use an uncancelled token. If rollback or cleanup also fails, the original failure
-///     is retained. A rollback failure is available in the original exception's <see cref="Exception.Data"/> under
-///     <c>UnitOfWork.RollbackFailure</c>; a cleanup failure is on the propagated exception under
-///     <c>UnitOfWork.CleanupFailure</c>. A session can start only one transaction.
+///     of work with a scoped (or transient) lifetime. <see cref="BeginAsync" />, <see cref="CommitAsync" /> and
+///     <see cref="RollbackAsync" /> only act on the session this instance started in the current async flow, and a
+///     session can start only one transaction. Code that joined the session cannot begin, commit or roll back.
+///     </para>
+///     <para>
+///     A transaction is rolled back only when it exists and is still pending: a failed start leaves nothing to roll
+///     back, and a transaction already committed or rolled back is not rolled back again. A rolled-back or abandoned
+///     transaction publishes <see cref="RolledBackUowTransactionLocalEvent" />.
+///     </para>
+///     <para>
+///     Cancellation is observed while acquiring the connection, beginning the transaction, running the callback and
+///     just before an automatic commit; it propagates as an <see cref="OperationCanceledException" /> after rollback
+///     and cleanup, which use an uncancelled token. A commit is never interrupted once started. Lifecycle events are
+///     published with an uncancelled token, since they report something that already happened.
+///     </para>
+///     <para>
+///     If rollback or cleanup also fails, the original failure is retained. A rollback failure is available in the
+///     original exception's <see cref="Exception.Data"/> under <c>UnitOfWork.RollbackFailure</c>; a cleanup failure is
+///     on the propagated exception under <c>UnitOfWork.CleanupFailure</c>. After a failed begin, commit or rollback,
+///     or a failed transaction disposal, the connection is discarded instead of returned to the pool.
 ///     </para>
 /// </remarks>
 /// <example>
@@ -58,13 +75,18 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     IDbConnectionPool<TDbConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null,
+    AppTelemetry? telemetry = null,
     ILocalEventBus? localEventBus = null)
     : IUnitOfWork
     where TDbConnection : DbConnection where TDbTransaction : DbTransaction
 {
+    // The session joined by the current async flow, shared by every instance so that a participant cannot reach the
+    // owner's transaction through another unit of work either.
+    private static readonly AsyncLocal<StorageConnectionEnvelopeBase<TDbConnection>?> JoinedSession = new();
+
     private int _sessionActive;
     private bool _discardConnection;
+    private StorageConnectionEnvelopeBase<TDbConnection>? _session;
 
     /// <summary>The transaction of the active session, or <see langword="null" /> when none is active.</summary>
     protected TDbTransaction? Transaction;
@@ -77,7 +99,7 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     protected readonly IDbConnectionPool<TDbConnection> DbConnectionPool = dbConnectionPool;
 
     /// <summary>Application telemetry used for logging and metrics.</summary>
-    protected readonly IAppTelemetry? Telemetry = telemetry;
+    protected readonly AppTelemetry? Telemetry = telemetry;
 
     /// <summary>Optional in-process event bus for transaction lifecycle events.</summary>
     protected readonly ILocalEventBus? LocalEventBus = localEventBus;
@@ -87,38 +109,41 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// </summary>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>A task that completes when the transaction has started.</returns>
+    /// <exception cref="NoActiveSessionException">Thrown when this instance has no session in the current async flow.</exception>
+    /// <exception cref="TransactionNotOwnedException">Thrown when called from code that joined the session.</exception>
+    /// <exception cref="TransactionAlreadyActiveException">Thrown when the session has already started a transaction.</exception>
     /// <exception cref="TransactionBeginException">Thrown when the transaction cannot be started.</exception>
     /// <remarks>Must be called within a session, as it uses the session connection.</remarks>
     public virtual async Task BeginAsync(CancellationToken? cancellationToken = null)
     {
-        var connection = ActiveConnectionStorage.Value.DataStorageConnection;
+        var session = GetOwnedSession() ?? throw new NoActiveSessionException();
+
+        if (Transaction is not null)
+        {
+            throw new TransactionAlreadyActiveException();
+        }
 
         try
         {
-            if (Transaction is not null)
-                throw new InvalidOperationException("The session already has a transaction.");
-
-            Transaction = (TDbTransaction)await connection.BeginTransactionAsync(
+            Transaction = (TDbTransaction)await session.DataStorageConnection.BeginTransactionAsync(
                 cancellationToken ?? CancellationToken.None);
-            ActiveConnectionStorage.Value.IsInTransaction = true;
-
-            if (LocalEventBus is not null)
-            {
-                await LocalEventBus.PublishAsync(
-                    StartedUowTransactionLocalEvent.FromConnectionEnvelope(ActiveConnectionStorage.Value,
-                        GetType().Name),
-                    ct: cancellationToken ?? CancellationToken.None);
-            }
-
-        }
-        catch (OperationCanceledException) when (cancellationToken?.IsCancellationRequested == true)
-        {
-            throw;
         }
         catch (Exception exception)
         {
+            // The connection state is unknown after a failed start
+            _discardConnection = true;
+
+            if (exception is OperationCanceledException && cancellationToken?.IsCancellationRequested == true)
+            {
+                throw;
+            }
+
             throw new TransactionBeginException(exception);
         }
+
+        session.IsInTransaction = true;
+
+        await PublishAsync(StartedUowTransactionLocalEvent.FromConnectionEnvelope(session, GetType().Name));
     }
 
     /// <summary>
@@ -128,16 +153,26 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     ///     When <c>true</c>, does not throw if there is no active transaction to commit.
     ///     This is useful for defensive commit calls in callback-based flows.
     /// </param>
-    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <param name="cancellationToken">
+    ///     Token checked before the commit starts. The commit itself is not interrupted, since an interrupted commit
+    ///     leaves its outcome unknown.
+    /// </param>
     /// <returns>A task that completes when the transaction has been committed.</returns>
     /// <exception cref="NoActiveTransactionException">
     ///     Thrown when there is no active transaction and <paramref name="suppressNoActiveTransactionException" /> is <c>false</c>.
     /// </exception>
-    /// <exception cref="TransactionCommitException">Thrown when the commit fails.</exception>
+    /// <exception cref="TransactionNotOwnedException">Thrown when called from code that joined the session.</exception>
+    /// <exception cref="TransactionCommitException">Thrown when the commit fails; the connection is then discarded.</exception>
     public virtual async Task CommitAsync(bool suppressNoActiveTransactionException = false,
                                           CancellationToken? cancellationToken = null)
     {
-        if (Transaction == null || !ActiveConnectionStorage.Value.IsInTransaction)
+        var session = GetOwnedSession();
+        if (session is null && _session is not null)
+        {
+            throw new NoActiveTransactionException();
+        }
+
+        if (Transaction is null || session is not { IsInTransaction: true })
         {
             if (suppressNoActiveTransactionException)
             {
@@ -147,27 +182,22 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
             throw new NoActiveTransactionException();
         }
 
+        cancellationToken?.ThrowIfCancellationRequested();
+
         try
         {
-            await Transaction.CommitAsync(cancellationToken ?? CancellationToken.None);
-            ActiveConnectionStorage.Value.IsInTransaction = false;
-
-            if (LocalEventBus is not null)
-            {
-                await LocalEventBus.PublishAsync(
-                    CommittedUowTransactionLocalEvent.FromConnectionEnvelope(ActiveConnectionStorage.Value,
-                        GetType().Name),
-                    ct: cancellationToken ?? CancellationToken.None);
-            }
-        }
-        catch (OperationCanceledException) when (cancellationToken?.IsCancellationRequested == true)
-        {
-            throw;
+            await Transaction.CommitAsync(CancellationToken.None);
         }
         catch (Exception exception)
         {
+            // The transaction stays pending so that the session can still roll it back
+            _discardConnection = true;
             throw new TransactionCommitException(exception);
         }
+
+        session.IsInTransaction = false;
+
+        await PublishAsync(CommittedUowTransactionLocalEvent.FromConnectionEnvelope(session, GetType().Name));
     }
 
     /// <summary>
@@ -183,12 +213,24 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// <exception cref="NoActiveTransactionException">
     ///     Thrown when there is no active transaction and <paramref name="suppressNoActiveTransactionException" /> is <c>false</c>.
     /// </exception>
+    /// <exception cref="TransactionNotOwnedException">Thrown when called from code that joined the session.</exception>
     /// <exception cref="TransactionRollbackException">Thrown when the rollback fails.</exception>
+    /// <remarks>
+    ///     If the rollback fails or is cancelled, the transaction is abandoned: it is no longer pending, the connection
+    ///     is discarded (which aborts it on the server) and <see cref="RolledBackUowTransactionLocalEvent" /> is still
+    ///     published.
+    /// </remarks>
     public virtual async Task RollbackAsync(Exception? reason = null,
                                             bool suppressNoActiveTransactionException = false,
                                             CancellationToken? cancellationToken = null)
     {
-        if (Transaction == null || !ActiveConnectionStorage.Value.IsInTransaction)
+        var session = GetOwnedSession();
+        if (session is null && _session is not null)
+        {
+            throw new NoActiveTransactionException();
+        }
+
+        if (Transaction is null || session is not { IsInTransaction: true })
         {
             if (suppressNoActiveTransactionException)
             {
@@ -198,29 +240,36 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
             throw new NoActiveTransactionException();
         }
 
+        Exception? failure = null;
         try
         {
             await Transaction.RollbackAsync(cancellationToken ?? CancellationToken.None);
-            ActiveConnectionStorage.Value.IsInTransaction = false;
-
-            if (LocalEventBus is not null)
-            {
-                await LocalEventBus
-                        .PublishAsync(
-                            RolledBackUowTransactionLocalEvent.FromConnectionEnvelope(ActiveConnectionStorage.Value,
-                                GetType().Name, reason),
-                            ct: cancellationToken ?? CancellationToken.None);
-            }
-        }
-        catch (OperationCanceledException) when (cancellationToken?.IsCancellationRequested == true)
-        {
-            _discardConnection = true;
-            throw;
         }
         catch (Exception exception)
         {
             _discardConnection = true;
-            throw new TransactionRollbackException(exception);
+            failure = exception;
+        }
+
+        session.IsInTransaction = false;
+
+        try
+        {
+            await PublishAsync(RolledBackUowTransactionLocalEvent.FromConnectionEnvelope(session, GetType().Name, reason));
+        }
+        catch (Exception notificationFailure) when (failure is not null)
+        {
+            failure.Data["UnitOfWork.RollbackNotificationFailure"] = notificationFailure;
+        }
+
+        if (failure is OperationCanceledException && cancellationToken?.IsCancellationRequested == true)
+        {
+            ExceptionDispatchInfo.Throw(failure);
+        }
+
+        if (failure is not null)
+        {
+            throw new TransactionRollbackException(failure);
         }
     }
 
@@ -269,9 +318,11 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// <returns>A task that completes when the session has finished.</returns>
     public async Task RunInManagedSessionAsync(SessionCallback callback, CancellationToken? cancellationToken = null)
     {
+        ArgumentNullException.ThrowIfNull(callback);
+
         await RunInManagedSessionAsync(async ct => {
             await callback(ct);
-            return Task.CompletedTask;
+            return true;
         }, cancellationToken);
     }
 
@@ -294,6 +345,65 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     }
 
     /// <summary>
+    ///     Run a callback as a participant in the transaction of the session active in the current async flow, which
+    ///     the caller owns.
+    /// </summary>
+    /// <param name="callback">The user provided callback function that will be executed within the caller's transaction</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <typeparam name="TResult">Type of the callback result.</typeparam>
+    /// <exception cref="NoActiveTransactionException">
+    ///     Thrown when no session with a pending transaction is active in the current async flow.
+    /// </exception>
+    /// <returns>The result returned by <paramref name="callback" />.</returns>
+    /// <remarks>
+    ///     The callback cannot begin, commit or roll back, through this or any other unit of work
+    ///     (<see cref="TransactionNotOwnedException" />). Its exceptions propagate unchanged, so the owner decides
+    ///     whether to roll back.
+    /// </remarks>
+    public async Task<TResult> RunInJoinedSessionAsync<TResult>(SessionCallback<TResult> callback,
+                                                                CancellationToken? cancellationToken = null)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        if (!ActiveConnectionStorage.TryGetValue(out var session) || session is not { IsInTransaction: true })
+        {
+            throw new NoActiveTransactionException();
+        }
+
+        var previous = JoinedSession.Value;
+        JoinedSession.Value = session;
+        try
+        {
+            return await callback(cancellationToken);
+        }
+        finally
+        {
+            JoinedSession.Value = previous;
+        }
+    }
+
+    /// <summary>
+    ///     Join the caller's transaction when one is pending in the current async flow
+    ///     (<see cref="RunInJoinedSessionAsync{TResult}" />); otherwise start and own a managed session
+    ///     (<see cref="RunInManagedSessionAsync{TResult}" />).
+    /// </summary>
+    /// <param name="callback">The user provided callback function that will be executed within the transaction</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <typeparam name="TResult">Type of the callback result.</typeparam>
+    /// <exception cref="SessionAlreadyActiveException">Thrown when the caller's session has no pending transaction.</exception>
+    /// <returns>The result returned by <paramref name="callback" />.</returns>
+    public async Task<TResult> RunInJoinedOrManagedSessionAsync<TResult>(SessionCallback<TResult> callback,
+                                                                         CancellationToken? cancellationToken = null)
+    {
+        if (ActiveConnectionStorage.TryGetValue(out var session) && session is { IsInTransaction: true })
+        {
+            return await RunInJoinedSessionAsync(callback, cancellationToken);
+        }
+
+        return await RunInManagedSessionAsync(callback, cancellationToken);
+    }
+
+    /// <summary>
     ///     Starts a new session: acquires a connection, stores it in the async flow context for the duration of
     ///     <paramref name="callback" />, optionally begins (and auto-commits / auto-rolls back) a transaction, and
     ///     finally releases the connection.
@@ -307,12 +417,18 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// <exception cref="SessionCallbackException">Thrown, wrapping the original exception, when the callback (or the automatic commit) fails.</exception>
     /// <exception cref="SessionFinishException">Thrown when the connection cannot be released at the end of the session.</exception>
     /// <returns>Optional result from the session</returns>
+    /// <remarks>
+    ///     A transaction still pending when the session ends, after a failure or because the callback of
+    ///     <see cref="RunInSessionAsync{TResult}" /> neither committed nor rolled back, is rolled back.
+    /// </remarks>
     protected async Task<TResult> StartAsync<TResult>(SessionCallback<TResult> callback,
                                                       bool autoManage,
-                                                       bool enableTransaction,
-                                                       CancellationToken? cancellationToken = null
+                                                      bool enableTransaction,
+                                                      CancellationToken? cancellationToken = null
     )
     {
+        ArgumentNullException.ThrowIfNull(callback);
+
         var timer = Stopwatch.StartNew();
         var caller = this.CalledFrom();
 
@@ -325,11 +441,12 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
         try
         {
             // Retrieve a new connection for the session
-            var connectionEnvelope = await DbConnectionPool.ConnectAsync(cancellationToken);
+            var session = await DbConnectionPool.ConnectAsync(cancellationToken);
+            _session = session;
 
             // All the DbPolicies can now use this connection when retrieving
             // it within the same scope of the callback.
-            return await ActiveConnectionStorage.RunAsync(connectionEnvelope, async Task<TResult> () => {
+            return await ActiveConnectionStorage.RunAsync(session, async Task<TResult> () => {
                 Exception? sessionFailure = null;
                 try
                 {
@@ -350,16 +467,21 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                         await CommitAsync(cancellationToken: cancellationToken);
                         Telemetry?.Log(LogLevel.Debug, caller, null, "Transaction committed");
                     }
+                    else if (HasPendingTransaction(session))
+                    {
+                        await RollbackAsync(cancellationToken: CancellationToken.None);
+                        Telemetry?.Log(LogLevel.Debug, caller, null, "Rolled back the transaction left pending by the session");
+                    }
 
                     Telemetry?.Log(LogLevel.Information, caller, null, "Session finished successfully");
-                    Telemetry?.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", true)]);
+                    Telemetry?.RecordDuration(caller, timer.Elapsed, [new("success", true)]);
 
                     return sessionResult;
                 }
                 catch (Exception ex)
                 {
-                    // Auto rollback
-                    if (autoManage && enableTransaction && Transaction is not null && ActiveConnectionStorage.Value.IsInTransaction)
+                    // Roll back only a transaction that was started and is still pending
+                    if (HasPendingTransaction(session))
                     {
                         try
                         {
@@ -368,13 +490,12 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
                         }
                         catch (Exception rollbackFailure)
                         {
-                            _discardConnection = true;
                             ex.Data["UnitOfWork.RollbackFailure"] = rollbackFailure;
                         }
                     }
 
                     Telemetry?.Log(LogLevel.Error, caller, ex, "Failed to execute session callback");
-                    Telemetry?.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, [new("success", false)]);
+                    Telemetry?.RecordDuration(caller, timer.Elapsed, [new("success", false)]);
 
                     // Re-throw the error
                     if (ex is OperationCanceledException && cancellationToken?.IsCancellationRequested == true)
@@ -402,6 +523,8 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
         }
         finally
         {
+            _session = null;
+            Transaction = null;
             _discardConnection = false;
             Volatile.Write(ref _sessionActive, 0);
         }
@@ -415,33 +538,46 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>A task that completes when the session has been finished.</returns>
     /// <exception cref="SessionFinishException">Throws when unable to release the connection back to the pool</exception>
+    /// <remarks>
+    ///     Idempotent: the transaction and the connection are disposed or released at most once per session, and
+    ///     later calls do nothing.
+    /// </remarks>
     protected async Task FinishSessionAsync(CancellationToken? cancellationToken = null)
     {
-        Exception? failure = null;
-        try
+        var session = _session;
+        if (session is null)
         {
-            if (Transaction is not null)
+            return;
+        }
+
+        _session = null;
+        session.IsInTransaction = false;
+
+        Exception? failure = null;
+        if (Transaction is not null)
+        {
+            var transaction = Transaction;
+            Transaction = null;
+            try
             {
-                var transaction = Transaction;
-                Transaction = null;
                 await transaction.DisposeAsync();
             }
-        }
-        catch (Exception exception)
-        {
-            _discardConnection = true;
-            failure = exception;
+            catch (Exception exception)
+            {
+                _discardConnection = true;
+                failure = exception;
+            }
         }
 
         try
         {
             if (_discardConnection)
             {
-                await ActiveConnectionStorage.Value.DataStorageConnection.DisposeAsync();
+                await session.DataStorageConnection.DisposeAsync();
             }
             else
             {
-                await DbConnectionPool.ReleaseAsync(ActiveConnectionStorage.Value, cancellationToken);
+                await DbConnectionPool.ReleaseAsync(session, cancellationToken);
             }
         }
         catch (Exception exception)
@@ -450,7 +586,13 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
             else failure.Data["UnitOfWork.ConnectionCleanupFailure"] = exception;
         }
 
-        try { ActiveConnectionStorage.Clear(); }
+        try
+        {
+            if (ActiveConnectionStorage.TryGetValue(out var current) && ReferenceEquals(current, session))
+            {
+                ActiveConnectionStorage.Clear();
+            }
+        }
         catch (Exception exception)
         {
             if (failure is null) failure = exception;
@@ -458,5 +600,35 @@ public abstract class DbUnitOfWorkBase<TDbConnection, TDbTransaction>(
         }
 
         if (failure is not null) throw new SessionFinishException(failure);
+    }
+
+    /// <summary>
+    ///     Gets the session this instance started, when it is the one active in the current async flow.
+    /// </summary>
+    /// <exception cref="TransactionNotOwnedException">Thrown when the current async flow joined the active session.</exception>
+    private StorageConnectionEnvelopeBase<TDbConnection>? GetOwnedSession()
+    {
+        if (!ActiveConnectionStorage.TryGetValue(out var current) || current is null)
+        {
+            return null;
+        }
+
+        if (ReferenceEquals(JoinedSession.Value, current))
+        {
+            throw new TransactionNotOwnedException();
+        }
+
+        return ReferenceEquals(current, _session) ? current : null;
+    }
+
+    private bool HasPendingTransaction(StorageConnectionEnvelopeBase<TDbConnection> session) =>
+        Transaction is not null && ReferenceEquals(session, _session) && session.IsInTransaction;
+
+    private async Task PublishAsync<TEvent>(TEvent @event) where TEvent : ILocalEvent
+    {
+        if (LocalEventBus is not null)
+        {
+            await LocalEventBus.PublishAsync(@event, ct: CancellationToken.None);
+        }
     }
 }

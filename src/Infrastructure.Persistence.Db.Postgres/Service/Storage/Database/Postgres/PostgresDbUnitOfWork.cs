@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
+using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
@@ -23,7 +23,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Storage
 public class PostgresDbUnitOfWork(
     [FromKeyedServices("writer")] IDbConnectionPool<NpgsqlConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null,
+    AppTelemetry? telemetry = null,
     ILocalEventBus? localEventBus = null)
     : DbUnitOfWorkBase<NpgsqlConnection, NpgsqlTransaction>(
         dbConnectionPool,

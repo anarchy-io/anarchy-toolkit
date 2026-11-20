@@ -19,7 +19,8 @@ Reference this package from application and domain-facing code that needs reposi
 ## How to use it
 
 1. Define application-specific repository interfaces and expose only the operations your use cases need. Implement them in an infrastructure project using the supplied reader, writer or batch contracts where appropriate.
-2. Coordinate related writes through the unit-of-work abstraction, and use the storage-policy and flow-context contracts when implementing an adapter.
+2. Let a UseCase own a managed session with `RunInManagedSessionAsync`. An Aggregate that must also work alone can use `RunInJoinedOrManagedSessionAsync`; an Aggregate that only participates uses `RunInJoinedSessionAsync` and cannot commit or roll back the caller's transaction.
+3. Use the storage-policy and flow-context contracts when implementing a provider adapter. Pass cancellation tokens through the operation so database work and rollback cleanup follow the unit-of-work contract.
 3. In the host, register a concrete provider such as `Infrastructure.Persistence.Db.Postgres`, `Infrastructure.Persistence.Db.Oracle` or `Infrastructure.Persistence.Db.Mysql`. Supply connection and resilience options there, not in application code.
 
 Select transaction boundaries deliberately: the abstractions do not provision databases, retry entire business operations or make external side effects transactional.

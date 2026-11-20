@@ -6,7 +6,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 /// Base exception for failures of a database policy (see <see cref="DbPolicyBase{TDbConnection}"/>) itself, such as
 /// acquiring or releasing connections.
 /// </summary>
-public class DbPolicyExecutionException : DsPolicyExecutionException
+public class DbPolicyExecutionException : StoragePolicyExecutionException
 {
     /// <summary>Creates the exception with a message prefixed by <c>DB Policy failure:</c>.</summary>
     /// <param name="failure">Description of the failure.</param>
