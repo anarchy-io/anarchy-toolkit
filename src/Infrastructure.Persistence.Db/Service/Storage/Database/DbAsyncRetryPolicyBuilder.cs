@@ -20,7 +20,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database
 ///     The delay before retry attempt <c>n</c> (zero-based) is <c>2^(n + 1)</c> seconds, i.e. 2s, 4s, 8s, ...
 ///     The pipeline is consumed by <see cref="ResilienceDbPolicy{TDbConnection}" />.
 /// </remarks>
-public class DbAsyncRetryPolicyBuilder<TDbConnection, TDialect>(DbResilienceOptions options, IAppTelemetry? telemetry = null)
+public class DbAsyncRetryPolicyBuilder<TDbConnection, TDialect>(DbResilienceOptions options, AppTelemetry? telemetry = null)
     : IAsyncRetryPolicyBuilder<TDbConnection>
     where TDbConnection : DbConnection
     where TDialect : IDbDialect

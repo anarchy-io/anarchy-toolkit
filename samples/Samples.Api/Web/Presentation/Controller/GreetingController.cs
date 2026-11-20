@@ -1,5 +1,4 @@
-using Anarchy.Toolkit.Core.Observability.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Samples.Api.Infrastructure.Entity.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace Anarchy.Toolkit.Samples.Api.Web.Presentation.Controller;
 
 [Route("greetings")]
 [Produces("application/json")]
-public sealed class GreetingController(AppSettings settings, Observer observer) : ControllerBase
+public sealed class GreetingController(AppSettings settings, AppTelemetry telemetry) : ControllerBase
 {
     [HttpGet("{name}")]
     [AllowAnonymous]
@@ -16,8 +15,8 @@ public sealed class GreetingController(AppSettings settings, Observer observer) 
     {
         var caller = this.CalledFrom();
 
-        observer.LogInformation(caller, "Greeting {Name}", name);
-        observer.ExecutionIncrementCount(caller);
+        telemetry.LogInformation(caller, "Greeting {Name}", name);
+        telemetry.IncrementCounter(caller, MetricSuffixes.ExecutionCount);
 
         return Ok(new { message = $"{settings.Greeting}, {name}!" });
     }

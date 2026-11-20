@@ -39,14 +39,14 @@ public abstract class DbRepositoryBase<TDbConnection>
     protected readonly IStoragePolicy<TDbConnection> DbPolicy;
 
     /// <summary>Application telemetry used for logging and metrics.</summary>
-    protected readonly IAppTelemetry Telemetry;
+    protected readonly AppTelemetry Telemetry;
 
     /// <summary>
     /// Initializes the repository and captures the namespaces and assemblies of its inheritance chain for SQL lookup.
     /// </summary>
     /// <param name="dbPolicy">Policy used to execute database operations.</param>
     /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
-    protected DbRepositoryBase(IStoragePolicy<TDbConnection> dbPolicy, IAppTelemetry telemetry)
+    protected DbRepositoryBase(IStoragePolicy<TDbConnection> dbPolicy, AppTelemetry telemetry)
     {
         DbPolicy = dbPolicy;
         Telemetry = telemetry;

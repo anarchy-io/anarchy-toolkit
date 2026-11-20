@@ -2,8 +2,7 @@ using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
@@ -17,7 +16,6 @@ using Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Storage.Databa
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Testing.Db.Mysql.Entity.Configuration;
 using Anarchy.Toolkit.Testing.Db.Mysql.Helper;
-using Anarchy.Toolkit.Testing.Helper;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -104,7 +102,7 @@ public class MysqlTest
     public void Module_ResolvesPoolsPoliciesUnitOfWorkAndHealthReports()
     {
         using var provider = new ServiceCollection()
-            .AddLogging().AddMetrics().AddAppTelemetry()
+            .AddCoreTelemetry()
             .UseModule(new ModuleMysql(_ => Options(), _ => new MysqlResilienceOptions(3)),
                 new ConfigurationBuilder().Build(), Mock.Of<IHostEnvironment>())
             .AddMysqlHealthReports().BuildServiceProvider();
@@ -117,14 +115,14 @@ public class MysqlTest
         }
         provider.GetRequiredService<IStoragePolicy<MySqlConnection>>()
             .Should().BeSameAs(provider.GetRequiredKeyedService<IStoragePolicy<MySqlConnection>>("writer"));
-        provider.GetRequiredService<IReadOnlyCollection<IServiceHealthReport>>().Should().HaveCount(2);
+        provider.GetRequiredService<IReadOnlyCollection<IHealthCheck>>().Should().HaveCount(2);
     }
 
     [Fact]
     public async Task HealthReports_IdentifyReaderAndWriterAndReportFailures()
     {
         var policy = new Mock<IStoragePolicy<MySqlConnection>>();
-        var telemetry = Mock.Of<IAppTelemetry>();
+        var telemetry = AppTelemetry.Null;
         var reader = await new MysqlHealthReportReader(policy.Object, telemetry).RunAsync();
         reader.Name.Should().Be("mysql_connection-reader");
         reader.Result.Should().Be(HealthCheckResult.Passed.ToDescription());

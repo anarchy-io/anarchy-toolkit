@@ -17,7 +17,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Repository.Stor
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public abstract class PostgresDbWriterRepositoryBase<TNewEntity, TPersistedEntity>(
     IStoragePolicy<NpgsqlConnection> dbPolicy,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : DbWriterRepositoryBase<NpgsqlConnection, PostgresDbDialect, TNewEntity, TPersistedEntity>(dbPolicy,
         telemetry)
     where TNewEntity : IEntity

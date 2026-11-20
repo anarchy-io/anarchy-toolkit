@@ -1,12 +1,8 @@
-using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
-using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
-using Anarchy.Toolkit.Testing.Helper.Observability.Monitoring;
+using Anarchy.Toolkit.Testing.Telemetry;
 using Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Db.Dummy;
 using AwesomeAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 
 namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Db.Service.Storage.Database;
 
@@ -45,19 +41,13 @@ public class DbAsyncRetryPolicyBuilderTest
     }
 
     [Fact]
-    public async Task Build_WhenRetrying_LogsThroughTheConsumerSink()
+    public async Task Build_WhenRetrying_LogsThroughTheInjectedTelemetry()
     {
         var token = TestContext.Current.CancellationToken;
-        var sink = new InMemorySink();
-        using var logger = new LoggerConfiguration().WriteTo.Sink(sink).CreateLogger();
-        var services = new ServiceCollection();
-        services.AddMetrics();
-        services.AddSerilogTelemetry(logger);
-        using var provider = services.BuildServiceProvider();
-        var telemetry = provider.GetRequiredService<IAppTelemetry>();
+        using var telemetry = new TestTelemetry();
         var attempts = 0;
         var pipeline = new DbAsyncRetryPolicyBuilder<DummyDbConnection, DummyDbDialect>(
-            new DbResilienceOptions(RetryCount: 1), telemetry).Build();
+            new DbResilienceOptions(RetryCount: 1), telemetry.Telemetry).Build();
 
         var result = await pipeline.ExecuteAsync(_ => {
             attempts++;
@@ -67,6 +57,6 @@ public class DbAsyncRetryPolicyBuilderTest
         }, token);
 
         result.Should().Be(2);
-        sink.Messages.Should().Contain(entry => entry.RenderMessage().Contains("Retry operation attempt 1"));
+        telemetry.Logs.Should().Contain(log => log.Message.Contains("Retry operation attempt 1"));
     }
 }

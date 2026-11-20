@@ -38,7 +38,7 @@ public class ResilienceDbPolicy<TDbConnection>(
     IAsyncRetryPolicyBuilder<TDbConnection> retryPolicyBuilder,
     IDbConnectionPool<TDbConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null)
+    AppTelemetry? telemetry = null)
     : DbPolicyBase<TDbConnection>(dbConnectionPool, asyncFlowContext, telemetry)
     where TDbConnection : DbConnection
 {

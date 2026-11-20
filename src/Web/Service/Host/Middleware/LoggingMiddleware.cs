@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Web.Extension.Service.Observability.TagBuilderBase;
-using Microsoft.Extensions.Logging;
+using Anarchy.Toolkit.Web.Extension.Service.Telemetry;
 using System.Diagnostics;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
@@ -10,7 +9,7 @@ namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
 /// </summary>
 /// <remarks>
 /// The duration is tagged with the status code, controller, action and request method (see
-/// <see cref="Anarchy.Toolkit.Web.Extension.Service.Observability.TagBuilderBase.MiddlewareTagsExtensions"/>). Nothing is
+/// <see cref="Anarchy.Toolkit.Web.Extension.Service.Telemetry.MiddlewareTagsExtensions"/>). Nothing is
 /// logged if a downstream component throws. Registered by <c>UseToolkitHostRestApi</c> before
 /// <see cref="ExceptionMiddleware"/>.
 /// </remarks>
@@ -18,7 +17,7 @@ namespace Anarchy.Toolkit.Web.Service.Host.Middleware;
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public class LoggingMiddleware(
     RequestDelegate next,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
 {
     /// <summary>Invokes the rest of the pipeline, then logs the request and records its duration.</summary>
     /// <param name="context">The current HTTP context.</param>
@@ -43,7 +42,7 @@ public class LoggingMiddleware(
             request.Path,
             statusCode);
 
-        telemetry.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, MiddlewareTagsExtensions.FromStatusCode(statusCode)
+        telemetry.RecordDuration(caller, timer.Elapsed, MiddlewareTagsExtensions.FromStatusCode(statusCode)
             .WithController(context)
             .WithAction(context)
             .WithRequestMethod(request)

@@ -22,5 +22,5 @@ public class OracleResilienceDbPolicy(
     IAsyncRetryPolicyBuilder<OracleConnection> retryPolicyBuilder,
     IDbConnectionPool<OracleConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<OracleConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null)
+    AppTelemetry? telemetry = null)
     : ResilienceDbPolicy<OracleConnection>(retryPolicyBuilder, dbConnectionPool, asyncFlowContext, telemetry);

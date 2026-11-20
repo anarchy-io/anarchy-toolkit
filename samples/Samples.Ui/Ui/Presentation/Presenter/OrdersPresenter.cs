@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Samples.Ui.Core.Entity;
 using Anarchy.Toolkit.Samples.Ui.Core.Service;
-using Anarchy.Toolkit.Web.Ui.Ui.Presentation.Model;
-using Anarchy.Toolkit.Web.Ui.Ui.Presentation.Service;
+using Anarchy.Toolkit.Web.Ui.Presentation.Model;
+using Anarchy.Toolkit.Web.Ui.Presentation.Service;
 
 namespace Anarchy.Toolkit.Samples.Ui.Ui.Presentation.Presenter;
 

@@ -47,7 +47,7 @@ public sealed class PostgresHelper
     /// </summary>
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static PostgresResilienceDbPolicy DbPolicyFixture<TAppSettings>(IAppTelemetry? telemetry = null)
+    public static PostgresResilienceDbPolicy DbPolicyFixture<TAppSettings>(AppTelemetry? telemetry = null)
         where TAppSettings : class, IPostgresAppSettings, IResilienceAppSettings
     {
         return DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
@@ -61,7 +61,7 @@ public sealed class PostgresHelper
     /// <param name="appSettings">The settings to build the fixture from.</param>
     /// <param name="telemetry">Optional application telemetry for the policy.</param>
     /// <returns>A new resilience policy over a new writer connection pool.</returns>
-    public static PostgresResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings, IAppTelemetry? telemetry = null)
+    public static PostgresResilienceDbPolicy DbPolicyFixture<TSettings>(TSettings appSettings, AppTelemetry? telemetry = null)
         where TSettings : IPostgresAppSettings, IResilienceAppSettings
     {
         var connectionPool = new PostgresConnectionPool(
@@ -86,7 +86,7 @@ public sealed class PostgresHelper
     /// <typeparam name="TAppSettings">The consumer's test settings type.</typeparam>
     /// <param name="telemetry">Optional application telemetry for the unit of work.</param>
     /// <returns>A new unit of work over a new writer connection pool.</returns>
-    public static PostgresDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(IAppTelemetry? telemetry = null)
+    public static PostgresDbUnitOfWork DbUnitOfWorkFixture<TAppSettings>(AppTelemetry? telemetry = null)
         where TAppSettings : class, IPostgresAppSettings
     {
         return DbUnitOfWorkFixture(TestHelper.TestSettings<TAppSettings>(), telemetry);
@@ -100,9 +100,9 @@ public sealed class PostgresHelper
     /// <returns>A new unit of work over a new writer connection pool.</returns>
     /// <remarks>
     ///     The unit of work uses its own async flow context, so repositories built from a separate
-    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, IAppTelemetry)" /> do not join its sessions.
+    ///     <see cref="DbPolicyFixture{TSettings}(TSettings, AppTelemetry)" /> do not join its sessions.
     /// </remarks>
-    public static PostgresDbUnitOfWork DbUnitOfWorkFixture(IPostgresAppSettings appSettings, IAppTelemetry? telemetry = null)
+    public static PostgresDbUnitOfWork DbUnitOfWorkFixture(IPostgresAppSettings appSettings, AppTelemetry? telemetry = null)
     {
         return new PostgresDbUnitOfWork(
             new PostgresConnectionPool(

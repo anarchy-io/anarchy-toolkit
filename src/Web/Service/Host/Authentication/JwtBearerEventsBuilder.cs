@@ -1,13 +1,12 @@
 using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.Service.Host.Authentication;
 
 /// <summary>
 /// Builds the <see cref="JwtBearerEvents"/> used by the toolkit JWT bearer authentication, logging token validation
 /// successes, authentication failures and challenges through the
-/// <see cref="IAppTelemetry"/> resolved from request services.
+/// <see cref="AppTelemetry"/> resolved from request services.
 /// </summary>
 public static class JwtBearerEventsBuilder
 {
@@ -20,7 +19,7 @@ public static class JwtBearerEventsBuilder
                 context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<IAppTelemetry>()
+                    .GetRequiredService<AppTelemetry>()
                     .Log(
                         LogLevel.Information,
                         context.CalledFrom(),
@@ -33,7 +32,7 @@ public static class JwtBearerEventsBuilder
                 context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<IAppTelemetry>()
+                    .GetRequiredService<AppTelemetry>()
                     .Log(
                         LogLevel.Error,
                         context.CalledFrom(),
@@ -45,7 +44,7 @@ public static class JwtBearerEventsBuilder
                 context
                     .HttpContext
                     .RequestServices
-                    .GetRequiredService<IAppTelemetry>()
+                    .GetRequiredService<AppTelemetry>()
                     .Log(
                         LogLevel.Warning,
                         context.CalledFrom(),

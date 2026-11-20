@@ -22,5 +22,5 @@ public class PostgresResilienceDbPolicy(
     IAsyncRetryPolicyBuilder<NpgsqlConnection> retryPolicyBuilder,
     IDbConnectionPool<NpgsqlConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null)
+    AppTelemetry? telemetry = null)
     : ResilienceDbPolicy<NpgsqlConnection>(retryPolicyBuilder, dbConnectionPool, asyncFlowContext, telemetry);

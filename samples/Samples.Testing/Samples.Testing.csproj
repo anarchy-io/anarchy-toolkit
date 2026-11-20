@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Anarchy.Toolkit.Samples.Tests</AssemblyName>
-    <RootNamespace>Anarchy.Toolkit.Samples.Tests</RootNamespace>
+    <AssemblyName>Anarchy.Toolkit.Samples.Testing</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Samples.Testing</RootNamespace>
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
@@ -15,9 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Testing\Testing.csproj" />
     <ProjectReference Include="..\..\src\Testing.Web\Testing.Web.csproj" />
     <ProjectReference Include="..\..\src\Testing.MockServer\Testing.MockServer.csproj" />
     <ProjectReference Include="..\Samples.Api\Samples.Api.csproj" />
+    <ProjectReference Include="..\Samples.Examples\Samples.Examples.csproj" />
     <ProjectReference Include="..\Samples.Job\Samples.Job.csproj" />
     <ProjectReference Include="..\Samples.MockServer\Samples.MockServer.csproj" />
     <ProjectReference Include="..\Samples.Ui\Samples.Ui.csproj" />

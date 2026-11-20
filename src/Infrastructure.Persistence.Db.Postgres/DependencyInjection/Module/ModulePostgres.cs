@@ -20,7 +20,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.DependencyInjec
 /// The unkeyed <see cref="IStoragePolicy{TStorage}"/> resolves to the writer policy.
 /// </summary>
 /// <remarks>
-/// Requires an <see cref="IAppTelemetry"/> registration. The options are resolved from the application's configuration
+/// Requires an <see cref="AppTelemetry"/> registration. The options are resolved from the application's configuration
 /// through the given factories, so the module makes no assumption about section names or settings types.
 /// </remarks>
 /// <param name="connectionOptions">Factory building the connection options from <see cref="IConfiguration"/>.</param>
@@ -74,7 +74,7 @@ public sealed class ModulePostgres(
                     sp.GetRequiredService<IAsyncRetryPolicyBuilder<NpgsqlConnection>>(),
                     sp.GetRequiredKeyedService<IDbConnectionPool<NpgsqlConnection>>(key),
                     sp.GetRequiredService<IAsyncFlowContext<StorageConnectionEnvelopeBase<NpgsqlConnection>>>(),
-                    sp.GetRequiredService<IAppTelemetry>()))
+                    sp.GetRequiredService<AppTelemetry>()))
             ;
     }
 }

@@ -5,7 +5,6 @@ using Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.DependencyInjection.M
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Service.Storage.Database.Oracle;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
-using Anarchy.Toolkit.Testing.Helper;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,7 +24,7 @@ public class ModuleOracleTest
         var configuration = new ConfigurationBuilder().Build();
 
         return new ServiceCollection()
-            .AddLogging().AddMetrics().AddAppTelemetry()
+            .AddCoreTelemetry()
             .UseModule(new ModuleOracle(
                     config => {
                         onResolveOptions?.Invoke(config);

@@ -12,5 +12,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Storage
 /// <remarks>Registered as a singleton by <c>ModulePostgres</c>.</remarks>
 /// <param name="options">Resilience options; <c>RetryCount</c> sets the maximum number of retries.</param>
 /// <param name="telemetry">Application telemetry used to log a warning on every retry.</param>
-public class PostgresAsyncRetryPolicyBuilder(PostgresResilienceOptions options, IAppTelemetry? telemetry = null)
+public class PostgresAsyncRetryPolicyBuilder(PostgresResilienceOptions options, AppTelemetry? telemetry = null)
     : DbAsyncRetryPolicyBuilder<NpgsqlConnection, PostgresDbDialect>(options, telemetry);

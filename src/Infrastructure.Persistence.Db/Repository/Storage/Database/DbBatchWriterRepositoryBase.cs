@@ -22,7 +22,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// <param name="telemetry">Application telemetry used for logging and metrics.</param>
 public abstract class DbBatchWriterRepositoryBase<TDbConnection, TDialect, TNewEntity>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, telemetry),
       IStorageBatchWriterRepository<TNewEntity>
     where TDbConnection : DbConnection

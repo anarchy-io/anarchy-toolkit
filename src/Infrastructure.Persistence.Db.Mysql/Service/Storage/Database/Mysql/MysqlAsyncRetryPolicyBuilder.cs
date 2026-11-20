@@ -12,5 +12,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Storage.Da
 /// <remarks>Registered as a singleton by <c>ModuleMysql</c>.</remarks>
 /// <param name="options">Resilience options; <c>RetryCount</c> sets the maximum number of retries.</param>
 /// <param name="telemetry">Application telemetry used to log a warning on every retry.</param>
-public class MysqlAsyncRetryPolicyBuilder(MysqlResilienceOptions options, IAppTelemetry? telemetry = null)
+public class MysqlAsyncRetryPolicyBuilder(MysqlResilienceOptions options, AppTelemetry? telemetry = null)
     : DbAsyncRetryPolicyBuilder<MySqlConnection, MysqlDbDialect>(options, telemetry);

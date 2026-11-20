@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 /// <param name="lifetime">The application lifetime, used to wait for <c>ApplicationStarted</c>.</param>
 public sealed class StartupUrlLoggerWorker(
     IServer server,
-    IAppTelemetry telemetry,
+    AppTelemetry telemetry,
     IHostEnvironment env,
     IHostApplicationLifetime lifetime) : IHostedService
 {

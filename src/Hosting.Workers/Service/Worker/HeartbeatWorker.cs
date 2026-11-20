@@ -14,7 +14,7 @@ namespace Anarchy.Toolkit.Hosting.Workers.Service.Worker;
 /// </example>
 /// <param name="telemetry">Application telemetry used for logs and metrics.</param>
 /// <param name="recurringIntervalInSeconds">Interval between heartbeats. Defaults to 30 seconds.</param>
-public sealed class HeartbeatWorker(IAppTelemetry telemetry, double recurringIntervalInSeconds = 30)
+public sealed class HeartbeatWorker(AppTelemetry telemetry, double recurringIntervalInSeconds = 30)
     : WorkerBase(recurringIntervalInSeconds)
 {
     /// <inheritdoc />
@@ -23,7 +23,7 @@ public sealed class HeartbeatWorker(IAppTelemetry telemetry, double recurringInt
         var caller = this.CalledFrom();
 
         telemetry.Log(LogLevel.Information, caller, null, "My heart is still beating...");
-        telemetry.IncrementCounter($"{caller.ToMetricPrefix()}.heartbeat", 1, [new("success", true)]);
+        telemetry.IncrementCounter(caller, MetricSuffixes.Heartbeat, 1, [new("success", true)]);
 
         return Task.FromResult(true);
     }

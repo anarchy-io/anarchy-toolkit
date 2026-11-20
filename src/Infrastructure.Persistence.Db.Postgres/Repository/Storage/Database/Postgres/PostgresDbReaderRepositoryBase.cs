@@ -21,7 +21,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Repository.Stor
 /// <example>
 /// <code language="csharp">
 /// public sealed class OrderReaderRepository(
-///     [FromKeyedServices("reader")] IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, IAppTelemetry telemetry)
+///     [FromKeyedServices("reader")] IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, AppTelemetry telemetry)
 ///     : PostgresDbReaderRepositoryBase&lt;PersistedOrder&gt;(dbPolicy, telemetry)
 /// {
 ///     public override Task&lt;PersistedOrder&gt; GetByIdAsync(long id, CancellationToken? cancellationToken = null) =&gt;
@@ -32,6 +32,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Repository.Stor
 /// </example>
 public abstract class PostgresDbReaderRepositoryBase<TPersistedEntity>(
     IStoragePolicy<NpgsqlConnection> dbPolicy,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : DbReaderRepositoryBase<NpgsqlConnection, PostgresDbDialect, TPersistedEntity>(dbPolicy, telemetry)
     where TPersistedEntity : IPersistedEntity;

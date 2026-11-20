@@ -25,7 +25,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </remarks>
 /// <example>
 ///     <code language="csharp">
-///     public sealed class OrderReaderRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, IAppTelemetry telemetry)
+///     public sealed class OrderReaderRepository(IStoragePolicy&lt;NpgsqlConnection&gt; dbPolicy, AppTelemetry telemetry)
 ///         : DbReaderRepositoryBase&lt;NpgsqlConnection, PostgresDbDialect, PersistedOrder&gt;(dbPolicy, telemetry)
 ///     {
 ///         public override Task&lt;long&gt; GetLatestIdAsync(CancellationToken? cancellationToken = null) =>
@@ -43,7 +43,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </example>
 public abstract class DbReaderRepositoryBase<TDbConnection, TDialect, TPersistedEntity>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : DbStorageRepositoryBase<TDbConnection, TDialect>(dbPolicy, telemetry),
       IStorageReaderRepository<TPersistedEntity>
     where TDbConnection : DbConnection

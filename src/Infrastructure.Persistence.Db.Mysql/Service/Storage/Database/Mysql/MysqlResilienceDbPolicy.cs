@@ -25,7 +25,7 @@ public class MysqlResilienceDbPolicy(
     IAsyncRetryPolicyBuilder<MySqlConnection> retryPolicyBuilder,
     IDbConnectionPool<MySqlConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null)
+    AppTelemetry? telemetry = null)
     : ResilienceDbPolicy<MySqlConnection>(retryPolicyBuilder, dbConnectionPool, asyncFlowContext, telemetry)
 {
     // MySQL can roll back the entire transaction on a deadlock. Retrying an individual command would then

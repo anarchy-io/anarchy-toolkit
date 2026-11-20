@@ -1,5 +1,6 @@
-using Anarchy.Toolkit.Configuration.Entity.Observability;
 using Anarchy.Toolkit.Configuration.Extension.Microsoft.Hosting;
+using Anarchy.Toolkit.Configuration.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.CorrelationId.Extension.Service.Builder;
 using Microsoft.Extensions.FileProviders;
 
@@ -40,7 +41,8 @@ public static partial class ApplicationBuilderExtension
         /// </summary>
         /// <remarks>
         /// The first middleware reads the <c>X-Amzn-Trace-Id</c> request header into <c>AmazonRequestContext</c> and
-        /// echoes the trace id back on the response when the response has not started yet. In the local environment
+        /// echoes the trace id back on the response when the response has not started yet; while the request runs, the trace id is
+        /// also pushed onto the log context (<c>X-Amzn-Trace-Id</c>), for every logging provider. In the local environment
         /// the developer exception page is enabled. Authentication runs before authorization so
         /// <see cref="HttpContext.User"/> is populated. Response compression requires the providers registered by
         /// <see cref="Anarchy.Toolkit.Web.Extension.DependencyInjection.ServiceCollectionExtension.AddCompressionProviders"/>.
@@ -52,12 +54,16 @@ public static partial class ApplicationBuilderExtension
             return app
                 .Use(async (context, next) => {
                     context.Request.Headers.TryGetValue("X-Amzn-Trace-Id", out var values);
+                    IDisposable? traceScope = null;
                     if (values.Count != 0)
                     {
                         AmazonRequestContext.SetValues(values[0]);
+                        traceScope = context.RequestServices.GetService<AppTelemetry>()?.LogContext
+                            .PushProperty("X-Amzn-Trace-Id", values[0]);
                     }
 
-                    await next.Invoke();
+                    using (traceScope)
+                        await next.Invoke();
 
                     if (!context.Response.HasStarted)
                     {

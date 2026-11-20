@@ -36,7 +36,7 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
     /// <summary>
     ///     Application telemetry used for logging and metrics
     /// </summary>
-    protected readonly IAppTelemetry? Telemetry;
+    protected readonly AppTelemetry? Telemetry;
 
     /// <summary>
     ///     Initializes the policy.
@@ -50,7 +50,7 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
     protected DbPolicyBase(
         IDbConnectionPool<TDbConnection> dbConnectionPool,
         IAsyncFlowContext<StorageConnectionEnvelopeBase<TDbConnection>> asyncFlowContext,
-        IAppTelemetry? telemetry = null
+        AppTelemetry? telemetry = null
     )
     {
         DbConnectionPool = dbConnectionPool;
@@ -120,7 +120,7 @@ public abstract class DbPolicyBase<TDbConnection> : IStoragePolicy<TDbConnection
                 tags = [.. tags, new("operation_name", operationName)];
             }
 
-            Telemetry?.RecordDuration($"{caller.ToMetricPrefix()}.execution_time", timer.Elapsed, tags);
+            Telemetry?.RecordDuration(caller, timer.Elapsed, tags);
 
             await CleanupAsync(releaseConnection, connection!, cancellationToken);
 

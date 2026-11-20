@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
-namespace Anarchy.Toolkit.Samples.Tests.MockServer;
+namespace Anarchy.Toolkit.Samples.Testing.MockServer;
 
 /// <summary>
 /// Uses the server at <c>MOCKSERVER_URL</c> when set (e.g. <c>make test_end_to_end_mocked</c>), otherwise spawns the

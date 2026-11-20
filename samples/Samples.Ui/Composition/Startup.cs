@@ -10,9 +10,9 @@ using Anarchy.Toolkit.Samples.Ui.Ui.Presentation.Presenter;
 using Anarchy.Toolkit.Samples.Ui.Ui.Template;
 using Anarchy.Toolkit.Samples.Ui.Web.Stub;
 using Anarchy.Toolkit.Web.Ui.Composition.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Web.Ui.Composition.Startup;
 using Anarchy.Toolkit.Web.Ui.Core.Entity.Ui;
 using Anarchy.Toolkit.Web.Ui.Entity.Ui;
-using Anarchy.Toolkit.Web.Ui.Ui.Composition.Startup;
 
 namespace Anarchy.Toolkit.Samples.Ui.Composition;
 

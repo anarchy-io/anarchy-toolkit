@@ -6,7 +6,7 @@ using AwesomeAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 
-namespace Anarchy.Toolkit.Samples.Tests.Api;
+namespace Anarchy.Toolkit.Samples.Testing.Api;
 
 /// <summary>
 /// Exercises the example API through both the native (Kestrel/TestServer) and the AWS Lambda pipelines.

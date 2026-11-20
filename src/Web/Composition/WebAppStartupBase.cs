@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Hosting.DependencyInjection;
-using Anarchy.Toolkit.Infrastructure.Http.Entity.Http.Common;
+using Anarchy.Toolkit.Infrastructure.Http.Common;
 using Anarchy.Toolkit.Web.Extension.DependencyInjection;
 using Anarchy.Toolkit.Web.Presentation.Converter.Json;
 using Anarchy.Toolkit.Web.Service.Worker;

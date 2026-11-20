@@ -82,7 +82,7 @@ public sealed class SingletonMysqlHelper
     /// <param name="telemetry">Optional application telemetry for retry logging.</param>
     /// <returns>The cached retry policy builder.</returns>
     public static IAsyncRetryPolicyBuilder<MySqlConnection> RetryPolicyBuilder(IResilienceAppSettings settings, bool forceRefresh = false,
-        IAppTelemetry? telemetry = null)
+        AppTelemetry? telemetry = null)
     {
         lock (Sync)
         {
@@ -102,7 +102,7 @@ public sealed class SingletonMysqlHelper
     /// <param name="forceRefresh">When <c>true</c>, rebuilds the policy, the pool and the retry builder.</param>
     /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
-    public static IStoragePolicy<MySqlConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false, IAppTelemetry? telemetry = null)
+    public static IStoragePolicy<MySqlConnection> DbPolicyFixture<TAppSettings>(bool forceRefresh = false, AppTelemetry? telemetry = null)
         where TAppSettings : class, IMysqlAppSettings, IResilienceAppSettings =>
         DbPolicyFixture(TestHelper.TestSettings<TAppSettings>(), forceRefresh, telemetry);
 
@@ -116,7 +116,7 @@ public sealed class SingletonMysqlHelper
     /// <param name="telemetry">Optional application telemetry for the policy and retry builder.</param>
     /// <returns>The cached policy.</returns>
     public static IStoragePolicy<MySqlConnection> DbPolicyFixture<TSettings>(TSettings settings, bool forceRefresh = false,
-        IAppTelemetry? telemetry = null)
+        AppTelemetry? telemetry = null)
         where TSettings : IMysqlAppSettings, IResilienceAppSettings
     {
         lock (Sync)

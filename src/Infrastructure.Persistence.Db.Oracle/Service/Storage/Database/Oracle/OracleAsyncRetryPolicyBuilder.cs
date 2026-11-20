@@ -12,5 +12,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Service.Storage.D
 /// <remarks>Registered as a singleton by <c>ModuleOracle</c>.</remarks>
 /// <param name="options">Resilience options; <c>RetryCount</c> sets the maximum number of retries.</param>
 /// <param name="telemetry">Application telemetry used to log a warning on every retry.</param>
-public class OracleAsyncRetryPolicyBuilder(OracleResilienceOptions options, IAppTelemetry? telemetry = null)
+public class OracleAsyncRetryPolicyBuilder(OracleResilienceOptions options, AppTelemetry? telemetry = null)
     : DbAsyncRetryPolicyBuilder<OracleConnection, OracleDbDialect>(options, telemetry);
