@@ -10,7 +10,7 @@ One project per test kind lets the build run each level on its own (unit tests b
 
 ## Test layout
 
-Test projects are never published, so there is **one test project per test kind**, not one per package. Today that is only `tests/Unit/Unit.csproj`. Inside it, the tests mirror the source tree twice: a folder path built from the name of the `src/` project under test (one folder per dot-separated segment), then the SUT's own path inside that project.
+Test projects are never published, so there is **one test project per test kind**, not one per package. This repository has `tests/Unit/Unit.csproj`, `tests/Integration/Integration.csproj` and `tests/EndToEnd/EndToEnd.csproj`. Inside each, the tests mirror the source tree twice: a folder path built from the name of the `src/` project under test (one folder per dot-separated segment), then the SUT's own path inside that project.
 
 ```text
 src/
@@ -39,15 +39,15 @@ tests/
   Because the folders split the project name on its dots, the namespace still reads `<Project>.<SUT path>`.
 
 - **Resources a test needs embedded** (settings files, build metadata, text resources) are declared in `<Kind>.csproj` with an explicit `LogicalName` based on `$(AssemblyName)`, because every test now shares one assembly.
-- **`InternalsVisibleTo`** in a `src/` project targets the test assembly name, `Anarchy.Toolkit.Tests.Unit`.
+- **`InternalsVisibleTo`** in a `src/` project targets the test assembly name, `Anarchy.Toolkit.Tests.<Kind>` (e.g. `Anarchy.Toolkit.Tests.Unit`), for each kind that needs its internals.
 
 ### Test kinds
 
 | Kind | Project | Runs | Anarchy target |
 |---|---|---|---|
 | Unit | `tests/Unit/Unit.csproj` | in-process, no infrastructure | `TestUnit` (`make test_unit`) |
-| Integration | `tests/Integration/Integration.csproj` (none yet) | against real local resources (Docker: [PostgreSQL](https://www.postgresql.org/), LocalStack) | `TestIntegration` |
-| End-to-end | `tests/EndToEnd/EndToEnd.csproj` (none yet) | end-to-end through a hosted API or job | `TestEndToEnd` |
+| Integration | `tests/Integration/Integration.csproj` | against real local resources: tools such as Git and the .NET SDK, or Docker services ([PostgreSQL](https://www.postgresql.org/), LocalStack) | `TestIntegration` |
+| End-to-end | `tests/EndToEnd/EndToEnd.csproj` | end-to-end through a hosted API or job, or a user-facing entry point (a CLI, a Makefile) | `TestEndToEnd` |
 
 The Anarchy build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro), [AwesomeAssertions](https://awesomeassertions.org/), [Moq](https://github.com/devlooped/moq), and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
 

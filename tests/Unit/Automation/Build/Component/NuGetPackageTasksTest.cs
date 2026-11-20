@@ -17,7 +17,8 @@ public class NuGetPackageTasksTest
         var testing = packages.Add("Testing", "1.0.0", ("Web", "[1.0.0, )"));
 
         NuGetPackageTasks.OrderForPublish([testing, web, infra, events, core])
-            .Should().Equal(core, events, infra, web, testing);
+            .Should()
+            .Equal(core, events, infra, web, testing);
     }
 
     [Fact]
@@ -28,7 +29,9 @@ public class NuGetPackageTasksTest
         var b = packages.Add("B", "1.0.0", ("A", "[1.0.0, )"));
 
         var act = () => NuGetPackageTasks.OrderForPublish([a, b]);
-        act.Should().Throw<InvalidOperationException>().WithMessage("*cycle*");
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*cycle*");
     }
 
     [Fact]
@@ -36,13 +39,16 @@ public class NuGetPackageTasksTest
     {
         using var packages = new PackageFiles();
         var a = packages.AddWithGroups("A", "1.0.0", """
-            <group targetFramework="net8.0"><dependency id="B" version="[1.0.0, )" /></group>
-            <group targetFramework="net10.0"><dependency id="C" version="[1.0.0, )" /></group>
-            """);
+                                                     <group targetFramework="net8.0"><dependency id="B" version="[1.0.0, )" /></group>
+                                                     <group targetFramework="net10.0"><dependency id="C" version="[1.0.0, )" /></group>
+                                                     """);
+
         var b = packages.Add("B", "1.0.0");
         var c = packages.Add("C", "1.0.0");
 
-        NuGetPackageTasks.OrderForPublish([a, b, c]).Should().Equal(b, c, a);
+        NuGetPackageTasks.OrderForPublish([a, b, c])
+            .Should()
+            .Equal(b, c, a);
     }
 
     [Fact]
@@ -54,9 +60,14 @@ public class NuGetPackageTasksTest
         var otherB = packages.Add("b", "2.0.0");
 
         var incompatible = () => NuGetPackageTasks.OrderForPublish([a, b]);
-        incompatible.Should().Throw<InvalidOperationException>().WithMessage("*requires B*");
+        incompatible.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*requires B*");
+
         var duplicate = () => NuGetPackageTasks.OrderForPublish([b, otherB]);
-        duplicate.Should().Throw<InvalidOperationException>().WithMessage("*Multiple packages*");
+        duplicate.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Multiple packages*");
     }
 
     [Fact]
@@ -66,18 +77,23 @@ public class NuGetPackageTasksTest
         var primary = packages.Add("A", "1.0.0");
         File.WriteAllText(Path.Combine(Path.GetDirectoryName(primary)!, "A.1.0.0.symbols.nupkg"), "symbols");
 
-        NuGetPackageTasks.FindPackages(Path.GetDirectoryName(primary)!).Should().Equal(primary);
+        NuGetPackageTasks.FindPackages(Path.GetDirectoryName(primary)!)
+            .Should()
+            .Equal(primary);
     }
 
     private sealed class PackageFiles : IDisposable
     {
-        private readonly string _directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        private readonly string _directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid()
+            .ToString("N"));
 
         public PackageFiles() => Directory.CreateDirectory(_directory);
 
         public string Add(string id, string version, params (string Id, string Version)[] dependencies)
         {
-            var items = string.Concat(dependencies.Select(d => $"<dependency id=\"{d.Id}\" version=\"{d.Version}\" />"));
+            var items = string.Concat(dependencies.Select(d =>
+                $"<dependency id=\"{d.Id}\" version=\"{d.Version}\" />"));
+
             return AddWithGroups(id, version, $"<group targetFramework=\"net10.0\">{items}</group>");
         }
 
@@ -85,8 +101,12 @@ public class NuGetPackageTasksTest
         {
             var path = Path.Combine(_directory, $"{id}.{version}.nupkg");
             using var archive = ZipFile.Open(path, ZipArchiveMode.Create);
-            using var writer = new StreamWriter(archive.CreateEntry($"{id}.nuspec").Open());
-            writer.Write($"<package><metadata><id>{id}</id><version>{version}</version><authors>Test</authors><description>Test</description><dependencies>{groups}</dependencies></metadata></package>");
+            using var writer = new StreamWriter(archive.CreateEntry($"{id}.nuspec")
+                .Open());
+
+            writer.Write(
+                $"<package><metadata><id>{id}</id><version>{version}</version><authors>Test</authors><description>Test</description><dependencies>{groups}</dependencies></metadata></package>");
+
             return path;
         }
 

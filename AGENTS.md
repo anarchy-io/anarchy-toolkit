@@ -1,8 +1,8 @@
 # Agent instructions
 
 Anarchy.Toolkit is a .NET developer platform built around three pillars (Architecture, Infrastructure and Build
-Ecosystem), delivered from this .NET 10 monorepo as independently published NuGet packages (`src/`), with unit tests
-(`tests/Unit/`), sample applications (`samples/`), an Anarchy build powered by Fallout (`build/`) and a documentation site (`docs/`).
+Ecosystem), delivered from this .NET 10 monorepo as independently published NuGet packages (`src/`), with unit, integration and end-to-end tests
+(`tests/Unit/`, `tests/Integration/`, `tests/EndToEnd/`), sample applications (`samples/`), an Anarchy build powered by Fallout (`build/`) and a documentation site (`docs/`).
 @README.md has the overview.
 
 ## Rules

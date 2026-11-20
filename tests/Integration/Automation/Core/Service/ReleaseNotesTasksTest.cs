@@ -3,7 +3,7 @@ using AwesomeAssertions;
 using System.Diagnostics;
 using static Anarchy.Toolkit.Automation.Core.Service.ReleaseVersionTasks;
 
-namespace Anarchy.Toolkit.Tests.Unit.Automation.Core.Service;
+namespace Anarchy.Toolkit.Tests.Integration.Automation.Core.Service;
 
 public class ReleaseNotesTasksTest
 {
@@ -86,7 +86,7 @@ public class ReleaseNotesTasksTest
             edits[Path.Combine(root, "src/C/README.md")].Should().Contain("- fix: C functionality");
             ((Action)(() => ReleaseNotesTasks.Collect(root, projects, "HEAD", "HEAD~3"))).Should().Throw<InvalidOperationException>();
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { TestDirectory.Delete(root); }
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class ReleaseNotesTasksTest
             var subjects = ReleaseNotesTasks.Collect(root, projects, "HEAD~4", "HEAD");
             subjects[project].Should().Equal("feat(A): Add functionality", "chore(release): Bump affected packages for review");
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { TestDirectory.Delete(root); }
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public class ReleaseNotesTasksTest
             var subjects = ReleaseNotesTasks.Collect(root, projects, "HEAD^1", "HEAD");
             subjects[projectPath].Should().Equal("feat: add feature", "merge feature");
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { TestDirectory.Delete(root); }
     }
 
     [Fact]
@@ -209,6 +209,6 @@ public class ReleaseNotesTasksTest
             subjects.Should().ContainSingle();
             subjects[a].Should().Equal("build: update dependency");
         }
-        finally { Directory.Delete(root, recursive: true); }
+        finally { TestDirectory.Delete(root); }
     }
 }

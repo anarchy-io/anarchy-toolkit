@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
+    <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Integration" />
   </ItemGroup>
 
   <ItemGroup>

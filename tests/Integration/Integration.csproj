@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Tests that drive real external tools (git, the dotnet SDK) against temporary folders. Each top-level folder
+       mirrors the src/ project it tests, so namespaces stay Anarchy.Toolkit.Tests.Integration.<Project>.… -->
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Tests.Integration</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Tests.Integration</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
+  </ItemGroup>
+
+</Project>

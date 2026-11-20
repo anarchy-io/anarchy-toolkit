@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Tests that run the toolkit's user-facing entry points as a user would: the anarchy-toolkit CLI creating whole
+       solutions, the packaged Makefile and scripts through make, and the mock server as a background process. Each
+       top-level folder mirrors the src/ project it tests, so namespaces stay Anarchy.Toolkit.Tests.EndToEnd.<Project>.… -->
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Tests.EndToEnd</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Tests.EndToEnd</RootNamespace>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
+    <ProjectReference Include="..\..\src\Automation.Build.Cli\Automation.Build.Cli.csproj" />
+    <!-- Automation/Build/Component/MockServerTasksTest runs this project without building it, so it must be built first. -->
+    <ProjectReference Include="..\..\src\Web.MockServer\Web.MockServer.csproj" />
+  </ItemGroup>
+
+</Project>

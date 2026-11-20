@@ -14,7 +14,8 @@ public class PackageHierarchyTest
     private static LayeringProject Project(string name, params string[] references) =>
         new(name, name.Split('.')[0], "Anarchy.Toolkit." + name, references, new Dictionary<string, string>(), []);
 
-    private static IReadOnlyList<string> Check(IReadOnlyCollection<AllowedPackageReference> allowed, params LayeringProject[] projects) =>
+    private static IReadOnlyList<string> Check(IReadOnlyCollection<AllowedPackageReference> allowed,
+                                               params LayeringProject[] projects) =>
         PackageHierarchy.Check(projects, Layers, allowed);
 
     [Theory]
@@ -26,7 +27,9 @@ public class PackageHierarchyTest
     [InlineData("Core", "CoreX.Events", false)]
     public void IsAncestor_GivenPackages_ReturnsExpected(string ancestor, string package, bool expected)
     {
-        PackageHierarchy.IsAncestor(ancestor, package).Should().Be(expected);
+        PackageHierarchy.IsAncestor(ancestor, package)
+            .Should()
+            .Be(expected);
     }
 
     [Fact]
@@ -41,7 +44,8 @@ public class PackageHierarchyTest
             Project("Testing.Db", "Testing"),
             Project("Testing.Db.Mysql", "Testing", "Testing.Db"));
 
-        result.Should().BeEmpty();
+        result.Should()
+            .BeEmpty();
     }
 
     [Fact]
@@ -54,7 +58,8 @@ public class PackageHierarchyTest
             Project("Infrastructure.Persistence.Db", "Core.Events", "Core.Health"),
             Project("Testing.Db", "Infrastructure.Persistence.Db"));
 
-        result.Should().BeEmpty();
+        result.Should()
+            .BeEmpty();
     }
 
     [Fact]
@@ -67,9 +72,16 @@ public class PackageHierarchyTest
             Project("Web.MockServer.Ui", "Web.Ui"),
             Project("Web.Api", "Web.Ui"));
 
-        result.Should().HaveCount(2);
-        result[0].Should().StartWith("project Web.Api (Web) -> Web.Ui (Web) is outside its package-name ancestors");
-        result[1].Should().StartWith("project Web.MockServer.Ui (Web) -> Web.Ui (Web) is outside its package-name ancestors");
+        result.Should()
+            .HaveCount(2);
+
+        result[0]
+            .Should()
+            .StartWith("project Web.Api (Web) -> Web.Ui (Web) is outside its package-name ancestors");
+
+        result[1]
+            .Should()
+            .StartWith("project Web.MockServer.Ui (Web) -> Web.Ui (Web) is outside its package-name ancestors");
     }
 
     [Fact]
@@ -77,7 +89,10 @@ public class PackageHierarchyTest
     {
         var result = Check([], Project("Web", "Web.Ui"), Project("Web.Ui"));
 
-        result.Should().ContainSingle().Which.Should().StartWith("project Web (Web) -> Web.Ui (Web)");
+        result.Should()
+            .ContainSingle()
+            .Which.Should()
+            .StartWith("project Web (Web) -> Web.Ui (Web)");
     }
 
     [Fact]
@@ -88,7 +103,8 @@ public class PackageHierarchyTest
             Project("Web.Ui"),
             Project("Web.MockServer.Ui", "Web.Ui"));
 
-        result.Should().BeEmpty();
+        result.Should()
+            .BeEmpty();
     }
 
     [Fact]
@@ -99,9 +115,16 @@ public class PackageHierarchyTest
             Project("Web.Ui"),
             Project("Web.MockServer.Ui", "Web.Ui"));
 
-        result.Should().HaveCount(2);
-        result[0].Should().StartWith("project Web.MockServer.Ui (Web) -> Web.Ui (Web)");
-        result[1].Should().StartWith("allowed reference Web.Ui -> Web.MockServer.Ui is stale");
+        result.Should()
+            .HaveCount(2);
+
+        result[0]
+            .Should()
+            .StartWith("project Web.MockServer.Ui (Web) -> Web.Ui (Web)");
+
+        result[1]
+            .Should()
+            .StartWith("allowed reference Web.Ui -> Web.MockServer.Ui is stale");
     }
 
     [Fact]
@@ -109,16 +132,23 @@ public class PackageHierarchyTest
     {
         LayeringProject[] projects = [Project("Core.Events", "Web.Ui"), Project("Web.Ui")];
 
-        PackageHierarchy.Check(projects, Layers, []).Should().BeEmpty();
-        LayeringTasks.Check(projects, Layers).Should().Equal("project Core.Events (Core) -> Web.Ui (Web)");
+        PackageHierarchy.Check(projects, Layers, [])
+            .Should()
+            .BeEmpty();
+
+        LayeringTasks.Check(projects, Layers)
+            .Should()
+            .Equal("project Core.Events (Core) -> Web.Ui (Web)");
     }
 
     [Fact]
     public void Check_GivenProjectsWithoutAKnownLayer_IgnoresThem()
     {
-        var result = Check([], Project("Unit", "Unit.Helpers"), Project("Unit.Helpers"), Project("Samples.Api", "Samples.Shared"), Project("Samples.Shared"));
+        var result = Check([], Project("Unit", "Unit.Helpers"), Project("Unit.Helpers"),
+            Project("Samples.Api", "Samples.Shared"), Project("Samples.Shared"));
 
-        result.Should().BeEmpty();
+        result.Should()
+            .BeEmpty();
     }
 
     [Theory]
@@ -134,8 +164,9 @@ public class PackageHierarchyTest
             Project("Web.Ui", "Web"),
             Project("Web.MockServer.Ui", "Web", "Core"));
 
-        result.Should().Equal(
-            $"allowed reference {from} -> {to} is stale: no same-layer reference outside the package-name ancestors matches it; remove it");
+        result.Should()
+            .Equal(
+                $"allowed reference {from} -> {to} is stale: no same-layer reference outside the package-name ancestors matches it; remove it");
     }
 
     [Fact]
@@ -146,14 +177,19 @@ public class PackageHierarchyTest
             Project("Web.Ui"),
             Project("Web.MockServer.Ui", "Web.Ui"));
 
-        result.Should().Equal("allowed reference Web.MockServer.Ui -> Web.Ui has no reason");
+        result.Should()
+            .Equal("allowed reference Web.MockServer.Ui -> Web.Ui has no reason");
     }
 
     [Fact]
     public void AllowedReferences_AreUniqueWithAReason()
     {
-        PackageHierarchy.AllowedReferences.Select(a => (a.From, a.To)).Should().OnlyHaveUniqueItems();
-        PackageHierarchy.AllowedReferences.Should().OnlyContain(a => !string.IsNullOrWhiteSpace(a.Reason));
+        PackageHierarchy.AllowedReferences.Select(a => (a.From, a.To))
+            .Should()
+            .OnlyHaveUniqueItems();
+
+        PackageHierarchy.AllowedReferences.Should()
+            .OnlyContain(a => !string.IsNullOrWhiteSpace(a.Reason));
     }
 
     [Fact]
@@ -163,7 +199,8 @@ public class PackageHierarchyTest
         var layout = LayeringConfiguration.Read(root);
 
         var projects = Directory.EnumerateFiles(Path.Combine(root, "src"), "*.csproj", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
+            .Select(path => Path.GetRelativePath(root, path)
+                .Replace('\\', '/'))
             .Where(path => !path.Contains("/bin/") && !path.Contains("/obj/") && !path.Contains("/Boilerplate/"))
             .Select(path => (Name: Path.GetFileNameWithoutExtension(path), Path: path))
             .Select(x => (x.Name, x.Path, Layer: LayeringTasks.GetLayer(x.Name, x.Path, layout)))
@@ -177,9 +214,16 @@ public class PackageHierarchyTest
                 []))
             .ToArray();
 
-        projects.Should().Contain(p => p.Name == "Web.MockServer.Ui");
-        LayeringTasks.Check(projects, layout).Should().BeEmpty();
-        PackageHierarchy.Check(projects, layout.Layers, PackageHierarchy.AllowedReferences).Should().BeEmpty();
+        projects.Should()
+            .Contain(p => p.Name == "Web.MockServer.Ui");
+
+        LayeringTasks.Check(projects, layout)
+            .Should()
+            .BeEmpty();
+
+        PackageHierarchy.Check(projects, layout.Layers, PackageHierarchy.AllowedReferences)
+            .Should()
+            .BeEmpty();
     }
 
     private static string[] ProjectReferences(string projectFile) =>

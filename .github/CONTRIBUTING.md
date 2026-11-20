@@ -27,7 +27,7 @@ Run `make help` for every target, with its parameters. Dependencies restore from
    make skills_validate   # when you changed make targets
    ```
 
-   Unit tests use xUnit v3 and Microsoft.Testing.Platform. They live in `tests/Unit/`, with folders mirroring the corresponding `src/` projects. The unit test command also runs on every pull request. Run additional tests relevant to your change when available.
+   Unit tests use xUnit v3 and Microsoft.Testing.Platform. They live in `tests/Unit/`, with folders mirroring the corresponding `src/` projects; tests that drive real tools (Git, the .NET SDK) live in `tests/Integration/`, and those that run a user-facing entry point (the CLI, the packaged Makefile and scripts) in `tests/EndToEnd/`. The unit test command also runs on every pull request. Run additional tests relevant to your change when available.
 4. Open a pull request describing the change, why it is needed, and how it was tested. Link any related issues and respond to review feedback.
 
 NuGet dependencies are centrally managed in `Directory.Packages.props`. Review compatibility constraints in that file when updating packages; Dependabot proposes weekly grouped updates for NuGet and GitHub Actions.

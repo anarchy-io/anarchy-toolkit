@@ -42,7 +42,7 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 
 ### Tests
 
-- Unit tests run on xUnit v3 and [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro) in `tests/Unit/`, with folders mirroring the `src/` projects.
+- Unit tests run on xUnit v3 and [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro) in `tests/Unit/`, with folders mirroring the `src/` projects; tests that drive real tools (Git, the .NET SDK) go to `tests/Integration/`, and those that run a user-facing entry point (the CLI, the packaged Makefile and scripts) to `tests/EndToEnd/`.
 - Pass `TestContext.Current.CancellationToken` to calls that accept a token ([xUnit1051](https://xunit.net/xunit.analyzers/rules/xUnit1051)).
 
 ### Generated files and skills

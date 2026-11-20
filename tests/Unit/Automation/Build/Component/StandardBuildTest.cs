@@ -24,19 +24,33 @@ public class StandardBuildTest
         var result = IStandardBuild.MatchesTestKind(projectName, kind);
 
         // Assert
-        result.Should().Be(expected);
+        result.Should()
+            .Be(expected);
     }
 
     [Fact]
     public void ParseTestKindAliases_GroupsAliasesByKind()
     {
-        var aliases = IStandardBuild.ParseTestKindAliases(["EndToEnd=Acceptance", "endtoend = Smoke", "Integration=Contract"]);
+        var aliases =
+            IStandardBuild.ParseTestKindAliases(["EndToEnd=Acceptance", "endtoend = Smoke", "Integration=Contract"]);
 
-        aliases["ENDTOEND"].Should().Equal("Acceptance", "Smoke");
-        aliases["Integration"].Should().Equal("Contract");
-        aliases["Integration"].Any(alias => IStandardBuild.MatchesTestKind("Api.Tests.Contract", alias)).Should().BeTrue();
+        aliases["ENDTOEND"]
+            .Should()
+            .Equal("Acceptance", "Smoke");
+
+        aliases["Integration"]
+            .Should()
+            .Equal("Contract");
+
+        aliases["Integration"]
+            .Any(alias => IStandardBuild.MatchesTestKind("Api.Tests.Contract", alias))
+            .Should()
+            .BeTrue();
+
         var invalid = () => IStandardBuild.ParseTestKindAliases(["Acceptance"]);
-        invalid.Should().Throw<ArgumentException>().WithMessage("*Kind=Alias*");
+        invalid.Should()
+            .Throw<ArgumentException>()
+            .WithMessage("*Kind=Alias*");
     }
 
     [Fact]
@@ -46,7 +60,8 @@ public class StandardBuildTest
         var result = IStandardBuild.ParseAppNames(" Orders, Payments,,orders ");
 
         // Assert
-        result.Should().Equal("Orders", "Payments");
+        result.Should()
+            .Equal("Orders", "Payments");
     }
 
     [Theory]
@@ -56,7 +71,9 @@ public class StandardBuildTest
     public void IsRunnableProject_GivenProjectFile_ReturnsExpected(string directory, string outputType, bool expected)
     {
         // Arrange
-        var root = AbsolutePath.Create(Path.GetTempPath()) / Guid.NewGuid().ToString("N");
+        var root = AbsolutePath.Create(Path.GetTempPath()) / Guid.NewGuid()
+            .ToString("N");
+
         var projectFile = root / directory / "App" / "App.csproj";
         projectFile.WriteAllText(
             $"<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><OutputType>{outputType}</OutputType></PropertyGroup></Project>");
@@ -67,7 +84,8 @@ public class StandardBuildTest
             var result = IStandardBuild.IsRunnableProject(projectFile);
 
             // Assert
-            result.Should().Be(expected);
+            result.Should()
+                .Be(expected);
         }
         finally
         {
@@ -78,16 +96,26 @@ public class StandardBuildTest
     [Fact]
     public void IsRunnableProject_GivenSourceDirectory_OnlyAcceptsProjectsBelowIt()
     {
-        var root = AbsolutePath.Create(Path.GetTempPath()) / Guid.NewGuid().ToString("N");
+        var root = AbsolutePath.Create(Path.GetTempPath()) / Guid.NewGuid()
+            .ToString("N");
+
         var inCode = root / "code" / "App" / "App.csproj";
         var inSrc = root / "src" / "App" / "App.csproj";
-        foreach (var project in new[] { inCode, inSrc })
+        foreach (var project in new[] {
+                     inCode,
+                     inSrc
+                 })
             project.WriteAllText("<Project><PropertyGroup><OutputType>Exe</OutputType></PropertyGroup></Project>");
 
         try
         {
-            IStandardBuild.IsRunnableProject(inCode, root / "code").Should().BeTrue();
-            IStandardBuild.IsRunnableProject(inSrc, root / "code").Should().BeFalse();
+            IStandardBuild.IsRunnableProject(inCode, root / "code")
+                .Should()
+                .BeTrue();
+
+            IStandardBuild.IsRunnableProject(inSrc, root / "code")
+                .Should()
+                .BeFalse();
         }
         finally
         {

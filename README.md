@@ -66,7 +66,7 @@ Run `make help` for the full, self-documenting list of targets.
 
 Auto-staging only considers files that were already staged, with no unstaged changes, before linting; partially staged files are left for manual review. Avoid editing files while linting runs.
 
-Tests run on **Microsoft.Testing.Platform** (`global.json` → `test.runner`). `tests/Unit/Unit.csproj` holds every unit test, in folders mirroring the `src/` projects (`src/Core.Events` → `tests/Unit/Core/Events/`). The Anarchy test targets route xUnit v3 projects through MSBuild's `Test` target and any VSTest project through `dotnet test`.
+Tests run on **Microsoft.Testing.Platform** (`global.json` → `test.runner`). `tests/Unit/Unit.csproj` holds the in-process unit tests, `tests/Integration/Integration.csproj` the tests that drive real tools such as Git and the .NET SDK, and `tests/EndToEnd/EndToEnd.csproj` those that run the CLI, the packaged Makefile and scripts, or the mock server as a user would; each mirrors the `src/` projects in its folders (`src/Core.Events` → `tests/Unit/Core/Events/`). The Anarchy test targets route xUnit v3 projects through MSBuild's `Test` target and any VSTest project through `dotnet test`.
 
 Plain `dotnet` also works:
 

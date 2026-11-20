@@ -7,7 +7,7 @@ using AwesomeAssertions;
 using Spectre.Console;
 using System.Text.Json.Nodes;
 
-namespace Anarchy.Toolkit.Tests.Unit.Automation.Build.Cli;
+namespace Anarchy.Toolkit.Tests.EndToEnd.Automation.Build.Cli;
 
 public class ToolkitToolTest
 {

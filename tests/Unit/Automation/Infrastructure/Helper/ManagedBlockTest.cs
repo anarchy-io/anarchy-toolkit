@@ -1,5 +1,3 @@
-using Anarchy.Toolkit.Automation.Core.Entity;
-using Anarchy.Toolkit.Automation.Core.Service;
 using Anarchy.Toolkit.Automation.Infrastructure.Helper;
 using AwesomeAssertions;
 using System.Runtime.CompilerServices;
@@ -109,28 +107,6 @@ public class ManagedBlockTest
     public void PackagedGitignore_HasNoProjectSpecificEntries() =>
         File.ReadAllText(Path.Combine(RepositoryRoot(), "src", "Automation", "Boilerplate", ".gitignore"))
             .Should().NotContain("launchSettings").And.NotContain("cdk").And.NotContain("Lambda");
-
-    [Fact]
-    public void Create_GivenTrackedFileThatTheNewGitignoreIgnores_WarnsAboutIt()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "anarchy-gitignore-" + Guid.NewGuid());
-        try
-        {
-            Directory.CreateDirectory(Path.Combine(root, "src"));
-            File.WriteAllText(Path.Combine(root, "src", "appsettings.Development.json"), "{}");
-            if (LocalProcessTasks.Run(root, "git", ["init", "-q"]).ExitCode != 0) return;
-            LocalProcessTasks.Require(root, "git", "add", "src/appsettings.Development.json");
-
-            var messages = new List<string>();
-            SolutionScaffolder.Create(root, null, new ScaffoldOptions { Items = ".gitignore", Log = messages.Add });
-
-            messages.Should().ContainSingle(message => message.Contains("'src/appsettings.Development.json' is tracked"));
-        }
-        finally
-        {
-            if (Directory.Exists(root)) Directory.Delete(root, true);
-        }
-    }
 
     private static string RepositoryRoot([CallerFilePath] string path = "") =>
         Path.GetFullPath(Path.Combine(Path.GetDirectoryName(path)!, "..", "..", "..", "..", ".."));
