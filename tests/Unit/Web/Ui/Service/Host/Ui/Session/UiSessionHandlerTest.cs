@@ -16,7 +16,7 @@ public class UiSessionHandlerTest
     private readonly Mock<IUiEnvironmentCatalog> _catalog = new();
 
     private UiSessionHandler CreateHandler() => new(
-        new UiAuthHandler(Mock.Of<IHttpClientFactory>(), Mock.Of<IAppTelemetry>()),
+        new UiAuthHandler(Mock.Of<IHttpClientFactory>(), AppTelemetry.Null),
         _catalog.Object,
         Mock.Of<IHostEnvironment>(x => x.EnvironmentName == "Development"),
         new UiAuthenticationOptions { LoginPath = "/app/login" });

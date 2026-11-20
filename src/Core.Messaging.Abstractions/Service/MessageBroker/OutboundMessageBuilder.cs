@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 namespace Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker;
 
 /// <summary>
-/// Builds <see cref="OutboundMessageEntity"/> instances for publishing to a message broker.
+/// Builds <see cref="OutboundMessage"/> instances for publishing to a message broker.
 /// The core API works with already-resolved <c>string</c> destination/source names; generic
 /// enum overloads are provided as a convenience and resolve enum values via
 /// <see cref="EnumExtension.ToDescription{T}"/>.
@@ -18,8 +18,8 @@ public interface IOutboundMessageBuilder
     /// <param name="message">The serialized message body.</param>
     /// <param name="partitionKey">Optional partition/message-group key.</param>
     /// <param name="attributes">Optional custom message attributes.</param>
-    /// <returns>An outbound message entity ready for publishing.</returns>
-    OutboundMessageEntity Build(
+    /// <returns>An outbound message ready for publishing.</returns>
+    OutboundMessage Build(
         string message,
         string? partitionKey = null,
         IReadOnlyDictionary<string, string>? attributes = null);
@@ -31,8 +31,8 @@ public interface IOutboundMessageBuilder
     /// <param name="message">The serialized message body.</param>
     /// <param name="partitionKey">Optional partition/message-group key.</param>
     /// <param name="attributes">Optional custom message attributes.</param>
-    /// <returns>An outbound message entity ready for publishing.</returns>
-    OutboundMessageEntity Build(
+    /// <returns>An outbound message ready for publishing.</returns>
+    OutboundMessage Build(
         string destination,
         string message,
         string? partitionKey = null,
@@ -46,8 +46,8 @@ public interface IOutboundMessageBuilder
     /// <param name="message">The serialized message body.</param>
     /// <param name="partitionKey">Optional partition/message-group key.</param>
     /// <param name="attributes">Optional custom message attributes.</param>
-    /// <returns>An outbound message entity ready for publishing.</returns>
-    OutboundMessageEntity Build<TDestination>(
+    /// <returns>An outbound message ready for publishing.</returns>
+    OutboundMessage Build<TDestination>(
         TDestination destination,
         string message,
         string? partitionKey = null,
@@ -59,8 +59,8 @@ public interface IOutboundMessageBuilder
 /// Default <see cref="IOutboundMessageBuilder"/> bound to a default destination and an optional source.
 /// </summary>
 /// <remarks>
-/// Every built message gets a new random GUID as both <see cref="OutboundMessageEntity.Id"/> and
-/// <see cref="OutboundMessageEntity.DeduplicationId"/>. When <paramref name="source"/> is not empty it is added as
+/// Every built message gets a new random GUID as both <see cref="OutboundMessage.Id"/> and
+/// <see cref="OutboundMessage.DeduplicationId"/>. When <paramref name="source"/> is not empty it is added as
 /// the <c>Source</c> attribute, overriding any caller-supplied <c>Source</c> attribute. The builder is immutable and
 /// thread-safe.
 /// </remarks>
@@ -105,7 +105,7 @@ public class OutboundMessageBuilder(string destination, string? source = null)
         => new(destination.ToDescription(), source.ToDescription());
 
     /// <inheritdoc/>
-    public OutboundMessageEntity Build(
+    public OutboundMessage Build(
         string message,
         string? partitionKey = null,
         IReadOnlyDictionary<string, string>? attributes = null)
@@ -118,17 +118,17 @@ public class OutboundMessageBuilder(string destination, string? source = null)
     /// <param name="message">The serialized message body.</param>
     /// <param name="partitionKey">Optional partition/message-group key.</param>
     /// <param name="attributes">Optional custom message attributes.</param>
-    /// <returns>An outbound message entity ready for publishing.</returns>
+    /// <returns>An outbound message ready for publishing.</returns>
     /// <exception cref="Core.Exceptions.EmptyArgumentException">
     /// <paramref name="destinationName"/> or <paramref name="message"/> is null, empty or whitespace.
     /// </exception>
-    public OutboundMessageEntity Build(
+    public OutboundMessage Build(
         string destinationName,
         string message,
         string? partitionKey = null,
         IReadOnlyDictionary<string, string>? attributes = null)
     {
-        return new OutboundMessageEntity(
+        return new OutboundMessage(
             Guid.NewGuid().ToString(),
             destinationName,
             message,
@@ -145,8 +145,8 @@ public class OutboundMessageBuilder(string destination, string? source = null)
     /// <param name="message">The serialized message body.</param>
     /// <param name="partitionKey">Optional partition/message-group key.</param>
     /// <param name="attributes">Optional custom message attributes.</param>
-    /// <returns>An outbound message entity ready for publishing.</returns>
-    public OutboundMessageEntity Build<TDestination>(
+    /// <returns>An outbound message ready for publishing.</returns>
+    public OutboundMessage Build<TDestination>(
         TDestination destinationValue,
         string message,
         string? partitionKey = null,

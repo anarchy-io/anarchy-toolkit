@@ -1,5 +1,4 @@
 using Anarchy.Toolkit.Web.MockServer.Entity;
-using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.MockServer.Service;
 

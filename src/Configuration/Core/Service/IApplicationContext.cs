@@ -4,8 +4,8 @@ namespace Anarchy.Toolkit.Configuration.Core.Service;
 /// Exposes the identifiers of the request or message currently being processed, for use in logs and outgoing calls.
 /// </summary>
 /// <remarks>
-/// Registered as a singleton by <see cref="Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Service.ModuleObservability"/>
-/// with the <see cref="Anarchy.Toolkit.Configuration.Entity.Observability.ApplicationContext"/> implementation, whose
+/// Registered as a singleton by <see cref="Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Service.ModuleTelemetry"/>
+/// with the <see cref="Anarchy.Toolkit.Configuration.Telemetry.ApplicationContext"/> implementation, whose
 /// values come from async-local storage and therefore reflect the current async flow.
 /// </remarks>
 public interface IApplicationContext

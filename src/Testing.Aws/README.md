@@ -19,7 +19,7 @@ Use this test-only package to exercise SNS/SQS publishing or message processing 
 ## How to use it
 
 1. Start a dedicated LocalStack instance or configure a separate test AWS account and supply an application settings object implementing `IAwsAppSettings`.
-2. Construct `AwsMessageBrokerHelper` with those settings. Use its queue/topic preparation methods and, when needed, subscribe a queue to a topic before exercising the code under test.
+2. Construct `AwsMessageBrokerHelper` with those settings, and optionally an `AppTelemetry` (for example `FixtureTelemetry.Telemetry`) to receive its progress logs. Use its queue/topic preparation methods and, when needed, subscribe a queue to a topic before exercising the code under test.
 3. Receive and assert messages with the helper; use `SqsMessageFixture` when testing a Lambda handler with a constructed `SQSEvent`, including compressed bodies.
 4. Dispose the helper and clean up test resources. Use unique names or isolate tests that purge queues, and never point destructive cleanup at production resources.
 

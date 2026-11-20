@@ -7,7 +7,7 @@ using System.Collections.Immutable;
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper.MessageBroker;
 
 /// <summary>
-/// Maps AWS Lambda SQS events into toolkit <see cref="InboundMessageEntity"/> instances.
+/// Maps AWS Lambda SQS events into toolkit <see cref="InboundMessage"/> instances.
 /// </summary>
 /// <remarks>
 /// Bodies compressed by the AWS publishers (<c>CompressionType</c> + binary <c>CompressionData</c> attributes) are
@@ -30,7 +30,7 @@ public static class InboundMessageMapper
     /// </summary>
     /// <param name="sqsEvent">The Lambda SQS event.</param>
     /// <returns>The mapped messages, in record order.</returns>
-    public static ImmutableArray<InboundMessageEntity> FromSqs(SQSEvent sqsEvent)
+    public static ImmutableArray<InboundMessage> FromSqs(SQSEvent sqsEvent)
     {
         return [.. sqsEvent.Records.Select(FromSqs)];
     }
@@ -40,9 +40,9 @@ public static class InboundMessageMapper
     /// </summary>
     /// <param name="message">The SQS message.</param>
     /// <returns>The mapped message. Missing id, receipt handle or body are mapped to <see cref="string.Empty"/>.</returns>
-    public static InboundMessageEntity FromSqs(SQSEvent.SQSMessage message)
+    public static InboundMessage FromSqs(SQSEvent.SQSMessage message)
     {
-        return new InboundMessageEntity(
+        return new InboundMessage(
             id: message.MessageId ?? string.Empty,
             receiptHandle: message.ReceiptHandle ?? string.Empty,
             message: ExtractBody(message) ?? string.Empty,

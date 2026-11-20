@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Web.Ui.Entity.Api.Output;
-using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Web.Ui.Service.Host.Ui.Session;
 
@@ -14,7 +13,7 @@ namespace Anarchy.Toolkit.Web.Ui.Service.Host.Ui.Session;
 /// <param name="telemetry">Application telemetry used for logging.</param>
 public class UiAuthHandler(
     IHttpClientFactory httpClientFactory,
-     IAppTelemetry telemetry
+     AppTelemetry telemetry
 )
 {
     /// <summary>

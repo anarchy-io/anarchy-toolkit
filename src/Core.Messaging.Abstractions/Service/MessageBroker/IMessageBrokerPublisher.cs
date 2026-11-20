@@ -26,7 +26,7 @@ public interface IMessageBrokerPublisher
     /// Throwing from this callback prevents publish for that chunk and is treated as a chunk failure.
     /// </remarks>
     public delegate Task PublishBatchCallbackBeforeAsync(
-        IReadOnlyCollection<OutboundMessageEntity> messageChunk,
+        IReadOnlyCollection<OutboundMessage> messageChunk,
         CancellationToken cancellationToken);
 
     /// <summary>
@@ -50,7 +50,7 @@ public interface IMessageBrokerPublisher
     /// </remarks>
     public delegate Task PublishBatchCallbackAfterAsync(
         bool wasSuccessful,
-        IReadOnlyCollection<OutboundMessageEntity> messageChunk,
+        IReadOnlyCollection<OutboundMessage> messageChunk,
         CancellationToken cancellationToken);
 
     /// <summary>
@@ -69,7 +69,7 @@ public interface IMessageBrokerPublisher
     /// This method provides a simplified interface for publishing single messages.
     /// Execution duration and success/failure metrics are recorded.
     /// </remarks>
-    Task PublishAsync(OutboundMessageEntity outboundMessage,
+    Task PublishAsync(OutboundMessage outboundMessage,
                       CancellationToken? cancellationToken = null);
 
     /// <summary>
@@ -95,7 +95,7 @@ public interface IMessageBrokerPublisher
     /// Each chunk is processed independently with separate metrics tracking.
     /// Execution duration and success/failure metrics are recorded for each chunk and overall operation.
     /// </remarks>
-    Task PublishAsync(IReadOnlyCollection<OutboundMessageEntity> outboundMessages,
+    Task PublishAsync(IReadOnlyCollection<OutboundMessage> outboundMessages,
                       bool continueOnFailure = false,
                       CancellationToken? cancellationToken = null);
 
@@ -134,7 +134,7 @@ public interface IMessageBrokerPublisher
     /// Each chunk is processed with separate metrics tracking.
     /// Execution duration and success/failure metrics are recorded for each chunk and overall operation.
     /// </remarks>
-    Task PublishAsync(IReadOnlyCollection<OutboundMessageEntity> outboundMessages,
+    Task PublishAsync(IReadOnlyCollection<OutboundMessage> outboundMessages,
                       PublishBatchCallbackBeforeAsync? chunkCallbackBeforeAsync,
                       PublishBatchCallbackAfterAsync? chunkCallbackAfterAsync,
                       bool continueOnFailure = false,

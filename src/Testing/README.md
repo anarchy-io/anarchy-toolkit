@@ -9,16 +9,16 @@ dotnet add package Anarchy.Toolkit.Testing
 ```
 
 - Base tests and fixtures on `TestCaseBase`, `TestCaseBase<TAppSettings>` and `EntityFixtureBase`; use `TestHelper` for common setup.
-- Test instrumentation with `InMemoryObserver`, the in-memory measurer and Serilog sink, and their assertions.
+- Test instrumentation with `TestTelemetry`: an `AppTelemetry` whose logs (`InMemoryLoggerProvider`, with properties and scopes) and metrics (`InMemoryMetricRecorder`) are captured in memory. `services.AddTestTelemetry(capture)` routes a container's telemetry to the same capture.
 - API Gateway response assertions use AwesomeAssertions. Database, AWS messaging and web-specific helpers live in separate `Testing.*` packages.
 
 ## When to use it
 
-Reference this package from test projects, not production services. It is useful for focused unit tests that need repeatable entities, a host environment or an observer without sending logs and metrics to a real backend. Use the specialized test kits when the test needs a database, messaging service or web host.
+Reference this package from test projects, not production services. It is useful for focused unit tests that need repeatable entities, a host environment or telemetry without sending logs and metrics to a real backend. Use the specialized test kits when the test needs a database, messaging service or web host.
 
 ## How to use it
 
-1. Derive a test class from `TestCaseBase` and pass its `FixtureObserver` to the subject under test. Assert business behavior first; inspect `SinkLogs` or `InMemoryMeasurer` when telemetry itself is under test.
+1. Derive a test class from `TestCaseBase` and pass `FixtureTelemetry.Telemetry` to the subject under test. Assert business behavior first; inspect `FixtureTelemetry.Logs` or `FixtureTelemetry.Metrics` when telemetry itself is under test.
 2. Derive fixtures from `EntityFixtureBase<T>` and implement `BuildDefaultFixture()`. Call `Build()` for defaults or `Build(new { Property = value })` to vary only the scenario-specific fields. Null overrides require `overrideWithNulls: true`.
 3. Use `TestCaseBase<TAppSettings>` or `TestHelper.TestSettings<TAppSettings>()` for typed settings. Embed `appsettings.json` and `appsettings.Development.json` in the assembly declaring the settings type, and keep real credentials out of test resources.
 

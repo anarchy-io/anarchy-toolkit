@@ -7,14 +7,14 @@ using Anarchy.Toolkit.Infrastructure.Messaging.Aws.ValueSet.MessageBroker;
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher.RequestBuilder;
 
 /// <summary>
-/// Template base class for AWS publisher request builders. Converts an <see cref="OutboundMessageEntity"/> into an
+/// Template base class for AWS publisher request builders. Converts an <see cref="OutboundMessage"/> into an
 /// SDK request, handling destination addressing, FIFO properties, attribute conversion and transparent compression of
 /// oversized messages.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Derived classes supply the transport-specific pieces (request creation, attribute values, destination address,
-/// setters and batch creation). The algorithm in <see cref="FromOutboundMessage(OutboundMessageEntity)"/> is:
+/// setters and batch creation). The algorithm in <see cref="FromOutboundMessage(OutboundMessage)"/> is:
 /// </para>
 /// <list type="number">
 ///   <item><description>Set the destination from <see cref="BuildDestinationAddress"/>.</description></item>
@@ -60,7 +60,7 @@ public abstract class AwsPublisherRequestBuilderBase<TRequest, TBatchRequest, TA
     protected abstract TAttr AwsAttribute(byte[] value);
 
     /// <summary>Builds the transport address (topic ARN or queue URL) for a logical destination name.</summary>
-    /// <param name="destinationName">The destination name from <see cref="OutboundMessageEntity.Destination"/>.</param>
+    /// <param name="destinationName">The destination name from <see cref="OutboundMessage.Destination"/>.</param>
     /// <returns>The full destination address.</returns>
     protected abstract string BuildDestinationAddress(string destinationName);
 
@@ -94,9 +94,9 @@ public abstract class AwsPublisherRequestBuilderBase<TRequest, TBatchRequest, TA
     /// <summary>Creates a batch request for <paramref name="messages"/>.</summary>
     /// <param name="messages">The messages in the batch, all sharing the same destination.</param>
     /// <returns>The batch request.</returns>
-    protected abstract TBatchRequest CreateBatchRequest(OutboundMessageEntity[] messages);
+    protected abstract TBatchRequest CreateBatchRequest(OutboundMessage[] messages);
 
-    private Dictionary<string, TAttr> ConvertAttributes(OutboundMessageEntity input)
+    private Dictionary<string, TAttr> ConvertAttributes(OutboundMessage input)
     {
         var result = new Dictionary<string, TAttr>(StringComparer.Ordinal);
         foreach (var kvp in input.Attributes)
@@ -117,7 +117,7 @@ public abstract class AwsPublisherRequestBuilderBase<TRequest, TBatchRequest, TA
     /// <exception cref="UncompressedMessageTooLargeException">
     /// The message exceeds <see cref="AwsMessageMaxSize"/> and compression is <see cref="CompressionType.Uncompressed"/>.
     /// </exception>
-    public TRequest FromOutboundMessage(OutboundMessageEntity message)
+    public TRequest FromOutboundMessage(OutboundMessage message)
     {
         var result = CreateEmptyRequest();
 
@@ -156,21 +156,21 @@ public abstract class AwsPublisherRequestBuilderBase<TRequest, TBatchRequest, TA
 
     /// <inheritdoc/>
     /// <remarks>Delegates to <see cref="CreateBatchRequest"/>.</remarks>
-    public TBatchRequest FromOutboundMessage(OutboundMessageEntity[] messages)
+    public TBatchRequest FromOutboundMessage(OutboundMessage[] messages)
     {
         return CreateBatchRequest(messages);
     }
 
     /// <summary>
     /// Populates an existing request from <paramref name="message"/> using the same algorithm as
-    /// <see cref="FromOutboundMessage(OutboundMessageEntity)"/>. Used by derived classes to build batch entries.
+    /// <see cref="FromOutboundMessage(OutboundMessage)"/>. Used by derived classes to build batch entries.
     /// </summary>
     /// <param name="request">The request to populate.</param>
     /// <param name="message">The source message.</param>
     /// <exception cref="UncompressedMessageTooLargeException">
     /// The message exceeds <see cref="AwsMessageMaxSize"/> and compression is <see cref="CompressionType.Uncompressed"/>.
     /// </exception>
-    protected void PopulateRequestFromMessage(TRequest request, OutboundMessageEntity message)
+    protected void PopulateRequestFromMessage(TRequest request, OutboundMessage message)
     {
         SetDestination(request, BuildDestinationAddress(message.Destination));
 

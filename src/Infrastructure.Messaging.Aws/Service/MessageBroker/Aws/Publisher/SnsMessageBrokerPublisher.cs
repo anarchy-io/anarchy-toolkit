@@ -14,7 +14,7 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws
 public class SnsMessageBrokerPublisher(
     IAmazonSimpleNotificationService clientSns,
     IAwsPublisherRequestBuilder<PublishRequest, PublishBatchRequest> builderPublisherRequest,
-    IAppTelemetry telemetry)
+    AppTelemetry telemetry)
     : AwsMessageBrokerPublisherBase<PublishRequest, PublishBatchRequest>(builderPublisherRequest, telemetry)
 {
     /// <inheritdoc/>

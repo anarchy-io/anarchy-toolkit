@@ -69,7 +69,7 @@ public class InboundMessageMapperTest : TestCaseBase
     }
 
     private static void AssertResult(string groupId, object? fixtureBody, SQSEvent.SQSMessage fixtureSqsMessage,
-                                     InboundMessageEntity result)
+                                     InboundMessage result)
     {
         using (new AssertionScope())
         {

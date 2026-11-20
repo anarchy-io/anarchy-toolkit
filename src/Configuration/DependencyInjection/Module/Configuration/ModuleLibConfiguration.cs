@@ -13,9 +13,9 @@ namespace Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration
 /// Registers the application settings, telemetry and secret management.
 /// </summary>
 /// <remarks>
-/// The telemetry module is registered after settings and before secret management. Register or configure the host's
-/// preferred logging provider before applying this module, or provide an <see cref="IAppTelemetry"/> implementation
-/// through DI; the default facade does not replace consumer registrations.
+/// The telemetry module is registered after settings and before secret management. Logging providers, a metric
+/// recorder or an <see cref="ICoreTelemetry"/> registered by the host are kept; pass a <see cref="ModuleTelemetry"/>
+/// built with the application's <see cref="ModuleTelemetryBase"/> to register them as a module.
 /// Modules are registered in this order: <typeparamref name="TAppSettingsDiModule"/>, <see cref="ModuleTelemetry"/>,
 /// then secret management (<see cref="Anarchy.Toolkit.Configuration.Core.Service.ISecretManagementService"/>).
 /// </remarks>
@@ -41,7 +41,8 @@ public sealed class ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings> :
     }
 
     /// <summary>
-    /// Creates the module with a telemetry module, for example to customize correlation-id options.
+    /// Creates the module with a telemetry module, for example to register the application's logging and metrics or
+    /// to customize correlation-id options.
     /// </summary>
     /// <param name="telemetry">The telemetry module to register.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="telemetry"/> is <see langword="null"/>.</exception>

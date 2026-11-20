@@ -5,7 +5,7 @@
     <AssemblyName>Anarchy.Toolkit.Testing</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Testing</RootNamespace>
     <Version>1.2.0</Version>
-    <Description>Shared base test toolkit: TestCaseBase, TestHelper, in-memory observer/measurer/log sink with assertions, API Gateway response assertions, entity fixtures, and common test extensions.</Description>
+    <Description>Shared base test toolkit: TestCaseBase, TestHelper, in-memory test telemetry (log and metric capture), API Gateway response assertions, entity fixtures, and common test extensions.</Description>
     <IsPackable>true</IsPackable>
     <!-- Microsoft.NET.Test.Sdk is referenced for consumers; this kit itself is a library, not a test project. -->
     <IsTestProject>false</IsTestProject>
@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
-    <ProjectReference Include="..\Core.Observability\Core.Observability.csproj" />
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
   </ItemGroup>
 

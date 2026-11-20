@@ -1,10 +1,8 @@
+using Anarchy.Toolkit.Web.Ui.Extension.DependencyInjection;
 using Anarchy.Toolkit.Web.Ui.Extension.Service.Builder;
-using Anarchy.Toolkit.Web.Ui.Ui.Extension.DependencyInjection;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 
 namespace Anarchy.Toolkit.Tests.Unit.Web.Ui.Extension.Service.Builder;

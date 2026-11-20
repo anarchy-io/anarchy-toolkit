@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Web.MockServer.Entity;
 using Anarchy.Toolkit.Web.MockServer.Service;
-using Microsoft.AspNetCore.Http;
 
 namespace Anarchy.Toolkit.Web.MockServer;
 

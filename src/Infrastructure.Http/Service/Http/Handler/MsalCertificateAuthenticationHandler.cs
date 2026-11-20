@@ -13,7 +13,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Service.Http.Handler;
 /// <see cref="IConfidentialClientApplication.AcquireTokenForClient"/> (MSAL caches tokens) and sets it as the
 /// <c>Authorization: Bearer</c> header. The confidential client application, including certificate loading, is
 /// created lazily on the first request. Usually added via
-/// <see cref="Anarchy.Toolkit.Infrastructure.Http.Entity.Http.Configuration.Common.MsalCertificateHttpClientConfiguration{TClient}"/>.
+/// <see cref="Anarchy.Toolkit.Infrastructure.Http.Configuration.Common.MsalCertificateHttpClientConfiguration{TClient}"/>.
 /// </remarks>
 public class MsalCertificateAuthenticationHandler : DelegatingHandler
 {

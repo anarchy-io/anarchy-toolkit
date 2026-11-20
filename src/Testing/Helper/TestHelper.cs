@@ -2,7 +2,7 @@ using Anarchy.Toolkit.Configuration.Extension.Microsoft.Configuration;
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Core.Exceptions;
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Observability.Service.Observability;
+using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Testing.Helper.Exceptions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -156,24 +156,19 @@ public static class TestHelper
     }
 
     /// <summary>
-    /// Waits for the given number of seconds, printing a development log line with the optional reason first.
+    /// Waits for the given number of seconds, logging the optional reason first.
     /// </summary>
     /// <remarks>Useful when waiting for eventually consistent resources (e.g. queues). Avoid where polling is possible.</remarks>
     /// <param name="seconds">Number of seconds to wait.</param>
     /// <param name="reason">Optional reason included in the log line.</param>
     /// <param name="cancellationToken">Token used to cancel the wait.</param>
+    /// <param name="telemetry">Receives the log line; nothing is logged when <see langword="null"/>.</param>
     /// <returns>A task that completes after the delay.</returns>
     public static async Task WaitAsync(int seconds, string? reason = null,
-                                       CancellationToken cancellationToken = default)
+                                       CancellationToken cancellationToken = default, AppTelemetry? telemetry = null)
     {
-        DevelopmentLogger.Print(
-            $"Waiting for {seconds} seconds{(reason is not null ? $" because {reason}" : string.Empty)}...",
-            "TestHelper",
-            DevelopmentLoggerLevel.Info,
-            null,
-            false,
-            DevelopmentLoggerLevel.Info.ToString()
-        );
+        telemetry?.LogInformation(new CallSite(nameof(TestHelper), nameof(WaitAsync)),
+            "Waiting for {Seconds} seconds{Reason}...", seconds, reason is not null ? $" because {reason}" : string.Empty);
 
         while (seconds > 0)
         {
