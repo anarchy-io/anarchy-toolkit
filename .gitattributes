@@ -1,0 +1,2 @@
+# Keep text files consistent with .editorconfig, regardless of core.autocrlf on Windows.
+* text=auto eol=lf

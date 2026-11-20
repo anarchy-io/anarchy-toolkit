@@ -14,9 +14,9 @@ contributions (commit titles, history shape, version bumps).
 - Trying the `anarchy-toolkit` CLI before releasing it: `make run_dotnet_tool TOOL_ARGS="bootstrap Demo --output /tmp/demo"`.
 - Checking documentation changes: `make docs_serve` (needs Ruby and Bundler) or `make docs_api_serve`.
 - After editing `src/Automation.Build/specification/*.json`: `make anarchy TARGET=GenerateTools` regenerates the CLI tool wrappers.
-- After editing `docs/conventions`, `docs/decisions` or a bundled guide: `make skills_docs_sync` copies them into the
+- After editing `docs/portal/conventions`, `docs/portal/decisions` or a bundled guide: `make skills_docs_sync` copies them into the
   distributed skills' `references/` (`anarchy-conventions`, `anarchy-adopt`, `anarchy`; the list is in
-  `docs/scripts/sync-skill-docs.sh`). CI fails when they are out of date; commit both.
+  `docs/portal/scripts/sync-skill-docs.sh`). CI fails when they are out of date; commit both.
 - Adding or changing a project reference between packages of the same layer: `make check_package_hierarchy`. A
   package may reference its name ancestors (`Web.MockServer.Ui` to `Web.MockServer` or `Web`) and any lower layer;
   any other same-layer reference needs an entry, with its reason, in `build/PackageHierarchy.cs`. The unit tests run
@@ -36,7 +36,7 @@ Run them from the repository root; `make help COMMAND=<target>` describes one.
 | `make docs_sync` | Copies the package and sample READMEs into the documentation site |  |
 | `make skills_docs_sync` | Copies the conventions, decisions and onboarding guides into the distributed skills' references | `CHECK` (bool): Only check that the skill is up to date, failing otherwise (as CI does) |
 | `make docs_install` | Installs the documentation site's Ruby gems (needs Ruby and Bundler) |  |
-| `make docs_build` | Builds the documentation site into docs/_site |  |
+| `make docs_build` | Builds the documentation site into docs/portal/_site |  |
 | `make docs_serve` | Serves the documentation site locally with live reload |  |
 | `make docs_api_build` | Builds the DocFX API reference into artifacts/docs-api |  |
 | `make docs_api_serve` | Serves the DocFX API reference locally on http://localhost:8080 | `NO_BUILD` (bool): Serve the existing build as is, refreshing only its stylesheets (template and tokens), to check style changes quickly |

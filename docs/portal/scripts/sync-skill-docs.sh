@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 # Copies documentation pages into the distributed agent skills, so agents in solutions built on the toolkit can read
 # them offline, matching the installed toolkit:
-#   docs/conventions, docs/decisions                       -> anarchy-conventions/references/{conventions,decisions}
-#   docs/guides/{adopting-existing-solution,onboarding-recipes,pitfalls,bringing-your-company-stack}.md
+#   docs/portal/conventions, docs/portal/decisions         -> anarchy-conventions/references/{conventions,decisions}
+#   docs/portal/guides/{adopting-existing-solution,onboarding-recipes,pitfalls,bringing-your-company-stack}.md
 #                                                          -> anarchy-adopt/references/guides
-#   docs/guides/{mental-model,greenfield-solution}.md      -> anarchy/references/guides
+#   docs/portal/guides/{mental-model,greenfield-solution}.md -> anarchy/references/guides
 # Links between pages copied into the same skill stay relative; every other site link becomes an absolute URL to the
 # published site. --check compares instead of writing, and fails when a skill is out of date (run in CI).
 set -euo pipefail
 
 docs_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-repo_dir="$(cd "$docs_dir/.." && pwd)"
+repo_dir="$(cd "$docs_dir/../.." && pwd)"
 skills_dir="$repo_dir/src/Automation/Boilerplate/.agents/skills"
 site_url="https://anarchy-io.github.io/anarchy-toolkit/"
 check=false
 [[ "${1:-}" == "--check" ]] && check=true
 
-# "<skill>|<section>|<pages>": the pages (all when empty) of docs/<section> copied to <skill>/references/<section>.
+# "<skill>|<section>|<pages>": the pages (all when empty) of docs/portal/<section> copied to
+# <skill>/references/<section>.
 bundles=(
   "anarchy-conventions|conventions|"
   "anarchy-conventions|decisions|"
@@ -82,7 +83,7 @@ for skill_path in "$generated"/*; do
       rm -rf "$destination"
       mkdir -p "$destination"
       cp -R "$section_path"/. "$destination"/
-      echo "Copied docs/$section into $skill/references/$section"
+      echo "Copied docs/portal/$section into $skill/references/$section"
     fi
   done
 done

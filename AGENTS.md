@@ -32,40 +32,40 @@ Make targets name their skill with `#@`; `make skills_validate` (run in CI) chec
 
 ## Where code goes
 
-- @docs/guides/architecture.md: the layers (`Core < Infrastructure < Configuration < Hosting < Web < Automation`), project
+- @docs/portal/guides/architecture.md: the layers (`Core < Infrastructure < Configuration < Hosting < Web < Automation`), project
   structure and DI modules. Projects only reference lower layers; `make check_layering` enforces it. Within a layer,
   this monorepo's packages also follow their name hierarchy (a package may reference its name ancestors, any lower
   layer, or a pair listed with its reason in `build/PackageHierarchy.cs`); `make check_package_hierarchy` enforces it
   for this repository only, never for solutions that use folder-mode layering.
-- @docs/guides/automation-builds.md: the `Automation.Build` components, targets and release process.
-- @docs/guides/automation-preferences.md: the optional root `.anarchy-toolkit.json`, settings inventory, precedence
+- @docs/portal/guides/automation-builds.md: the `Automation.Build` components, targets and release process.
+- @docs/portal/guides/automation-preferences.md: the optional root `.anarchy-toolkit.json`, settings inventory, precedence
   and explicit editing/saving flows. No preference file is required; layering defaults to folder mode under
   `src/Library` with standard application directories and layers, and the toolkit never guesses a mode.
-- @docs/packages/README.md: the package catalog; add new packages to it. Each package has its own `src/<Project>/README.md`
-  with a `## Releases` section. The copies under `docs/packages/<Project>/` are generated and git-ignored.
+- @docs/portal/packages/README.md: the package catalog; add new packages to it. Each package has its own `src/<Project>/README.md`
+  with a `## Releases` section. The copies under `docs/portal/packages/<Project>/` are generated and git-ignored.
 - @samples/README.md: the sample applications; samples are not packed and are ignored by the layering check.
 - The distributed Makefile, scripts and skills live in `src/Automation/Boilerplate/`; this repository's @Makefile
   includes them in place.
 
 ## Conventions
 
-@docs/contributing/README.md: the rules for this repository. Every convention below is required here (the
+@docs/portal/contributing/README.md: the rules for this repository. Every convention below is required here (the
 "Opting out" sections only apply to adopters):
 
-- @docs/conventions/layering.md
-- @docs/conventions/code-organization.md
-- @docs/conventions/naming.md
-- @docs/conventions/usecases-and-aggregates.md
-- @docs/conventions/dependency-injection.md
-- @docs/conventions/async.md
-- @docs/conventions/exceptions.md
-- @docs/conventions/enums.md
-- @docs/conventions/observability.md
-- @docs/conventions/endpoints.md
-- @docs/conventions/testing.md
+- @docs/portal/conventions/layering.md
+- @docs/portal/conventions/code-organization.md
+- @docs/portal/conventions/naming.md
+- @docs/portal/conventions/usecases-and-aggregates.md
+- @docs/portal/conventions/dependency-injection.md
+- @docs/portal/conventions/async.md
+- @docs/portal/conventions/exceptions.md
+- @docs/portal/conventions/enums.md
+- @docs/portal/conventions/observability.md
+- @docs/portal/conventions/endpoints.md
+- @docs/portal/conventions/testing.md
 
-Feature guides: @docs/guides/observability.md, @docs/guides/building-uis.md, @docs/guides/database-providers.md,
-@docs/guides/mock-server.md. @docs/guides/README.md summarises each guide; @docs/decisions/README.md lists the values
+Feature guides: @docs/portal/guides/observability.md, @docs/portal/guides/building-uis.md, @docs/portal/guides/database-providers.md,
+@docs/portal/guides/mock-server.md. @docs/portal/guides/README.md summarises each guide; @docs/portal/decisions/README.md lists the values
 and ADRs.
 
 ## Practical notes

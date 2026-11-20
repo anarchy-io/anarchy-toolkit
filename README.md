@@ -1,10 +1,10 @@
 # Anarchy I/O Toolkit
 
-![Anarchy I/O logo](docs/assets/images/logo/anarchy-io-rect-800.png)
+![Anarchy I/O logo](docs/portal/assets/images/logo/anarchy-io-rect-800.png)
 
 [![NuGet packages](https://img.shields.io/badge/NuGet-anarchy--io-004880?logo=nuget)](https://www.nuget.org/profiles/anarchy-io)
-[![Publish NuGet packages](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/merge-publish-nuget.yml/badge.svg)](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/merge-publish-nuget.yml)
-[![Publish documentation](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/publish-docs.yml)
+[![Publish NuGet packages](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/cd-publish-packages.yml/badge.svg)](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/cd-publish-packages.yml)
+[![Publish documentation](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/cd-publish-docs.yml/badge.svg)](https://github.com/anarchy-io/anarchy-toolkit/actions/workflows/cd-publish-docs.yml)
 
 **A .NET developer platform.** An integrated ecosystem for building maintainable .NET applications through consistent architecture, reusable infrastructure and automated development workflows. *Build without limits.*
 
@@ -58,7 +58,7 @@ Run `make help` for the full, self-documenting list of targets.
 | `make test` | Runs every test project (unit, integration and end-to-end). |
 | `make test_unit` | Runs unit tests only; `COMPILE=true` rebuilds first. |
 | `make check_layering` | Verifies that dependencies only point down the layers. |
-| `make dependency_map` | Regenerates [`docs/dependency-map.html`](docs/dependency-map.html); commit it when project references change. |
+| `make dependency_map` | Regenerates [`docs/portal/dependency-map.html`](docs/portal/dependency-map.html); commit it when project references change. |
 | `make config_show` / `make config_set KEY=… VALUE=…` | Inspect or explicitly edit optional `.anarchy-toolkit.json` automation overrides; `config_unset` clears one and `config_configure` opens the wizard. |
 | `make list_projects` | Lists every project in the solution. |
 | `make list_packages` | Lists every package ID and version. |
@@ -144,16 +144,16 @@ The distributed Makefile and scripts live in `src/Automation/Boilerplate/`, the 
 
 ## Working on the documentation
 
-The site under `docs/` is built with [Jekyll](https://jekyllrb.com/) and the [Minimal Mistakes](https://mmistakes.github.io/minimal-mistakes/) theme, and published to GitHub Pages by the [`Publish documentation`](.github/workflows/publish-docs.yml) workflow on every push to `main` (set **Settings → Pages → Source** to **GitHub Actions**).
+The portal under `docs/portal/` is built with [Jekyll](https://jekyllrb.com/) and the [Minimal Mistakes](https://mmistakes.github.io/minimal-mistakes/) theme; the DocFX API reference lives under `docs/api-reference/`. They are published together to GitHub Pages by the [`Publish documentation`](.github/workflows/cd-publish-docs.yml) workflow on every push to `main` (set **Settings → Pages → Source** to **GitHub Actions**).
 
-Pages are plain Markdown, readable on GitHub too: titles come from each page's first heading, `.md` links are rewritten to the generated pages, and ` ```mermaid ` blocks render as diagrams. The package and samples pages are not committed under `docs/`: `docs/scripts/sync-readmes.sh` copies them from `src/*/README.md` and `samples/README.md` before every build, so each package README stays the single source of truth.
+Pages are plain Markdown, readable on GitHub too: titles come from each page's first heading, `.md` links are rewritten to the generated pages, and ` ```mermaid ` blocks render as diagrams. The package and samples pages are not committed under `docs/portal/`: `docs/portal/scripts/sync-readmes.sh` copies them from `src/*/README.md` and `samples/README.md` before every build, so each package README stays the single source of truth.
 
 ```bash
 make docs_serve   # sync the READMEs, then serve with live reload at http://localhost:4000/anarchy-toolkit/
-make docs_build   # sync the READMEs, then build into docs/_site
+make docs_build   # sync the READMEs, then build into docs/portal/_site
 ```
 
-Sidebars are defined in `docs/_data/navigation.yml`, and brand colors and fonts in `docs/assets/css/main.scss`.
+Sidebars are defined in `docs/portal/_data/navigation.yml`, and brand colors and fonts in `docs/portal/assets/css/main.scss`.
 
 ## License
 

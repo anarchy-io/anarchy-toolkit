@@ -287,7 +287,7 @@ public class AutomationPreferencesTest
     [Fact]
     public void PublishedSchemaDefaults_MatchTheReviewedDefaultContractFixture()
     {
-        var schema = JsonNode.Parse(File.ReadAllText(Path.Combine(RepositoryRoot(), "docs", "schemas", "anarchy-toolkit.schema.json")))!;
+        var schema = JsonNode.Parse(File.ReadAllText(Path.Combine(RepositoryRoot(), "docs", "portal", "schemas", "anarchy-toolkit.schema.json")))!;
         var fixture = JsonNode.Parse(File.ReadAllText(Path.Combine(RepositoryRoot(), "tests", "Unit", "Automation", "Core", "Service", "AutomationPreferencesDefaults.json")));
         var actual = new JsonObject();
 

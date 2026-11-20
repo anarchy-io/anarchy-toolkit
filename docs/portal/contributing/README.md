@@ -29,7 +29,7 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 
 - **Follow the [values](../decisions/README.md#values).** In particular: packages are domain-free (no business enums, entities or destinations), vendor-neutral (company specifics go behind extension points) and standalone (every dependency restores from nuget.org).
 - **Test-only libraries stay in `Testing.*` kits.** No production project references [AwesomeAssertions](https://awesomeassertions.org/), [Moq](https://github.com/devlooped/moq) or xUnit.
-- **One README per package.** `src/<Project>/README.md` describes the package and has a `## Releases` section with a note per published version. The copies under `docs/packages/` are generated.
+- **One README per package.** `src/<Project>/README.md` describes the package and has a `## Releases` section with a note per published version. The copies under `docs/portal/packages/` are generated.
 - **New packages are listed** in the [Package Catalog](../packages/README.md), named after their layer (`<Layer>.<Name>`).
 - **Package names follow the dependency hierarchy.** Within a layer, a package may only reference its name ancestors (`Web.MockServer.Ui` to `Web.MockServer` or `Web`), so a feature family such as `Infrastructure.Persistence.Db.*` shows its shared parent in its name. A project may always reference a lower layer; any other same-layer reference is an entry, with its reason, in `build/PackageHierarchy.cs`. `make check_package_hierarchy` and its unit test enforce it. This is a rule of the toolkit's own monorepo, which uses prefix layering; it is not part of the [adopter conventions](../conventions/README.md) and is never imposed on solutions that use folder-mode layering.
 - **Versions are bumped with `make release_bump`**, never by hand, and validated with `make validate_release`.
@@ -47,15 +47,15 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 
 ### Generated files and skills
 
-- Regenerate and commit `docs/dependency-map.html` (`make dependency_map`) with any new project, project reference or package dependency.
+- Regenerate and commit `docs/portal/dependency-map.html` (`make dependency_map`) with any new project, project reference or package dependency.
 - Commit `.fallout/build.schema.json` when the build regenerates it.
 - [Make](https://www.gnu.org/software/make/) targets name their agent skill with `#@`; update the skill and run `make skills_sync`. `make skills_validate` runs in CI.
 
 ### Documentation
 
-- Guides teach, conventions recommend, decisions explain. Put new pages in the matching section: [Guides](../guides/README.md), [Conventions](../conventions/README.md) or [Decisions](../decisions/README.md), and add them to `docs/_data/navigation.yml`.
+- Guides teach, conventions recommend, decisions explain. Put new pages in the matching section: [Guides](../guides/README.md), [Conventions](../conventions/README.md) or [Decisions](../decisions/README.md), and add them to `docs/portal/_data/navigation.yml`.
 - A convention page keeps the same shape: banner, why (linking to a value or ADR), the rules, *Opting out or adapting*.
-- A choice that shapes the packages gets an ADR in `docs/decisions/`.
+- A choice that shapes the packages gets an ADR in `docs/portal/decisions/`.
 - Conventions, decisions and the onboarding guides also ship inside the agent skills (`make skills_docs_sync`, checked
   in CI). Agents read them without the site: keep links relative, keep the elements they look for (ordered steps, *Why*,
   *Opting out or adapting*, "Done when" checks, symptom/cause/fix tables), and update the skill's guidance when a

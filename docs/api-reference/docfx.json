@@ -21,21 +21,21 @@
         ]
       },
       {
-        "src": "../docs/assets/css",
+        "src": "../portal/assets/css",
         "files": [
           "tokens.css"
         ],
         "dest": "public"
       },
       {
-        "src": "../docs/assets/images/logo",
+        "src": "../portal/assets/images/logo",
         "files": [
           "anarchy-512.png"
         ],
         "dest": "images"
       }
     ],
-    "output": "../artifacts/docs-api",
+    "output": "../../artifacts/docs-api",
     "template": [
       "default",
       "modern",

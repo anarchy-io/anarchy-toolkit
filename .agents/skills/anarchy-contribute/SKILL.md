@@ -18,8 +18,8 @@ they disagree, CONTRIBUTING.md wins: report the difference.
 
 - Never stage, revert or discard changes you did not make: the working tree may hold the developer's work in
   progress. Stage files explicitly (`git add <paths>`), never `git add -A` or `git commit -a`.
-- Follow `docs/contributing/README.md` and the conventions in `docs/conventions/` (listed in `AGENTS.md`); in this
-  repository they are rules, not recommendations. A choice that shapes the packages gets an ADR in `docs/decisions/`.
+- Follow `docs/portal/contributing/README.md` and the conventions in `docs/portal/conventions/` (listed in `AGENTS.md`); in this
+  repository they are rules, not recommendations. A choice that shapes the packages gets an ADR in `docs/portal/decisions/`.
 - Changing any public automation in-code default is a breaking change. For already-published packages, make the
   appropriate major version bump and use release tooling to handle dependent packages. Automation packages introduced
   or renamed on this branch remain at initial `1.0.0`; do not bump them, but document and classify the change as
@@ -30,7 +30,7 @@ they disagree, CONTRIBUTING.md wins: report the difference.
 1. `dotnet build Anarchy.Toolkit.sln -c Release -p:TreatWarningsAsErrors=true`: analyzer findings only show here.
 2. `make test_unit lint check_layering`. Fix `lint` with `make lint_fix` and review the diff.
 3. Projects, references or packages changed: `make check_package_hierarchy dependency_map`, and commit
-   `docs/dependency-map.html`.
+   `docs/portal/dependency-map.html`.
 4. Fallout parameters or targets changed: commit the regenerated `.fallout/build.schema.json`.
 5. Make targets changed: update the hand-written part of their skill, then `make skills_sync skills_validate`.
 

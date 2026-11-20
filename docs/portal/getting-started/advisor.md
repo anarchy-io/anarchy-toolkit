@@ -7,4 +7,4 @@ Answer a few questions about your project and get a suggested adoption plan: the
 </div>
 <script src="../assets/js/adoption-advisor.js" defer></script>
 
-The questions and suggestions live in [`docs/assets/data/adoption-advisor.json`](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/assets/data/adoption-advisor.json): improvements are welcome.
+The questions and suggestions live in [`docs/portal/assets/data/adoption-advisor.json`](https://github.com/anarchy-io/anarchy-toolkit/blob/main/docs/portal/assets/data/adoption-advisor.json): improvements are welcome.

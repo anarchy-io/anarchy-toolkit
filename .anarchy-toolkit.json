@@ -6,6 +6,10 @@
   "build": {
     "configuration": "Release"
   },
+  "documentation": {
+    "dependencyMapOutput": "docs/portal/dependency-map.html",
+    "apiReferenceConfig": "docs/api-reference/docfx.json"
+  },
   "agentSkills": {
     "prefix": "anarchy",
     "directories": [

@@ -11,7 +11,7 @@ dotnet restore Anarchy.Toolkit.sln
 dotnet build Anarchy.Toolkit.sln -c Release
 ```
 
-Run `make help` for every target, with its parameters. Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Anarchy commands. The [conventions](../docs/conventions/README.md) are recommendations for applications built on the platform, but rules for contributions to this repository: [Contributing Conventions](../docs/contributing/README.md) lists them with the rules that only apply here. Choices that shape the packages are recorded in [Values and Decisions](../docs/decisions/README.md).
+Run `make help` for every target, with its parameters. Dependencies restore from nuget.org. See the [README](../README.md) for the Make and Anarchy commands. The [conventions](../docs/portal/conventions/README.md) are recommendations for applications built on the platform, but rules for contributions to this repository: [Contributing Conventions](../docs/portal/contributing/README.md) lists them with the rules that only apply here. Choices that shape the packages are recorded in [Values and Decisions](../docs/portal/decisions/README.md).
 
 ## Making a change
 
@@ -32,7 +32,7 @@ Run `make help` for every target, with its parameters. Dependencies restore from
 
 NuGet dependencies are centrally managed in `Directory.Packages.props`. Review compatibility constraints in that file when updating packages; Dependabot proposes weekly grouped updates for NuGet and GitHub Actions.
 
-When you add or change a project reference between packages of the same layer, run `make check_package_hierarchy`; this monorepo-only check does not apply to adopter solutions. Whenever you add a project, a project reference or a package dependency, run `make dependency_map` and commit the regenerated `docs/dependency-map.html` together with the change. Likewise, commit `.fallout/build.schema.json` when the build regenerates it after you add or change Fallout parameters.
+When you add or change a project reference between packages of the same layer, run `make check_package_hierarchy`; this monorepo-only check does not apply to adopter solutions. Whenever you add a project, a project reference or a package dependency, run `make dependency_map` and commit the regenerated `docs/portal/dependency-map.html` together with the change. Likewise, commit `.fallout/build.schema.json` when the build regenerates it after you add or change Fallout parameters.
 
 Make targets declare the agent skill that documents them with a `#@` comment. When you add or change one, update the written part of that skill (`src/Automation/Boilerplate/.agents/skills` for the distributed targets, `.agents/skills/anarchy-monorepo` for this repository's), then run `make skills_sync` to refresh its generated command table.
 
@@ -80,4 +80,4 @@ When bumping versions:
 - Add a release note under `## Releases` in the README of each package changed on purpose. `make release_notes RELEASE_BASE=main` generates the missing ones from the subjects of the commits affecting each package, dependents included, for its current version. It only adds entries, leaving versions already listed untouched, so run it after the changes are committed and the versions bumped, then review the notes and fold them into the relevant commits.
 - Check the result with `make validate_release RELEASE_BASE=main` before committing.
 
-After merging, the workflow runs unit tests, then uses the Anarchy `Publish` target to pack all source projects, validate the batch, and push packages in dependency order. Every version not already on the feed is eligible, including on the first run. A failed push stops the remaining packages but cannot roll back those already pushed; fix the problem and rerun the workflow, which skips versions already on nuget.org. Feed indexing can delay availability. See the [NuGet build guide](../docs/guides/automation-builds.md#nuget-packages) for details.
+After merging, the workflow runs unit tests, then uses the Anarchy `Publish` target to pack all source projects, validate the batch, and push packages in dependency order. Every version not already on the feed is eligible, including on the first run. A failed push stops the remaining packages but cannot roll back those already pushed; fix the problem and rerun the workflow, which skips versions already on nuget.org. Feed indexing can delay availability. See the [NuGet build guide](../docs/portal/guides/automation-builds.md#nuget-packages) for details.

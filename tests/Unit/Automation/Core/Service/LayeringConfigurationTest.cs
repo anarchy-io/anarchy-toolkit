@@ -180,7 +180,7 @@ public class LayeringConfigurationTest
     [Fact]
     public void PublishedSchema_DeclaresOptionalSectionsAndMatchesTheRuntimeSchemaId()
     {
-        var schema = JsonNode.Parse(File.ReadAllText(Path.Combine(RepositoryRoot(), "docs", "schemas", "anarchy-toolkit.schema.json")))!;
+        var schema = JsonNode.Parse(File.ReadAllText(Path.Combine(RepositoryRoot(), "docs", "portal", "schemas", "anarchy-toolkit.schema.json")))!;
 
         schema["$id"]!.GetValue<string>().Should().Be(AutomationPreferences.SchemaUrl);
         ContainsRequired(schema).Should().BeFalse();

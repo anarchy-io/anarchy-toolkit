@@ -1,4 +1,4 @@
-# The navbar, mirroring the Jekyll site's masthead (docs/_data/navigation.yml, `main`, top level only): keep them in sync.
+# The navbar, mirroring the portal's masthead (docs/portal/_data/navigation.yml, `main`, top level only): keep them in sync.
 # API points into this site, so DocFX highlights it and shows the API table of contents under it.
 - name: Overview
   href: https://anarchy-io.github.io/anarchy-toolkit/overview/
