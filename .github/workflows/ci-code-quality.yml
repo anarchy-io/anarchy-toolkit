@@ -28,7 +28,7 @@ jobs:
         run: make skills_validate
 
       - name: Check the conventions skill matches the docs
-        run: docs/scripts/sync-skill-docs.sh --check
+        run: docs/portal/scripts/sync-skill-docs.sh --check
 
       - name: Run code quality checks
         run: make pull_request

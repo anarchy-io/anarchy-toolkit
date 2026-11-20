@@ -1,6 +1,6 @@
 /*
  * Anarchy I/O design tokens, shared by the Jekyll site (assets/css/main.scss) and the DocFX API reference
- * (docs-api/template/public/main.css). The single source of truth for the brand palette and typography.
+ * (docs/api-reference/template/public/main.css). The single source of truth for the brand palette and typography.
  *
  * main.scss turns every `--anarchy-<name>: <value>;` line into a `$anarchy-<name>` Sass variable, because
  * Minimal Mistakes mixes colours at compile time: keep one declaration per line, with literal values only

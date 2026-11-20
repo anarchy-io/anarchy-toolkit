@@ -1,4 +1,4 @@
-# Masthead links, mirrored by the API reference's navbar (docs-api/toc.yml): keep them in sync. `children` open a
+# Masthead links, mirrored by the API reference's navbar (docs/api-reference/toc.yml): keep them in sync. `children` open a
 # dropdown here (the API navbar has no dropdowns, so it links the top level only); `icon_only` shows just the icon.
 main:
   - title: "Overview"

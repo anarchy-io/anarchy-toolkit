@@ -4,14 +4,23 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/**'
-      - 'docs-api/**'
+      - 'docs/portal/**'
+      - 'docs/api-reference/**'
+      - '.anarchy-toolkit.json'
+      - 'Directory.*.props'
+      - 'Directory.*.targets'
+      - 'Anarchy.Toolkit.sln'
+      - 'global.json'
+      - 'nuget.config'
+      - 'build/**'
+      - 'scripts/make/targets/monorepo.mk'
       - 'src/**/*.cs'
       - 'src/**/*.csproj'
       - 'src/Automation.Build/**'
+      - 'src/Automation/Boilerplate/**'
       - 'src/*/README.md'
       - 'samples/README.md'
-      - '.github/workflows/publish-docs.yml'
+      - '.github/workflows/cd-publish-docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -31,14 +40,14 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Sync package and sample READMEs
-        run: docs/scripts/sync-readmes.sh
+        run: docs/portal/scripts/sync-readmes.sh
 
       - uses: actions/configure-pages@v6
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: ./docs
+          source: ./docs/portal
           destination: ./_site
 
       - name: Setup .Net
@@ -47,14 +56,17 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Build API reference with DocFX
-        run: make api_reference
+        run: make docs_api_build
 
-      - name: Add API reference to the site
+      # The portal's /api/ navigation points to the DocFX output; publish both from one Pages artifact.
+      - name: Add API reference to the portal
         run: |
           sudo mkdir -p _site/api
           sudo cp -R artifacts/docs-api/. _site/api/
 
       - uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./_site
 
   docs_deploy:
     name: "Deploy to GitHub Pages"

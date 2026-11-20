@@ -4,7 +4,7 @@ Applications built on the [Anarchy I/O Toolkit platform](https://anarchy-io.gith
 
 No single sample covers the whole platform; together they show its three pillars composed:
 
-- **Architecture**: each application registers its services through DI modules (`ModuleLibConfiguration`) and follows the [async](../docs/conventions/async.md), [endpoint](../docs/conventions/endpoints.md) and [testing](../docs/conventions/testing.md) conventions.
+- **Architecture**: each application registers its services through DI modules (`ModuleLibConfiguration`) and follows the [async](../docs/portal/conventions/async.md), [endpoint](../docs/portal/conventions/endpoints.md) and [testing](../docs/portal/conventions/testing.md) conventions.
 - **Infrastructure**: each references only the packages its workload needs (below), plus their dependencies.
 - **Build Ecosystem**: they are part of the solution, so this repository's Fallout build compiles and lints them with the packages they consume.
 
@@ -18,7 +18,7 @@ No single sample covers the whole platform; together they show its three pillars
 | `Samples.Examples` | `Configuration`, `Core.Persistence.Abstractions`, `Infrastructure.Telemetry.Serilog` | Telemetry providers and exporters, a UseCase and an Aggregate |
 | `Samples.Testing` | `Testing`, `Testing.Web`, `Testing.MockServer` | Showcase of the Testing packages: in-memory telemetry, API, job and UI smoke tests, mock-server assertions |
 
-Persistence and messaging packages are not used by the samples; see the [Package Catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/) and [Database Providers](../docs/guides/database-providers.md).
+Persistence and messaging packages are not used by the samples; see the [Package Catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/) and [Database Providers](../docs/portal/guides/database-providers.md).
 
 | Project | Kind | Shows |
 |---|---|---|
@@ -30,7 +30,7 @@ Persistence and messaging packages are not used by the samples; see the [Package
 | [`Samples.Examples`](Samples.Examples) | Console examples | Run one with `dotnet run --project samples/Samples.Examples -- <name>`. Telemetry: `default` (`AddCoreTelemetry()` with Microsoft logging and standard metrics), `serilog` (`AddSerilogTelemetry` with a consumer sink receiving the toolkit's events), `swap` (the same `CheckoutService` on Microsoft logging, then Serilog), `recorder` (a custom `IMetricRecorder`) and `otlp` (OpenTelemetry exporting the toolkit meter over OTLP; set `OTLP_ENDPOINT`). `orders` shows a `PlaceOrderUseCase` that owns the transaction and an `OrderAggregate` that joins it, over an in-memory `IUnitOfWork`. |
 | [`Samples.Testing`](Samples.Testing) | Compiled Testing showcase | Smoke tests running the API through both the native and Lambda pipelines (`RestApiTestCaseBase`), invoking the job handler, and exercising the UI's shell and stubs. Asserting what an application sent to the payments and stock services stood in by `Samples.MockServer` (`MockServerFixture`, `AssertReceivedAsync`). |
 
-The application samples register `ModuleLibConfiguration`; the standalone telemetry examples use `AddCoreTelemetry()` directly. Both get the toolkit's provider-neutral `ICoreTelemetry`, `IMetricRecorder` and `AppTelemetry`. Logs go to the logging providers the application registers and metrics use standard .NET metrics; to use an organization's own sinks or metrics backend, register them (or pass a `ModuleTelemetryBase` through `new ModuleLibConfiguration<…>(new ModuleTelemetry(new MyTelemetryModule()))`). See the [observability guide](../docs/guides/observability.md).
+The application samples register `ModuleLibConfiguration`; the standalone telemetry examples use `AddCoreTelemetry()` directly. Both get the toolkit's provider-neutral `ICoreTelemetry`, `IMetricRecorder` and `AppTelemetry`. Logs go to the logging providers the application registers and metrics use standard .NET metrics; to use an organization's own sinks or metrics backend, register them (or pass a `ModuleTelemetryBase` through `new ModuleLibConfiguration<…>(new ModuleTelemetry(new MyTelemetryModule()))`). See the [observability guide](../docs/portal/guides/observability.md).
 
 Run the API locally:
 

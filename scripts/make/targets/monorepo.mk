@@ -21,7 +21,8 @@ check_package_hierarchy: #? Verifies the toolkit's package hierarchy: same-layer
 ## DOCUMENTATION
 #############################
 
-DOCS_DIR := $(abspath docs)
+DOCS_DIR := $(abspath docs/portal)
+DOCS_API_DIR := $(abspath docs/api-reference)
 
 # Install the gems in the user's gem directory instead of the system Ruby's (e.g. /opt/homebrew),
 # which often isn't writable. Bundler appends ruby/<version>, matching `gem env user_gemhome`.
@@ -42,7 +43,7 @@ docs_install: #? Installs the documentation site's Ruby gems (needs Ruby and Bun
 	@cd "$(DOCS_DIR)" && bundle install
 
 .PHONY: docs_build
-docs_build: docs_sync docs_install #? Builds the documentation site into docs/_site
+docs_build: docs_sync docs_install #? Builds the documentation site into docs/portal/_site
 	@cd "$(DOCS_DIR)" && bundle exec jekyll build
 
 .PHONY: docs_serve
@@ -60,6 +61,6 @@ docs_api_serve: $(if $(filter true,$(NO_BUILD)),,docs_api_build) #? Serves the D
 #+ NO_BUILD|bool|Serve the existing build as is, refreshing only its stylesheets (template and tokens), to check style changes quickly
 	@if [ "$(NO_BUILD)" = "true" ]; then \
 		test -d "$(DOCS_API_OUTPUT)/public" || { echo "No API reference in $(DOCS_API_OUTPUT): run without NO_BUILD first" >&2; exit 1; }; \
-		cp docs-api/template/public/main.css docs/assets/css/tokens.css "$(DOCS_API_OUTPUT)/public/"; \
+		cp "$(DOCS_API_DIR)/template/public/main.css" "$(DOCS_DIR)/assets/css/tokens.css" "$(DOCS_API_OUTPUT)/public/"; \
 	fi
 	@cd "$(DOCS_API_OUTPUT)" && python3 -m http.server 8080
