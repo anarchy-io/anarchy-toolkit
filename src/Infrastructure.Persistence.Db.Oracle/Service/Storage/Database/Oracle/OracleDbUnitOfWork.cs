@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
+using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
@@ -23,7 +23,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Service.Storage.D
 public class OracleDbUnitOfWork(
     [FromKeyedServices("writer")] IDbConnectionPool<OracleConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<OracleConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null,
+    AppTelemetry? telemetry = null,
     ILocalEventBus? localEventBus = null)
     : DbUnitOfWorkBase<OracleConnection, OracleTransaction>(
         dbConnectionPool,

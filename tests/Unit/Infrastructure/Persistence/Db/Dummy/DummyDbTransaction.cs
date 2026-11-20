@@ -14,13 +14,20 @@ public sealed class DummyDbTransaction(DummyDbConnection connection) : DbTransac
 
     public bool IsDisposed { get; private set; }
 
+    public int RollbackCount { get; private set; }
+
     public override IsolationLevel IsolationLevel => IsolationLevel.ReadCommitted;
     protected override DbConnection DbConnection => connection;
 
-    public override void Commit() => IsCommitted = true;
+    public override void Commit()
+    {
+        if (connection.CommitFailure is not null) throw connection.CommitFailure;
+        IsCommitted = true;
+    }
 
     public override void Rollback()
     {
+        RollbackCount++;
         if (connection.RollbackFailure is not null) throw connection.RollbackFailure;
         IsRolledBack = true;
     }

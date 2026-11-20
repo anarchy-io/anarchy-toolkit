@@ -24,13 +24,22 @@ Use this package when implementing a relational adapter or shared repository beh
 3. Configure reader and writer hosts, credentials, command timeout and resilience settings at the host. `DbConnectionOptions.MaximumPoolSize` defaults to 100 and is applied by the included providers.
 4. Register the provider module and optional health reports, then inject the repository and unit-of-work abstractions into application services. Define transaction and retry boundaries explicitly, especially when an operation has non-database side effects.
 
-A unit-of-work instance rejects nested and concurrent sessions. Caller-requested cancellation propagates after rollback
-and cleanup, which use an uncancelled token. If rollback also fails, inspect the original exception's `Data` for
-`UnitOfWork.RollbackFailure`; if cleanup fails while another exception is already being propagated, inspect that
-exception's `Data` for `UnitOfWork.CleanupFailure`. Connections are discarded after a failed rollback or transaction
-disposal instead of being returned to the pool. Each session can start only one transaction; further calls to
-`BeginAsync` fail rather than replacing an existing transaction. If transaction and connection cleanup both fail, the
-connection failure is available on the transaction failure under `UnitOfWork.ConnectionCleanupFailure`.
+A unit-of-work instance rejects nested and concurrent sessions. The code that starts a session owns its transaction:
+`RunInJoinedSessionAsync` lets a participant, such as an aggregate called by a UseCase, share the caller's transaction
+without being able to begin, commit or roll it back (`TransactionNotOwnedException`), and
+`RunInJoinedOrManagedSessionAsync` joins the caller's transaction when there is one and otherwise owns a managed session.
+`BeginAsync`, `CommitAsync` and `RollbackAsync` only act on the session the instance started in the current async flow.
+
+A transaction is rolled back only when it exists and is still pending, including one a `RunInSessionAsync` callback left
+open, and a rolled-back or abandoned transaction publishes `RolledBackUowTransactionLocalEvent`. Cancellation is
+observed while connecting, beginning, running the callback and just before an automatic commit, and propagates after
+rollback and cleanup, which use an uncancelled token; a commit is never interrupted once started. If rollback also
+fails, inspect the original exception's `Data` for `UnitOfWork.RollbackFailure`; if cleanup fails while another exception
+is already being propagated, inspect that exception's `Data` for `UnitOfWork.CleanupFailure`. Connections are discarded
+after a failed begin, commit, rollback or transaction disposal instead of being returned to the pool. Each session can
+start only one transaction; further calls to `BeginAsync` fail with `TransactionAlreadyActiveException`. If transaction
+and connection cleanup both fail, the connection failure is available on the transaction failure under
+`UnitOfWork.ConnectionCleanupFailure`.
 
 See [adding a database provider](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#adding-a-database-provider) and the [persistence notes](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#provider-notes), including known limitations.
 
@@ -40,6 +49,10 @@ See [adding a database provider](https://anarchy-io.github.io/anarchy-toolkit/gu
 
 - Preserve the original session failure when transaction startup, rollback or cleanup fails; propagate caller cancellation and reject concurrent sessions.
 - Reject repeated transaction starts and preserve both failures when transaction and connection cleanup fail.
+- Make transaction ownership explicit with `RunInJoinedSessionAsync` and `RunInJoinedOrManagedSessionAsync`; participants cannot begin, commit or roll back the caller's transaction.
+- Roll back only pending transactions, explicitly roll back what a `RunInSessionAsync` callback left open, and stop reporting post-commit notification failures as commit failures.
+- Check cancellation before an automatic commit and never interrupt a started commit; publish transaction lifecycle events with an uncancelled token.
+- Discard the connection after a failed begin or commit, make session cleanup idempotent, and reject `BeginAsync`, `CommitAsync` and `RollbackAsync` calls from other async flows.
 
 ### 1.2.1
 

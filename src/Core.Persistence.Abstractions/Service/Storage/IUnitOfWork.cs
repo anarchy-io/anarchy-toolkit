@@ -18,8 +18,7 @@ public delegate Task<TResult> SessionCallback<TResult>(CancellationToken? cancel
 public delegate Task SessionCallback(CancellationToken? cancellationToken = null);
 
 /// <summary>
-///     Interface of a unit of work pattern.
-///     A unit of work contains can start a session that will create a connection and transaction.
+///     Interface of a unit-of-work pattern. A unit of work can start a session that creates a connection and transaction.
 /// </summary>
 /// <remarks>
 ///     <para>
@@ -33,7 +32,21 @@ public delegate Task SessionCallback(CancellationToken? cancellationToken = null
 ///         <item><description><see cref="RunInAdhocSessionAsync{TResult}"/>: no transaction (read-only or non-transactional writes).</description></item>
 ///         <item><description><c>RunInManagedSessionAsync</c>: a transaction is started and committed automatically on success, rolled back on failure.</description></item>
 ///         <item><description><see cref="RunInSessionAsync{TResult}"/>: a transaction is started but the callback must call <see cref="CommitAsync"/> itself.</description></item>
+///         <item><description><see cref="RunInJoinedSessionAsync{TResult}"/>: joins the transaction of the caller's session without owning it.</description></item>
+///         <item><description><see cref="RunInJoinedOrManagedSessionAsync{TResult}"/>: joins the caller's transaction when there is one, otherwise owns a managed one.</description></item>
 ///     </list>
+///     <para>
+///     Transaction ownership: the code that starts a session owns its transaction and is the only one that commits or
+///     rolls it back. Code that joins it (for example an aggregate called by a UseCase) cannot begin, commit or roll
+///     back (<see cref="Exceptions.TransactionNotOwnedException"/>); it signals failure by throwing, and the owner
+///     decides.
+///     </para>
+///     <para>
+///     Cancellation: the token is observed while acquiring the connection, beginning the transaction, running the
+///     callback and just before an automatic commit. A commit is never interrupted once started; rollbacks and cleanup
+///     after a failure run with an uncancelled token. Caller-requested cancellation propagates as an
+///     <see cref="OperationCanceledException"/>, after the transaction was rolled back and the connection cleaned up.
+///     </para>
 /// </remarks>
 /// <example>
 /// <code language="csharp">
@@ -91,6 +104,42 @@ public interface IUnitOfWork
     Task RunInManagedSessionAsync(SessionCallback callback, CancellationToken? cancellationToken = null);
 
     /// <summary>
+    ///     Run a callback as a participant in the transaction of the session active in the current async flow, which
+    ///     the caller owns.
+    /// </summary>
+    /// <remarks>
+    ///     The callback shares the caller's connection and transaction. It cannot begin, commit or roll back
+    ///     (<see cref="Exceptions.TransactionNotOwnedException"/>), and its exceptions propagate unchanged so the owner
+    ///     decides whether to roll back.
+    /// </remarks>
+    /// <typeparam name="TResult">Type of the callback result.</typeparam>
+    /// <param name="callback">The user provided callback function that will be executed within the caller's transaction</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The result returned by <paramref name="callback"/>.</returns>
+    /// <exception cref="Exceptions.NoActiveTransactionException">
+    ///     Thrown when no session with a pending transaction is active in the current async flow.
+    /// </exception>
+    Task<TResult> RunInJoinedSessionAsync<TResult>(SessionCallback<TResult> callback,
+                                                   CancellationToken? cancellationToken = null);
+
+    /// <summary>
+    ///     Join the caller's transaction when one is pending in the current async flow
+    ///     (<see cref="RunInJoinedSessionAsync{TResult}"/>); otherwise start and own a managed session
+    ///     (<see cref="RunInManagedSessionAsync{TResult}"/>).
+    /// </summary>
+    /// <remarks>
+    ///     Use it for code, such as an aggregate, that must be atomic on its own but can also take part in a wider
+    ///     transaction started by its caller. A caller's session without a transaction is not joined: starting a managed
+    ///     session within it fails with <see cref="Exceptions.SessionAlreadyActiveException"/>.
+    /// </remarks>
+    /// <typeparam name="TResult">Type of the callback result.</typeparam>
+    /// <param name="callback">The user provided callback function that will be executed within the transaction</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The result returned by <paramref name="callback"/>.</returns>
+    Task<TResult> RunInJoinedOrManagedSessionAsync<TResult>(SessionCallback<TResult> callback,
+                                                            CancellationToken? cancellationToken = null);
+
+    /// <summary>
     ///     Begin a new transaction within the active session
     /// </summary>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
@@ -100,6 +149,10 @@ public interface IUnitOfWork
     /// <summary>
     ///     Commit the transaction within the session
     /// </summary>
+    /// <remarks>
+    ///     The token is checked before the commit starts; the commit itself is not interrupted, since an interrupted
+    ///     commit leaves its outcome unknown.
+    /// </remarks>
     /// <param name="suppressNoActiveTransactionException">
     ///     When <c>true</c>, does not throw if there is no active transaction to commit.
     ///     Use this for callback-driven flows where commit may be invoked defensively.
@@ -112,6 +165,10 @@ public interface IUnitOfWork
     /// <summary>
     ///     Rollback the transaction within the session
     /// </summary>
+    /// <remarks>
+    ///     If the rollback fails or is cancelled, the transaction is abandoned: its connection is discarded instead of
+    ///     returned to the pool, which aborts it on the server.
+    /// </remarks>
     /// <param name="reason">Exception that made the rollback necessary (optional)</param>
     /// <param name="suppressNoActiveTransactionException">
     ///     When <c>true</c>, does not throw if there is no active transaction to roll back.

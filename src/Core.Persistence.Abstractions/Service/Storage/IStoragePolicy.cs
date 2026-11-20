@@ -39,7 +39,7 @@ public interface IStoragePolicy<TStorage>
     /// <param name="operationName">Optional name of the operation that is executed, that will be used for observability</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>Database result mapped to the provided type</returns>
-    /// <exception cref="DsPolicyExecutionException">Thrown when executing the callback function failed</exception>
+    /// <exception cref="StoragePolicyExecutionException">Thrown when executing the callback function failed</exception>
     Task<TResult> ExecuteAsync<TResult>(StoragePolicyCallback<TStorage, TResult> callback, string? operationName = null,
                                         CancellationToken? cancellationToken = null);
 }

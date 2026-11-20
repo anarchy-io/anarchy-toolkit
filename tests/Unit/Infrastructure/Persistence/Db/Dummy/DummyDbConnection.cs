@@ -15,6 +15,7 @@ public sealed class DummyDbConnection(string connectionString) : DbConnection
     public int OpenCount { get; private set; }
 
     public Exception? BeginFailure { get; set; }
+    public Exception? CommitFailure { get; set; }
     public Exception? RollbackFailure { get; set; }
     public Exception? TransactionDisposeFailure { get; set; }
     public Exception? DisposeFailure { get; set; }

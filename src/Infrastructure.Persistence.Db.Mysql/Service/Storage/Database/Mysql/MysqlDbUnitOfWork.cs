@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
+using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
@@ -23,5 +23,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Storage.Da
 public class MysqlDbUnitOfWork(
     [FromKeyedServices("writer")] IDbConnectionPool<MySqlConnection> dbConnectionPool,
     IAsyncFlowContext<StorageConnectionEnvelopeBase<MySqlConnection>> asyncFlowContext,
-    IAppTelemetry? telemetry = null, ILocalEventBus? localEventBus = null)
+    AppTelemetry? telemetry = null, ILocalEventBus? localEventBus = null)
     : DbUnitOfWorkBase<MySqlConnection, MySqlTransaction>(dbConnectionPool, asyncFlowContext, telemetry, localEventBus);
