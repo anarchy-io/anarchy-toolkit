@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Entity.Event;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.ValueSet.Storage.Database;
 

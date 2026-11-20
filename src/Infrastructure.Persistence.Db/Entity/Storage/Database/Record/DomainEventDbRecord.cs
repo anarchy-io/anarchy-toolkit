@@ -1,9 +1,9 @@
-using Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Storage.Database.Record;
 
 /// <summary>
-/// Row shape returned by the <c>DomainEvent.Get.*</c> queries, mapped to a <see cref="PersistedEvent"/> via
+/// Row shape returned by the <c>DomainEvent.Get.*</c> queries, mapped to a <see cref="PersistedDomainEvent"/> via
 /// <see cref="ToDomainEntity"/>.
 /// </summary>
 public record DomainEventDbRecord
@@ -27,10 +27,10 @@ public record DomainEventDbRecord
     public required DateTimeOffset? DateTime;
 
     /// <summary>Maps the record to its domain representation.</summary>
-    /// <returns>A <see cref="PersistedEvent"/> with the record values.</returns>
-    public PersistedEvent ToDomainEntity()
+    /// <returns>A <see cref="PersistedDomainEvent"/> with the record values.</returns>
+    public PersistedDomainEvent ToDomainEntity()
     {
-        return new PersistedEvent(
+        return new PersistedDomainEvent(
             Id,
             TypeAggregate,
             AggregateId,

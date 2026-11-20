@@ -22,6 +22,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Service.Health.Re
 /// </remarks>
 public abstract class OracleHealthReportBase(
     IStoragePolicy<OracleConnection> dbPolicy,
-    IAppTelemetry telemetry,
+    AppTelemetry telemetry,
     DataStorageInstanceType dbInstanceType)
     : DbHealthReportBase<OracleConnection, OracleDbDialect>(dbPolicy, telemetry, dbInstanceType);

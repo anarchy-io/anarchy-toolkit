@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Api;
-using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Hosting.Workers.Service.Worker;
@@ -8,7 +7,6 @@ using Anarchy.Toolkit.Tests.Unit.Hosting.Workers.TestAssemblies;
 using Anarchy.Toolkit.Tests.Unit.Hosting.Workers.TestHelpers;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using System.Net;
 
 namespace Anarchy.Toolkit.Tests.Unit.Hosting.Workers.Service.Worker;
@@ -17,7 +15,7 @@ public class ServiceHealthCheckWorkerTest
 {
     // Port 0: the operating system picks a free port when the health API starts.
     private ServiceHealthCheckWorker CreateSut(ServiceProvider provider) =>
-        new(new WorkerHealthCheckAppSettings(0), Mock.Of<IAppTelemetry>(),
+        new(new WorkerHealthCheckAppSettings(0), AppTelemetry.Null,
             provider.GetRequiredService<IServiceScopeFactory>());
 
     [Fact]
@@ -25,7 +23,7 @@ public class ServiceHealthCheckWorkerTest
     {
         var services = new ServiceCollection();
         services.AddApplicationHealthEndpoints(WithMetadataHelper.Assembly);
-        services.AddScoped<IReadOnlyCollection<IServiceHealthReport>>(_ => [
+        services.AddScoped<IReadOnlyCollection<IHealthCheck>>(_ => [
             new StubServiceHealthReport("worker report"),
             new StubServiceHealthReport("failing worker report", HealthCheckResult.Failed),
         ]);

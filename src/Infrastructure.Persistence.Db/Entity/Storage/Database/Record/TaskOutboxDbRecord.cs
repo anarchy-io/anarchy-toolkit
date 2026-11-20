@@ -1,9 +1,9 @@
-using Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Storage.Database.Record;
 
 /// <summary>
-/// Row shape returned by the <c>TaskOutbox.Get.*</c> queries, mapped to a <see cref="PersistedEvent"/> via
+/// Row shape returned by the <c>TaskOutbox.Get.*</c> queries, mapped to a <see cref="PersistedDomainEvent"/> via
 /// <see cref="ToDomainEntity"/>.
 /// </summary>
 public record TaskOutboxDbRecord
@@ -33,10 +33,10 @@ public record TaskOutboxDbRecord
     /// Maps the record to its domain representation. The task type becomes the event type and
     /// <see cref="CreatedAt"/> the event moment; <see cref="PublishedAt"/> is not carried over.
     /// </summary>
-    /// <returns>A <see cref="PersistedEvent"/> with the record values.</returns>
-    public PersistedEvent ToDomainEntity()
+    /// <returns>A <see cref="PersistedDomainEvent"/> with the record values.</returns>
+    public PersistedDomainEvent ToDomainEntity()
     {
-        return new PersistedEvent(
+        return new PersistedDomainEvent(
             Id,
             TypeAggregate,
             AggregateId,

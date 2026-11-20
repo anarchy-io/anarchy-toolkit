@@ -13,4 +13,4 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Health.
 /// <param name="telemetry">Application telemetry used to log failures.</param>
 public class PostgresHealthReportReader(
     [FromKeyedServices("reader")] IStoragePolicy<NpgsqlConnection> dbPolicy,
-    IAppTelemetry telemetry) : PostgresHealthReportBase(dbPolicy, telemetry, DataStorageInstanceType.Reader);
+    AppTelemetry telemetry) : PostgresHealthReportBase(dbPolicy, telemetry, DataStorageInstanceType.Reader);

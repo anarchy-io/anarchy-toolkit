@@ -8,9 +8,9 @@ Shared health-check contracts and report models for service endpoints.
 dotnet add package Anarchy.Toolkit.Core.Health
 ```
 
-- Implement `IServiceHealthReport` or derive from `ServiceHealthReportBase` for timed, exception-safe checks.
+- Implement `IHealthCheck` or derive from `HealthCheckBase` for timed, exception-safe checks.
 - Use `HealthCheckReport.RunAsync(reports)` to run reports in parallel and aggregate their results.
-- `HealthCheckEntity`, `ExceptionReport`, `IBuildMetadata` and `ApplicationRunbookUriAttribute` provide shared health and status metadata.
+- `HealthCheckOutcome`, `ExceptionReport`, `IBuildMetadata` and `ApplicationRunbookUriAttribute` provide shared health and status metadata.
 
 ## When to use it
 
@@ -21,9 +21,9 @@ Use this package to describe dependency checks independently of the HTTP host. I
 Implement a report for each dependency. Return normally for a passing check and throw on failure; the base class records the duration and converts exceptions into failed results. Caller-requested cancellation is propagated.
 
 ```csharp
-using Anarchy.Toolkit.Core.Health.Service.Health;
+using Anarchy.Toolkit.Core.Health.Checks;
 
-public sealed class ExampleHealthReport : ServiceHealthReportBase
+public sealed class ExampleHealthReport : HealthCheckBase
 {
     protected override string Name => "example_dependency";
 
@@ -35,7 +35,7 @@ public sealed class ExampleHealthReport : ServiceHealthReportBase
 }
 ```
 
-Supply reports as an `IReadOnlyCollection<IServiceHealthReport>` to the toolkit's web or worker health endpoints, or call `HealthCheckReport.RunAsync(reports)` to aggregate them directly. A successful placeholder check does not establish that a real dependency is healthy.
+Supply reports as an `IReadOnlyCollection<IHealthCheck>` to the toolkit's web or worker health endpoints, or call `HealthCheckReport.RunAsync(reports)` to aggregate them directly. A successful placeholder check does not establish that a real dependency is healthy.
 
 The [Web](https://www.nuget.org/packages/Anarchy.Toolkit.Web) and [Hosting.Workers](https://www.nuget.org/packages/Anarchy.Toolkit.Hosting.Workers) packages expose health endpoints. See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 

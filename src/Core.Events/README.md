@@ -9,7 +9,7 @@ dotnet add package Anarchy.Toolkit.Core.Events
 ```
 
 - Implement `ILocalEvent` and `ILocalEventHandler<T>` and register the local bus with `services.AddLocalEventBus()`.
-- Build domain-event processing around `EventEnvelopeBase`, `Event`, `PersistedEvent`, the processor, handler bus and `EventEnvelopeParser`.
+- Build domain-event processing around `EventEnvelopeBase`, `DomainEventEnvelope`, `PersistedDomainEvent`, `DomainEventProcessorBase<T>`, `DomainEventHandlerDispatcher<T>` and `EventEnvelopeParser`. Types live in the `Envelopes`, `Domain` and `Local` namespaces.
 - The local bus is in-process; use a message-broker implementation for external delivery.
 
 ## When to use it
@@ -18,17 +18,15 @@ Use the local bus to notify other components within the same process, or use the
 
 ## How to use it
 
-Register `IAppTelemetry` and the bus, then register each handler explicitly. For example, with an application-defined `OrderPlaced : ILocalEvent` and `OrderPlacedHandler : ILocalEventHandler<OrderPlaced>`:
+Register `AppTelemetry` and the bus, then register each handler explicitly. For example, with an application-defined `OrderPlaced : ILocalEvent` and `OrderPlacedHandler : ILocalEventHandler<OrderPlaced>`:
 
 ```csharp
 using Anarchy.Toolkit.Core.Events.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Core.Events.Service.Event.InMemory;
+using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 
-services.AddLogging();
-services.AddMetrics();
-services.AddAppTelemetry();
+services.AddCoreTelemetry();
 services.AddLocalEventBus();
 services.AddScoped<ILocalEventHandler<OrderPlaced>, OrderPlacedHandler>();
 
@@ -44,7 +42,7 @@ See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview
 
 ### 2.0.0
 
-- Local event bus handler failures use the injected `IAppTelemetry` instead of `Observer`.
+- Local event bus handler failures use the injected `AppTelemetry` instead of `Observer`.
 - Domain event processing uses the same facade for event scopes, logs and metrics, removing its Serilog-based dependency.
 
 ### 1.1.1

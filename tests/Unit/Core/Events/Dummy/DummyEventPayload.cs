@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Entity.Event;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 
 namespace Anarchy.Toolkit.Tests.Unit.Core.Events.Dummy;
 

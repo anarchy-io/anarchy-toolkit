@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Entity.Event.InMemory;
+using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
 using System.Data.Common;

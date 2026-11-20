@@ -1,6 +1,4 @@
-using Anarchy.Toolkit.Core.Health.Entity.Service;
-using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.AspNetCore;
 using Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health;
@@ -117,13 +115,13 @@ public class AspNetCoreMicrosoftDiTests : AspNetCoreBaseTests
     private class SingleReportStartup : HealthEndpointsStartup
     {
         protected override void RegisterReports(IServiceCollection services) =>
-            services.AddSingleton<IReadOnlyCollection<IServiceHealthReport>>([new StubServiceHealthReport("Dummy Health test")]);
+            services.AddSingleton<IReadOnlyCollection<IHealthCheck>>([new StubServiceHealthReport("Dummy Health test")]);
     }
 
     private class MultipleReportsStartup : HealthEndpointsStartup
     {
         protected override void RegisterReports(IServiceCollection services) =>
-            services.AddSingleton<IReadOnlyCollection<IServiceHealthReport>>([
+            services.AddSingleton<IReadOnlyCollection<IHealthCheck>>([
                 new StubServiceHealthReport("Dummy Health test"),
                 new StubServiceHealthReport("Second dummy Health test"),
             ]);
@@ -135,7 +133,7 @@ public class AspNetCoreMicrosoftDiTests : AspNetCoreBaseTests
         protected override void RegisterReports(IServiceCollection services) =>
             services.AddScoped<FirstReport>()
                     .AddScoped<SecondReport>()
-                    .AddScoped<IReadOnlyCollection<IServiceHealthReport>>(sp => [
+                    .AddScoped<IReadOnlyCollection<IHealthCheck>>(sp => [
                         sp.GetRequiredService<FirstReport>(),
                         sp.GetRequiredService<SecondReport>(),
                     ]);
@@ -145,7 +143,7 @@ public class AspNetCoreMicrosoftDiTests : AspNetCoreBaseTests
     {
         public override void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IReadOnlyCollection<IServiceHealthReport>>([new StubServiceHealthReport("Dummy Health test")]);
+            services.AddSingleton<IReadOnlyCollection<IHealthCheck>>([new StubServiceHealthReport("Dummy Health test")]);
             services.AddApplicationHealthEndpoints(WithMetadataHelper.Assembly);
 
             base.ConfigureServices(services);
@@ -162,7 +160,7 @@ public class AspNetCoreMicrosoftDiTests : AspNetCoreBaseTests
     private class FailingReportStartup : HealthEndpointsStartup
     {
         protected override void RegisterReports(IServiceCollection services) =>
-            services.AddSingleton<IReadOnlyCollection<IServiceHealthReport>>(
+            services.AddSingleton<IReadOnlyCollection<IHealthCheck>>(
                 [new StubServiceHealthReport("Dummy Health test", HealthCheckResult.Failed)]);
     }
 
@@ -178,10 +176,10 @@ public class AspNetCoreMicrosoftDiTests : AspNetCoreBaseTests
 
     private class SecondReport() : StubServiceHealthReport("Second dummy Health test");
 
-    private class DummyDiReport(IDummyDiObject obj) : IServiceHealthReport
+    private class DummyDiReport(IDummyDiObject obj) : IHealthCheck
     {
-        public Task<HealthCheckEntity> RunAsync(CancellationToken? cancellationToken = null) =>
-            Task.FromResult(new HealthCheckEntity($"DI Dummy Health test {obj}", HealthCheckResult.Passed, TimeSpan.Zero));
+        public Task<HealthCheckOutcome> RunAsync(CancellationToken? cancellationToken = null) =>
+            Task.FromResult(new HealthCheckOutcome($"DI Dummy Health test {obj}", HealthCheckResult.Passed, TimeSpan.Zero));
     }
 
     private interface IDummyDiObject;

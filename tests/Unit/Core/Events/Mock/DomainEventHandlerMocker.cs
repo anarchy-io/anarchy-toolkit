@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Entity;
-using Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
-using Anarchy.Toolkit.Core.Events.Service.Event.Domain;
+using Anarchy.Toolkit.Core.Events.Domain;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 using Moq;
 
 namespace Anarchy.Toolkit.Tests.Unit.Core.Events.Mock;
@@ -11,11 +11,11 @@ public static class DomainEventHandlerMocker
         where T : IEntity
     {
         var mockResult = new Mock<IDomainEventHandler<T>>();
-        mockResult.Setup(x => x.CanHandleEvent(It.IsAny<Event>(), It.IsAny<T?>()))
+        mockResult.Setup(x => x.CanHandleEvent(It.IsAny<DomainEventEnvelope>(), It.IsAny<T?>()))
             .Returns(canHandle);
 
         if (canHandle && fixtureResultModel is not null)
-            mockResult.Setup(x => x.HandleAsync(It.IsAny<Event>(), It.IsAny<T?>(), It.IsAny<CancellationToken?>()))
+            mockResult.Setup(x => x.HandleAsync(It.IsAny<DomainEventEnvelope>(), It.IsAny<T?>(), It.IsAny<CancellationToken?>()))
                 .ReturnsAsync(fixtureResultModel);
 
         return mockResult;

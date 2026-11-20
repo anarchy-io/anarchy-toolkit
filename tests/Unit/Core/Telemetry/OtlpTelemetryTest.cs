@@ -16,7 +16,7 @@ public class OtlpTelemetryTest
     {
         using var receiver = new Receiver();
         using var meterProvider = Sdk.CreateMeterProviderBuilder()
-            .AddMeter(AppTelemetryFactory.InstrumentationName)
+            .AddMeter(CoreTelemetry.InstrumentationName)
             .AddOtlpExporter(options => {
                 options.Endpoint = new Uri("http://localhost:4318/v1/metrics");
                 options.Protocol = OtlpExportProtocol.HttpProtobuf;
@@ -24,19 +24,18 @@ public class OtlpTelemetryTest
             })
             .Build();
         var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddMetrics();
-        services.AddAppTelemetry();
+        services.AddCoreTelemetry();
         using var provider = services.BuildServiceProvider();
         var name = "orders.processed." + Guid.NewGuid().ToString("N");
 
-        provider.GetRequiredService<IAppTelemetry>().IncrementCounter(name);
+        provider.GetRequiredService<AppTelemetry>().IncrementCounter(name);
+        provider.GetRequiredService<AppTelemetry>().RecordDuration(name + ".duration", TimeSpan.FromMilliseconds(5));
         meterProvider.ForceFlush().Should().BeTrue();
 
         receiver.Path.Should().Be("/v1/metrics");
         receiver.ContentType.Should().Be("application/x-protobuf");
         receiver.Body.Should().NotBeNull();
-        Encoding.UTF8.GetString(receiver.Body!).Should().Contain(name);
+        Encoding.UTF8.GetString(receiver.Body!).Should().Contain(name).And.Contain(name + ".duration");
     }
 
     private sealed class Receiver : HttpMessageHandler

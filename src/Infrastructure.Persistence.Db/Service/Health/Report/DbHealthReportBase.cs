@@ -1,7 +1,5 @@
 using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Core.Health.Entity.Service;
-using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
 using Anarchy.Toolkit.Core.Telemetry;
@@ -24,19 +22,19 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Health.Report;
 /// <param name="telemetry">Application telemetry used to log failures.</param>
 /// <param name="dbInstanceType">The instance type (reader or writer) being checked, used in the test name.</param>
 /// <remarks>
-///     Failures never throw: the exception is logged and returned in a failed <see cref="HealthCheckEntity" />.
+///     Failures never throw: the exception is logged and returned in a failed <see cref="HealthCheckOutcome" />.
 ///     Register reader and writer subclasses with
 ///     <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Extension.Microsoft.DependencyInjection.DbHealthServiceCollectionExtensions.AddDbHealthReports{TReaderReport, TWriterReport}" />.
 /// </remarks>
 public abstract class DbHealthReportBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    IAppTelemetry telemetry,
-    DataStorageInstanceType dbInstanceType) : IServiceHealthReport
+    AppTelemetry telemetry,
+    DataStorageInstanceType dbInstanceType) : IHealthCheck
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
 {
     /// <inheritdoc />
-    public async Task<HealthCheckEntity> RunAsync(CancellationToken? cancellationToken = null)
+    public async Task<HealthCheckOutcome> RunAsync(CancellationToken? cancellationToken = null)
     {
         var caller = this.CalledFrom();
         var timer = Stopwatch.StartNew();
@@ -51,12 +49,12 @@ public abstract class DbHealthReportBase<TDbConnection, TDialect>(
                         cancellationToken: cancellationToken ?? CancellationToken.None)),
                 cancellationToken: cancellationToken);
 
-            return new HealthCheckEntity(testName, HealthCheckResult.Passed, timer.Elapsed);
+            return new HealthCheckOutcome(testName, HealthCheckResult.Passed, timer.Elapsed);
         }
         catch (Exception exception)
         {
             telemetry.Log(LogLevel.Error, caller, exception, "Service health test failed for {ServiceName}", testName);
-            return new HealthCheckEntity(testName, HealthCheckResult.Failed, timer.Elapsed, exception);
+            return new HealthCheckOutcome(testName, HealthCheckResult.Failed, timer.Elapsed, exception);
         }
     }
 }

@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Microsoft.AspNetCore.Http;
 
@@ -20,7 +21,7 @@ public class ApplicationHealthMiddlewareWithCustomMetadata : ApplicationHealthMi
     /// <param name="applicationStartTime">The time the application started, used to compute up-time.</param>
     public ApplicationHealthMiddlewareWithCustomMetadata(
         RequestDelegate next,
-        IReadOnlyCollection<IServiceHealthReport> reports,
+        IReadOnlyCollection<IHealthCheck> reports,
         IBuildMetadata buildMetadata,
         DateTimeOffset applicationStartTime) : base(next)
     {
@@ -40,7 +41,7 @@ public class ApplicationHealthMiddlewareWithCustomMetadata : ApplicationHealthMi
         return InvokeWithHealthApi(context, healthApi);
     }
 
-    private readonly IReadOnlyCollection<IServiceHealthReport> _reports;
+    private readonly IReadOnlyCollection<IHealthCheck> _reports;
     private readonly IBuildMetadata _buildMetadata;
     private readonly DateTimeOffset _applicationStartTime;
 }

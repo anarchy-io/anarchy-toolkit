@@ -22,6 +22,6 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Health.
 /// </remarks>
 public abstract class PostgresHealthReportBase(
     IStoragePolicy<NpgsqlConnection> dbPolicy,
-    IAppTelemetry telemetry,
+    AppTelemetry telemetry,
     DataStorageInstanceType dbInstanceType)
     : DbHealthReportBase<NpgsqlConnection, PostgresDbDialect>(dbPolicy, telemetry, dbInstanceType);

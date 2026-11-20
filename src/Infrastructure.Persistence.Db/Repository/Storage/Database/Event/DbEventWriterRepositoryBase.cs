@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Entity.Event;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Core.Exceptions;
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
@@ -34,7 +34,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </remarks>
 public abstract class DbEventWriterRepositoryBase<TDbConnection, TDialect, TEventEnvelope>(
     IStoragePolicy<TDbConnection> dbPolicy,
-     IAppTelemetry telemetry) :
+     AppTelemetry telemetry) :
     DbBatchWriterRepositoryBase<TDbConnection, TDialect, TEventEnvelope>(dbPolicy, telemetry),
     IEventEnvelopeWriterRepository<TEventEnvelope>
     where TDbConnection : DbConnection

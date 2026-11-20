@@ -20,5 +20,5 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Health.Rep
 /// <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Health.Report.Mysql.MysqlHealthReportWriter"/> for the
 /// standard reader/writer checks.
 /// </remarks>
-public abstract class MysqlHealthReportBase(IStoragePolicy<MySqlConnection> dbPolicy, IAppTelemetry telemetry, DataStorageInstanceType instanceType)
+public abstract class MysqlHealthReportBase(IStoragePolicy<MySqlConnection> dbPolicy, AppTelemetry telemetry, DataStorageInstanceType instanceType)
     : DbHealthReportBase<MySqlConnection, MysqlDbDialect>(dbPolicy, telemetry, instanceType);

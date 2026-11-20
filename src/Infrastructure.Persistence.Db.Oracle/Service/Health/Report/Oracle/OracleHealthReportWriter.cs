@@ -13,4 +13,4 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle.Service.Health.Re
 /// <param name="telemetry">Application telemetry used to log failures.</param>
 public class OracleHealthReportWriter(
     [FromKeyedServices("writer")] IStoragePolicy<OracleConnection> dbPolicy,
-    IAppTelemetry telemetry) : OracleHealthReportBase(dbPolicy, telemetry, DataStorageInstanceType.Writer);
+    AppTelemetry telemetry) : OracleHealthReportBase(dbPolicy, telemetry, DataStorageInstanceType.Writer);

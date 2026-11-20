@@ -1,5 +1,5 @@
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Health.Service.Health;
-using Anarchy.Toolkit.Core.Health.ValueSet.Service;
 using Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.AspNetCore;
 using Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.DependencyInjection;
 using Anarchy.Toolkit.Tests.Unit.Hosting.Workers.TestAssemblies;
@@ -135,7 +135,7 @@ public class AspNetCoreTests : AspNetCoreBaseTests
     {
         public override void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IReadOnlyCollection<IServiceHealthReport>>(
+            services.AddSingleton<IReadOnlyCollection<IHealthCheck>>(
                 [new StubServiceHealthReport("Health test", HealthCheckResult.Failed)]);
             services.AddApplicationHealthEndpoints(WithMetadataHelper.Assembly);
 
@@ -155,7 +155,7 @@ public class AspNetCoreTests : AspNetCoreBaseTests
         public override void Configure(IApplicationBuilder app)
         {
             app.UseApplicationHealthEndpointsWithCustomMetadata(
-                Array.Empty<IServiceHealthReport>(),
+                Array.Empty<IHealthCheck>(),
                 new DummyBuildMetadata(),
                 DateTimeOffset.Now
             );

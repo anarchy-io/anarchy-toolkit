@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Events.Entity.Event.Domain;
+using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Repository.Storage.Event;
@@ -24,8 +24,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </remarks>
 public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    IAppTelemetry telemetry)
-    : DbReaderRepositoryBase<TDbConnection, TDialect, PersistedEvent>(dbPolicy, telemetry),
+    AppTelemetry telemetry)
+    : DbReaderRepositoryBase<TDbConnection, TDialect, PersistedDomainEvent>(dbPolicy, telemetry),
       ITaskOutboxReaderRepository
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
@@ -42,7 +42,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     }
 
     /// <inheritdoc />
-    public override async Task<PersistedEvent> GetByIdAsync(long id, CancellationToken? cancellationToken = null)
+    public override async Task<PersistedDomainEvent> GetByIdAsync(long id, CancellationToken? cancellationToken = null)
     {
         var record = await DbPolicy.ExecuteAsync(
             async (connEnvelope, _) =>
@@ -55,7 +55,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyCollection<PersistedEvent>> GetAllUnpublishedAsync(
+    public async Task<IReadOnlyCollection<PersistedDomainEvent>> GetAllUnpublishedAsync(
         int? limit = null, int? offset = null, CancellationToken? cancellationToken = null)
     {
         var records = await DbPolicy.ExecuteAsync(
@@ -69,7 +69,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     }
 
     /// <inheritdoc />
-    public override async Task<IReadOnlyCollection<PersistedEvent>> GetAllAsync(
+    public override async Task<IReadOnlyCollection<PersistedDomainEvent>> GetAllAsync(
         int? limit = null, int? offset = null, CancellationToken? cancellationToken = null)
     {
         var records = await DbPolicy.ExecuteAsync(
@@ -83,7 +83,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyCollection<PersistedEvent>> GetByAggregateIdAsync(string aggregateId,
+    public async Task<IReadOnlyCollection<PersistedDomainEvent>> GetByAggregateIdAsync(string aggregateId,
                                                                                  CancellationToken? cancellationToken = null)
     {
         var records = await DbPolicy.ExecuteAsync(
@@ -97,7 +97,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyCollection<PersistedEvent>> GetByTypeAggregateAsync(string typeAggregateName,
+    public async Task<IReadOnlyCollection<PersistedDomainEvent>> GetByTypeAggregateAsync(string typeAggregateName,
                                                                                    CancellationToken? cancellationToken = null)
     {
         var records = await DbPolicy.ExecuteAsync(
@@ -111,7 +111,7 @@ public abstract class DbTaskOutboxReaderRepositoryBase<TDbConnection, TDialect>(
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyCollection<PersistedEvent>> GetByTypeTaskAsync(string typeTaskName,
+    public async Task<IReadOnlyCollection<PersistedDomainEvent>> GetByTypeTaskAsync(string typeTaskName,
                                                                               CancellationToken? cancellationToken = null)
     {
         var records = await DbPolicy.ExecuteAsync(

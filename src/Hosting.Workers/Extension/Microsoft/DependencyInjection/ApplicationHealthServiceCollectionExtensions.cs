@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Health.Service.Health;
 using Anarchy.Toolkit.Hosting.Workers.Service.Health;
 using Anarchy.Toolkit.Hosting.Workers.Service.Worker;
@@ -12,7 +13,7 @@ namespace Anarchy.Toolkit.Hosting.Workers.Extension.Microsoft.DependencyInjectio
 /// </summary>
 /// <remarks>
 /// Besides <see cref="IBuildMetadata"/>, the required services are added only if not yet registered: an empty
-/// <c>IReadOnlyCollection&lt;IServiceHealthReport&gt;</c>, a singleton <see cref="ApplicationInformation"/> and a
+/// <c>IReadOnlyCollection&lt;IHealthCheck&gt;</c>, a singleton <see cref="ApplicationInformation"/> and a
 /// transient <see cref="ApplicationHealthApi"/>.
 /// </remarks>
 /// <example>
@@ -70,7 +71,7 @@ public static class ApplicationHealthServiceCollectionExtensions
     {
         // Health reports are registered as one IReadOnlyCollection (see AddDbHealthReports); an empty one keeps
         // the endpoints working when the application has none.
-        services.TryAddSingleton<IReadOnlyCollection<IServiceHealthReport>>(Array.Empty<IServiceHealthReport>());
+        services.TryAddSingleton<IReadOnlyCollection<IHealthCheck>>(Array.Empty<IHealthCheck>());
         services.TryAddSingleton<ApplicationInformation>();
         services.TryAddTransient<ApplicationHealthApi>();
     }

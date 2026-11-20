@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Helper;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
@@ -8,7 +9,6 @@ using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.ValueSet.Storage.Databa
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Storage.Database.Input;
 using Dapper;
 using System.Data.Common;
-using Domain_Event = Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.Event;
 
@@ -29,8 +29,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Datab
 /// </remarks>
 public abstract class DbTaskOutboxWriterRepositoryBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,
-    IAppTelemetry telemetry
-) : DbEventWriterRepositoryBase<TDbConnection, TDialect, Domain_Event>(dbPolicy, telemetry),
+    AppTelemetry telemetry
+) : DbEventWriterRepositoryBase<TDbConnection, TDialect, DomainEventEnvelope>(dbPolicy, telemetry),
     ITaskOutboxWriterRepository
     where TDbConnection : DbConnection
     where TDialect : IDbDialect
@@ -52,7 +52,7 @@ public abstract class DbTaskOutboxWriterRepositoryBase<TDbConnection, TDialect>(
     /// <param name="entities">The events to save.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>The number of affected rows.</returns>
-    public override Task<int> SaveAllAsync(IReadOnlyCollection<Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event> entities,
+    public override Task<int> SaveAllAsync(IReadOnlyCollection<DomainEventEnvelope> entities,
                                            CancellationToken? cancellationToken = null)
     {
         return SaveAllAsync("TaskOutbox.Save.All", entities, cancellationToken);
@@ -60,7 +60,7 @@ public abstract class DbTaskOutboxWriterRepositoryBase<TDbConnection, TDialect>(
 
     /// <inheritdoc />
     /// <remarks>Executes the <c>TaskOutbox.Republish.All</c> query in a single batch command.</remarks>
-    public Task<int> RepublishAllAsync(IReadOnlyCollection<Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event> entities,
+    public Task<int> RepublishAllAsync(IReadOnlyCollection<DomainEventEnvelope> entities,
                                        CancellationToken? cancellationToken = null)
     {
         return SaveAllAsync("TaskOutbox.Republish.All", entities, cancellationToken);
@@ -73,7 +73,7 @@ public abstract class DbTaskOutboxWriterRepositoryBase<TDbConnection, TDialect>(
     /// <param name="newEntity">The event to convert.</param>
     /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>The <see cref="TaskOutboxDbInput"/> for the event.</returns>
-    protected override async Task<object> ToSaveInput(Anarchy.Toolkit.Core.Events.Entity.Event.Domain.Event newEntity,
+    protected override async Task<object> ToSaveInput(DomainEventEnvelope newEntity,
                                                       CancellationToken? cancellationToken = null)
     {
         return new TaskOutboxDbInput {
