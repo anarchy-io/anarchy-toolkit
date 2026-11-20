@@ -27,7 +27,7 @@ install_sdk: #? Installs or validates the .NET SDK required by global.json
 .PHONY: install_dependencies restore
 install_dependencies restore: #? Installs the dependency packages
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Installing Dependencies'
-	${MAKE} fallout SKIP_TITLE=true TARGET=Restore
+	${MAKE} anarchy SKIP_TITLE=true TARGET=Restore
 
 .PHONY: rebuild
 rebuild: #? Cleans and reinstalls the local development environment
@@ -39,7 +39,7 @@ appsettings: #? Generates the untracked appsettings.Development.json files from 
 #+ RESET|bool|Ask again for every template key, offering the current value as default (DEFAULT=false)
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Generating Development AppSettings'
 ifeq ($(RESET),true)
-	${MAKE} fallout SKIP_TITLE=true TARGET="GenerateAppSettings --reset-app-settings"
+	${MAKE} anarchy SKIP_TITLE=true TARGET="GenerateAppSettings --reset-app-settings"
 else
-	${MAKE} fallout SKIP_TITLE=true TARGET=GenerateAppSettings
+	${MAKE} anarchy SKIP_TITLE=true TARGET=GenerateAppSettings
 endif

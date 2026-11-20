@@ -1,6 +1,7 @@
 using Anarchy.Toolkit.Automation.Build.Component.Tasks;
 using Anarchy.Toolkit.Automation.Core.Service;
 using AwesomeAssertions;
+using Fallout.Common.Tools.DotNet;
 
 namespace Anarchy.Toolkit.Tests.Unit.Automation.Build.Component;
 
@@ -79,7 +80,8 @@ public class LocalAutomationTasksTest
     [Fact]
     public void DependencyUpgrade_RejectsInvalidVersionLockBeforeStartingTools()
     {
-        ((Action)(() => DependencyUpgradeTasks.Run(".", "test.sln", "invalid", false, false, false)))
+        ((Action)(() => DependencyUpgradeTasks.Run(".", "test.sln", "invalid", false, false, false,
+                verbosity: DotNetVerbosity.quiet)))
             .Should().Throw<ArgumentException>();
     }
 
@@ -99,14 +101,17 @@ public class LocalAutomationTasksTest
         File.WriteAllText(dotnet + "-tool", "#!/bin/bash\n" + $"printf 'outdated %s\\n' \"$*\" >> {Quote(log)}\n");
         File.SetUnixFileMode(dotnet, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 
-        DependencyUpgradeTasks.Run(repo.Root, "test.sln", "Major", false, false, false, dotnet, repo.Root);
+        DependencyUpgradeTasks.Run(repo.Root, "test.sln", "Major", false, false, false, dotnet, repo.Root,
+            verbosity: DotNetVerbosity.quiet);
         File.ReadAllText(log).Should().NotContain("tool install");
-        DependencyUpgradeTasks.Run(repo.Root, "test.sln", "Minor", true, true, false, dotnet, repo.Root);
+        DependencyUpgradeTasks.Run(repo.Root, "test.sln", "Minor", true, true, false, dotnet, repo.Root,
+            verbosity: DotNetVerbosity.quiet);
         File.ReadAllText(log).Should().Contain("tool install --global dotnet-outdated-tool")
             .And.Contain("outdated test.sln --upgrade --no-restore --version-lock Minor")
             .And.Contain("dotnet restore test.sln");
         File.WriteAllText(log, "");
-        DependencyUpgradeTasks.Run(repo.Root, "test.sln", "Major", false, false, false, dotnet, repo.Root);
+        DependencyUpgradeTasks.Run(repo.Root, "test.sln", "Major", false, false, false, dotnet, repo.Root,
+            verbosity: DotNetVerbosity.quiet);
         File.ReadAllText(log).Should().NotContain("--upgrade");
     }
 
@@ -174,7 +179,8 @@ public class LocalAutomationTasksTest
         File.SetUnixFileMode(dotnet, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         File.SetUnixFileMode(tool, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 
-        ((Action)(() => DependencyUpgradeTasks.Run(repo.Root, "test.csproj", "Major", false, true, false, dotnet, repo.Root)))
+        ((Action)(() => DependencyUpgradeTasks.Run(repo.Root, "test.csproj", "Major", false, true, false, dotnet, repo.Root,
+                verbosity: DotNetVerbosity.quiet)))
             .Should().Throw<InvalidOperationException>().WithMessage("*exited with code 7*");
         File.ReadAllText(props).Should().Contain("Version=\"1.1.0\"");
     }

@@ -21,8 +21,8 @@ BUILD_PROJECT_FILE="$PROJECT_ROOT/build/_build.csproj"
 # This loads the correct dotnet SDK version, in case the installation script has updated it.
 "${SCRIPTS_DIR}/console/subtitle.sh" "Reload environment variables:"
 
-if [ "${FALLOUT_RELOAD_ENV:-true}" = false ]; then
-    echo -e "\n${CL_YELLOW}Skipping reloading as FALLOUT_RELOAD_ENV is set to false...${CL_RESET}"
+if [ "${ANARCHY_RELOAD_ENV:-true}" = false ]; then
+    echo -e "\n${CL_YELLOW}Skipping reloading as ANARCHY_RELOAD_ENV is set to false...${CL_RESET}"
 else
     ENV_FILENAME="$("$SCRIPTS_DIR/bootstrap/shell-profile-path.sh")"
 
@@ -49,10 +49,12 @@ fi
 dotnet --version
 
 "${SCRIPTS_DIR}/console/subtitle.sh" "Running targets in the build project:"
+# Translate the Anarchy wrapper's log level to the Fallout/NUKE engine settings.
+ANARCHY_EFFECTIVE_LOG_LEVEL="${ANARCHY_LOG_LEVEL:-${FALLOUT_LOG_LEVEL:-Information}}"
 ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development} \
     DOTNET_ENVIRONMENT=${DOTNET_ENVIRONMENT:-Development} \
-    FALLOUT_LOG_LEVEL=${FALLOUT_LOG_LEVEL:-Information} \
-    NUKE_LOG_LEVEL=${FALLOUT_LOG_LEVEL:-Information} \
+    FALLOUT_LOG_LEVEL="$ANARCHY_EFFECTIVE_LOG_LEVEL" \
+    NUKE_LOG_LEVEL="$ANARCHY_EFFECTIVE_LOG_LEVEL" \
     FALLOUT_NO_LOGO=true \
     NUKE_NO_LOGO=true \
     dotnet run --project "$BUILD_PROJECT_FILE" -- "$@"

@@ -85,7 +85,8 @@ public static class BoilerplateCatalog
             if (!File.Exists(local)) return new FileComparison(path, FileStatus.Missing, "");
             var existing = File.ReadAllText(local);
             var expected = path is ".gitignore" or ".editorconfig"
-                ? FileHelper.MergeManagedBlock(existing, packaged, path == ".gitignore")
+                ? FileHelper.MergeManagedBlock(existing, packaged,
+                    skipExistingLines: path == ".gitignore", placeBlockFirst: path is ".gitignore" or ".editorconfig")
                 : packaged;
             return Normalized(existing) == Normalized(expected)
                 ? new FileComparison(path, FileStatus.Identical, "")

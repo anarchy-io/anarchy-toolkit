@@ -1,3 +1,4 @@
+using Fallout.Common.Tools.DotNet;
 using Spectre.Console;
 
 namespace Anarchy.Toolkit.Automation.Build.Infrastructure.Helper;
@@ -27,8 +28,9 @@ internal static class BuildConsole
     /// <summary>
     /// Writes a blank line followed by a left-aligned rule titled <paramref name="title"/>.
     /// </summary>
-    internal static void Section(string title)
+    internal static void Section(string title, DotNetVerbosity? verbosity = null)
     {
+        if (DotNetVerbosity.quiet.Equals(verbosity)) return;
         Out.WriteLine();
         Out.Write(new Rule($"[blue bold]{Markup.Escape(title)}[/]").LeftJustified());
         Out.WriteLine();
@@ -37,8 +39,9 @@ internal static class BuildConsole
     /// <summary>
     /// Writes <paramref name="message"/> in yellow after a blank line, for steps that were skipped.
     /// </summary>
-    internal static void Skipped(string message)
+    internal static void Skipped(string message, DotNetVerbosity? verbosity = null)
     {
+        if (DotNetVerbosity.quiet.Equals(verbosity)) return;
         Out.WriteLine();
         Out.MarkupLine($"[yellow]{Markup.Escape(message)}[/]");
     }
@@ -46,8 +49,9 @@ internal static class BuildConsole
     /// <summary>
     /// Writes <paramref name="message"/> in green after a blank line, for steps that completed.
     /// </summary>
-    internal static void Success(string message)
+    internal static void Success(string message, DotNetVerbosity? verbosity = null)
     {
+        if (DotNetVerbosity.quiet.Equals(verbosity)) return;
         Out.WriteLine();
         Out.MarkupLine($"[green]{Markup.Escape(message)}[/]");
     }
@@ -75,8 +79,9 @@ internal static class BuildConsole
     /// <summary>
     /// Writes <paramref name="table"/> after a blank line.
     /// </summary>
-    internal static void Write(Table table)
+    internal static void Write(Table table, DotNetVerbosity? verbosity = null)
     {
+        if (DotNetVerbosity.quiet.Equals(verbosity)) return;
         Out.WriteLine();
         Out.Write(table);
     }

@@ -15,7 +15,7 @@ public class ApplicationTemplatesTest
         var files = ApplicationTemplates.Render(context);
 
         files["Presentation/Controller/PingController.cs"]
-            .Should().Contain("IAppTelemetry").And.Contain("telemetry.Log(LogLevel.Information")
+            .Should().Contain("AppTelemetry telemetry").And.Contain("telemetry.LogInformation(this.CalledFrom()")
             .And.NotContain("Observer");
     }
 
@@ -28,7 +28,7 @@ public class ApplicationTemplatesTest
         var files = ApplicationTemplates.Render(context);
 
         files["Core/Service/JobService.cs"]
-            .Should().Contain("IAppTelemetry").And.Contain("telemetry.MonitoredActionAsync")
+            .Should().Contain("AppTelemetry telemetry").And.Contain("telemetry.MonitoredActionAsync")
             .And.NotContain("Observer");
     }
 }

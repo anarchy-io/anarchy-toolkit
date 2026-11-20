@@ -73,17 +73,17 @@ jobs:
 #          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
 #          RELEASE_BUMP: ${{ inputs.release_bump || 'patch' }}
 #        run: |
-#          ./src/Automation/Boilerplate/scripts/build.fallout.sh GenerateReleaseFromChanges \
+#          ./src/Automation/Boilerplate/scripts/build.anarchy.sh GenerateReleaseFromChanges \
 #            --release-base "$RELEASE_BASE" --release-head HEAD --release-bump "$RELEASE_BUMP"
 
 #      - name: Generate missing release notes
 #        if: steps.baseline.outputs.base != ''
 #        env:
 #          RELEASE_BASE: ${{ steps.baseline.outputs.base }}
-#        run: ./src/Automation/Boilerplate/scripts/build.fallout.sh GenerateReleaseNotes --release-base "$RELEASE_BASE" --release-head HEAD
+#        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh GenerateReleaseNotes --release-base "$RELEASE_BASE" --release-head HEAD
 
       - name: Run code quality checks and tests
-        run: ./src/Automation/Boilerplate/scripts/build.fallout.sh PullRequest
+        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh PullRequest
 
 #      - name: Commit release versions and notes
 #        if: steps.baseline.outputs.base != ''
@@ -100,8 +100,8 @@ jobs:
 
       - name: Pack and publish in dependency order
         env:
-          FALLOUT_RELOAD_ENV: 'false'
+          ANARCHY_RELOAD_ENV: 'false'
         run: |
-          ./src/Automation/Boilerplate/scripts/build.fallout.sh Publish \
+          ./src/Automation/Boilerplate/scripts/build.anarchy.sh Publish \
             --nu-get-source https://api.nuget.org/v3/index.json \
             --nu-get-api-key "${{steps.login.outputs.NUGET_API_KEY}}"

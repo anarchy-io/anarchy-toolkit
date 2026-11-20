@@ -13,7 +13,7 @@ public interface IDependencyUpgradeBuild : IStandardBuild
     /// version, <c>Minor</c> keeps the minor version, <c>None</c> allows any version. Case-insensitive.
     /// </summary>
     [Parameter("Dependency version lock: Major, Minor or None")]
-    string DependencyVersionLock => TryGetValue(() => DependencyVersionLock) ?? "Major";
+    string DependencyVersionLock => TryGetValue(() => DependencyVersionLock) ?? Preference<string>("dependencies.versionLock") ?? "Major";
 
     /// <summary>
     /// Whether to install or reinstall the global <c>dotnet-outdated-tool</c> without asking
@@ -37,5 +37,6 @@ public interface IDependencyUpgradeBuild : IStandardBuild
     /// </summary>
     Target UpgradeDependencies => d => d.Description("List and optionally upgrade outdated NuGet packages")
         .Executes(() => DependencyUpgradeTasks.Run(RootDirectory, Solution.Path, DependencyVersionLock,
-            DependencyInstallTool, DependencyUpgrade, !IsServerBuild && !IsCiBuild && !Console.IsInputRedirected));
+            DependencyInstallTool, DependencyUpgrade, !IsServerBuild && !IsCiBuild && !Console.IsInputRedirected,
+            verbosity: ToolVerbosity));
 }

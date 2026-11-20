@@ -26,8 +26,10 @@
       "enum": [
         "Build",
         "CheckLayering",
+        "CheckPackageHierarchy",
         "Clean",
         "Compile",
+        "ConfigureAnarchyPreferences",
         "DisableGitHook",
         "DockerDestroy",
         "DockerInfo",
@@ -60,6 +62,8 @@
         "Restore",
         "RunApp",
         "RunApps",
+        "SetAnarchyPreference",
+        "ShowAnarchyPreferences",
         "ShowGitHooks",
         "SyncAgentSkills",
         "TestAll",
@@ -68,6 +72,7 @@
         "TestIntegration",
         "TestIntegrationWithMockServer",
         "TestUnit",
+        "UnsetAnarchyPreference",
         "UpgradeDependencies",
         "ValidateAgentSkills",
         "ValidateLocalRelease"
@@ -151,9 +156,24 @@
   "allOf": [
     {
       "properties": {
+        "AgentSkillsDirectories": {
+          "type": "array",
+          "description": "Agent skill directories, relative to the root (default: .agents/skills)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "AgentSkillsPrefix": {
+          "type": "string",
+          "description": "Prefix of agent skills named by a bare #@ marker (defaults to the solution's name)"
+        },
         "ApiReferenceConfig": {
           "type": "string",
           "description": "DocFX configuration of the API reference site; defaults to docs-api/docfx.json"
+        },
+        "ApiReferenceMetadataOutput": {
+          "type": "string",
+          "description": "API metadata output (default: api next to the DocFX config)"
         },
         "AppName": {
           "type": "string",
@@ -277,26 +297,27 @@
           "description": "Indicates whether the build runs on CI"
         },
         "LayeringApplicationFolders": {
-          "type": "array",
-          "description": "Folders whose projects belong to one layer, as folder=Layer (e.g. src/Api=Web)",
-          "items": {
-            "type": "string"
-          }
-        },
-        "LayeringByFolder": {
-          "type": "boolean",
-          "description": "Determine project layers from folders under the layering root instead of project name prefixes"
+          "type": "string",
+          "description": "Application folder mappings as JSON"
         },
         "LayeringLayers": {
           "type": "array",
-          "description": "Layers, innermost first (defaults to the toolkit's: Core Infrastructure Configuration Hosting Web Build)",
+          "description": "Layer names, innermost first",
           "items": {
             "type": "string"
           }
         },
+        "LayeringLibraryRoot": {
+          "type": "string",
+          "description": "Folder-mode library root (default: src/Library)"
+        },
+        "LayeringMode": {
+          "type": "string",
+          "description": "Layering mode: folder or prefix"
+        },
         "LayeringRoot": {
           "type": "string",
-          "description": "Root folder for layering checks, relative to the solution (defaults to the source root, src)"
+          "description": "Layering checked root (default: src)"
         },
         "MockServerArgs": {
           "type": "string",
@@ -358,6 +379,14 @@
           "type": "string",
           "description": "NuGet feed URL or local directory to push packages to"
         },
+        "PreferenceKey": {
+          "type": "string",
+          "description": "Preference path, for example docker.timeout"
+        },
+        "PreferenceValue": {
+          "type": "string",
+          "description": "JSON preference value, for example 90, false or [\"postgres\"]"
+        },
         "ReleaseBase": {
           "type": "string",
           "description": "Git commit or ref to compare package versions against"
@@ -390,6 +419,14 @@
           "type": "string",
           "description": "Production code folder, relative to the root (default: src)"
         },
+        "TestFilter": {
+          "type": "string",
+          "description": "VSTest filter (not MTP syntax)"
+        },
+        "TestingPlatformCommandLineArguments": {
+          "type": "string",
+          "description": "Microsoft.Testing.Platform arguments"
+        },
         "TestKindAliases": {
           "type": "array",
           "description": "Other names for test kinds, as Kind=Alias (e.g. EndToEnd=Acceptance)",
@@ -400,6 +437,21 @@
         "TestsRoot": {
           "type": "string",
           "description": "Test projects folder, relative to the root (default: tests with IStandardBuild, else test)"
+        },
+        "ToolVerbosity": {
+          "type": "string",
+          "enum": [
+            "detailed",
+            "diagnostic",
+            "minimal",
+            "normal",
+            "quiet"
+          ],
+          "description": "Verbosity of dotnet commands (default: diagnostic on CI, minimal otherwise)"
+        },
+        "TreatWarningsAsErrors": {
+          "type": "boolean",
+          "description": "Treat build warnings as errors (default: true)"
         }
       }
     },

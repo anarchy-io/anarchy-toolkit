@@ -12,33 +12,33 @@ namespace Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build;
 /// <see cref="Anarchy.Toolkit.Automation.Build.Component.IDefaultBuild.BuildEnvironment"/> reads it from the
 /// <c>ASPNETCORE_ENVIRONMENT</c> or <c>DOTNET_ENVIRONMENT</c> parameter (typically an environment variable).
 /// </remarks>
-[TypeConverter(typeof(TypeConverter<Environment>))]
-[JsonConverter(typeof(EnumerationJsonConverter<Environment>))]
-public sealed class Environment : Enumeration
+[TypeConverter(typeof(TypeConverter<EnvironmentValueSet>))]
+[JsonConverter(typeof(EnumerationJsonConverter<EnvironmentValueSet>))]
+public sealed class EnvironmentValueSet : Enumeration
 {
     /// <summary>
     /// The <c>Testing</c> environment.
     /// </summary>
-    public static readonly Environment Testing = new() { Value = nameof(Testing) };
+    public static readonly EnvironmentValueSet Testing = new() { Value = nameof(Testing) };
     /// <summary>
     /// The <c>Acceptance</c> environment.
     /// </summary>
-    public static readonly Environment Acceptance = new() { Value = nameof(Acceptance) };
+    public static readonly EnvironmentValueSet Acceptance = new() { Value = nameof(Acceptance) };
     /// <summary>
     /// The <c>Production</c> environment.
     /// </summary>
-    public static readonly Environment Production = new() { Value = nameof(Production) };
+    public static readonly EnvironmentValueSet Production = new() { Value = nameof(Production) };
     /// <summary>
     /// The <c>Shared</c> environment, for resources shared by the other environments.
     /// </summary>
-    public static readonly Environment Shared = new() { Value = nameof(Shared) };
+    public static readonly EnvironmentValueSet Shared = new() { Value = nameof(Shared) };
 
     /// <summary>
     /// Converts the environment to its name.
     /// </summary>
     /// <param name="environment">The environment to convert.</param>
     /// <returns>The environment's <see cref="Enumeration.Value"/>.</returns>
-    public static implicit operator string(Environment environment) => environment.Value;
+    public static implicit operator string(EnvironmentValueSet environment) => environment.Value;
 
     /// <summary>
     /// Compares two environments by value, case-insensitively.
@@ -46,7 +46,7 @@ public sealed class Environment : Enumeration
     /// <param name="a">The first environment, or <see langword="null"/>.</param>
     /// <param name="b">The second environment, or <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if both are <see langword="null"/> or have the same value; otherwise <see langword="false"/>.</returns>
-    public static bool operator ==(Environment? a, Environment? b)
+    public static bool operator ==(EnvironmentValueSet? a, EnvironmentValueSet? b)
     {
         if (ReferenceEquals(a, null)
             && ReferenceEquals(b, null))
@@ -64,10 +64,10 @@ public sealed class Environment : Enumeration
     /// <param name="a">The first environment, or <see langword="null"/>.</param>
     /// <param name="b">The second environment, or <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the environments differ; otherwise <see langword="false"/>.</returns>
-    public static bool operator !=(Environment? a, Environment? b) => !(a == b);
+    public static bool operator !=(EnvironmentValueSet? a, EnvironmentValueSet? b) => !(a == b);
 
     /// <summary>
-    /// Determines whether <paramref name="obj"/> is an <see cref="Environment"/> of exactly this type with the same
+    /// Determines whether <paramref name="obj"/> is an <see cref="EnvironmentValueSet"/> of exactly this type with the same
     /// value, compared case-insensitively.
     /// </summary>
     /// <param name="obj">The object to compare with.</param>
@@ -76,10 +76,10 @@ public sealed class Environment : Enumeration
     {
         if (ReferenceEquals(null, obj)) return false;
         return ReferenceEquals(this, obj)
-               || obj.GetType() == GetType() && Equals((Environment)obj);
+               || obj.GetType() == GetType() && Equals((EnvironmentValueSet)obj);
     }
 
-    private bool Equals(Environment other) => string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
+    private bool Equals(EnvironmentValueSet other) => string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public override int GetHashCode() => base.GetHashCode();

@@ -1,5 +1,6 @@
 using Anarchy.Toolkit.Automation.Build.Component.Tasks;
 using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
+using Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build;
 using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
 using Fallout.Common;
 using Fallout.Common.Git;
@@ -7,12 +8,7 @@ using Fallout.Common.IO;
 using Fallout.Common.Tools.DotNet;
 using Fallout.Common.Utilities.Collections;
 using Fallout.Solutions;
-using Environment = Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build.Environment;
-
 namespace Anarchy.Toolkit.Automation.Build.Component;
-
-// `Configuration` would otherwise resolve to this project's Configuration namespace (see the architecture guide).
-using Configuration = Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build.Configuration;
 
 /// <summary>
 /// The base build: configuration, environment, solution and directory conventions, plus the unlisted
@@ -20,7 +16,7 @@ using Configuration = Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build.Confi
 /// </summary>
 /// <remarks>
 /// <para>
-/// Fallout build components are interfaces with default members: a build class implements the ones it needs and
+/// Anarchy build components are interfaces with default members: a build class implements the ones it needs and
 /// overrides members (explicitly, e.g. <c>AbsolutePath IDefaultBuild.SourceDirectory =&gt; ...</c>) to change
 /// conventions. Most builds implement <see cref="IStandardBuild"/>, which extends this one.
 /// </para>
@@ -30,7 +26,7 @@ using Configuration = Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build.Confi
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// partial class Build : FalloutBuild, IDefaultBuild
+/// partial class Build : AnarchyBuild, IDefaultBuild
 /// {
 ///     public static int Main() => Execute&lt;Build&gt;(x => x.As&lt;IDefaultBuild&gt;().Build);
 ///
@@ -40,15 +36,16 @@ using Configuration = Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build.Confi
 /// }
 /// </code>
 /// </example>
-public interface IDefaultBuild : IFalloutBuild
+public interface IDefaultBuild : IAutomationPreferencesBuild
 {
     /// <summary>
-    /// The configuration to build (<c>--configuration</c>): <see cref="Configuration.Debug"/> or
-    /// <see cref="Configuration.Release"/>, the default.
+    /// The configuration to build (<c>--configuration</c>): <see cref="ConfigurationValueSet.Debug"/> or
+    /// <see cref="ConfigurationValueSet.Release"/>, the default.
     /// </summary>
     [Parameter("Configuration to build - (Debug or Release; defaults to Release)")]
-    Configuration Configuration => TryGetValue(() => Configuration)
-                                   ?? Configuration.Release;
+    ConfigurationValueSet Configuration => TryGetValue(() => Configuration)
+                                            ?? Preference<ConfigurationValueSet>("build.configuration")
+                                            ?? ConfigurationValueSet.Release;
 
     /// <summary>
     /// Whether the build runs on CI (<c>--is-ci-build</c>). Defaults to <see langword="false"/>. Raises
@@ -61,26 +58,32 @@ public interface IDefaultBuild : IFalloutBuild
     /// The verbosity of every <c>dotnet</c> command the targets run: <see cref="DotNetVerbosity.minimal"/>, or
     /// <see cref="DotNetVerbosity.diagnostic"/> on CI (<see cref="IsCiBuild"/>), where the extra detail is what
     /// helps investigate a failed run.
+    /// An explicitly quiet Anarchy build also defaults tool output to quiet; informational target tables honor it.
     /// </summary>
-    DotNetVerbosity ToolVerbosity => IsCiBuild ? DotNetVerbosity.diagnostic : DotNetVerbosity.minimal;
+    [Parameter("Verbosity of dotnet commands (default: diagnostic on CI, minimal otherwise)")]
+    DotNetVerbosity ToolVerbosity => TryGetValue(() => ToolVerbosity)
+                                    ?? (Verbosity == Fallout.Common.Verbosity.Quiet ? DotNetVerbosity.quiet
+                                        : Preference<string>("build.toolVerbosity") is { } value
+                                        ? (DotNetVerbosity)value
+                                        : IsCiBuild ? DotNetVerbosity.diagnostic : DotNetVerbosity.minimal);
 
     /// <summary>
     /// The environment the build runs in: <see cref="WindowsBuildEnvironment"/> (<c>ASPNETCORE_ENVIRONMENT</c>)
     /// when set, otherwise <see cref="LinuxBuildEnvironment"/> (<c>DOTNET_ENVIRONMENT</c>).
     /// </summary>
-    Environment? BuildEnvironment => WindowsBuildEnvironment ?? LinuxBuildEnvironment;
+    EnvironmentValueSet? BuildEnvironment => WindowsBuildEnvironment ?? LinuxBuildEnvironment;
 
     /// <summary>
     /// The environment from the <c>ASPNETCORE_ENVIRONMENT</c> parameter or environment variable, if any.
     /// </summary>
     [Parameter("Environment the build is running in (typically configured by environment variable)", Name = "ASPNETCORE_ENVIRONMENT")]
-    Environment? WindowsBuildEnvironment => TryGetValue(() => WindowsBuildEnvironment);
+    EnvironmentValueSet? WindowsBuildEnvironment => TryGetValue(() => WindowsBuildEnvironment);
 
     /// <summary>
     /// The environment from the <c>DOTNET_ENVIRONMENT</c> parameter or environment variable, if any.
     /// </summary>
     [Parameter("Environment the build is running in (typically configured by environment variable)", Name = "DOTNET_ENVIRONMENT")]
-    Environment? LinuxBuildEnvironment => TryGetValue(() => LinuxBuildEnvironment);
+    EnvironmentValueSet? LinuxBuildEnvironment => TryGetValue(() => LinuxBuildEnvironment);
 
     /// <summary>
     /// The solution the build works on, as injected by Fallout's <c>[Solution]</c> attribute (typically configured in
@@ -100,14 +103,14 @@ public interface IDefaultBuild : IFalloutBuild
     /// <c>.fallout/parameters.json</c>); <see langword="null"/> keeps <c>src</c>. See <see cref="SourceDirectory"/>.
     /// </summary>
     [Parameter("Production code folder, relative to the root (default: src)")]
-    string? SourceRoot => TryGetValue(() => SourceRoot);
+    string? SourceRoot => TryGetValue(() => SourceRoot) ?? Preference<string>("build.sourceRoot");
 
     /// <summary>
     /// The test folder relative to the root (<c>--tests-root</c>, or <c>TestsRoot</c> in
     /// <c>.fallout/parameters.json</c>); <see langword="null"/> keeps the default of <see cref="TestsDirectory"/>.
     /// </summary>
     [Parameter("Test projects folder, relative to the root (default: tests with IStandardBuild, else test)")]
-    string? TestsRoot => TryGetValue(() => TestsRoot);
+    string? TestsRoot => TryGetValue(() => TestsRoot) ?? Preference<string>("build.testsRoot");
 
     /// <summary>
     /// Root directory for all production code projects: <see cref="SourceRoot"/>, else <c>src</c>. A build can also
@@ -136,7 +139,8 @@ public interface IDefaultBuild : IFalloutBuild
     /// Defaults to <c>true</c>. It is highly recommended to keep it that way and fix your
     /// warnings instead of allowing warnings to exist.
     /// </summary>
-    bool TreatWarningsAsErrors => true;
+    [Parameter("Treat build warnings as errors (default: true)")]
+    bool TreatWarningsAsErrors => TryGetValue<bool?>(() => TreatWarningsAsErrors) ?? Preference<bool?>("build.treatWarningsAsErrors") ?? true;
 
     /// <summary>
     /// <para>
@@ -155,7 +159,8 @@ public interface IDefaultBuild : IFalloutBuild
     /// For more information: <see href="https://learn.microsoft.com/en-us/dotnet/core/tools/dotnet-test#filter-option-details"/>.
     /// </para>
     /// </summary>
-    string? TestFilter => null;
+    [Parameter("VSTest filter (not MTP syntax)")]
+    string? TestFilter => TryGetValue(() => TestFilter) ?? Preference<string>("tests.filter");
 
     /// <summary>
     /// <para>
@@ -182,7 +187,8 @@ public interface IDefaultBuild : IFalloutBuild
     /// <c>--filter-not-trait</c> work on every version.
     /// </para>
     /// </summary>
-    string? TestingPlatformCommandLineArguments => null;
+    [Parameter("Microsoft.Testing.Platform arguments")]
+    string? TestingPlatformCommandLineArguments => TryGetValue(() => TestingPlatformCommandLineArguments) ?? Preference<string>("tests.testingPlatformArguments");
 
     /// <summary>
     /// Cleans solution of build artifacts. It deletes all <c>bin</c> and <c>obj</c> directories in

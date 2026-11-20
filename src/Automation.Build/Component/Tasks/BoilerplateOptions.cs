@@ -9,6 +9,8 @@ namespace Anarchy.Toolkit.Automation.Build.Component.Tasks;
 /// </remarks>
 public sealed class BoilerplateOptions
 {
+    /// <summary>Ordered skill directories; the first receives installed skills. Null keeps the toolkit default.</summary>
+    public IReadOnlyList<string>? SkillDirectories { get; set; }
     /// <summary>
     /// Comma-separated item names or script paths; <c>null</c> means all items except the opt-in agent skills,
     /// which only <c>skills</c> selects.

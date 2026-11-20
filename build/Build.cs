@@ -1,9 +1,11 @@
 using Anarchy.Toolkit.Automation.Build.Component;
 using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
 using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Core.Service;
 using Fallout.Common;
 using Fallout.Common.CI;
 using Fallout.Common.Tools.DotNet;
+using Serilog;
 
 namespace Build;
 
@@ -13,24 +15,40 @@ namespace Build;
 /// </summary>
 [ShutdownDotNetAfterServerBuild]
 [DotNetVerbosityMapping]
-internal sealed partial class Build : FalloutBuild, INuGetBuild, IDependencyMapBuild, ILayeringBuild,
+internal sealed partial class Build : AnarchyBuild, INuGetBuild, IDependencyMapBuild, ILayeringBuild,
                                       IDependencyUpgradeBuild, IGitHooksBuild, IDockerBuild, IMockServerBuild,
                                       IApiReferenceBuild, IAgentSkillsBuild
 {
     /// <summary>The toolkit ships packages only; nothing is deployed.</summary>
     public IReadOnlyCollection<Artifact> Artifacts => [];
 
-    /// <summary>The dependency map uses the same layer names as this repository's layering configuration.</summary>
-    IReadOnlyList<string> IDependencyMapBuild.DependencyMapLayers =>
-        ["Core", "Infrastructure", "Configuration", "Hosting", "Web", "Automation"];
-
-    /// <summary>The repository's own skills share the toolkit's prefix.</summary>
-    string IAgentSkillsBuild.AgentSkillsPrefix => "anarchy";
-
     /// <summary>
-    /// The repository's own skills, then the distributed ones; the root folder links to the latter so agents find both.
+    /// Checks the toolkit's package-name hierarchy (see <see cref="PackageHierarchy"/>) on top of the layering, for
+    /// this repository only, logging every violation and failing the build when there is any.
     /// </summary>
-    string[] IAgentSkillsBuild.AgentSkillsDirectories => [".agents/skills", "src/Automation/Boilerplate/.agents/skills"];
+    public Target CheckPackageHierarchy => d => d
+        .Description("Verifies the toolkit's package hierarchy: same-layer references only to name ancestors or allowed pairs")
+        .TryDependsOn<ILayeringBuild>(x => x.CheckLayering)
+        .Executes(() => {
+            var layering = this.As<ILayeringBuild>();
+            var layout = layering.Layering;
+            var solutionProjects = layering.Solution.ToProjectInfos(layering.RelativePath);
+            var projects = LayeringTasks.Collect(solutionProjects.Keys, info => layering.GetLayer(solutionProjects[info], layout));
+            var violations = PackageHierarchy.Check(projects, layout.Layers, PackageHierarchy.AllowedReferences);
+
+            if (violations.Count > 0)
+            {
+                foreach (var violation in violations)
+                {
+                    Log.Error("{Violation}", violation);
+                }
+
+                Assert.Fail($"{violations.Count} package hierarchy violations");
+            }
+
+            Log.Information("Package hierarchy OK across {Projects} projects ({Allowed} allowed cross-family references)",
+                projects.Count, PackageHierarchy.AllowedReferences.Count);
+        });
 
     public static int Main() => Execute<Build>(x => x.As<IDefaultBuild>()
         .Clean);

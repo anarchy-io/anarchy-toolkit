@@ -226,7 +226,9 @@ public class BoilerplateTest
             RunMake("install", "WITH_HOOKS=true").Should().Contain("<bootstrap>\n<Restore>\n<Compile>\n<EnableGitHook>\n<--HookSkipTestRuntime>\n<true>");
             RunMake("install", "ENV=ci").Should().Contain("<Restore>\n<--IsCiBuild>\n<true>\n<Compile>\n<--IsCiBuild>\n<true>").And.NotContain("<bootstrap>");
             RunMake("validate_release", "RELEASE_BASE=main").Should().Contain("<ValidateLocalRelease>\n<--ReleaseBase>\n<main>");
-            RunMake("container_build", "APP_NAME=Api").Should().Contain("<EcrImageBuild>\n<--AppName>\n<Api>");
+            RunMake("container_publish_app_artifact", "APP_NAME=Api").Should().Contain("<ContainerPublishAppArtifact>\n<--AppName>\n<Api>");
+            RunMake("container_image_build", "APP_NAME=Api").Should().Contain("<ContainerImageBuild>\n<--AppName>\n<Api>");
+            RunMake("container_image_push", "APP_NAME=Api").Should().Contain("<ContainerImagePush>\n<--AppName>\n<Api>");
             RunMake("boilerplate", "ITEMS=Makefile,scripts", "APPEND=true")
                 .Should().Contain("<SetupBoilerplate>\n<--BoilerplateItems>\n<Makefile,scripts>\n<--AppendExisting>\n<true>");
             RunMake("skills_sync", "PREFIX=shop").Should().Contain("<SyncAgentSkills>\n<--AgentSkillsPrefix>\n<shop>");

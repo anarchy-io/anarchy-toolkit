@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build;
 using Fallout.Common;
 using Fallout.Common.Tooling;
 using Fallout.Common.Tools.DotNet;
@@ -5,9 +6,6 @@ using Serilog;
 using static Fallout.Common.Tools.DotNet.DotNetTasks;
 
 namespace Anarchy.Toolkit.Automation.Build.Component;
-
-// `Configuration` would otherwise resolve to this project's Configuration namespace (see the architecture guide).
-using Configuration = Anarchy.Toolkit.Automation.Build.Core.ValueSet.Build.Configuration;
 
 public partial interface IStandardBuild
 {
@@ -44,7 +42,7 @@ public partial interface IStandardBuild
 
             DotNetRun(s => s
                 .SetProjectFile(appProject.Path)
-                .SetConfiguration(Configuration.Debug)
+                .SetConfiguration(ConfigurationValueSet.Debug)
                 .SetVerbosity(ToolVerbosity));
         });
 

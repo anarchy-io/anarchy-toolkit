@@ -20,9 +20,9 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// partial class Build : FalloutBuild, INuGetBuild;
+/// partial class Build : AnarchyBuild, INuGetBuild;
 /// </code>
-/// Then run <c>fallout publish --nu-get-source https://api.nuget.org/v3/index.json --nu-get-api-key $KEY</c>.
+/// Then run <c>make publish SOURCE=https://api.nuget.org/v3/index.json API_KEY=$KEY</c>.
 /// </example>
 public interface INuGetBuild : IStandardBuild
 {
@@ -30,7 +30,7 @@ public interface INuGetBuild : IStandardBuild
     /// The NuGet feed URL or local directory <see cref="Publish"/> pushes to (<c>--nu-get-source</c>); required by it.
     /// </summary>
     [Parameter("NuGet feed URL or local directory to push packages to")]
-    string? NuGetSource => TryGetValue(() => NuGetSource);
+    string? NuGetSource => TryGetValue(() => NuGetSource) ?? Preference<string>("nuget.source");
 
     /// <summary>
     /// The API key for <see cref="NuGetSource"/> (<c>--nu-get-api-key</c>); optional when configured credentials are used.
@@ -43,7 +43,7 @@ public interface INuGetBuild : IStandardBuild
     /// Defaults to <see langword="true"/>.
     /// </summary>
     [Parameter("Skip package versions already present on the feed")]
-    bool SkipDuplicate => TryGetValue<bool?>(() => SkipDuplicate) ?? true;
+    bool SkipDuplicate => TryGetValue<bool?>(() => SkipDuplicate) ?? Preference<bool?>("nuget.skipDuplicate") ?? true;
 
     /// <summary>
     /// The project <see cref="GenerateLocalRelease"/> bumps (<c>--release-project</c>), e.g. <c>Core.Events</c>.
@@ -63,7 +63,7 @@ public interface INuGetBuild : IStandardBuild
     /// <see cref="GenerateReleaseFromChanges"/>, <see cref="GenerateReleaseNotes"/> and <see cref="ValidateLocalRelease"/>.
     /// </summary>
     [Parameter("Git commit or ref to compare package versions against")]
-    string? ReleaseBase => TryGetValue(() => ReleaseBase);
+    string? ReleaseBase => TryGetValue(() => ReleaseBase) ?? Preference<string>("release.base");
 
     /// <summary>
     /// The Git commit or ref of the head of the changes (<c>--release-head</c>); defaults to <c>HEAD</c>.
@@ -102,7 +102,7 @@ public interface INuGetBuild : IStandardBuild
                     version is null ? "[grey](MSBuild default)[/]" : $"[green]{Markup.Escape(version)}[/]");
             }
 
-            BuildConsole.Write(table);
+            BuildConsole.Write(table, ToolVerbosity);
         });
 
     /// <summary>
@@ -158,7 +158,7 @@ public interface INuGetBuild : IStandardBuild
 
             if (affected.Count == 0)
             {
-                BuildConsole.Skipped($"No packages affected by changes between {ReleaseBase} and {headRef}.");
+                BuildConsole.Skipped($"No packages affected by changes between {ReleaseBase} and {headRef}.", ToolVerbosity);
                 return;
             }
 
@@ -191,7 +191,7 @@ public interface INuGetBuild : IStandardBuild
             var edits = ReleaseNotesTasks.Plan(projects, messages, path => File.Exists(path) ? File.ReadAllText(path) : null);
             if (edits.Count == 0)
             {
-                BuildConsole.Skipped("Release notes are already up to date.");
+                BuildConsole.Skipped("Release notes are already up to date.", ToolVerbosity);
                 return;
             }
 
@@ -202,7 +202,7 @@ public interface INuGetBuild : IStandardBuild
                 table.AddRow($"[green]{Markup.Escape(RootDirectory.GetRelativePathTo(path).ToString())}[/]");
             }
 
-            BuildConsole.Write(table);
+            BuildConsole.Write(table, ToolVerbosity);
         });
 
     /// <summary>
@@ -274,7 +274,7 @@ public interface INuGetBuild : IStandardBuild
                 {
                     index++;
                     var name = Path.GetFileName(package);
-                    BuildConsole.Section($"Pushing {index}/{packages.Count}: {name}");
+                    BuildConsole.Section($"Pushing {index}/{packages.Count}: {name}", ToolVerbosity);
                     try
                     {
                         DotNetNuGetPush(s => s
@@ -296,8 +296,8 @@ public interface INuGetBuild : IStandardBuild
             {
                 foreach (var package in packages.Skip(results.Rows.Count))
                     results.AddRow((++index).ToString(), Markup.Escape(Path.GetFileName(package)), "[grey]not attempted[/]");
-                BuildConsole.Section($"Publish summary ({NuGetSource})");
-                BuildConsole.Write(results);
+                BuildConsole.Section($"Publish summary ({NuGetSource})", ToolVerbosity);
+                BuildConsole.Write(results, ToolVerbosity);
             }
         });
 
@@ -318,7 +318,7 @@ public interface INuGetBuild : IStandardBuild
                 direct.Contains(project.Name) ? "[yellow]changed[/]" : "[grey]dependent[/]");
         }
 
-        BuildConsole.Section($"Bumped {updated.Count} packages");
-        BuildConsole.Out.Write(table);
+        BuildConsole.Section($"Bumped {updated.Count} packages", ToolVerbosity);
+        BuildConsole.Write(table, ToolVerbosity);
     }
 }

@@ -47,7 +47,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Build API reference with DocFX
-        run: ./src/Automation/Boilerplate/scripts/build.fallout.sh GenerateApiReference
+        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh GenerateApiReference
 
       - name: Add API reference to the site
         run: |

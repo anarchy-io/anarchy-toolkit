@@ -93,7 +93,7 @@ public partial interface IStandardBuild
         var outputFile = templateFile.Parent / DevelopmentAppSettingsFileName;
         var relativeOutput = RootDirectory.GetRelativePathTo(outputFile).ToString().Replace('\\', '/');
 
-        BuildConsole.Section(relativeOutput);
+        BuildConsole.Section(relativeOutput, ToolVerbosity);
 
         var template = AppSettingsMerger.ParseJsonObject(templateFile.ReadAllText())
                        ?? throw new Exception($"'{RootDirectory.GetRelativePathTo(templateFile)}' must hold a JSON object.");

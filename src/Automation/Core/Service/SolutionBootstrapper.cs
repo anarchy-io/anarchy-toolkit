@@ -6,8 +6,9 @@ using Anarchy.Toolkit.Automation.Infrastructure.Helper;
 namespace Anarchy.Toolkit.Automation.Core.Service;
 
 /// <summary>
-/// Bootstraps a whole solution into an empty directory: the Fallout build host, the standard scaffold, a library
-/// project per layer and the planned applications, all added to the solution, with layering configured for the layout.
+/// Bootstraps a whole solution into an empty directory: the Anarchy automation host, the standard scaffold, a library
+/// project per layer and the planned applications, all added to the solution. Preferences are saved only when the
+/// caller explicitly requests it.
 /// Package versions are always managed centrally, in the root <c>Directory.Packages.props</c>.
 /// </summary>
 /// <example>
@@ -43,13 +44,17 @@ public static class SolutionBootstrapper
     /// <summary>
     /// Why the plan cannot be created, or null if it can.
     /// </summary>
-    /// <remarks>Checks the solution name, the layers, every application and the root directory, in that order.</remarks>
+    /// <remarks>
+    /// Checks the solution name, the layers, the layout's folders (see <see cref="LayeringConfiguration.Validate"/>),
+    /// every application and the root directory, in that order.
+    /// </remarks>
     /// <param name="plan">The plan to check.</param>
     /// <returns>The first error message, or <see langword="null"/>.</returns>
     public static string? Validate(SolutionPlan plan)
     {
         if (!NameRules.IsValidSolutionName(plan.Name)) return NameRules.SolutionNameHelp;
         if (NameRules.ValidateLayers(plan.Layout.Layers) is { } layers) return layers;
+        if (LayeringConfiguration.Validate(plan.Layout) is [var layout, ..]) return $"Invalid layering configuration: {layout}.";
 
         var taken = plan.Layout.Layers.ToList();
         foreach (var app in plan.Applications)
@@ -73,7 +78,7 @@ public static class SolutionBootstrapper
         var report = progress ?? (_ => { });
         var root = Path.GetFullPath(plan.RootDirectory);
         var layout = plan.Layout;
-        var packageVersions = plan.Applications.Select(app => app.PackageId).Append(ToolkitPackageVersions.BuildFallout)
+        var packageVersions = plan.Applications.Select(app => app.PackageId).Append(ToolkitPackageVersions.AutomationBuild)
             .Distinct().ToDictionary(id => id, id => versions[id]);
 
         report("Creating the central package versions");
@@ -84,8 +89,6 @@ public static class SolutionBootstrapper
 
         report("Installing the scaffold and creating the solution");
         SolutionScaffolder.Create(root, plan.Name, new ScaffoldOptions { Items = plan.AgentSkills ? "all,skills" : null, Exclude = "core" });
-        FalloutParameters.Add(root, layout.ToFalloutParameters());
-
         report($"Creating the {string.Join(", ", layout.Layers)} libraries");
         string? lower = null;
         foreach (var layer in layout.Layers)

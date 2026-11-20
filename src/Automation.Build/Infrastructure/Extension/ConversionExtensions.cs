@@ -6,7 +6,7 @@ namespace Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
 /// Utility functions for conversion.
 /// </summary>
 /// <remarks>
-/// Fallout build components are interfaces with default members, which can only be reached through the interface
+/// Anarchy build components are interfaces with default members, which can only be reached through the interface
 /// type; <see cref="As{T}"/> makes that cast readable.
 /// </remarks>
 public static class ConversionExtensions
@@ -23,7 +23,7 @@ public static class ConversionExtensions
     /// <returns><paramref name="build"/> as <typeparamref name="T"/>.</returns>
     /// <example>
     /// <code language="csharp">
-    /// var layers = build.As&lt;ILayeringBuild&gt;().LayeringLayers;
+    /// var layout = build.As&lt;ILayeringBuild&gt;().Layering;
     /// </code>
     /// </example>
     public static T As<T>(this IFalloutBuild build)

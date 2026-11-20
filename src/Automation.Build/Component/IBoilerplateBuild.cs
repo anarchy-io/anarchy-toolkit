@@ -7,10 +7,9 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// Creates a starter solution without requiring an existing solution.
 /// </summary>
 /// <remarks>
-/// Unlike the other components, it derives from <see cref="IFalloutBuild"/> directly, so it works
-/// before any solution exists.
+/// It can be composed on <see cref="AnarchyBuild"/> before any solution exists.
 /// </remarks>
-public interface IBoilerplateBuild : IFalloutBuild
+public interface IBoilerplateBuild : IAutomationPreferencesBuild
 {
     /// <summary>
     /// The name of the solution to create (<c>--boilerplate-solution-name</c>); <see langword="null"/> lets the
@@ -24,14 +23,14 @@ public interface IBoilerplateBuild : IFalloutBuild
     /// See <see cref="Tasks.BoilerplateOptions.Items"/>.
     /// </summary>
     [Parameter("Comma-separated boilerplate items to include (default: all but the agent skills, which 'skills' selects)")]
-    string? BoilerplateItems => TryGetValue(() => BoilerplateItems);
+    string? BoilerplateItems => TryGetValue(() => BoilerplateItems) ?? Preference<string>("boilerplate.items");
 
     /// <summary>
     /// Comma-separated boilerplate items or script paths to exclude (<c>--boilerplate-exclude</c>).
     /// See <see cref="Tasks.BoilerplateOptions.Exclude"/>.
     /// </summary>
     [Parameter("Comma-separated boilerplate items to exclude")]
-    string? BoilerplateExclude => TryGetValue(() => BoilerplateExclude);
+    string? BoilerplateExclude => TryGetValue(() => BoilerplateExclude) ?? Preference<string>("boilerplate.exclude");
 
     /// <summary>
     /// Whether to sync the packaged settings into the managed block of existing <c>.gitignore</c> and
@@ -66,6 +65,7 @@ public interface IBoilerplateBuild : IFalloutBuild
             Items = BoilerplateItems,
             Exclude = BoilerplateExclude,
             AppendExisting = AppendExisting || ApendExisting,
+            SkillDirectories = AgentSkillsDirectories,
             DryRun = BoilerplateDryRun
         }));
 

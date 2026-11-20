@@ -21,7 +21,7 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 ///   <item><c>IStandardBuild.Apps.cs</c> — <c>RunApp</c> and <c>RunApps</c>.</item>
 ///   <item><c>IStandardBuild.AppSettings.cs</c> — <c>GenerateAppSettings</c>.</item>
 /// </list>
-/// A build keeps the same shape: <c>partial class Build : FalloutBuild, IStandardBuild</c>, with its own
+/// A build keeps the same shape: <c>partial class Build : AnarchyBuild, IStandardBuild</c>, with its own
 /// <c>Build.*.cs</c> files for whatever is specific to the repository.
 /// </para>
 /// </summary>
@@ -32,7 +32,7 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// partial class Build : FalloutBuild, IStandardBuild, ILayeringBuild
+/// partial class Build : AnarchyBuild, IStandardBuild, ILayeringBuild
 /// {
 ///     public static int Main() => Execute&lt;Build&gt;(x => x.As&lt;IStandardBuild&gt;().Compile);
 ///
@@ -55,7 +55,7 @@ public partial interface IStandardBuild : IDefaultBuild
     /// See <see cref="IsTestProjectOfKind"/>.
     /// </summary>
     [Parameter("Other names for test kinds, as Kind=Alias (e.g. EndToEnd=Acceptance)")]
-    string[] TestKindAliases => TryGetValue(() => TestKindAliases) ?? [];
+    string[] TestKindAliases => TryGetValue(() => TestKindAliases) ?? Preference<string[]>("tests.kindAliases") ?? [];
 
     /// <summary>
     /// Groups <c>Kind=Alias</c> entries by kind (case-insensitive).

@@ -25,7 +25,7 @@ public partial interface IStandardBuild
                 table.AddRow(GetProjectIcon(project, relativePath), Markup.Escape(project.Name), $"[grey]{Markup.Escape(relativePath)}[/]");
             }
 
-            BuildConsole.Write(table);
+            BuildConsole.Write(table, ToolVerbosity);
         });
 
     /// <summary>
@@ -220,7 +220,7 @@ public partial interface IStandardBuild
             table.AddRow($"[green]{Markup.Escape(project.Name)}[/]", $"[grey]{Markup.Escape(RelativePath(project))}[/]");
         }
 
-        BuildConsole.Write(table);
+        BuildConsole.Write(table, ToolVerbosity);
     }
 
     /// <summary>
