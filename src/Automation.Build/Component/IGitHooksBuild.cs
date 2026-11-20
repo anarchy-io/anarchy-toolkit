@@ -11,7 +11,7 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// Hooks are local to the clone and never committed. The work is done by
 /// <see cref="Anarchy.Toolkit.Automation.Core.Service.GitHookTasks"/>.
 /// </remarks>
-public interface IGitHooksBuild : IFalloutBuild
+public interface IGitHooksBuild : IAutomationPreferencesBuild
 {
     /// <summary>
     /// The Git hook to act on (<c>--hook-type</c>), e.g. <c>pre-commit</c> or <c>pre-push</c>. Defaults to
@@ -37,19 +37,19 @@ public interface IGitHooksBuild : IFalloutBuild
     /// Whether the generated hook skips lint fixing (<c>--hook-skip-lint-fix</c>).
     /// </summary>
     [Parameter("Omit lint fixing from the hook")]
-    bool HookSkipLintFix => TryGetValue<bool?>(() => HookSkipLintFix) ?? false;
+    bool HookSkipLintFix => TryGetValue<bool?>(() => HookSkipLintFix) ?? Preference<bool?>("gitHooks.skipLintFix") ?? false;
 
     /// <summary>
     /// Whether the generated hook skips lint and unit tests (<c>--hook-skip-test-static</c>).
     /// </summary>
     [Parameter("Omit lint and unit tests from the hook")]
-    bool HookSkipTestStatic => TryGetValue<bool?>(() => HookSkipTestStatic) ?? false;
+    bool HookSkipTestStatic => TryGetValue<bool?>(() => HookSkipTestStatic) ?? Preference<bool?>("gitHooks.skipTestStatic") ?? false;
 
     /// <summary>
     /// Whether the generated hook skips integration and end-to-end tests (<c>--hook-skip-test-runtime</c>).
     /// </summary>
     [Parameter("Omit integration and end-to-end tests from the hook")]
-    bool HookSkipTestRuntime => TryGetValue<bool?>(() => HookSkipTestRuntime) ?? false;
+    bool HookSkipTestRuntime => TryGetValue<bool?>(() => HookSkipTestRuntime) ?? Preference<bool?>("gitHooks.skipTestRuntime") ?? false;
 
     /// <summary>
     /// Writes the <see cref="HookType"/> hook into the local repository, honouring the <c>Hook*</c> options.

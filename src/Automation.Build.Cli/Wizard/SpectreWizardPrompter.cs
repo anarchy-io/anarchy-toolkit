@@ -1,8 +1,8 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Anarchy.Toolkit.Automation.Infrastructure.Helper;
+using Anarchy.Toolkit.Core.Helper;
 using Spectre.Console;
-using LocalPorts = Anarchy.Toolkit.Core.Helper.LocalPorts;
 
 namespace Anarchy.Toolkit.Automation.Build.Cli.Wizard;
 
@@ -40,11 +40,14 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(4)).AddColumn();
         grid.AddRow("[blue]anarchy-toolkit bootstrap[/]", "Guided setup: name, layering, and the APIs, jobs and UIs to start with.");
-        grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]] [[--with-skills]] [[--layering folder|prefix]][/]", "Create the baseline solution; folder layering is the default.");
+        grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]] [[--with-skills]] [[layout options]] [[--save-preferences]][/]", "Create a solution; preferences are not saved unless requested.");
         grid.AddRow("[blue]anarchy-toolkit scaffold[/]", "Guided addition of an API, job or UI to the solution here.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger-theme[/]", "Add an API whose Swagger UI keeps its own look.");
-        grid.AddRow("[blue]anarchy-toolkit skills install [[--output <dir>]][/]", "Install the agent skills into .agents/skills of the solution here (or <dir>).");
+        grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --swagger-theme[/]", "Explicitly enable the toolkit's Swagger UI theme.");
+        grid.AddRow("[blue]layout options[/]", "--layering folder|prefix, --layering-layers (JSON array), --layering-root <path>, --layering-library-root <path>, --layering-application-folders (JSON object).");
+        grid.AddRow("[blue]anarchy-toolkit config show|set|unset|configure[/]", "Show, edit or interactively configure optional solution preferences.");
+        grid.AddRow("[blue]anarchy-toolkit skills install [[--output <dir>]][/]", "Install the agent skills into the first configured agentSkills.directories destination.");
         grid.AddRow("[blue]anarchy-toolkit boilerplate list[/]", "List the packaged boilerplate files (Makefile, scripts, settings, skills).");
         grid.AddRow("[blue]anarchy-toolkit boilerplate show <path>[/]", "Print a packaged file without installing it.");
         grid.AddRow("[blue]anarchy-toolkit boilerplate diff [[<path>...]][/]", "Diff the solution's copies against the packaged files (exit code 1 when any differ).");
@@ -53,7 +56,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         console.Write(new Panel(grid)
             .Header("[bold yellow]Anarchy toolkit[/]")
             .Border(BoxBorder.Rounded));
-        console.MarkupLine("[grey]Existing files are never overwritten. Package versions follow the solution's Directory.Packages.props when it manages them centrally. The .NET 10 SDK is required.[/]");
+        console.MarkupLine("[grey]Existing generated files are never overwritten. Configuration edits are explicit; bootstrap/scaffold do not save preferences unless requested. The .NET 10 SDK is required.[/]");
     }
 
     /// <inheritdoc/>

@@ -19,13 +19,13 @@ jobs:
       - name: Validate release versions
         env:
           RELEASE_BASE: ${{ github.event.pull_request.base.sha }}
-        run: ./src/Automation/Boilerplate/scripts/build.fallout.sh ValidateLocalRelease --release-base "$RELEASE_BASE"
+        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh ValidateLocalRelease --release-base "$RELEASE_BASE"
 
       - name: Validate agent skills
-        run: ./src/Automation/Boilerplate/scripts/build.fallout.sh ValidateAgentSkills
+        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh ValidateAgentSkills
 
       - name: Check the conventions skill matches the docs
         run: docs/scripts/sync-skill-docs.sh --check
 
       - name: Run code quality checks
-        run: ./src/Automation/Boilerplate/scripts/build.fallout.sh PullRequest
+        run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh PullRequest

@@ -22,7 +22,7 @@ public sealed class BootstrapWizard(IWizardPrompter prompter)
     public SolutionPlan? Run()
     {
         prompter.ShowWelcome("Anarchy solution bootstrap",
-            "Creates a solution with a Fallout build, layered libraries and the APIs, jobs and UIs you choose.");
+            "Creates a solution with Anarchy automation (powered by Fallout Build), layered libraries and the APIs, jobs and UIs you choose.");
 
         var name = prompter.Ask("Solution name", null,
             answer => NameRules.IsValidSolutionName(answer) ? null : NameRules.SolutionNameHelp);
@@ -39,6 +39,8 @@ public sealed class BootstrapWizard(IWizardPrompter prompter)
 
         var plan = new SolutionPlan(name, Path.GetFullPath(directory), layout, applications) { AgentSkills = skills };
         prompter.ShowPlan(plan);
+        var savePreferences = prompter.Confirm("Save the selected layering preferences in .anarchy-toolkit.json?", false);
+        plan = plan with { SavePreferences = savePreferences };
 
         return prompter.Confirm("Create the solution?", true) ? plan : null;
     }

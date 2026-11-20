@@ -28,6 +28,12 @@ public sealed class ScaffoldOptions
     public bool DryRun { get; set; }
 
     /// <summary>
+    /// Ordered, solution-relative agent-skill destinations. Skills are created in the first directory. Null uses the
+    /// default destination; an explicitly empty list is invalid when skills are selected.
+    /// </summary>
+    public IReadOnlyList<string>? SkillDirectories { get; set; }
+
+    /// <summary>
     /// Receives progress messages; null discards them.
     /// </summary>
     public Action<string>? Log { get; set; }

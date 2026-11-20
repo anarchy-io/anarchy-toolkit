@@ -15,19 +15,46 @@ public static partial class LayeringTasks
     public const string Testing = "Testing";
 
     /// <summary>
-    /// The toolkit's layered chain, innermost first (see the architecture guide). <c>Build</c> (the Fallout build
-    /// components) sits on top so that no shipped project can depend on it.
+    /// The default layered chain, innermost first (see the architecture guide), used when a solution's
+    /// <c>.anarchy-toolkit.json</c> overrides no <c>layering.layers</c>. <c>Automation</c> (build tooling) sits on top so that no shipped
+    /// library can depend on it.
     /// </summary>
-    public static readonly IReadOnlyList<string> DefaultLayers = ["Core", "Infrastructure", "Configuration", "Hosting", "Web", "Build"];
+    public static readonly IReadOnlyList<string> DefaultLayers = SolutionLayout.DefaultLayers;
 
     /// <summary>
-    /// See <c>ILayeringBuild.GetLayer</c>: the prefix of the project's name for projects under <c>src/</c>,
-    /// <c>null</c> (not checked) for anything else.
+    /// The layer of a project in a solution <paramref name="layout"/> (see <see cref="LayeringConfiguration"/>), or
+    /// <see langword="null"/> for a project outside its <see cref="SolutionLayout.Root"/>, which is not checked.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// By <see cref="LayeringMode.Prefix"/>, the layer is the project name's prefix (up to the first dot). By
+    /// <see cref="LayeringMode.Folder"/>, it is the layer of the application folder containing the project, else
+    /// the first folder under the library root; the name is never used, so a prefix-like name is not a violation.
+    /// </para>
+    /// <para>
+    /// A folder-mode project in neither the library root's layer folders nor an application folder gets an empty
+    /// layer, which <see cref="Check(IReadOnlyCollection{LayeringProject}, SolutionLayout)"/> reports: the layout
+    /// does not map it, and the other mode is never tried.
+    /// </para>
+    /// </remarks>
     /// <param name="projectName">The project name.</param>
     /// <param name="relativePath">The project file's path relative to the solution directory.</param>
-    /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
-    public static string? GetDefaultLayer(string projectName, string relativePath) => GetDefaultLayer(projectName, relativePath, "src");
+    /// <param name="layout">The solution's layout.</param>
+    /// <returns>The layer, an empty string when the layout does not map the project, or <see langword="null"/> when it is not checked.</returns>
+    public static string? GetLayer(string projectName, string relativePath, SolutionLayout layout)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        var path = NormalizePath(relativePath);
+        if (!IsWithin(path, NormalizePath(layout.Root))) return null;
+        if (layout.Mode == LayeringMode.Prefix) return projectName.Split('.')[0];
+
+        foreach (var (folder, layer) in layout.ApplicationFolders.OrderByDescending(entry => entry.Key.Length))
+        {
+            if (IsWithin(path, NormalizePath(folder))) return layer;
+        }
+
+        return layout.LibraryRoot is { } library ? GetFolderLayer(path, library) ?? string.Empty : string.Empty;
+    }
 
     /// <summary>
     /// The prefix of the project's name (up to the first dot) for projects under <paramref name="root"/>, a
@@ -37,47 +64,12 @@ public static partial class LayeringTasks
     /// <param name="relativePath">The project file's path relative to the solution directory.</param>
     /// <param name="root">The solution-relative folder holding the layered projects, e.g. <c>src</c>.</param>
     /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
-    public static string? GetDefaultLayer(string projectName, string relativePath, string root) =>
+    public static string? GetPrefixLayer(string projectName, string relativePath, string root) =>
         PathUnderRoot(relativePath, root) is not null ? projectName.Split('.')[0] : null;
 
     /// <summary>
-    /// The first folder under <c>src/</c>, or an empty string for a project directly under <c>src/</c>;
-    /// projects outside <c>src/</c> are not checked. Never falls back to the project name.
-    /// </summary>
-    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
-    /// <returns>The layer folder, an empty string, or <see langword="null"/> when the project is not checked.</returns>
-    public static string? GetFolderLayer(string relativePath) => GetFolderLayer(relativePath, "src");
-
-    /// <summary>
-    /// The layer of a project: when <paramref name="byFolder"/> is set, the layer mapped to the first
-    /// <paramref name="applicationFolders"/> entry (<c>folder=Layer</c>, e.g. <c>src/Api=Web</c>) containing it,
-    /// or its folder under <paramref name="root"/>. Otherwise, its name prefix if it is under <paramref name="root"/>.
-    /// </summary>
-    /// <exception cref="System.ArgumentException">Thrown when an application folder entry is not <c>folder=Layer</c>.</exception>
-    /// <param name="projectName">The project name.</param>
-    /// <param name="relativePath">The project file's path relative to the solution directory.</param>
-    /// <param name="root">The solution-relative folder holding the layered projects.</param>
-    /// <param name="byFolder">Whether layers are folders (<see cref="Anarchy.Toolkit.Automation.Core.Entity.LayeringMode.Folder"/>) rather than name prefixes.</param>
-    /// <param name="applicationFolders">Application folders mapped to their layer, as <c>folder=Layer</c> entries.</param>
-    /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
-    public static string? GetLayer(string projectName, string relativePath, string root, bool byFolder, IEnumerable<string> applicationFolders)
-    {
-        if (!byFolder) return GetDefaultLayer(projectName, relativePath, root);
-
-        foreach (var entry in applicationFolders)
-        {
-            var parts = entry.Split('=', 2, StringSplitOptions.TrimEntries);
-            if (parts.Length != 2 || parts[0].Length == 0 || parts[1].Length == 0)
-                throw new ArgumentException($"Application folder '{entry}' must be written as folder=Layer (e.g. src/Api=Web).");
-            if (PathUnderRoot(relativePath, parts[0]) is not null) return parts[1];
-        }
-
-        return GetFolderLayer(relativePath, root);
-    }
-
-    /// <summary>
     /// The first folder under <paramref name="root"/>, a solution-relative folder, or an empty string for a project
-    /// directly under it; <c>null</c> (not checked) for projects outside it.
+    /// directly under it; <c>null</c> (not checked) for projects outside it. Never falls back to the project name.
     /// </summary>
     /// <param name="relativePath">The project file's path relative to the solution directory.</param>
     /// <param name="root">The solution-relative folder holding the layer folders.</param>
@@ -93,6 +85,31 @@ public static partial class LayeringTasks
         var parts = path.Split('/');
         return parts.Length > 1 ? parts[0] : string.Empty;
     }
+
+    /// <summary>
+    /// A solution-relative path with forward slashes, without leading <c>./</c> or trailing slashes; <c>.</c> for the
+    /// solution directory itself.
+    /// </summary>
+    /// <param name="path">The path.</param>
+    /// <returns>The normalized path.</returns>
+    public static string NormalizePath(string path)
+    {
+        var normalized = path.Replace('\\', '/').TrimEnd('/');
+        while (normalized.StartsWith("./", StringComparison.Ordinal)) normalized = normalized[2..];
+        return normalized is "" ? "." : normalized;
+    }
+
+    /// <summary>
+    /// Whether a solution-relative path is <paramref name="folder"/> or inside it, ignoring case; every path inside
+    /// the solution is within <c>.</c>.
+    /// </summary>
+    /// <param name="path">The normalized path (see <see cref="NormalizePath"/>).</param>
+    /// <param name="folder">The normalized folder.</param>
+    /// <returns><see langword="true"/> if <paramref name="path"/> is in <paramref name="folder"/>.</returns>
+    public static bool IsWithin(string path, string folder) => folder == "."
+        ? path != ".." && !path.StartsWith("../", StringComparison.Ordinal)
+        : string.Equals(path, folder, StringComparison.OrdinalIgnoreCase) ||
+          path.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase);
 
     private static string? PathUnderRoot(string relativePath, string root)
     {
@@ -149,17 +166,27 @@ public static partial class LayeringTasks
     /// <param name="layers">The layers, innermost first.</param>
     /// <returns>The violations; empty when the solution follows its layering.</returns>
     public static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, IReadOnlyList<string> layers) =>
-        Check(projects, layers, false);
+        Check(projects, layers, $"no known layer prefix ({string.Join(", ", layers.Append(Testing))})");
 
     /// <summary>
-    /// As <see cref="Check(IReadOnlyCollection{LayeringProject}, IReadOnlyList{string})"/>; <paramref name="byFolder"/>
-    /// only words the unknown-layer violations as a missing layer folder rather than a missing name prefix.
+    /// As <see cref="Check(IReadOnlyCollection{LayeringProject}, IReadOnlyList{string})"/>, against the layers of a
+    /// solution <paramref name="layout"/>; in <see cref="LayeringMode.Folder"/>, a project without a known layer is
+    /// reported as missing from the layer folders and application folders, never checked by its name instead.
     /// </summary>
     /// <param name="projects">The projects, as returned by <see cref="Collect"/>.</param>
-    /// <param name="layers">The layers, innermost first.</param>
-    /// <param name="byFolder">Whether layers are determined by folder.</param>
+    /// <param name="layout">The solution's layout.</param>
     /// <returns>The violations; empty when the solution follows its layering.</returns>
-    public static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, IReadOnlyList<string> layers, bool byFolder)
+    public static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, SolutionLayout layout)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        var known = string.Join(", ", layout.Layers.Append(Testing));
+        return layout.Mode == LayeringMode.Folder
+            ? Check(projects, layout.Layers,
+                $"no known layer folder ({known}): move it into a layer folder of {layout.LibraryRoot} or map its folder in applicationFolders")
+            : Check(projects, layout.Layers, $"no known layer prefix ({known})");
+    }
+
+    private static IReadOnlyList<string> Check(IReadOnlyCollection<LayeringProject> projects, IReadOnlyList<string> layers, string unknownLayer)
     {
         var violations = new List<string>();
         var known = new List<LayeringProject>();
@@ -172,7 +199,7 @@ public static partial class LayeringTasks
             }
             else
             {
-                violations.Add($"project {project.Name} has no known layer {(byFolder ? "folder" : "prefix")} ({string.Join(", ", layers.Append(Testing))})");
+                violations.Add($"project {project.Name} has {unknownLayer}");
             }
         }
 

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json",
+  "layering": {
+    "mode": "prefix"
+  },
+  "build": {
+    "configuration": "Release"
+  },
+  "agentSkills": {
+    "prefix": "anarchy",
+    "directories": [
+      ".agents/skills",
+      "src/Automation/Boilerplate/.agents/skills"
+    ]
+  },
+  "release": {
+    "base": "main"
+  }
+}

@@ -1,6 +1,6 @@
 # Anarchy.Toolkit.Automation.Build
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Build · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Automation · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
 Reusable [Fallout](https://fallout.build/) build components for .NET repositories.
 
@@ -9,6 +9,15 @@ dotnet add build/_build.csproj package Anarchy.Toolkit.Automation.Build
 ```
 
 Implement the components appropriate to your repository on a `FalloutBuild` class. For example, a package-only build can implement `INuGetBuild`, `ILayeringBuild`, `IDependencyMapBuild`, `IDependencyUpgradeBuild` and `IGitHooksBuild`, with an empty `Artifacts` collection. Use `IBoilerplateBuild` for scaffolding, add `IApiReferenceBuild` for a DocFX API reference site, or add the container (`IContainerBuild`, `IDockerBuild`) components as needed. External deployment and publication targets require their respective tools and credentials.
+
+### Fallout types in the public API
+
+The build components intentionally expose a small set of Fallout Build types because consumers compose Fallout targets
+and operate on Fallout's loaded solution model: `Target`, `AbsolutePath`, `Solution`, `Project`, `GitRepository`, and
+`DotNetVerbosity`, together with Fallout's `[Parameter]` and `[Solution]` attributes. These types are part of the
+Automation.Build contract, not accidental implementation details. Toolkit-owned concepts such as `SolutionLayout`,
+`Artifact`, and preference values use toolkit types; adapters or wrappers would obscure the Fallout operations the
+consumer needs to customize.
 
 ```csharp
 using Anarchy.Toolkit.Automation.Build.Component;
@@ -24,7 +33,7 @@ class Build : FalloutBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
 }
 ```
 
-Create `.fallout/parameters.json` with the solution path, then run `dotnet run --project build/_build.csproj -- --help` to see targets and parameters. The included scaffolding target writes its solution setting to `.fallout/parameters.json`; it will not overwrite existing files.
+Create Fallout's `.fallout/parameters.json` with the solution path and, for `ILayeringBuild` or `IDependencyMapBuild`, the toolkit's `.anarchy/layering.json` with the solution's layering (see the [schema](https://anarchy-io.github.io/anarchy-toolkit/schemas/layering.schema.json)), then run `dotnet run --project build/_build.csproj -- --help` to see targets and parameters. The included scaffolding target writes its solution setting to `.fallout/parameters.json`; it will not overwrite existing files.
 
 See the [Fallout builds guide](https://anarchy-io.github.io/anarchy-toolkit/guides/fallout-builds.html) for component details and package publishing.
 
@@ -43,6 +52,18 @@ See the [Fallout builds guide](https://anarchy-io.github.io/anarchy-toolkit/guid
 | `DockerWaitHealthy` | `wait_healthy_container` | Waits up to `DockerStartTimeout` seconds (default 180) for it to be running, then up to `DockerTimeout` for its health check to pass; fails at once if it turns unhealthy or has no health check |
 
 The waits show a progress bar on interactive terminals and plain lines otherwise (CI, redirected output).
+
+## Container images
+
+`IContainerBuild` publishes a runnable app, builds its image from `docker/Dockerfile` by default, then pushes it to the
+configured `ContainerRegistry`. The artifact directory defaults to `artifacts/Container/<app>`; use any registry the
+Docker client supports. Authenticate before pushing: for ECR, run `aws ecr get-login-password --region <region> | docker
+login --username AWS --password-stdin <account>.dkr.ecr.<region>.amazonaws.com`; for GHCR, use
+`echo "$GHCR_TOKEN" | docker login ghcr.io -u <user> --password-stdin`; ACR uses `az acr login --name <registry>`;
+Docker Hub uses `docker login`. The toolkit does not log in or manage registry credentials.
+
+The build targets are `ContainerPublishAppArtifact`, `ContainerImageBuild` and `ContainerImagePush`. Their Make wrappers
+are `container_publish_app_artifact`, `container_image_build` and `container_image_push` (each takes `APP_NAME`).
 
 For containers without a health check, override `DockerReadinessCheck` in the build to add your own; it is called once a second with the container's name until it returns true:
 
@@ -111,6 +132,11 @@ invoice: #? Issues the pending invoices
 
 A bare `#@` names the skill `<prefix>-<file>`. `IAgentSkillsBuild` keeps the skills in step:
 
+To add a skill for this solution's own targets, document them with `#?` (and parameters with `#+ NAME|type|description`),
+mark a `.mk` file with `#@ <skill-name>` or mark an individual target just below it, then run `make skills_sync`.
+Replace the generated TODO description with when and how to use the commands, and run `make skills_validate` to check
+the skill. `#@ -` exempts a target.
+
 | Target | Make | What it does |
 |---|---|---|
 | `SyncAgentSkills` | `skills_sync [PREFIX=…]` | Creates each missing skill from a template and rewrites the commands block of every skill, keeping the rest of the file |
@@ -129,12 +155,34 @@ A bare `#@` names the skill `<prefix>-<file>`. `IAgentSkillsBuild` keeps the ski
 | `TestIntegrationWithMockServer`, `TestEndToEndWithMockServer` | `test_integration_mocked`, `test_end_to_end_mocked` | Runs the tests with `MOCKSERVER_URL` set, starting the server for them (and stopping it after) unless one is already running |
 | `MockServerSyncOpenApi` | `mock_server_sync_openapi SPEC=… [OUT=…] [DRY_RUN=true]` | Adds an expectation for each endpoint of an OpenAPI or Swagger specification (file or URL) that has none, into `<tag>.json` files for you to review and commit. It never changes existing expectations: endpoints that changed, disappeared or answer an undocumented status code are only reported |
 
+## Build logs and telemetry
+
+Fallout owns the build's logging: right after creating the build it replaces Serilog's `Log.Logger` with its own
+console (themed, honouring `--verbosity`), CI annotation, warnings-summary and `.fallout/temp/build.log` sinks, so a
+logger configured in `Main` is discarded. To also send the build logs to your own sinks, add `[BuildTelemetry]` to the
+build class, implement `IBuildTelemetry` and return your configuration from `ConfigureBuildLogs`. The attribute wraps
+Fallout's logger once it is configured: everything logged through `Log` (targets, toolkit components, tool output)
+reaches both, Fallout's sinks are untouched, and your logger is flushed when the build finishes. `IBuildTelemetry`
+also exposes `Telemetry`, the toolkit's `AppTelemetry` over the same pipeline (metrics are discarded).
+
+What Fallout keeps to itself:
+
+- events logged while the build is being constructed, before Fallout configures logging;
+- the end-of-build "Errors & Warnings" replay and outcome tables, written to a console-only logger;
+- the console theme, the `--verbosity` level switch (your sinks choose their own minimum level), the CI annotation
+  sink and the log files;
+- output written straight to the console rather than logged, such as the toolkit's tables and sections.
+
 ## Releases
 
 ### 1.0.0
 
 - New package identity, renamed from `Anarchy.Toolkit.Build.Fallout`; versions below are historical releases under that package ID.
+- Breaking: replace the ECR-named container targets with registry-neutral `Container*` targets, move the Dockerfile default to `docker/Dockerfile` and the publish output to `artifacts/Container/<app>`. The package remains at its initial 1.0.0 on this branch.
+- Added `IBuildTelemetry` and `[BuildTelemetry]`, which add consumer sinks alongside Fallout's logging and expose the
+  toolkit telemetry to build code.
 - Establish adopter organization conventions and apply application-folder mappings only when folder-based layering is selected.
+- `CheckLayering` and `GenerateDependencyMap` read the layering from `.anarchy/layering.json`, replacing the `LayeringLayers`, `LayeringByFolder`, `LayeringRoot` and `LayeringApplicationFolders` parameters and `DependencyMapLayers`; `Automation` is the default top layer. `IDefaultBuild` gains `AnarchyConfigRoot` / `AnarchyConfigDirectory` for the toolkit's configuration folder.
 
 ### Historical releases under `Anarchy.Toolkit.Build.Fallout`
 

@@ -11,7 +11,8 @@ public class BoilerplateCatalogTest
     [Fact]
     public void ListAndRead_ExposeThePackagedFiles()
     {
-        BoilerplateCatalog.List().Should().Contain(["Makefile", ".gitignore", ".editorconfig", "scripts/build.fallout.sh", ".agents/skills/anarchy/SKILL.md"]);
+        BoilerplateCatalog.List().Should().Contain(["Makefile", ".gitignore", ".editorconfig", "scripts/build.anarchy.sh", ".agents/skills/anarchy/SKILL.md"]);
+        BoilerplateCatalog.List().Should().NotContain("scripts/build.fallout.sh");
         BoilerplateCatalog.Read("Makefile").Should().Contain("include");
         BoilerplateCatalog.Read(".\\nope").Should().BeNull();
     }

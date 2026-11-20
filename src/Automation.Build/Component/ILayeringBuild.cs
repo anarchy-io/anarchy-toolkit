@@ -1,4 +1,5 @@
 using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Fallout.Common;
 using Fallout.Solutions;
@@ -7,75 +8,59 @@ using Serilog;
 namespace Anarchy.Toolkit.Automation.Build.Component;
 
 /// <summary>
-/// Enforces the solution's layered architecture, where a project's layer is the prefix of its name by default,
-/// or its folder under <see cref="LayeringRoot"/> when <see cref="LayeringByFolder"/> is set: references, imports and folders may only point
-/// to the project's own or a lower layer. The <c>Testing</c> kits may reference anything, but nothing in a layer may
-/// reference them. See <see cref="LayeringTasks"/> for the exact rules.
+/// Enforces the solution's layered architecture, using optional <c>.anarchy-toolkit.json</c> overrides: references, imports
+/// and folders may only point to the project's own or a lower layer. The <c>Testing</c> kits may reference anything,
+/// but nothing in a layer may reference them. See <see cref="LayeringTasks"/> for the exact rules and
+/// <see cref="LayeringConfiguration"/> for the file.
 /// </summary>
 /// <remarks>
+/// <para>
 /// <see cref="IStandardBuild.PullRequest"/> runs <see cref="CheckLayering"/> when the build implements this interface.
+/// </para>
+/// <para>
+/// Missing preferences use the in-code folder-mode defaults; the layout is never inferred from project names.
+/// </para>
 /// </remarks>
 /// <example>
-/// <code language="csharp">
-/// partial class Build : FalloutBuild, ILayeringBuild
+/// <code language="json">
 /// {
-///     string[] ILayeringBuild.LayeringLayers => ["Domain", "Application", "Infrastructure", "Web"];
+///   "layering": { "mode": "folder",
+///   "layers": ["Core", "Infrastructure", "Configuration", "Hosting", "Web", "Automation"],
+///   "libraryRoot": "src/Library",
+///   "applicationFolders": { "src/Api": "Web", "src/Jobs": "Hosting", "src/Ui": "Web" } }
 /// }
 /// </code>
-/// Or, without code: <c>fallout check-layering --layering-by-folder</c>.
 /// </example>
 public interface ILayeringBuild : IStandardBuild
 {
     /// <summary>
-    /// The layered chain, innermost first. By default the toolkit's one (see the architecture guide).
+    /// The effective layout, resolving invocation arguments over saved overrides and in-code defaults.
     /// </summary>
-    [Parameter("Layers, innermost first (defaults to the toolkit's: Core Infrastructure Configuration Hosting Web Build)")]
-    string[] LayeringLayers => TryGetValue(() => LayeringLayers) ?? LayeringTasks.DefaultLayers.ToArray();
+    /// <exception cref="System.InvalidOperationException">Thrown when supplied overrides produce an invalid layout.</exception>
+    SolutionLayout Layering => ResolveLayering();
 
     /// <summary>
-    /// Root of projects to check, relative to the solution directory (or an absolute path); defaults to
-    /// <see cref="IDefaultBuild.SourceDirectory"/>.
-    /// </summary>
-    [Parameter("Root folder for layering checks, relative to the solution (defaults to the source root, src)")]
-    string LayeringRoot => TryGetValue(() => LayeringRoot) ?? Path.GetRelativePath(Solution.Directory, SourceDirectory).Replace('\\', '/');
-
-    /// <summary>
-    /// Use the first folder under the layering root as the layer instead of the project name prefix.
-    /// </summary>
-    [Parameter("Determine project layers from folders under the layering root instead of project name prefixes")]
-    bool LayeringByFolder => TryGetValue<bool?>(() => LayeringByFolder) ?? false;
-
-    /// <summary>
-    /// Folders whose projects all belong to one layer, as <c>folder=Layer</c> relative to the solution (e.g.
-    /// <c>src/Api=Web</c>), checked before <see cref="LayeringRoot"/> in folder mode. Ignored in prefix mode.
-    /// </summary>
-    [Parameter("Folders whose projects belong to one layer, as folder=Layer (e.g. src/Api=Web)")]
-    string[] LayeringApplicationFolders => TryGetValue(() => LayeringApplicationFolders) ?? [];
-
-    /// <summary>
-    /// The layer of a project, or <c>null</c> to leave it out of the check. By default, projects under <see cref="LayeringRoot"/>
-    /// use their name prefix, or their first folder under that root if <see cref="LayeringByFolder"/> is set; projects in
-    /// one of the <see cref="LayeringApplicationFolders"/> get that folder's layer in folder mode.
+    /// The layer of a project, or <c>null</c> to leave it out of the check. By default, the layer the
+    /// <paramref name="layout"/> gives it (see <see cref="LayeringTasks.GetLayer(string, string, SolutionLayout)"/>).
     /// An unknown layer is a violation.
     /// </summary>
     /// <param name="project">The solution project.</param>
+    /// <param name="layout">The solution's layout (see <see cref="Layering"/>).</param>
     /// <returns>The project's layer, or <see langword="null"/> to leave it out.</returns>
-    string? GetLayer(Project project)
-    {
-        var root = Path.GetRelativePath(Solution.Directory, Path.GetFullPath(LayeringRoot, Solution.Directory));
-        return LayeringTasks.GetLayer(project.Name, RelativePath(project), root, LayeringByFolder, LayeringApplicationFolders);
-    }
+    string? GetLayer(Project project, SolutionLayout layout) =>
+        LayeringTasks.GetLayer(project.Name, RelativePath(project), layout);
 
     /// <summary>
-    /// Checks project references, file imports and layer folders against <see cref="LayeringLayers"/>, logging every
+    /// Checks project references, file imports and layer folders against the configured layers, logging every
     /// violation and failing the build when there is any.
     /// </summary>
     Target CheckLayering => d => d
         .Description("Verifies the layered architecture: project references, file imports and layer folders")
         .Executes(() => {
+            var layout = Layering;
             var solutionProjects = Solution.ToProjectInfos(RelativePath);
-            var projects = LayeringTasks.Collect(solutionProjects.Keys, info => GetLayer(solutionProjects[info]));
-            var violations = LayeringTasks.Check(projects, LayeringLayers, LayeringByFolder);
+            var projects = LayeringTasks.Collect(solutionProjects.Keys, info => GetLayer(solutionProjects[info], layout));
+            var violations = LayeringTasks.Check(projects, layout);
 
             if (violations.Count > 0)
             {
@@ -84,10 +69,10 @@ public interface ILayeringBuild : IStandardBuild
                     Log.Error("{Violation}", violation);
                 }
 
-                Assert.Fail($"{violations.Count} layering violations");
+                Assert.Fail($"{violations.Count} layering violations. To opt out, remove ILayeringBuild from build/Build.cs; to adapt your layout, use layering preferences. See https://anarchy-io.github.io/anarchy-toolkit/conventions/layering.html#opting-out-or-adapting.");
             }
 
-            Log.Information("Layering OK across {Projects} projects: {Layers} (projects, files and folders)",
-                projects.Count, string.Join(" < ", LayeringLayers));
+            Log.Information("Layering OK across {Projects} projects by {Mode}: {Layers} (projects, files and folders)",
+                projects.Count, layout.Mode == LayeringMode.Folder ? "folder" : "name prefix", string.Join(" < ", layout.Layers));
         });
 }

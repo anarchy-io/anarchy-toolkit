@@ -15,12 +15,12 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// </summary>
 /// <example>
 /// <code language="csharp">
-/// partial class Build : FalloutBuild, IApiReferenceBuild
+/// partial class Build : AnarchyBuild, IApiReferenceBuild
 /// {
 ///     public static int Main() => Execute&lt;Build&gt;(x => x.As&lt;IStandardBuild&gt;().Compile);
 /// }
 /// </code>
-/// Then run <c>fallout generate-api-reference</c>.
+/// Then run <c>make api_reference</c>.
 /// </example>
 public interface IApiReferenceBuild : IStandardBuild
 {
@@ -29,13 +29,14 @@ public interface IApiReferenceBuild : IStandardBuild
     /// defaults to <c>docs-api/docfx.json</c>.
     /// </summary>
     [Parameter("DocFX configuration of the API reference site; defaults to docs-api/docfx.json")]
-    AbsolutePath ApiReferenceConfig => TryGetValue(() => ApiReferenceConfig) ?? RootDirectory / "docs-api" / "docfx.json";
+    AbsolutePath ApiReferenceConfig => TryGetValue(() => ApiReferenceConfig) ?? PreferencePath("documentation.apiReferenceConfig") ?? RootDirectory / "docs-api" / "docfx.json";
 
     /// <summary>
     /// Where the API metadata (YAML) is generated, by default an <c>api</c> folder next to
     /// <see cref="ApiReferenceConfig"/>.
     /// </summary>
-    AbsolutePath ApiReferenceMetadataOutput => ApiReferenceConfig.Parent / "api";
+    [Parameter("API metadata output (default: api next to the DocFX config)")]
+    AbsolutePath ApiReferenceMetadataOutput => TryGetValue(() => ApiReferenceMetadataOutput) ?? PreferencePath("documentation.apiReferenceMetadataOutput") ?? ApiReferenceConfig.Parent / "api";
 
     /// <summary>
     /// Whether a project is documented. By default the packable projects under

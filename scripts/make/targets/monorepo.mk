@@ -12,6 +12,11 @@ run_dotnet_tool: #? Runs the anarchy-toolkit tool from source, to test it locall
 	@$(SCRIPTS_DIR)/console/title.sh 'green' 'Running anarchy-toolkit'
 	@cd "$(or $(TOOL_DIR),$(CURDIR))" && dotnet run --project "$(TOOL_PROJECT)" -- $(TOOL_ARGS)
 
+.PHONY: check_package_hierarchy
+check_package_hierarchy: #? Verifies the toolkit's package hierarchy: same-layer references only to name ancestors or allowed pairs
+	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Checking Package Hierarchy'
+	${MAKE} anarchy SKIP_TITLE=true TARGET=CheckPackageHierarchy
+
 #############################
 ## DOCUMENTATION
 #############################
@@ -46,7 +51,7 @@ docs_serve: docs_sync docs_install #? Serves the documentation site locally with
 
 .PHONY: docs_api_build
 docs_api_build: #? Builds the DocFX API reference into artifacts/docs-api
-	${MAKE} fallout SKIP_TITLE=true TARGET=GenerateApiReference
+	${MAKE} anarchy SKIP_TITLE=true TARGET=GenerateApiReference
 
 DOCS_API_OUTPUT := $(abspath artifacts/docs-api)
 

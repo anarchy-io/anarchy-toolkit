@@ -21,13 +21,13 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// partial class Build : FalloutBuild, IStandardBuild, IMockServerBuild
+/// partial class Build : AnarchyBuild, IStandardBuild, IMockServerBuild
 /// {
 ///     string[] IMockServerBuild.MockServerExpectations => ["tests/mocks"];
 /// }
 /// </code>
-/// Then run <c>fallout test-integration-with-mock-server</c>, or <c>fallout mock-server-start</c> and later
-/// <c>fallout mock-server-stop</c>.
+/// Then run <c>make test_integration_mocked</c>, or <c>make mock_server_start</c> and later
+/// <c>make mock_server_stop</c>.
 /// </example>
 public interface IMockServerBuild : IStandardBuild
 {
@@ -36,44 +36,44 @@ public interface IMockServerBuild : IStandardBuild
     /// runnable project whose name ends in <c>MockServer</c>.
     /// </summary>
     [Parameter("Mock server host project (default: the runnable project whose name ends in MockServer)")]
-    string? MockServerProject => TryGetValue(() => MockServerProject);
+    string? MockServerProject => TryGetValue(() => MockServerProject) ?? Preference<string>("mockServer.project");
 
     /// <summary>The port (<c>--mock-server-port</c>); by default <c>6001</c>, or the next free one.</summary>
     [Parameter("Mock server port (default: 6001, or the next free one)")]
-    int? MockServerPort => TryGetValue<int?>(() => MockServerPort);
+    int? MockServerPort => TryGetValue<int?>(() => MockServerPort) ?? Preference<int?>("mockServer.port");
 
     /// <summary>Expectation files, directories or globs, relative to the repository root (<c>--mock-server-expectations</c>).</summary>
     [Parameter("Mock server expectation files, directories or globs")]
-    string[] MockServerExpectations => TryGetValue(() => MockServerExpectations) ?? [];
+    string[] MockServerExpectations => TryGetValue(() => MockServerExpectations) ?? Preference<string[]>("mockServer.expectations") ?? [];
 
     /// <summary>
     /// The file received requests are recorded to (<c>--mock-server-record</c>); by default
     /// <c>artifacts/mock-server/requests.jsonl</c>. Pass an empty value to keep them in memory only.
     /// </summary>
     [Parameter("Mock server record file (default: artifacts/mock-server/requests.jsonl)")]
-    string? MockServerRecord => TryGetValue(() => MockServerRecord) ?? ArtifactsDirectory / "mock-server" / "requests.jsonl";
+    string? MockServerRecord => TryGetValue(() => MockServerRecord) ?? Preference<string>("mockServer.record") ?? ArtifactsDirectory / "mock-server" / "requests.jsonl";
 
     /// <summary>
     /// The verbosity (<c>--mock-server-verbosity</c>): <c>quiet</c>, <c>minimal</c>, <c>normal</c>, <c>detailed</c> or
     /// <c>diagnostic</c>; by default <c>normal</c>.
     /// </summary>
     [Parameter("Mock server verbosity: quiet, minimal, normal, detailed or diagnostic (default: normal)")]
-    string MockServerVerbosity => TryGetValue(() => MockServerVerbosity) ?? "normal";
+    string MockServerVerbosity => TryGetValue(() => MockServerVerbosity) ?? Preference<string>("mockServer.verbosity") ?? "normal";
 
     /// <summary>
     /// Whether the mock server serves its UI at <c>/__mock/ui</c> (<c>--mock-server-ui</c>), when the host plugs one in
     /// (<c>Anarchy.Toolkit.Web.MockServer.Ui</c>); <see langword="true"/> by default, <c>false</c> passes <c>--no-ui</c>.
     /// </summary>
     [Parameter("Serve the mock server UI when the host has one (default: true)")]
-    bool MockServerUi => TryGetValue<bool?>(() => MockServerUi) ?? true;
+    bool MockServerUi => TryGetValue<bool?>(() => MockServerUi) ?? Preference<bool?>("mockServer.ui") ?? true;
 
     /// <summary>Extra mock server arguments (<c>--mock-server-args</c>), e.g. <c>"--watch --unmatched-status 500"</c>.</summary>
     [Parameter("Extra mock server arguments")]
-    string? MockServerArgs => TryGetValue(() => MockServerArgs);
+    string? MockServerArgs => TryGetValue(() => MockServerArgs) ?? Preference<string>("mockServer.args");
 
     /// <summary>Seconds to wait for a background mock server to be ready (<c>--mock-server-timeout</c>); 60 by default.</summary>
     [Parameter("Seconds to wait for a background mock server to be ready (default: 60)")]
-    int MockServerTimeout => TryGetValue<int?>(() => MockServerTimeout) ?? 60;
+    int MockServerTimeout => TryGetValue<int?>(() => MockServerTimeout) ?? Preference<int?>("mockServer.timeout") ?? 60;
 
     /// <summary>Where the background mock server's state is kept.</summary>
     AbsolutePath MockServerStateFile => TemporaryDirectory / "mock-server" / "state.json";
@@ -113,14 +113,14 @@ public interface IMockServerBuild : IStandardBuild
 
     /// <summary>The OpenAPI specification to synchronize expectations with (<c>--mock-server-open-api</c>): a file relative to the repository root, or a URL.</summary>
     [Parameter("OpenAPI specification (file or URL) to add missing mock server expectations from")]
-    string? MockServerOpenApi => TryGetValue(() => MockServerOpenApi);
+    string? MockServerOpenApi => TryGetValue(() => MockServerOpenApi) ?? Preference<string>("mockServer.openApi");
 
     /// <summary>
     /// The directory the synchronized expectations are added to (<c>--mock-server-open-api-output</c>); by default the
     /// first <see cref="MockServerExpectations"/> entry that is a directory, otherwise <c>mocks</c> under <see cref="IDefaultBuild.TestsDirectory"/>.
     /// </summary>
     [Parameter("Directory to add the expectations to (default: the first expectations directory, else tests/mocks)")]
-    string? MockServerOpenApiOutput => TryGetValue(() => MockServerOpenApiOutput);
+    string? MockServerOpenApiOutput => TryGetValue(() => MockServerOpenApiOutput) ?? Preference<string>("mockServer.openApiOutput");
 
     /// <summary>Only reports what <see cref="MockServerSyncOpenApi"/> would add (<c>--mock-server-open-api-dry-run</c>).</summary>
     [Parameter("Only report what would be added")]

@@ -39,6 +39,28 @@ public class DependencyMapTest
     }
 
     [Theory]
+    [InlineData("Orders", "src/Api/Orders/Orders.csproj", "Web")]
+    [InlineData("Reports", "src/Jobs/Reports/Reports.csproj", "Hosting")]
+    [InlineData("Core", "src/Library/Core/Core.csproj", "Core")]
+    [InlineData("Kit", "src/Library/Testing/Kit/Kit.csproj", "Testing")]
+    [InlineData("Web.Ui", "src/Web.Ui/Web.Ui.csproj", "Other")]
+    [InlineData("Unit", "tests/Unit/Unit.csproj", "Tests")]
+    [InlineData("_build", "build/_build.csproj", null)]
+    public void GetDefaultGroup_GivenFolderLayout_UsesTheConfiguredLayers(string name, string relativePath, string? expected)
+    {
+        DependencyMapTasks.GetDefaultGroup(name, relativePath, SolutionLayout.Default).Should().Be(expected);
+    }
+
+    [Fact]
+    public void GetDefaultGroup_GivenPrefixLayout_UsesNamePrefixes()
+    {
+        var layout = new SolutionLayout(LayeringMode.Prefix, LayeringTasks.DefaultLayers);
+
+        DependencyMapTasks.GetDefaultGroup("Automation.Build", "src/Automation.Build/Automation.Build.csproj", layout).Should().Be("Automation");
+        DependencyMapTasks.GetDefaultGroup("Tools.Cli", "src/Tools.Cli/Tools.Cli.csproj", layout).Should().Be("Other");
+    }
+
+    [Theory]
     [InlineData("Web", "Core", false)]
     [InlineData("Infrastructure.Db", "Infrastructure.Db", false)]
     [InlineData("Core", "Web", true)]

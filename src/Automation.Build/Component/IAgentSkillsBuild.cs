@@ -1,4 +1,3 @@
-using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Fallout.Common;
 using Serilog;
@@ -7,7 +6,7 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 
 /// <summary>
 /// Keeps the solution's agent skills in step with its Makefiles: every documented Make target marked with <c>#@</c>
-/// must be listed by an agent skill under <see cref="AgentSkillsDirectories"/>. See <see cref="AgentSkillTasks"/> for
+/// must be listed by an agent skill under <see cref="IAutomationPreferencesBuild.AgentSkillsDirectories"/>. See <see cref="AgentSkillTasks"/> for
 /// the markers and the skill format.
 /// </summary>
 /// <remarks>
@@ -18,12 +17,12 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// partial class Build : FalloutBuild, IAgentSkillsBuild
+/// partial class Build : AnarchyBuild, IAgentSkillsBuild
 /// {
 ///     string IAgentSkillsBuild.AgentSkillsPrefix => "shop";
 /// }
 /// </code>
-/// Or, without code: <c>fallout validate-agent-skills --agent-skills-prefix shop</c>.
+/// Or, without code: <c>make skills_validate PREFIX=shop</c>.
 /// </example>
 public interface IAgentSkillsBuild : IStandardBuild
 {
@@ -32,14 +31,7 @@ public interface IAgentSkillsBuild : IStandardBuild
     /// name (<c>Shop.Api.sln</c> gives <c>shop-api</c>).
     /// </summary>
     [Parameter("Prefix of agent skills named by a bare #@ marker (defaults to the solution's name)")]
-    string AgentSkillsPrefix => TryGetValue(() => AgentSkillsPrefix) ?? AgentSkillTasks.ToSkillName(Solution.Name ?? "solution");
-
-    /// <summary>
-    /// The skill directories, relative to the root directory; new skills are created in the first. Defaults to
-    /// <c>.agents/skills</c>.
-    /// </summary>
-    [Parameter("Agent skill directories, relative to the root; new skills are created in the first (defaults to .agents/skills)")]
-    string[] AgentSkillsDirectories => TryGetValue(() => AgentSkillsDirectories) ?? [AgentSkillTasks.DefaultDirectory];
+    string AgentSkillsPrefix => TryGetValue(() => AgentSkillsPrefix) ?? Preference<string>("agentSkills.prefix") ?? AgentSkillTasks.ToSkillName(Solution.Name ?? "solution");
 
     /// <summary>
     /// Fails when a skill required by a <c>#@</c> marker is missing, invalid, still has a placeholder description, lost
@@ -70,5 +62,5 @@ public interface IAgentSkillsBuild : IStandardBuild
         });
 
     private string[] SkillDirectories() =>
-        [.. AgentSkillsDirectories.Select(directory => Path.GetFullPath(directory, RootDirectory))];
+        [.. AgentSkillsDirectories.Select(directory => AgentSkillTasks.ResolveDirectory(RootDirectory, directory))];
 }

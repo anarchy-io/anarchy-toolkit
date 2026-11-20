@@ -6,23 +6,23 @@
 .PHONY: lint
 lint: #? Runs linter analysis on the whole solution
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Lint Analysis'
-	${MAKE} fallout SKIP_TITLE=true TARGET="Lint"
+	${MAKE} anarchy SKIP_TITLE=true TARGET="Lint"
 
 .PHONY: lint_fix
 lint_fix: #? Runs the linter auto-fixer on the whole solution
 #+ AUTO_STAGE|bool|Restages files during pre-commit
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Lint Auto-Fix'
-	${MAKE} fallout SKIP_TITLE=true TARGET="LintFix$(if $(filter true,$(AUTO_STAGE)), --AutoStageLintFixes true,)"
+	${MAKE} anarchy SKIP_TITLE=true TARGET="LintFix$(if $(filter true,$(AUTO_STAGE)), --AutoStageLintFixes true,)"
 
 .PHONY: pull_request
 pull_request: #? Runs all tests and validations for the Pull Request CI-pipeline
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Pull Request Checks'
-	${MAKE} fallout SKIP_TITLE=true TARGET="PullRequest"
+	${MAKE} anarchy SKIP_TITLE=true TARGET="PullRequest"
 
 .PHONY: test
 test: #? Runs all solution tests
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running All Tests'
-	${MAKE} fallout SKIP_TITLE=true TARGET=TestAll
+	${MAKE} anarchy SKIP_TITLE=true TARGET=TestAll
 
 .PHONY: test_unit
 test_unit: #? Runs unit tests
@@ -31,7 +31,7 @@ test_unit: #? Runs unit tests
 ifeq ($(COMPILE),true)
 	$(MAKE) compile
 endif
-	${MAKE} fallout SKIP_TITLE=true TARGET="TestUnit"
+	${MAKE} anarchy SKIP_TITLE=true TARGET="TestUnit"
 
 .PHONY: test_integration
 test_integration: #? Runs integration tests (requires local Docker resources)
@@ -40,7 +40,7 @@ test_integration: #? Runs integration tests (requires local Docker resources)
 ifeq ($(COMPILE),true)
 	$(MAKE) compile
 endif
-	${MAKE} fallout SKIP_TITLE=true TARGET=TestIntegration
+	${MAKE} anarchy SKIP_TITLE=true TARGET=TestIntegration
 
 .PHONY: test_end_to_end
 test_end_to_end: #? Runs end-to-end tests
@@ -49,16 +49,14 @@ test_end_to_end: #? Runs end-to-end tests
 ifeq ($(COMPILE),true)
 	$(MAKE) compile
 endif
-	${MAKE} fallout SKIP_TITLE=true TARGET=TestEndToEnd
+	${MAKE} anarchy SKIP_TITLE=true TARGET=TestEndToEnd
 
 .PHONY: check_layering
 check_layering: #? Verifies the layered architecture: references, imports, layer folders
-#+ BY_FOLDER|bool|Use layer folders instead of project name prefixes (DEFAULT=LayeringByFolder in .fallout/parameters.json, else false)
-#+ LAYERING_ROOT|str|Root folder relative to the solution (DEFAULT=LayeringRoot in .fallout/parameters.json, else the source root: SourceRoot, else src)
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Checking Layering'
-	${MAKE} fallout SKIP_TITLE=true TARGET="CheckLayering$(if $(BY_FOLDER), --LayeringByFolder $(BY_FOLDER),)$(if $(LAYERING_ROOT), --LayeringRoot '$(LAYERING_ROOT)',)"
+	${MAKE} anarchy SKIP_TITLE=true TARGET=CheckLayering
 
 .PHONY: dependency_map
 dependency_map: #? Generates docs/dependency-map.html: project references, layers and where the code lives
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Generating Dependency Map'
-	${MAKE} fallout SKIP_TITLE=true TARGET=GenerateDependencyMap
+	${MAKE} anarchy SKIP_TITLE=true TARGET=GenerateDependencyMap

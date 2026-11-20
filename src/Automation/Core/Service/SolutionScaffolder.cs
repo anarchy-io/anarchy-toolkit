@@ -17,9 +17,10 @@ public static class SolutionScaffolder
     /// <summary>
     /// Installs the selected packaged files into <paramref name="root"/> and, unless excluded, creates
     /// <c>src/Core/Core.csproj</c>, the <c>tests</c>, <c>samples</c> and <c>docs</c> folders, a
-    /// <c>Directory.Build.props</c>, and a solution named <paramref name="solutionName"/> recorded in
-    /// <c>.fallout/parameters.json</c>. Existing <c>.gitignore</c>, <c>.editorconfig</c>, <c>global.json</c>,
-    /// <c>nuget.config</c> and <c>Directory.Build.props</c> files are kept.
+    /// <c>Directory.Build.props</c>, and a solution named <paramref name="solutionName"/> recorded in Fallout's
+    /// <c>.fallout/parameters.json</c> (the engine's parameters; optional toolkit preferences stay at the solution root).
+    /// Existing <c>.gitignore</c>, <c>.editorconfig</c>, <c>global.json</c>,
+    /// <c>nuget.config</c> and <c>Directory.Build.props</c> files are kept. Scaffolding does not create preferences.
     /// </summary>
     /// <remarks>
     /// The packaged files are embedded resources (the Makefile, <c>scripts</c>, settings files, ...). Creating the
@@ -44,7 +45,7 @@ public static class SolutionScaffolder
         var log = options.Log ?? (_ => { });
         var assembly = typeof(SolutionScaffolder).Assembly;
         var resources = BoilerplateCatalog.Resources().ToArray();
-        var required = new[] { "Makefile", "scripts/build.fallout.sh", ".gitignore", ".editorconfig", "global.json", "nuget.config" };
+        var required = new[] { "Makefile", "scripts/build.anarchy.sh", ".gitignore", ".editorconfig", "global.json", "nuget.config" };
         if (required.Any(path => resources.All(resource => resource.Path != path)))
             throw new InvalidOperationException("The packaged boilerplate files are missing.");
 
@@ -57,8 +58,12 @@ public static class SolutionScaffolder
         if (createSolution && !NameRules.IsValidSolutionName(solutionName))
             throw new ArgumentException("Supply --boilerplate-solution-name using letters, digits, dots, underscores or hyphens.");
 
+        var skillDirectories = options.SkillDirectories ?? [AgentSkillTasks.DefaultDirectory];
+        if (skillDirectories.Count == 0 && selectedResources.Any(resource => IsPackagedSkill(resource.Path)))
+            throw new InvalidOperationException("Agent-skill installation needs at least one agentSkills.directories entry.");
         var generated = selectedResources.Select(resource => resource.Path)
             .Where(path => !IsPreserved(path))
+            .Select(path => DestinationPath(path, skillDirectories))
             .Concat(createCore ? ["src/Core/Core.csproj"] : [])
             .Concat(directories.Select(directory => directory + "/.gitkeep"));
         var conflicts = generated.Select(path => Path.Combine(root, path))
@@ -73,20 +78,21 @@ public static class SolutionScaffolder
         if (options.DryRun)
         {
             ReportPlan(root, solutionName, options, selectedResources.Select(resource => resource.Path), conflicts,
-                createCore, createProps, createSolution, directories, log);
+                createCore, createProps, createSolution, directories, skillDirectories, log);
             return;
         }
         if (conflicts.Count > 0)
             throw new InvalidOperationException("Boilerplate would overwrite existing files: " + string.Join(", ", conflicts));
 
-        var parametersPath = Path.Combine(root, ".fallout", "parameters.json");
+        var parametersPath = BuildEngineParameters.PathOf(root);
         var parameters = createSolution ? ReadParameters(root, parametersPath) : null;
 
         foreach (var resource in selectedResources)
         {
+            var destinationPath = DestinationPath(resource.Path, skillDirectories);
             var destination = IsPreserved(resource.Path)
                 ? FileHelper.ExistingEntryPath(root, resource.Path)
-                : Path.Combine(root, resource.Path);
+                : Path.Combine(root, destinationPath);
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             using var input = assembly.GetManifestResourceStream(resource.Name)!;
             if (File.Exists(destination))
@@ -95,7 +101,9 @@ public static class SolutionScaffolder
                 {
                     using var reader = new StreamReader(input);
                     var existing = File.ReadAllText(destination);
-                    var merged = FileHelper.MergeManagedBlock(existing, reader.ReadToEnd(), resource.Path == ".gitignore");
+                    var merged = FileHelper.MergeManagedBlock(existing, reader.ReadToEnd(),
+                        skipExistingLines: resource.Path == ".gitignore",
+                        placeBlockFirst: resource.Path is ".gitignore" or ".editorconfig");
                     if (merged == existing)
                     {
                         log($"{destination} already has the packaged settings");
@@ -135,6 +143,7 @@ public static class SolutionScaffolder
                 </Project>
 
                 """);
+        if (createCore) ReportStarterLayoutHint(log);
         foreach (var directory in directories)
             FileHelper.WriteNewText(Path.Combine(root, directory, ".gitkeep"), "");
 
@@ -156,17 +165,18 @@ public static class SolutionScaffolder
 
     private static void ReportPlan(string root, string? solutionName, ScaffoldOptions options, IEnumerable<string> paths,
         IReadOnlyCollection<string> conflicts, bool createCore, bool createProps, bool createSolution, string[] directories,
-        Action<string> log)
+        IReadOnlyList<string> skillDirectories, Action<string> log)
     {
         log("Dry run: nothing is written.");
         foreach (var conflict in conflicts)
             log($"Conflict: {Path.GetRelativePath(root, conflict)} already exists; the install would stop without writing anything");
         foreach (var path in paths)
         {
-            var existing = IsPreserved(path) ? FileHelper.ExistingEntryPath(root, path) : Path.Combine(root, path);
+            var destinationPath = DestinationPath(path, skillDirectories);
+            var existing = IsPreserved(path) ? FileHelper.ExistingEntryPath(root, path) : Path.Combine(root, destinationPath);
             if (!File.Exists(existing))
             {
-                if (!Directory.Exists(existing)) log($"Create: {path}");
+                if (!Directory.Exists(existing)) log($"Create: {destinationPath}");
                 continue;
             }
             if (!IsPreserved(path)) continue;
@@ -174,7 +184,8 @@ public static class SolutionScaffolder
             if (options.AppendExisting && path is ".gitignore" or ".editorconfig")
             {
                 var current = File.ReadAllText(existing);
-                var merged = FileHelper.MergeManagedBlock(current, packaged, path == ".gitignore");
+                var merged = FileHelper.MergeManagedBlock(current, packaged,
+                    skipExistingLines: path == ".gitignore", placeBlockFirst: path is ".gitignore" or ".editorconfig");
                 log(merged == current ? $"Up to date: {path}" : $"Update the managed block of {path}:\n{UnifiedDiff.Create(path, current, merged)}");
             }
             else if (options.AppendExisting && path == "global.json")
@@ -183,12 +194,28 @@ public static class SolutionScaffolder
                 log($"Keep: {path}");
         }
         if (createCore) log(File.Exists(Path.Combine(root, "src", "Core", "Core.csproj")) ? "Keep: src/Core/Core.csproj" : "Create: src/Core/Core.csproj");
+        if (createCore) ReportStarterLayoutHint(log);
         foreach (var directory in directories) log($"Create: {directory}/.gitkeep");
         if (createProps) log(File.Exists(FileHelper.ExistingEntryPath(root, "Directory.Build.props")) ? "Keep: Directory.Build.props" : "Create: Directory.Build.props");
         if (createSolution) log($"Create: {solutionName}.sln, recorded in .fallout/parameters.json");
     }
 
     private static bool IsPreserved(string path) => Preserved.Contains(path, StringComparer.OrdinalIgnoreCase);
+
+    private static bool IsPackagedSkill(string path) => path.StartsWith(".agents/skills/", StringComparison.Ordinal);
+
+    private static void ReportStarterLayoutHint(Action<string> log) =>
+        log("Without saving preferences, repeat this starter layout override: anarchy-toolkit scaffold api NewApi --layering-library-root src; make anarchy TARGET='CheckLayering --LayeringLibraryRoot src'.");
+
+    private static string DestinationPath(string path, IReadOnlyList<string> skillDirectories)
+    {
+        const string packagedSkills = ".agents/skills/";
+        if (!IsPackagedSkill(path)) return path;
+        if (skillDirectories.Count == 0)
+            throw new InvalidOperationException("Agent-skill installation needs at least one agentSkills.directories entry.");
+        var directory = AgentSkillTasks.NormalizeDirectory(skillDirectories[0]);
+        return directory + "/" + path[packagedSkills.Length..];
+    }
 
     /// <summary>
     /// Lists the files Git tracks although the <c>.gitignore</c> files now ignore them: Git keeps tracking them, but

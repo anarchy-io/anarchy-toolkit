@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json",
+  "title": "Anarchy Toolkit optional automation overrides",
+  "description": "Optional .anarchy-toolkit.json at the solution root. Every property is optional. Invocation parameters win; absent overrides use in-code defaults. Relative paths are solution-relative.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "layering": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Defaults to folder mode, standard layers, src/Library and src/Api, src/Jobs, src/Ui. Effective layouts must be valid; prefix mode cannot contain explicit folder settings.",
+      "dependentSchemas": {
+        "mode": {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "prefix"
+              }
+            }
+          },
+          "then": {
+            "propertyNames": {
+              "not": {
+                "enum": [
+                  "libraryRoot",
+                  "applicationFolders"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "folder",
+            "prefix"
+          ],
+          "default": "folder"
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": [
+            "Core",
+            "Infrastructure",
+            "Configuration",
+            "Hosting",
+            "Web",
+            "Automation"
+          ]
+        },
+        "root": {
+          "type": "string",
+          "minLength": 1,
+          "default": "src"
+        },
+        "libraryRoot": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Folder mode: defaults to <root>/Library."
+        },
+        "applicationFolders": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Folder mode: defaults to standard app folders for configured layers."
+        }
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "configuration": {
+          "type": "string",
+          "enum": [
+            "Debug",
+            "Release"
+          ],
+          "default": "Release"
+        },
+        "sourceRoot": {
+          "type": "string",
+          "minLength": 1,
+          "default": "src"
+        },
+        "testsRoot": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to tests with IStandardBuild, test with IDefaultBuild."
+        },
+        "toolVerbosity": {
+          "type": "string",
+          "enum": [
+            "quiet",
+            "minimal",
+            "normal",
+            "detailed",
+            "diagnostic"
+          ],
+          "description": "Defaults to diagnostic on CI, minimal otherwise."
+        },
+        "treatWarningsAsErrors": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kindAliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "filter": {
+          "type": "string",
+          "description": "VSTest filter; none by default."
+        },
+        "testingPlatformArguments": {
+          "type": "string",
+          "description": "MTP arguments; none by default."
+        }
+      }
+    },
+    "docker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "composeFile": {
+          "type": "string",
+          "minLength": 1,
+          "default": "docker/docker-compose.yml"
+        },
+        "projectName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to normalized repository directory name."
+        },
+        "waitFor": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "waitForHealthy": {
+          "type": "boolean",
+          "default": false
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 60
+        },
+        "startTimeout": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 180
+        }
+      }
+    },
+    "mockServer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to the only runnable *MockServer project."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Defaults to 6001 or the next free port."
+        },
+        "expectations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "record": {
+          "type": "string",
+          "default": "artifacts/mock-server/requests.jsonl",
+          "description": "Empty disables disk recording."
+        },
+        "verbosity": {
+          "type": "string",
+          "enum": [
+            "quiet",
+            "minimal",
+            "normal",
+            "detailed",
+            "diagnostic"
+          ],
+          "default": "normal"
+        },
+        "ui": {
+          "type": "boolean",
+          "default": true
+        },
+        "args": {
+          "type": "string",
+          "description": "Extra server arguments; none by default."
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 60
+        },
+        "openApi": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional specification file or URL."
+        },
+        "openApiOutput": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to first expectations directory, else <testsRoot>/mocks."
+        }
+      }
+    },
+    "documentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dependencyMapOutput": {
+          "type": "string",
+          "minLength": 1,
+          "default": "docs/dependency-map.html"
+        },
+        "apiReferenceConfig": {
+          "type": "string",
+          "minLength": 1,
+          "default": "docs-api/docfx.json"
+        },
+        "apiReferenceMetadataOutput": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to api next to the DocFX config."
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "versionLock": {
+          "type": "string",
+          "enum": [
+            "Major",
+            "Minor",
+            "None"
+          ],
+          "default": "Major"
+        }
+      }
+    },
+    "nuget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "No default; publishing requires a feed."
+        },
+        "skipDuplicate": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base": {
+          "type": "string",
+          "minLength": 1,
+          "description": "No default; comparison targets require a baseline."
+        }
+      }
+    },
+    "container": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "registry": {
+          "type": "string",
+          "minLength": 1,
+          "description": "No default; image build/push require a registry."
+        },
+        "imageName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to lower-case solution-app."
+        },
+        "dockerfile": {
+          "type": "string",
+          "minLength": 1,
+          "default": "docker/Dockerfile"
+        },
+        "runtimeIdentifier": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to linux-arm64 on ARM64, linux-x64 otherwise."
+        }
+      }
+    },
+    "agentSkills": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Defaults to the solution name normalized as a skill name."
+        },
+        "directories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?![/\\\\]|.*:)(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$)).+$"
+          },
+          "default": [
+            ".agents/skills"
+          ],
+          "description": "Ordered solution-relative search roots without traversal; first receives new skills. Empty disables discovery/creation."
+        }
+      }
+    },
+    "gitHooks": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "skipLintFix": {
+          "type": "boolean",
+          "default": false
+        },
+        "skipTestStatic": {
+          "type": "boolean",
+          "default": false
+        },
+        "skipTestRuntime": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "boilerplate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "string",
+          "description": "Defaults to all except opt-in skills."
+        },
+        "exclude": {
+          "type": "string",
+          "description": "No exclusions by default."
+        }
+      }
+    },
+    "scaffolding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "swaggerTheme": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    }
+  }
+}

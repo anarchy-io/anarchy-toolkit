@@ -7,14 +7,14 @@ namespace Anarchy.Toolkit.Automation.Core.Entity;
 public sealed class ToolkitPackageVersions(IReadOnlyDictionary<string, string> versions)
 {
     /// <summary>
-    /// The package ID of the Fallout build components every build host references.
+    /// The package ID of the Anarchy automation components every build host references.
     /// </summary>
-    public const string BuildFallout = "Anarchy.Toolkit.Automation.Build";
+    public const string AutomationBuild = "Anarchy.Toolkit.Automation.Build";
 
     /// <summary>
     /// The version of a toolkit package.
     /// </summary>
-    /// <param name="packageId">The package ID, e.g. <see cref="BuildFallout"/>.</param>
+    /// <param name="packageId">The package ID, e.g. <see cref="AutomationBuild"/>.</param>
     /// <returns>The version of <paramref name="packageId"/>.</returns>
     /// <exception cref="System.InvalidOperationException">Thrown when no version of <paramref name="packageId"/> is known.</exception>
     public string this[string packageId] => versions.TryGetValue(packageId, out var version)

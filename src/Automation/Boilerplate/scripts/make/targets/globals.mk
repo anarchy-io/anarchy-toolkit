@@ -23,7 +23,8 @@ BG_CYAN := $(shell source $(SCRIPTS_DIR)/shared/colors.env; printf '%s' "$$BG_CY
 ###
 # Global Flags
 ENV ?= dev
-FALLOUT_RELOAD_ENV ?= true
+# The old wrapper variable remains a fallback for existing environments.
+ANARCHY_RELOAD_ENV ?= $(if $(filter undefined,$(origin FALLOUT_RELOAD_ENV)),true,$(FALLOUT_RELOAD_ENV))
 
 ###
 # Constants
@@ -38,9 +39,13 @@ PACKAGES_OUT_DIR := "$(PROJECT_ROOT)artifacts/packages"
 ###
 # Docker Config
 DOCKER_ROOT=${PROJECT_ROOT}docker
-DOCKER_COMPOSE_FILE_NAME=${DOCKER_ROOT}/docker-compose.yml
+DOCKER_COMPOSE_FILE_NAME_DEFAULT := ${DOCKER_ROOT}/docker-compose.yml
 # Compose project names must be lower case.
-DOCKER_PROJECT_NAME := $(shell printf '%s' '$(PROJECT_NAME)' | tr '[:upper:]' '[:lower:]')
+DOCKER_PROJECT_NAME_DEFAULT := $(shell printf '%s' '$(PROJECT_NAME)' | tr '[:upper:]' '[:lower:]')
+# Keep generated fallbacks internal, so adopter-defined public variables remain
+# detectable whether assigned before or after this Makefile is included.
+DOCKER_COMPOSE_FILE_NAME_EFFECTIVE = $(if $(filter undefined,$(origin DOCKER_COMPOSE_FILE_NAME)),$(DOCKER_COMPOSE_FILE_NAME_DEFAULT),$(DOCKER_COMPOSE_FILE_NAME))
+DOCKER_PROJECT_NAME_EFFECTIVE = $(if $(filter undefined,$(origin DOCKER_PROJECT_NAME)),$(DOCKER_PROJECT_NAME_DEFAULT),$(DOCKER_PROJECT_NAME))
 
 # Detect Docker Compose version and assign to DOCKER_COMPOSE variable
 DOCKER_VERSION := $(shell docker version --format '{{.Server.Version}}' 2>/dev/null)
@@ -54,9 +59,9 @@ else
     DOCKER_COMPOSE := docker compose
 endif
 
-DOCKER_COMPOSE_COMMAND=DOCKER_ROOT="${DOCKER_ROOT}" ${DOCKER_COMPOSE} -f "${DOCKER_COMPOSE_FILE_NAME}" --project-name "${DOCKER_PROJECT_NAME}"
-DOCKER_COMPOSE_EXEC := ${DOCKER_COMPOSE_COMMAND} exec
-DOCKER_DEV_CONSOLE := ${DOCKER_COMPOSE_EXEC} -e DEV_LOG_LEVEL=${LOGLEVEL} "${DOCKER_PROJECT_NAME}-dev-console"
+DOCKER_COMPOSE_COMMAND=DOCKER_ROOT="${DOCKER_ROOT}" ${DOCKER_COMPOSE} -f "${DOCKER_COMPOSE_FILE_NAME_EFFECTIVE}" --project-name "${DOCKER_PROJECT_NAME_EFFECTIVE}"
+DOCKER_COMPOSE_EXEC = ${DOCKER_COMPOSE_COMMAND} exec
+DOCKER_DEV_CONSOLE = ${DOCKER_COMPOSE_EXEC} -e DEV_LOG_LEVEL=${LOGLEVEL} "${DOCKER_PROJECT_NAME_EFFECTIVE}-dev-console"
 
 ###
 # GIT

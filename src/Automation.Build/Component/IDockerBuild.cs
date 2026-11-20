@@ -10,31 +10,31 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// healthy.
 /// </summary>
 /// <remarks>
-/// It derives from <see cref="IFalloutBuild"/> directly, so it needs no solution. The work is done by
+/// It can be composed on <see cref="AnarchyBuild"/> without loading a solution. The work is done by
 /// <see cref="Anarchy.Toolkit.Automation.Core.Service.Container.LocalContainerTasks"/>.
 /// </remarks>
 /// <example>
 /// <code language="csharp">
-/// partial class Build : FalloutBuild, IStandardBuild, IDockerBuild
+/// partial class Build : AnarchyBuild, IStandardBuild, IDockerBuild
 /// {
 ///     Func&lt;string, bool&gt;? IDockerBuild.DockerReadinessCheck => container => container != "localstack" || LocalStackIsReady();
 /// }
 /// </code>
-/// Then run <c>fallout docker-start --docker-wait-for postgres --docker-wait-for-healthy</c>.
+/// Then run <c>make start WAIT_FOR=postgres HEALTHY=true</c>.
 /// </example>
-public interface IDockerBuild : IFalloutBuild
+public interface IDockerBuild : IAutomationPreferencesBuild
 {
     /// <summary>
     /// The Docker Compose file (<c>--docker-compose-file</c>); defaults to <c>docker/docker-compose.yml</c>.
     /// </summary>
     [Parameter("Docker Compose file (default: docker/docker-compose.yml)")]
-    AbsolutePath DockerComposeFile => TryGetValue(() => DockerComposeFile) ?? RootDirectory / "docker" / "docker-compose.yml";
+    AbsolutePath DockerComposeFile => TryGetValue(() => DockerComposeFile) ?? PreferencePath("docker.composeFile") ?? RootDirectory / "docker" / "docker-compose.yml";
 
     /// <summary>
     /// The Docker Compose project name (<c>--docker-project-name</c>); defaults to the repository directory's name.
     /// </summary>
     [Parameter("Docker Compose project name (default: the repository directory's name)")]
-    string DockerProjectName => TryGetValue(() => DockerProjectName) ?? LocalContainerTasks.ProjectNameOf(RootDirectory);
+    string DockerProjectName => TryGetValue(() => DockerProjectName) ?? Preference<string>("docker.projectName") ?? LocalContainerTasks.ProjectNameOf(RootDirectory);
 
     /// <summary>
     /// The container <see cref="DockerLogs"/>, <see cref="DockerRestart"/>, <see cref="DockerWaitRunning"/> and
@@ -55,28 +55,28 @@ public interface IDockerBuild : IFalloutBuild
     /// default.
     /// </summary>
     [Parameter("Containers DockerStart waits for")]
-    string[] DockerWaitFor => TryGetValue(() => DockerWaitFor) ?? [];
+    string[] DockerWaitFor => TryGetValue(() => DockerWaitFor) ?? Preference<string[]>("docker.waitFor") ?? [];
 
     /// <summary>
     /// Whether <see cref="DockerStart"/> waits for <see cref="DockerWaitFor"/> to be healthy rather than just running
     /// (<c>--docker-wait-for-healthy</c>). Defaults to <see langword="false"/>.
     /// </summary>
     [Parameter("Wait for the containers to be healthy rather than running")]
-    bool DockerWaitForHealthy => TryGetValue<bool?>(() => DockerWaitForHealthy) ?? false;
+    bool DockerWaitForHealthy => TryGetValue<bool?>(() => DockerWaitForHealthy) ?? Preference<bool?>("docker.waitForHealthy") ?? false;
 
     /// <summary>
     /// Seconds to wait for a container to become healthy, or running for <see cref="DockerWaitRunning"/>
     /// (<c>--docker-timeout</c>). Defaults to 60.
     /// </summary>
     [Parameter("Seconds to wait for a container to become healthy (default: 60; running, for DockerWaitRunning)")]
-    int DockerTimeout => TryGetValue<int?>(() => DockerTimeout) ?? LocalContainerTasks.DefaultTimeout;
+    int DockerTimeout => TryGetValue<int?>(() => DockerTimeout) ?? Preference<int?>("docker.timeout") ?? LocalContainerTasks.DefaultTimeout;
 
     /// <summary>
     /// Seconds to wait for a container to start before checking its health (<c>--docker-start-timeout</c>). Defaults
     /// to 180.
     /// </summary>
     [Parameter("Seconds to wait for a container to start before checking its health (default: 180)")]
-    int DockerStartTimeout => TryGetValue<int?>(() => DockerStartTimeout) ?? LocalContainerTasks.DefaultStartTimeout;
+    int DockerStartTimeout => TryGetValue<int?>(() => DockerStartTimeout) ?? Preference<int?>("docker.startTimeout") ?? LocalContainerTasks.DefaultStartTimeout;
 
     /// <summary>
     /// An extra readiness check <see cref="DockerWaitRunning"/> runs once <see cref="DockerContainer"/> is running: called

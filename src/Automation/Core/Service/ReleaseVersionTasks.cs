@@ -477,6 +477,7 @@ public static class ReleaseVersionTasks
 
         var fileName = Path.GetFileName(normalized);
         if (!normalized.Contains('/') && (string.Equals(fileName, ".editorconfig", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(fileName, AutomationPreferences.FileName, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(fileName, ".gitignore", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(fileName, "README.md", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(fileName, "LICENSE", StringComparison.OrdinalIgnoreCase) ||

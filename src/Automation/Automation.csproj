@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="..\..\docs\schemas\anarchy-toolkit.schema.json" LogicalName="Anarchy.Automation.Schema" />
     <InternalsVisibleTo Include="Anarchy.Toolkit.Tests.Unit" />
   </ItemGroup>
 

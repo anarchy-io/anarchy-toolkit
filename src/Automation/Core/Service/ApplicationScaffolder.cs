@@ -2,7 +2,7 @@ using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Template;
 using Anarchy.Toolkit.Automation.Core.Validation;
 using Anarchy.Toolkit.Automation.Infrastructure.Helper;
-using LocalPorts = Anarchy.Toolkit.Core.Helper.LocalPorts;
+using Anarchy.Toolkit.Core.Helper;
 
 namespace Anarchy.Toolkit.Automation.Core.Service;
 
@@ -31,8 +31,9 @@ public static class ApplicationScaffolder
     public static string? Validate(SolutionLayout layout, ApplicationSpec app, IEnumerable<string> taken)
     {
         if (!NameRules.IsValidApplicationName(app.Name)) return $"'{app.Name}': {NameRules.ApplicationNameHelp}";
-        if (!layout.Supports(app.Kind))
+        if (!layout.Layers.Contains(SolutionLayout.LayerOf(app.Kind)))
             return $"A {app.Kind} belongs to the {SolutionLayout.LayerOf(app.Kind)} layer, which the solution does not have.";
+        if (!layout.Supports(app.Kind)) return layout.MissingApplicationFolder(app.Kind);
         var project = layout.ProjectName(app);
         return taken.Contains(project, StringComparer.OrdinalIgnoreCase) ? $"A project named {project} already exists." : null;
     }

@@ -5,7 +5,7 @@ namespace Anarchy.Toolkit.Automation.Core.Service;
 
 /// <summary>
 /// Merges an <c>appsettings.json.template</c> into an <c>appsettings.Development.json</c>: see the
-/// <c>GenerateAppSettings</c> Fallout target.
+/// <c>GenerateAppSettings</c> Anarchy automation target.
 /// </summary>
 /// <remarks>
 /// The template's string values are human-readable hints rather than values; any other value (number, boolean,

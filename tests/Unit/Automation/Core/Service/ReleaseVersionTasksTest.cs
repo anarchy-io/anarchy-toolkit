@@ -14,7 +14,7 @@ public class ReleaseVersionTasksTest
         var other = new Project("/repo/src/Core/Core.csproj", "Core", "1.0.0", [], "<Project />");
         DetectDirectlyAffectedProjects("/repo", [project, other], ["src/Automation/Boilerplate/.editorconfig"])
             .Should().ContainSingle().Which.Should().Be(project);
-        DetectDirectlyAffectedProjects("/repo", [project, other], ["src/Automation/Boilerplate/scripts/build.fallout.sh"])
+        DetectDirectlyAffectedProjects("/repo", [project, other], ["src/Automation/Boilerplate/scripts/build.anarchy.sh"])
             .Should().ContainSingle().Which.Should().Be(project);
         DetectDirectlyAffectedProjects("/repo", [project, other], ["Makefile"]).Should().BeEmpty();
     }

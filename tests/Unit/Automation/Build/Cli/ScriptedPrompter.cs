@@ -14,6 +14,7 @@ internal sealed class ScriptedPrompter(params object[] answers) : IWizardPrompte
     public List<string> Errors { get; } = [];
     public List<string> Progress { get; } = [];
     public List<string> NextSteps { get; } = [];
+    public List<(string Prompt, bool DefaultValue)> Confirmations { get; } = [];
     public SolutionPlan? ShownPlan { get; private set; }
     public ApplicationSpec? ShownScaffold { get; private set; }
     public bool ShowedHelp { get; private set; }
@@ -36,7 +37,11 @@ internal sealed class ScriptedPrompter(params object[] answers) : IWizardPrompte
         }
     }
 
-    public bool Confirm(string prompt, bool defaultValue) => (bool)_answers.Dequeue();
+    public bool Confirm(string prompt, bool defaultValue)
+    {
+        Confirmations.Add((prompt, defaultValue));
+        return (bool)_answers.Dequeue();
+    }
 
     public T SelectOne<T>(string title, IReadOnlyList<T> choices, Func<T, string> label) where T : notnull
     {

@@ -1,4 +1,4 @@
-using LocalPorts = Anarchy.Toolkit.Core.Helper.LocalPorts;
+using Anarchy.Toolkit.Core.Helper;
 namespace Anarchy.Toolkit.Automation.Core.Entity;
 
 /// <summary>
@@ -22,6 +22,9 @@ public sealed record SolutionPlan(string Name, string RootDirectory, SolutionLay
     /// Whether to install the toolkit's agent skills into <c>.agents/skills</c>; off by default.
     /// </summary>
     public bool AgentSkills { get; init; }
+
+    /// <summary>Whether to save this plan's deliberately selected layering preferences after successful generation.</summary>
+    public bool SavePreferences { get; init; }
 
     /// <summary>
     /// The local HTTP and HTTPS ports of each web host, in the order the applications were added.

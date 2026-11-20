@@ -30,6 +30,9 @@ public enum ToolMode
     /// </summary>
     Boilerplate,
 
+    /// <summary><c>config show|set|unset|configure</c>: inspect or explicitly edit solution preferences.</summary>
+    Config,
+
     /// <summary>
     /// An unknown command or malformed arguments; <see cref="ToolCommand.Error"/> says why.
     /// </summary>

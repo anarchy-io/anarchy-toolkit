@@ -32,6 +32,19 @@ namespace Anarchy.Toolkit.Automation.Core.Service;
 /// </example>
 public static partial class AgentSkillTasks
 {
+    /// <summary>Resolves a skill directory inside the solution, rejecting absolute paths and traversal.</summary>
+    public static string ResolveDirectory(string root, string directory) =>
+        Path.GetFullPath(NormalizeDirectory(directory), Path.GetFullPath(root));
+
+    internal static string NormalizeDirectory(string directory)
+    {
+        var normalized = directory.Replace('\\', '/').TrimEnd('/');
+        if (string.IsNullOrWhiteSpace(normalized) || Path.IsPathRooted(normalized) || normalized.Contains(':') ||
+            normalized.Split('/').Contains(".."))
+            throw new InvalidOperationException($"Invalid agentSkills.directories entry '{directory}': use a directory inside the solution, relative to its root.");
+        return normalized;
+    }
+
     /// <summary>
     /// Where skills are installed and created, relative to the solution root.
     /// </summary>

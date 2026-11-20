@@ -1,5 +1,6 @@
 using Anarchy.Toolkit.Automation.Build.Infrastructure.Helper;
 using Anarchy.Toolkit.Automation.Core.Service;
+using Fallout.Common.Tools.DotNet;
 using NuGet.Versioning;
 using Serilog;
 using System.Runtime.InteropServices;
@@ -26,8 +27,9 @@ internal static class DependencyUpgradeTasks
     /// <exception cref="InvalidOperationException">
     /// Thrown when a required command fails or the tool still cannot run after installing it.
     /// </exception>
+    /// <remarks>Quiet verbosity suppresses status and successful command output; failures remain visible. Null keeps existing output.</remarks>
     internal static void Run(string root, string solution, string versionLock, bool installTool, bool upgrade, bool interactive,
-                             string? dotnetExecutable = null, string? cliHome = null)
+                             string? dotnetExecutable = null, string? cliHome = null, DotNetVerbosity? verbosity = null)
     {
         dotnetExecutable ??= "dotnet";
         var allowed = new[] { "Major", "Minor", "None" };
@@ -35,12 +37,19 @@ internal static class DependencyUpgradeTasks
                          ?? throw new ArgumentException("Dependency version lock must be Major, Minor or None.");
         void RunRequired(string executable, IEnumerable<string> args, IReadOnlyDictionary<string, string>? environment = null)
         {
-            var result = LocalProcessTasks.Run(root, executable, args, environment, capture: false);
-            if (result.ExitCode != 0) throw new InvalidOperationException($"{executable} exited with code {result.ExitCode}.");
+            var capture = verbosity == DotNetVerbosity.quiet;
+            var result = LocalProcessTasks.Run(root, executable, args, environment, capture: capture);
+            if (result.ExitCode == 0) return;
+            if (capture)
+            {
+                Console.Out.Write(result.Output);
+                Console.Error.Write(result.Error);
+            }
+            throw new InvalidOperationException($"{executable} exited with code {result.ExitCode}.");
         }
         bool Confirm(string question) => interactive && BuildConsole.Confirm(question);
-        void Section(string title) => BuildConsole.Section(title);
-        void Skipped(string message) => BuildConsole.Skipped(message);
+        void Section(string title) => BuildConsole.Section(title, verbosity: verbosity);
+        void Skipped(string message) => BuildConsole.Skipped(message, verbosity: verbosity);
 
         Section($"Outdated packages (version lock: {normalized})");
         var listArgs = new List<string> { "list", solution, "package", "--outdated" };
@@ -103,7 +112,7 @@ internal static class DependencyUpgradeTasks
         RunRequired(tool, [solution, "--upgrade", "--no-restore", "--version-lock", normalized], env);
         Section("Restoring packages");
         RunRequired(dotnetExecutable, ["restore", solution]);
-        BuildConsole.Success("Dependencies upgraded.");
+        BuildConsole.Success("Dependencies upgraded.", verbosity: verbosity);
     }
 
     /// <summary>

@@ -29,6 +29,8 @@ Most consumers should use the `anarchy-toolkit` tool or the Fallout targets rath
 - Establish adopter organization conventions and ship guidance for selecting folder-based or prefix-based layering.
 - Keep application-folder mappings out of prefix-based layering checks.
 - Scaffold APIs and jobs with provider-neutral application telemetry.
+- Add named `monorepo` and `single-app` layout presets, including one custom application-folder mapping, without changing the in-code monorepo baseline.
+- Show the source of each effective saved/default preference and accept invocation-supplied values from the Fallout build target.
 
 ### Historical releases under `Anarchy.Toolkit.Build.Cli`
 

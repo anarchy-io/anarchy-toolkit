@@ -1,64 +1,45 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Anarchy.Toolkit.Automation.Build.Cli.Command;
 
-/// <summary>
-/// Parses <c>anarchy-toolkit [bootstrap|scaffold|skills|boilerplate] [arguments]</c>.
-/// </summary>
-/// <example>
-/// <code language="csharp">
-/// var command = ToolCommandLine.Parse(["scaffold", "api", "Orders"]);
-/// // command.Mode == ToolMode.Scaffold, command.Application == new ApplicationSpec(ApplicationKind.Api, "Orders")
-/// </code>
-/// </example>
+/// <summary>Parses <c>anarchy-toolkit</c> commands without hiding whether an option was explicitly supplied.</summary>
 public static class ToolCommandLine
 {
-    /// <summary>
-    /// The usage line of the <c>bootstrap</c> command, shown when its arguments are malformed.
-    /// </summary>
-    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills] [--layering folder|prefix]]";
-
-    /// <summary>
-    /// The <c>bootstrap</c> flag that also installs the toolkit's agent skills.
-    /// </summary>
+    /// <summary>Usage for bootstrap, including optional layout overrides and preference saving.</summary>
+    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills] [layout options] [--save-preferences]]";
+    /// <summary>Flag to install the toolkit's agent skills while bootstrapping.</summary>
     public const string WithSkills = "--with-skills";
-
-    /// <summary>
-    /// The usage line of the <c>skills</c> command, shown when its arguments are malformed.
-    /// </summary>
+    /// <summary>Usage for installing the toolkit's skills.</summary>
     public const string SkillsUsage = "anarchy-toolkit skills install [--output <solution-directory>]";
-
-    /// <summary>
-    /// The usage line of the <c>boilerplate</c> command, shown when its arguments are malformed.
-    /// </summary>
+    /// <summary>Usage for inspecting packaged boilerplate.</summary>
     public const string BoilerplateUsage = "anarchy-toolkit boilerplate list|show <path>|diff [<path>...]";
-
-    /// <summary>
-    /// The <c>scaffold api</c> flag that generates an API without the toolkit's default Swagger UI theme.
-    /// </summary>
+    /// <summary>Flag to disable the toolkit's Swagger UI theme for a scaffolded API.</summary>
     public const string NoSwaggerTheme = "--no-swagger-theme";
+    /// <summary>Flag to enable the toolkit's Swagger UI theme for a scaffolded API.</summary>
+    public const string SwaggerTheme = "--swagger-theme";
+    /// <summary>Usage for application scaffolding and its optional preferences.</summary>
+    public const string ScaffoldUsage = "anarchy-toolkit scaffold api|job|ui <Name> [--swagger-theme|--no-swagger-theme] [layout options] [--save-preferences]";
+    /// <summary>Usage for showing or editing preferences.</summary>
+    public const string ConfigUsage = "anarchy-toolkit config show|set <section.property> <json-value>|unset <section.property>|configure [--output <solution-directory>]";
 
-    /// <summary>
-    /// The usage line of the <c>scaffold</c> command, shown when its arguments are malformed.
-    /// </summary>
-    public const string ScaffoldUsage = "anarchy-toolkit scaffold [api <Name> [--no-swagger-theme]|job <Name>|ui <Name>]";
+    private static readonly JsonDocumentOptions JsonOptions = new() {
+        CommentHandling = JsonCommentHandling.Skip,
+        AllowTrailingCommas = true,
+        AllowDuplicateProperties = false
+    };
 
-    /// <summary>
-    /// Parses the arguments, without the executable name. Never throws: malformed input yields a
-    /// <see cref="ToolMode.Invalid"/> command carrying the error.
-    /// </summary>
-    /// <param name="args">The command-line arguments, without the executable name.</param>
-    /// <returns>
-    /// The parsed command: <see cref="ToolMode.Help"/> for no arguments or a help flag, <see cref="ToolMode.Bootstrap"/>,
-    /// <see cref="ToolMode.Scaffold"/>, <see cref="ToolMode.Skills"/> or <see cref="ToolMode.Boilerplate"/> (with their
-    /// optional arguments), or
-    /// <see cref="ToolMode.Invalid"/>.
-    /// </returns>
+    /// <summary>Parses arguments without the executable name; malformed input becomes an Invalid command.</summary>
+    /// <param name="args">Arguments without the executable name.</param>
+    /// <returns>The parsed command.</returns>
     public static ToolCommand Parse(IReadOnlyList<string> args) => args switch {
         [] or ["--help" or "-h" or "help", ..] => new ToolCommand(ToolMode.Help),
         ["bootstrap", ..] => ParseBootstrap(args.Skip(1).ToArray()),
         ["scaffold", ..] => ParseScaffold(args.Skip(1).ToArray()),
         ["skills", ..] => ParseSkills(args.Skip(1).ToArray()),
+        ["config", ..] => ParseConfig(args.Skip(1).ToArray()),
+        ["boilerplate", "--help" or "-h" or "help"] => new ToolCommand(ToolMode.Help),
         ["boilerplate", ..] => ParseBoilerplate(args.Skip(1).ToArray()),
         [var command, ..] => Invalid($"Unknown command '{command}'.")
     };
@@ -70,35 +51,169 @@ public static class ToolCommandLine
 
         string? output = null;
         var skills = false;
-        LayeringMode? layering = null;
+        var save = false;
+        var overrides = new JsonObject();
         for (var index = 1; index < args.Count; index++)
         {
             switch (args[index])
             {
-                case "--output" or "-o" when output is null && index + 1 < args.Count && !string.IsNullOrWhiteSpace(args[index + 1]):
+                case "--output" or "-o" when output is null && HasValue(args, index):
                     output = args[++index];
                     break;
                 case WithSkills when !skills:
                     skills = true;
                     break;
-                case "--layering" when layering is null && index + 1 < args.Count:
-                    layering = args[++index].ToLowerInvariant() switch {
-                        "folder" => LayeringMode.Folder,
-                        "prefix" => LayeringMode.Prefix,
-                        _ => null
-                    };
-                    if (layering is null) return Invalid("Usage: " + BootstrapUsage);
+                case "--save-preferences" when !save:
+                    save = true;
                     break;
                 default:
-                    return Invalid("Usage: " + BootstrapUsage);
+                    if (!TryAddLayoutOption(args, ref index, overrides, BootstrapUsage, out var error)) return Invalid(error ?? "Usage: " + BootstrapUsage);
+                    break;
             }
         }
-        return new ToolCommand(ToolMode.Bootstrap, args[0], output) { AgentSkills = skills, Layering = layering };
+        var layering = ParseLayeringMode(overrides["mode"]?.GetValue<string>());
+        return new ToolCommand(ToolMode.Bootstrap, args[0], output) {
+            AgentSkills = skills,
+            Layering = layering,
+            LayeringOverrides = overrides.Count == 0 ? null : overrides,
+            SavePreferences = save
+        };
+    }
+
+    private static ToolCommand ParseScaffold(IReadOnlyList<string> args)
+    {
+        if (args.Count == 0) return new ToolCommand(ToolMode.Scaffold);
+        if (args.Count < 2 || !TryParseKind(args[0], out var kind) || args[1].StartsWith('-'))
+            return Invalid("Usage: " + ScaffoldUsage);
+
+        bool? swaggerTheme = null;
+        var save = false;
+        var overrides = new JsonObject();
+        for (var index = 2; index < args.Count; index++)
+        {
+            switch (args[index])
+            {
+                case NoSwaggerTheme when swaggerTheme is null && kind == ApplicationKind.Api:
+                    swaggerTheme = false;
+                    break;
+                case SwaggerTheme when swaggerTheme is null && kind == ApplicationKind.Api:
+                    swaggerTheme = true;
+                    break;
+                case "--save-preferences" when !save:
+                    save = true;
+                    break;
+                default:
+                    if (!TryAddLayoutOption(args, ref index, overrides, ScaffoldUsage, out var error)) return Invalid(error ?? "Usage: " + ScaffoldUsage);
+                    break;
+            }
+        }
+        return new ToolCommand(ToolMode.Scaffold, Application: new ApplicationSpec(kind, args[1])) {
+            Layering = ParseLayeringMode(overrides["mode"]?.GetValue<string>()),
+            SwaggerThemeOverride = swaggerTheme,
+            SavePreferences = save,
+            LayeringOverrides = overrides.Count == 0 ? null : overrides
+        };
+    }
+
+    private static ToolCommand ParseConfig(IReadOnlyList<string> args)
+    {
+        if (args.Count == 0) return Invalid("Usage: " + ConfigUsage);
+        var action = args[0];
+        if (action is not ("show" or "set" or "unset" or "configure")) return Invalid("Usage: " + ConfigUsage);
+
+        string? key = null;
+        string? value = null;
+        string? output = null;
+        var index = 1;
+        if (action is "set" or "unset")
+        {
+            if (index >= args.Count) return Invalid("Usage: " + ConfigUsage);
+            key = args[index++];
+            if (action == "set")
+            {
+                if (index >= args.Count) return Invalid("Usage: " + ConfigUsage);
+                value = args[index++];
+            }
+        }
+        if (index < args.Count)
+        {
+            if ((args[index] is "--output" or "-o") && index + 1 < args.Count &&
+                !string.IsNullOrWhiteSpace(args[index + 1]) && !args[index + 1].StartsWith('-'))
+                output = args[index + 1];
+            else return Invalid("Usage: " + ConfigUsage);
+            index += 2;
+        }
+        if (index != args.Count) return Invalid("Usage: " + ConfigUsage);
+        return new ToolCommand(ToolMode.Config, OutputDirectory: output) {
+            ConfigAction = action,
+            PreferenceKey = key,
+            PreferenceValue = value
+        };
+    }
+
+    private static bool TryAddLayoutOption(IReadOnlyList<string> args, ref int index, JsonObject overrides, string usage, out string? error)
+    {
+        error = null;
+        var option = args[index];
+        if (option is not ("--layering" or "--layering-layers" or "--layering-root" or "--layering-library-root" or "--layering-application-folders"))
+        {
+            error = "Usage: " + usage;
+            return false;
+        }
+        if (!HasValue(args, index))
+        {
+            error = $"{option} requires a value.";
+            return false;
+        }
+        var property = option switch {
+            "--layering" => "mode",
+            "--layering-layers" => "layers",
+            "--layering-root" => "root",
+            "--layering-library-root" => "libraryRoot",
+            _ => "applicationFolders"
+        };
+        if (overrides.ContainsKey(property))
+        {
+            error = $"{option} may be supplied only once.";
+            return false;
+        }
+
+        var raw = args[++index];
+        try
+        {
+            if (property == "mode")
+            {
+                var mode = raw.ToLowerInvariant();
+                if (mode is not ("folder" or "prefix"))
+                {
+                    error = "--layering must be 'folder' or 'prefix'.";
+                    return false;
+                }
+                overrides[property] = mode;
+            }
+            else if (property is "layers" or "applicationFolders")
+            {
+                var parsed = JsonNode.Parse(raw, documentOptions: JsonOptions);
+                if ((property == "layers" && parsed is not JsonArray) || (property == "applicationFolders" && parsed is not JsonObject))
+                {
+                    error = $"{option} must be a JSON {(property == "layers" ? "array" : "object")}.";
+                    return false;
+                }
+                overrides[property] = parsed!.DeepClone();
+            }
+            else overrides[property] = raw;
+        }
+        catch (JsonException exception)
+        {
+            error = $"Invalid JSON for {option}: {exception.Message}";
+            return false;
+        }
+        return true;
     }
 
     private static ToolCommand ParseSkills(IReadOnlyList<string> args) => args switch {
         ["install"] => new ToolCommand(ToolMode.Skills),
-        ["install", "--output" or "-o", var output] when !string.IsNullOrWhiteSpace(output) =>
+        ["install", "--output" or "-o", var output] when !string.IsNullOrWhiteSpace(output) && !output.StartsWith('-') =>
             new ToolCommand(ToolMode.Skills, OutputDirectory: output),
         _ => Invalid("Usage: " + SkillsUsage)
     };
@@ -111,17 +226,17 @@ public static class ToolCommandLine
         _ => Invalid("Usage: " + BoilerplateUsage)
     };
 
-    private static ToolCommand ParseScaffold(IReadOnlyList<string> args) => args switch {
-        [] => new ToolCommand(ToolMode.Scaffold),
-        [var kind, var name] when TryParseKind(kind, out var parsed) && !name.StartsWith('-') =>
-            new ToolCommand(ToolMode.Scaffold, Application: new ApplicationSpec(parsed, name)),
-        [var kind, var name, NoSwaggerTheme] when TryParseKind(kind, out var parsed) && parsed == ApplicationKind.Api && !name.StartsWith('-') =>
-            new ToolCommand(ToolMode.Scaffold, Application: new ApplicationSpec(parsed, name, SwaggerTheme: false)),
-        _ => Invalid("Usage: " + ScaffoldUsage)
-    };
+    private static bool HasValue(IReadOnlyList<string> args, int index) =>
+        index + 1 < args.Count && !string.IsNullOrWhiteSpace(args[index + 1]) && !args[index + 1].StartsWith('-');
 
     private static bool TryParseKind(string value, out ApplicationKind kind) =>
         Enum.TryParse(value, ignoreCase: true, out kind) && Enum.IsDefined(kind);
+
+    private static LayeringMode? ParseLayeringMode(string? mode) => mode switch {
+        "folder" => LayeringMode.Folder,
+        "prefix" => LayeringMode.Prefix,
+        _ => null
+    };
 
     private static ToolCommand Invalid(string error) => new(ToolMode.Invalid, Error: error);
 }

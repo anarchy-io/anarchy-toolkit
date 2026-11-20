@@ -39,6 +39,7 @@ public static class BoilerplateTasks
         SolutionScaffolder.Create(root, solutionName, new ScaffoldOptions {
             Items = options.Items,
             Exclude = options.Exclude,
+            SkillDirectories = options.SkillDirectories,
             AppendExisting = options.AppendExisting,
             DryRun = options.DryRun,
             Log = message => Log.Information("{Message}", message)
