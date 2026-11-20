@@ -52,15 +52,19 @@ public static class FileHelper
 
     /// <summary>
     /// Merges packaged settings into an existing settings file. The packaged text is wrapped in a managed block (lines
-    /// starting with <see cref="ManagedBlockBegin"/> and <see cref="ManagedBlockEnd"/>): the file's own block is replaced,
-    /// or a new one appended, and everything outside it is kept. With <paramref name="skipExistingLines"/>, setting lines
-    /// (neither blank nor comments) that the file already has outside the block are left out of it.
+    /// starting with <see cref="ManagedBlockBegin"/> and <see cref="ManagedBlockEnd"/>): the file's own block is
+    /// replaced, or a new one is appended (or placed first for <c>.gitignore</c> and <c>.editorconfig</c>), and
+    /// everything outside it is kept. With <paramref name="skipExistingLines"/>, setting lines (neither blank nor
+    /// comments) that the file already has outside the block are left out of it. With <paramref name="placeBlockFirst"/>,
+    /// the managed block is placed before existing settings. For <c>.editorconfig</c>, an existing global <c>root</c>
+    /// directive is removed so the packaged <c>root = true</c> remains before every section.
     /// </summary>
     /// <param name="existing">The current content of the file.</param>
     /// <param name="packaged">The packaged content, with or without its own block markers.</param>
     /// <param name="skipExistingLines">Whether to leave out lines the file already has, as for <c>.gitignore</c>.</param>
+    /// <param name="placeBlockFirst">Whether to put the packaged block before existing settings, as for the repository settings files.</param>
     /// <returns>The merged content, equal to <paramref name="existing"/> when the file is up to date.</returns>
-    public static string MergeManagedBlock(string existing, string packaged, bool skipExistingLines)
+    public static string MergeManagedBlock(string existing, string packaged, bool skipExistingLines, bool placeBlockFirst = false)
     {
         var newline = existing.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
         var block = SplitLines(packaged);
@@ -80,10 +84,11 @@ public static class FileHelper
         {
             var own = before.Concat(after).Select(line => line.Trim()).Where(IsSetting).ToHashSet(StringComparer.Ordinal);
             body = body.Where(line => !IsSetting(line.Trim()) || !own.Contains(line.Trim())).ToList();
+            body = RemoveEmptyGitIgnoreHeadings(body);
         }
 
-        var merged = new List<string>(before);
-        if (start < 0 || stop <= start)
+        var merged = placeBlockFirst ? new List<string>() : new List<string>(before);
+        if (!placeBlockFirst && (start < 0 || stop <= start))
         {
             while (merged.Count > 0 && merged[^1].Length == 0) merged.RemoveAt(merged.Count - 1);
             if (merged.Count > 0) merged.Add("");
@@ -91,11 +96,70 @@ public static class FileHelper
         merged.Add(header);
         merged.AddRange(body);
         merged.Add(footer);
-        merged.AddRange(after);
+
+        if (placeBlockFirst)
+        {
+            var outside = before.Concat(after);
+            var preserved = (skipExistingLines ? outside : outside.Where(line => !IsEditorConfigRootDirective(line))).ToList();
+            while (preserved.Count > 0 && preserved[0].Length == 0) preserved.RemoveAt(0);
+            if (preserved.Any(line => line.Length > 0)) merged.Add("");
+            merged.AddRange(preserved);
+        }
+        else
+        {
+            merged.AddRange(after);
+        }
+
         var result = string.Join(newline, merged) + newline;
         return SplitLines(result).SequenceEqual(lines) ? existing : result;
 
         static bool IsSetting(string line) => line.Length > 0 && !line.StartsWith('#') && !line.StartsWith(';');
+    }
+
+    private static List<string> RemoveEmptyGitIgnoreHeadings(List<string> lines)
+    {
+        var remove = new HashSet<int>();
+        for (var index = 0; index < lines.Count; index++)
+        {
+            if (!IsGitIgnoreHeading(lines[index])) continue;
+
+            var nextHeading = index + 1;
+            while (nextHeading < lines.Count && !IsGitIgnoreHeading(lines[nextHeading])) nextHeading++;
+            var contents = lines.Skip(index + 1).Take(nextHeading - index - 1).ToArray();
+            var hasSetting = contents.Any(line => IsSetting(line.Trim()));
+            var hasSupportingComment = contents.Any(line => {
+                var trimmed = line.Trim();
+                return trimmed.StartsWith("# ", StringComparison.Ordinal) && !IsGitIgnoreHeading(trimmed);
+            });
+            if (!hasSetting && !hasSupportingComment)
+                remove.Add(index);
+        }
+
+        return lines.Where((_, index) => !remove.Contains(index)).ToList();
+
+        static bool IsSetting(string line) => line.Length > 0 && !line.StartsWith('#') && !line.StartsWith(';');
+    }
+
+    private static bool IsGitIgnoreHeading(string line)
+    {
+        var trimmed = line.TrimStart();
+        if (!trimmed.StartsWith("# ", StringComparison.Ordinal) || trimmed.StartsWith("##", StringComparison.Ordinal))
+            return false;
+
+        var text = trimmed[2..].Trim();
+        return text.Length > 0 && !text.StartsWith("Note:", StringComparison.OrdinalIgnoreCase) &&
+               !text.StartsWith("Uncomment", StringComparison.OrdinalIgnoreCase) &&
+               !text.StartsWith("but ", StringComparison.OrdinalIgnoreCase) &&
+               !text.StartsWith("because ", StringComparison.OrdinalIgnoreCase) &&
+               !text.StartsWith('(') && !char.IsLower(text[0]) && !text.EndsWith('.') && !text.EndsWith(':') &&
+               !text.EndsWith(',');
+    }
+
+    private static bool IsEditorConfigRootDirective(string line)
+    {
+        var trimmed = line.Trim();
+        var separator = trimmed.IndexOf('=');
+        return separator >= 0 && string.Equals(trimmed[..separator].Trim(), "root", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsBlockBegin(string line) => line.StartsWith(ManagedBlockBegin, StringComparison.Ordinal);

@@ -1,4 +1,5 @@
 using Anarchy.Toolkit.Automation.Build.Component.Tasks;
+using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using AwesomeAssertions;
 using System.Text.Json.Nodes;
@@ -23,6 +24,8 @@ public class BoilerplateTest
             File.Exists(Path.Combine(root, "MyApp.sln")).Should().BeTrue();
             File.ReadAllText(Path.Combine(root, "MyApp.sln")).Should().Contain("Core.csproj").And.Contain("_build.csproj");
             File.Exists(Path.Combine(root, "Makefile")).Should().BeTrue();
+            File.Exists(Path.Combine(root, "scripts", "build.anarchy.sh")).Should().BeTrue();
+            File.Exists(Path.Combine(root, "scripts", "build.fallout.sh")).Should().BeFalse();
             File.Exists(Path.Combine(root, "scripts", "make", "targets", "code-quality.mk")).Should().BeTrue();
             File.Exists(Path.Combine(root, "scripts", "console", "banner-compact.sh")).Should().BeTrue();
             File.Exists(Path.Combine(root, "scripts", "console", "banner-wide.sh")).Should().BeTrue();
@@ -35,8 +38,10 @@ public class BoilerplateTest
             var parameters = JsonNode.Parse(File.ReadAllText(Path.Combine(root, ".fallout", "parameters.json")))!;
             parameters["Solution"]!.GetValue<string>().Should().Be("MyApp.sln");
             parameters["Configuration"]!.GetValue<string>().Should().Be("Debug");
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeFalse();
+            File.Exists(Path.Combine(root, "src", "Core", "Core.csproj")).Should().BeTrue();
             if (!OperatingSystem.IsWindows())
-                File.GetUnixFileMode(Path.Combine(root, "scripts", "build.fallout.sh")).Should().HaveFlag(UnixFileMode.UserExecute);
+                File.GetUnixFileMode(Path.Combine(root, "scripts", "build.anarchy.sh")).Should().HaveFlag(UnixFileMode.UserExecute);
 
             var repeat = () => BoilerplateTasks.Create(root, "MyApp");
             repeat.Should().Throw<InvalidOperationException>().WithMessage("*overwrite*");
@@ -112,8 +117,14 @@ public class BoilerplateTest
             BoilerplateTasks.Create(root, null, options);
             var gitignore = File.ReadAllText(Path.Combine(root, ".gitignore"));
             var editorconfig = File.ReadAllText(Path.Combine(root, ".editorconfig"));
-            gitignore.Should().StartWith("my-ignore\n").And.Contain(".fallout/temp");
-            editorconfig.Should().StartWith(files[".editorconfig"] + "\n").And.Contain("resharper_sort_usings");
+            gitignore.Should().StartWith("# >>> anarchy-toolkit").And.Contain(".fallout/temp").And.EndWith("my-ignore\n");
+            gitignore.IndexOf(".fallout/temp", StringComparison.Ordinal)
+                .Should().BeLessThan(gitignore.IndexOf("my-ignore", StringComparison.Ordinal));
+            editorconfig.Should().StartWith("# >>> anarchy-toolkit").And.Contain("root = true")
+                .And.Contain("[*]\nindent_size = 8")
+                .And.Contain("resharper_sort_usings").And.NotContain("root = false");
+            editorconfig.IndexOf("root = true", StringComparison.Ordinal)
+                .Should().BeLessThan(editorconfig.IndexOf("[*]", StringComparison.Ordinal));
             foreach (var name in new[] { "global.json", "NuGet.Config", "Directory.Build.props" })
                 File.ReadAllText(Path.Combine(root, name)).Should().Be(files[name]);
             Directory.EnumerateFiles(root).Select(Path.GetFileName).Should().NotContain("nuget.config");
@@ -121,6 +132,42 @@ public class BoilerplateTest
             BoilerplateTasks.Create(root, null, options);
             File.ReadAllText(Path.Combine(root, ".gitignore")).Should().Be(gitignore);
             File.ReadAllText(Path.Combine(root, ".editorconfig")).Should().Be(editorconfig);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Create_GivenEditorConfigDryRun_ReportsTheManagedBlockBeforeOverridesWithoutWriting()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "anarchy-editorconfig-" + Guid.NewGuid());
+        const string existing = "[*]\nindent_size = 8\n";
+        try
+        {
+            Directory.CreateDirectory(root);
+            var path = Path.Combine(root, ".editorconfig");
+            File.WriteAllText(path, existing);
+            var messages = new List<string>();
+
+            SolutionScaffolder.Create(root, null, new ScaffoldOptions {
+                Items = ".editorconfig",
+                AppendExisting = true,
+                DryRun = true,
+                Log = messages.Add
+            });
+
+            var diff = messages.Should().ContainSingle(message => message.StartsWith("Update the managed block of .editorconfig"))
+                .Which;
+            diff.IndexOf("+# >>> anarchy-toolkit", StringComparison.Ordinal)
+                .Should().BeLessThan(diff.IndexOf(" [*]", StringComparison.Ordinal));
+            File.ReadAllText(path).Should().Be(existing);
+
+            var comparison = BoilerplateCatalog.Compare(root, [".editorconfig"]).Should().ContainSingle().Which;
+            comparison.Status.Should().Be(BoilerplateCatalog.FileStatus.Different);
+            comparison.Diff.IndexOf("+# >>> anarchy-toolkit", StringComparison.Ordinal)
+                .Should().BeLessThan(comparison.Diff.IndexOf(" [*]", StringComparison.Ordinal));
         }
         finally
         {
@@ -201,7 +248,7 @@ public class BoilerplateTest
             BoilerplateTasks.Create(root, null, new BoilerplateOptions { Items = "Makefile,scripts" });
             var log = Path.Combine(root, "calls");
             var environment = new Dictionary<string, string> { ["MAKE_TEST_LOG"] = log, ["FALLOUT_RELOAD_ENV"] = "false" };
-            File.WriteAllText(Path.Combine(root, "scripts", "build.fallout.sh"), "#!/usr/bin/env bash\nprintf '<%s>\\n' \"$@\" >> \"$MAKE_TEST_LOG\"\n");
+            File.WriteAllText(Path.Combine(root, "scripts", "build.anarchy.sh"), "#!/usr/bin/env bash\nprintf '<%s>\\n' \"$@\" >> \"$MAKE_TEST_LOG\"\n");
             File.WriteAllText(Path.Combine(root, "scripts", "bootstrap", "install-development-environment.sh"), "#!/usr/bin/env bash\nprintf '<bootstrap>\\n' >> \"$MAKE_TEST_LOG\"\n");
             string RunMake(params string[] args)
             {
@@ -218,8 +265,14 @@ public class BoilerplateTest
             RunMake("git_hooks_show", "HOOK_TYPE=pre-push").Should().Contain("<ShowGitHooks>\n<--HookType>\n<pre-push>");
             RunMake("git_hooks_disable").Should().Contain("<DisableGitHook>\n<--HookType>\n<pre-commit>");
             RunMake("git_hooks_enable", "OPTIONS=--help").Should().BeEmpty();
-            RunMake("fallout", "TARGET=Pack").Should().Be(RunMake("nuke", "TARGET=Pack")).And.Contain("<Pack>");
-            RunMake("fallout_help").Should().Be(RunMake("nuke_help")).And.Contain("<--help>");
+            foreach (var name in new[] { "anarchy", "fallout", "nuke" })
+            {
+                RunMake(name, "TARGET=Pack --Configuration Release").Should().Be("<Pack>\n<--Configuration>\n<Release>\n");
+                RunMake(name, "TARGET=Pack", "ENV=ci").Should().Be("<Pack>\n<--IsCiBuild>\n<true>\n");
+                RunMake(name, "TARGET=Pack --IsCiBuild false", "ENV=ci").Should().Be("<Pack>\n<--IsCiBuild>\n<false>\n");
+            }
+            foreach (var name in new[] { "anarchy_help", "fallout_help", "nuke_help" })
+                RunMake(name).Should().Be("<--help>\n");
             var help = LocalProcessTasks.Run(root, "make", ["help", "COMMAND=install"], environment);
             help.ExitCode.Should().Be(0, help.Output + help.Error);
             help.Output.Should().Contain("INSTALLATION").And.Contain("Sets up the development environment");
@@ -277,7 +330,7 @@ public class BoilerplateTest
             }
 
             var all = RunHelp();
-            all.Targets.Should().Contain(["fallout", "nuke", "fallout_help", "nuke_help", "alpha_beta", "gamma_delta", "omega_zeta"]);
+            all.Targets.Should().Contain(["anarchy", "fallout", "nuke", "anarchy_help", "fallout_help", "nuke_help", "alpha_beta", "gamma_delta", "omega_zeta"]);
             all.Output.Split("A shared warning").Length.Should().Be(4);
             all.Output.Split("A shared option").Length.Should().Be(4);
 
@@ -288,11 +341,11 @@ public class BoilerplateTest
                 help.Output.Should().Contain("A grouped target").And.Contain("A shared warning").And.Contain("A shared option");
             }
 
-            foreach (var name in new[] { "fallout", "nuke", "fallout_help", "nuke_help" })
+            foreach (var name in new[] { "anarchy", "fallout", "nuke", "anarchy_help", "fallout_help", "nuke_help" })
             {
                 var help = RunHelp("COMMAND=" + name);
                 help.Targets.Should().Equal(name);
-                if (name is "fallout" or "nuke") help.Output.Should().Contain("TARGET");
+                if (name is "anarchy" or "fallout" or "nuke") help.Output.Should().Contain("TARGET");
             }
         }
         finally
