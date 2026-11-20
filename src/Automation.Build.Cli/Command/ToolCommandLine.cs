@@ -8,7 +8,7 @@ namespace Anarchy.Toolkit.Automation.Build.Cli.Command;
 public static class ToolCommandLine
 {
     /// <summary>Usage for bootstrap, including optional layout overrides and preference saving.</summary>
-    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills] [layout options] [--save-preferences]]";
+    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills] [--layout monorepo|single-app] [--application-folder <name>] [layout options] [--save-preferences]]";
     /// <summary>Flag to install the toolkit's agent skills while bootstrapping.</summary>
     public const string WithSkills = "--with-skills";
     /// <summary>Usage for installing the toolkit's skills.</summary>
@@ -19,8 +19,8 @@ public static class ToolCommandLine
     public const string NoSwaggerTheme = "--no-swagger-theme";
     /// <summary>Flag to enable the toolkit's Swagger UI theme for a scaffolded API.</summary>
     public const string SwaggerTheme = "--swagger-theme";
-    /// <summary>Usage for application scaffolding and its optional preferences.</summary>
-    public const string ScaffoldUsage = "anarchy-toolkit scaffold api|job|ui <Name> [--swagger-theme|--no-swagger-theme] [layout options] [--save-preferences]";
+    /// <summary>Usage for application, library and test-project scaffolding.</summary>
+    public const string ScaffoldUsage = "anarchy-toolkit scaffold api|job|ui <Name> | library <Name> --layer <Layer> | tests [unit|integration|endtoend] [--dry-run] [--save-preferences]";
     /// <summary>Usage for showing or editing preferences.</summary>
     public const string ConfigUsage = "anarchy-toolkit config show|set <section.property> <json-value>|unset <section.property>|configure [--output <solution-directory>]";
 
@@ -52,6 +52,8 @@ public static class ToolCommandLine
         string? output = null;
         var skills = false;
         var save = false;
+        SolutionLayoutPreset? preset = null;
+        string? applicationFolder = null;
         var overrides = new JsonObject();
         for (var index = 1; index < args.Count; index++)
         {
@@ -66,15 +68,26 @@ public static class ToolCommandLine
                 case "--save-preferences" when !save:
                     save = true;
                     break;
+                case "--layout" when preset is null && HasValue(args, index):
+                    if (!TryParsePreset(args[++index], out var parsedPreset)) return Invalid("--layout must be 'monorepo' or 'single-app'.");
+                    preset = parsedPreset;
+                    break;
+                case "--application-folder" when applicationFolder is null && HasValue(args, index):
+                    applicationFolder = args[++index];
+                    break;
                 default:
                     if (!TryAddLayoutOption(args, ref index, overrides, BootstrapUsage, out var error)) return Invalid(error ?? "Usage: " + BootstrapUsage);
                     break;
             }
         }
+        if (applicationFolder is not null && preset != SolutionLayoutPreset.SingleApp)
+            return Invalid("--application-folder can only be used with --layout single-app.");
         var layering = ParseLayeringMode(overrides["mode"]?.GetValue<string>());
         return new ToolCommand(ToolMode.Bootstrap, args[0], output) {
             AgentSkills = skills,
             Layering = layering,
+            LayoutPreset = preset,
+            ApplicationFolder = applicationFolder,
             LayeringOverrides = overrides.Count == 0 ? null : overrides,
             SavePreferences = save
         };
@@ -83,32 +96,92 @@ public static class ToolCommandLine
     private static ToolCommand ParseScaffold(IReadOnlyList<string> args)
     {
         if (args.Count == 0) return new ToolCommand(ToolMode.Scaffold);
-        if (args.Count < 2 || !TryParseKind(args[0], out var kind) || args[1].StartsWith('-'))
-            return Invalid("Usage: " + ScaffoldUsage);
+
+        ApplicationSpec? application = null;
+        ScaffoldTarget target;
+        string? libraryName = null;
+        string? testKind = null;
+        var index = 0;
+        if (args[0] == "library")
+        {
+            target = ScaffoldTarget.Library;
+            if (args.Count < 2 || args[1].StartsWith('-')) return Invalid("Usage: anarchy-toolkit scaffold library <Name> --layer <Layer> [layout options] [--dry-run] [--save-preferences]");
+            libraryName = args[1];
+            index = 2;
+        }
+        else if (args[0] == "tests")
+        {
+            target = ScaffoldTarget.Tests;
+            index = 1;
+            if (index < args.Count && !args[index].StartsWith('-'))
+            {
+                if (!TryParseTestKind(args[index], out testKind))
+                    return Invalid("Test kind must be 'unit', 'integration' or 'endtoend'.");
+                index++;
+            }
+        }
+        else
+        {
+            target = ScaffoldTarget.Application;
+            if (args.Count >= 2 && TryParseKind(args[0], out var kind) && !args[1].StartsWith('-'))
+            {
+                application = new ApplicationSpec(kind, args[1]);
+                index = 2;
+            }
+            else if (!args[0].StartsWith('-')) return Invalid("Usage: " + ScaffoldUsage);
+        }
 
         bool? swaggerTheme = null;
         var save = false;
+        var dryRun = false;
+        string? layer = null;
+        SolutionLayoutPreset? preset = null;
+        string? applicationFolder = null;
         var overrides = new JsonObject();
-        for (var index = 2; index < args.Count; index++)
+        for (; index < args.Count; index++)
         {
             switch (args[index])
             {
-                case NoSwaggerTheme when swaggerTheme is null && kind == ApplicationKind.Api:
+                case NoSwaggerTheme when swaggerTheme is null && application?.Kind == ApplicationKind.Api:
                     swaggerTheme = false;
                     break;
-                case SwaggerTheme when swaggerTheme is null && kind == ApplicationKind.Api:
+                case SwaggerTheme when swaggerTheme is null && application?.Kind == ApplicationKind.Api:
                     swaggerTheme = true;
+                    break;
+                case "--layer" when target == ScaffoldTarget.Library && layer is null && HasValue(args, index):
+                    layer = args[++index];
+                    break;
+                case "--dry-run" when target != ScaffoldTarget.Application && !dryRun:
+                    dryRun = true;
                     break;
                 case "--save-preferences" when !save:
                     save = true;
+                    break;
+                case "--layout" when preset is null && HasValue(args, index):
+                    if (!TryParsePreset(args[++index], out var parsedPreset)) return Invalid("--layout must be 'monorepo' or 'single-app'.");
+                    preset = parsedPreset;
+                    break;
+                case "--application-folder" when applicationFolder is null && HasValue(args, index):
+                    applicationFolder = args[++index];
                     break;
                 default:
                     if (!TryAddLayoutOption(args, ref index, overrides, ScaffoldUsage, out var error)) return Invalid(error ?? "Usage: " + ScaffoldUsage);
                     break;
             }
         }
-        return new ToolCommand(ToolMode.Scaffold, Application: new ApplicationSpec(kind, args[1])) {
+        if (target == ScaffoldTarget.Library && layer is null) return Invalid("scaffold library requires --layer <Layer>.");
+        if (target != ScaffoldTarget.Library && layer is not null) return Invalid("--layer is only valid for scaffold library.");
+        if (applicationFolder is not null && preset != SolutionLayoutPreset.SingleApp)
+            return Invalid("--application-folder can only be used with --layout single-app.");
+        return new ToolCommand(ToolMode.Scaffold, Application: application) {
+            ScaffoldTarget = target,
+            LibraryName = libraryName,
+            LibraryLayer = layer,
+            TestKind = testKind,
+            DryRun = dryRun,
             Layering = ParseLayeringMode(overrides["mode"]?.GetValue<string>()),
+            LayoutPreset = preset,
+            ApplicationFolder = applicationFolder,
             SwaggerThemeOverride = swaggerTheme,
             SavePreferences = save,
             LayeringOverrides = overrides.Count == 0 ? null : overrides
@@ -232,11 +305,32 @@ public static class ToolCommandLine
     private static bool TryParseKind(string value, out ApplicationKind kind) =>
         Enum.TryParse(value, ignoreCase: true, out kind) && Enum.IsDefined(kind);
 
+    private static bool TryParseTestKind(string value, out string? kind)
+    {
+        kind = value.ToLowerInvariant() switch {
+            "unit" => "Unit",
+            "integration" => "Integration",
+            "endtoend" => "EndToEnd",
+            _ => null
+        };
+        return kind is not null;
+    }
+
     private static LayeringMode? ParseLayeringMode(string? mode) => mode switch {
         "folder" => LayeringMode.Folder,
         "prefix" => LayeringMode.Prefix,
         _ => null
     };
+
+    private static bool TryParsePreset(string value, out SolutionLayoutPreset preset)
+    {
+        preset = value.ToLowerInvariant() switch {
+            "monorepo" => SolutionLayoutPreset.Monorepo,
+            "single-app" => SolutionLayoutPreset.SingleApp,
+            _ => (SolutionLayoutPreset)(-1)
+        };
+        return Enum.IsDefined(preset);
+    }
 
     private static ToolCommand Invalid(string error) => new(ToolMode.Invalid, Error: error);
 }

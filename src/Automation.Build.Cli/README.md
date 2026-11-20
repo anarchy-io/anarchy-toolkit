@@ -16,9 +16,11 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 | Command | What it does |
 |---|---|
 | `anarchy-toolkit bootstrap` | Guided setup of a new solution. |
-| `anarchy-toolkit bootstrap <name> [--output <dir>] [--with-skills] [--layering folder\|prefix] [--save-preferences]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one), optionally with the agent skills and explicit preference saving. Folder layering is the default. |
-| `anarchy-toolkit scaffold` | Guided addition of an API, job or UI to the current solution. |
-| `anarchy-toolkit scaffold api\|job\|ui <Name> [--save-preferences]` | Adds one without prompts; saving selected preferences is opt-in. |
+| `anarchy-toolkit bootstrap <name> [--output <dir>] [--with-skills] [--layout monorepo\|single-app] [--application-folder <name>] [layout options] [--save-preferences]` | Creates a solution without prompts, in an empty or new directory (default: the current one), optionally with agent skills and explicit preference saving. `monorepo` is the current baseline; `single-app` uses one mapped application folder. |
+| `anarchy-toolkit scaffold` | Guided addition of an API, job, UI or test project to the current solution. |
+| `anarchy-toolkit scaffold api\|job\|ui <Name> [--layout monorepo\|single-app] [--application-folder <name>] [layout options] [--save-preferences]` | Adds one without prompts; a preset applies to this operation, and saving selected preferences is opt-in. |
+| `anarchy-toolkit scaffold library <Name> --layer <Layer> [layout options] [--dry-run] [--save-preferences]` | Adds a library project in a configured layer, referencing the next lower project when present. |
+| `anarchy-toolkit scaffold tests [unit\|integration\|endtoend] [--dry-run] [--save-preferences]` | Adds the shared test project for a kind; without a kind, the wizard asks. Honors Fallout `TestKindAliases` and the optional `tests.kindAliases` preference. |
 | `anarchy-toolkit scaffold api <Name> [--swagger-theme\|--no-swagger-theme] [--save-preferences]` | Adds an API; either flag explicitly selects the Swagger theme. Saving preferences is opt-in. |
 | `anarchy-toolkit config show\|set\|unset\|configure` | Inspect saved versus effective preferences, set or clear a typed JSON override, or interactively edit preferences. |
 | `anarchy-toolkit skills install [--output <dir>]` | Installs the toolkit's agent skills into `.agents/skills` of the solution found from the current directory (or `<dir>`). |
@@ -30,11 +32,11 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 
 The wizard asks for:
 
-1. the solution name;
-2. the output directory (default: the solution name under the current directory), which must be empty or not yet exist;
-3. how `make check_layering` finds each project's layer (see below);
-4. the layers, innermost first (default: `Core, Infrastructure, Configuration, Hosting, Web`). A library project is created per layer, each referencing the one below it;
-5. which kinds of application to start with, then a name for each one, as many as you like;
+1. the solution name and output directory (default: the solution name under the current directory), which must be empty or not yet exist;
+2. whether it will contain one application or several, before asking about the layering mode;
+3. for one application, its kind and folder name (default: `App`); for several, which application kinds to start with and a name for each, as many as you like;
+4. how `make check_layering` finds each project's layer (see below);
+5. the layers, innermost first. A library project is created per layer, each referencing the one below it;
 6. whether to install the agent skills (default: no);
 7. whether to save selected automation preferences (default: no).
 
@@ -51,6 +53,8 @@ It then shows the plan, including each web application's local ports, and asks f
 
 APIs and UIs belong to the `Web` layer and jobs to the `Hosting` layer; each references its layer's library. The effective layout resolves explicit operation arguments, optional saved values in the root `.anarchy-toolkit.json`, then the in-code baseline: folder mode under `src/Library`, standard app folders and standard layers. The mode is never inferred and no preferences file is required. With `--save-preferences`, bootstrap or scaffold persists only deliberately selected preferences; interactive save consent defaults to No. See the [unified schema](https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json) and [preferences guide](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
 
+`--layout monorepo` selects that baseline. `--layout single-app` uses folder mode with `libraryRoot` equal to the checked root (`src` by default) and one application folder mapped to the application's outer layer: `Web` for an API/UI or `Hosting` for a job. The default folder is `App`; pass `--application-folder Api`, `Job`, `Cli`, the solution name, or another single folder name to choose it. A single-app layout can also use prefix mode; in that mode the folder option does not apply. Explicit `--layering-root`, `--layering-layers`, `--layering-library-root`, and `--layering-application-folders` further customize either preset. On non-interactive bootstrap without an application kind, single-app starts with the `Web` layer; `scaffold` selects the correct outer layer for its API, job or UI.
+
 ### Applications
 
 | Kind | Built on |
@@ -60,6 +64,24 @@ APIs and UIs belong to the `Web` layer and jobs to the `Hosting` layer; each ref
 | UI | `Anarchy.Toolkit.Web.Ui`: Blazor UI with cookie-session login and a home page |
 
 Applications are not packable, so `Pack` ignores them. Web applications get local ports from 5000 upwards, two per application, skipping ports already used in the solution. Review each application's settings (auth service URLs, client IDs and scopes) before running it.
+
+### Scaffold libraries and test suites
+
+Add a library project to an existing layer or scaffold the shared test project for one test kind:
+
+```bash
+anarchy-toolkit scaffold library Orders --layer Core
+anarchy-toolkit scaffold library Postgres --layer Infrastructure --dry-run
+anarchy-toolkit scaffold tests unit
+anarchy-toolkit scaffold tests endtoend --layout monorepo --save-preferences
+```
+
+Folder mode places libraries below the effective `libraryRoot`; prefix mode uses `<Layer>.<Name>` under the checked
+root. The new library references the immediately lower layer's project if it exists. Test projects go below the
+effective test root (`TestsRoot`, then saved `build.testsRoot`, then `tests`) and use the canonical kind name or its
+configured `TestKindAliases` name. The generated project inherits shared settings from `Directory.Build.props` in that
+test root. `--dry-run` reports the project and solution changes without writing files or preferences. `--save-preferences`
+is opt-in and persists only layout values explicitly selected for the operation.
 
 ## Scaffold
 
@@ -79,9 +101,10 @@ anarchy-toolkit config configure
 ```
 
 `set` takes a `section.property` and a JSON value, merges only that value and preserves unrelated preferences; `unset`
-removes the saved override. Both validate before an atomic write. `show` distinguishes saved overrides from effective
-defaults without creating a file. The interactive wizard previews and asks before writing. There is no automatic config
-save. See the [preference inventory and build/Make equivalents](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
+removes the saved override. Both validate before an atomic write. `show` lists effective values with their source
+(`saved value` or `in-code default`) without creating a file. It cannot show parameters from a separate build invocation;
+the Fallout build's `ShowAnarchyPreferences` target labels active layering parameters when they are passed to it. The interactive wizard previews and asks
+before writing. There is no automatic config save. See the [preference inventory and build/Make equivalents](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
 
 ## Boilerplate
 
@@ -188,3 +211,5 @@ The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Automation`](../Auto
 ### 1.0.0
 
 - Introduced the `anarchy-toolkit` tool with the `bootstrap` and `scaffold` commands, configurable layering, and API, job and UI templates.
+- Add `monorepo` and `single-app` layout presets, a one-or-several-applications bootstrap choice, and effective preference-source reporting.
+- Add `scaffold library` and `scaffold tests` with dry-run previews, opt-in layout saving and configured test-kind aliases.

@@ -3,6 +3,7 @@ using Anarchy.Toolkit.Automation.Build.Cli.Wizard;
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Anarchy.Toolkit.Automation.Core.Validation;
+using Anarchy.Toolkit.Automation.Infrastructure.Helper;
 using Spectre.Console;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -112,10 +113,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
             SolutionLayout layout;
             try
             {
-                var overrides = command.LayeringOverrides is null
-                    ? new JsonObject()
-                    : (JsonObject)command.LayeringOverrides.DeepClone();
-                if (command.Layering is { } mode) overrides["mode"] = mode == LayeringMode.Folder ? "folder" : "prefix";
+                var overrides = LayoutOverrides(command, ApplicationKind.Api);
                 layout = AutomationPreferences.Parse("{}").ResolveLayout(overrides);
             }
             catch (Exception exception) when (exception is InvalidOperationException or JsonException or ArgumentException)
@@ -138,12 +136,11 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         try
         {
             if (interactiveWizard && plan.SavePreferences)
-                SaveLayoutPreferences(plan.RootDirectory, new JsonObject {
-                    ["mode"] = plan.Layout.Mode == LayeringMode.Folder ? "folder" : "prefix",
-                    ["layers"] = JsonSerializer.SerializeToNode(plan.Layout.Layers)
-                });
-            else if (command.SavePreferences && command.LayeringOverrides is { Count: > 0 } selected)
-                SaveLayoutPreferences(plan.RootDirectory, selected);
+                SaveLayoutPreferences(plan.RootDirectory, InteractiveLayoutOverrides(plan.Layout));
+            else if (command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 }))
+                SaveLayoutPreferences(plan.RootDirectory, command.LayoutPreset is not null
+                    ? AutomationPreferences.LayoutOverrides(plan.Layout)
+                    : command.LayeringOverrides!);
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException or ArgumentException)
         {
@@ -152,7 +149,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
 
         var layoutPreferencesSaved = interactiveWizard
             ? plan.SavePreferences
-            : command.SavePreferences && command.LayeringOverrides is { Count: > 0 };
+            : command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 });
         var steps = new List<string> { $"cd {plan.RootDirectory}", "make compile" };
         if (!layoutPreferencesSaved && !IsDefaultLayout(plan.Layout))
         {
@@ -241,13 +238,22 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         try
         {
             preferences = AutomationPreferences.Read(root);
-            workspace = SolutionWorkspace.Load(root, command.LayeringOverrides);
+            var layoutKind = command.Application?.Kind ?? (command.ScaffoldTarget == ScaffoldTarget.Library &&
+                string.Equals(command.LibraryLayer, SolutionLayout.HostingLayer, StringComparison.OrdinalIgnoreCase)
+                    ? ApplicationKind.Job
+                    : ApplicationKind.Api);
+            workspace = SolutionWorkspace.Load(root, LayoutOverrides(command, layoutKind));
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException
                                               or System.Text.Json.JsonException)
         {
             return Fail(exception.Message);
         }
+
+        if (command.ScaffoldTarget == ScaffoldTarget.Library)
+            return ScaffoldLibrary(root, workspace, preferences, command);
+        if (command.ScaffoldTarget == ScaffoldTarget.Tests)
+            return ScaffoldTests(root, workspace, command);
 
         var defaultSwaggerTheme = preferences.Get<bool?>("scaffolding.swaggerTheme") ?? true;
         var wizard = new ScaffoldWizard(prompter);
@@ -262,8 +268,10 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         if (command.SavePreferences || wizard.SaveSwaggerThemePreference)
         {
             var selected = new JsonObject();
-            if (command.SavePreferences && command.LayeringOverrides is { Count: > 0 } layoutOverrides)
-                selected["layering"] = layoutOverrides.DeepClone();
+            if (command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 }))
+                selected["layering"] = command.LayoutPreset is not null
+                    ? AutomationPreferences.LayoutOverrides(workspace.Layout)
+                    : command.LayeringOverrides!.DeepClone();
             if (command.SavePreferences && command.SwaggerThemeOverride is { } explicitTheme)
                 SetNested(selected, "scaffolding", "swaggerTheme", JsonValue.Create(explicitTheme));
             if (wizard.SaveSwaggerThemePreference)
@@ -291,6 +299,89 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         else steps.Add("make check_layering");
         if (app.IsWebHost) steps.Add($"dotnet run --project {path}");
         prompter.ShowNextSteps($"{path} is ready", steps, ReviewSettings);
+        return 0;
+    }
+
+    private int ScaffoldLibrary(string root, SolutionWorkspace workspace, AutomationPreferences preferences, ToolCommand command)
+    {
+        LibraryProjectPlan plan;
+        try { plan = LibraryProjectScaffolder.Plan(workspace, command.LibraryName!, command.LibraryLayer!); }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or IOException or UnauthorizedAccessException)
+        {
+            return Fail(exception.Message);
+        }
+
+        if (!TryRun(command.DryRun ? $"Previewing {plan.ProjectName}" : $"Adding {plan.ProjectName}",
+                progress => LibraryProjectScaffolder.Add(workspace, plan, command.DryRun, progress))) return 1;
+        if (command.DryRun) return 0;
+
+        if (command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 }))
+        {
+            try
+            {
+                SaveLayoutPreferences(root, command.LayoutPreset is not null
+                    ? AutomationPreferences.LayoutOverrides(workspace.Layout)
+                    : command.LayeringOverrides!);
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException or ArgumentException)
+            {
+                return Fail($"Library project created, but preferences could not be saved: {exception.Message}");
+            }
+        }
+
+        var path = plan.RelativeProjectPath;
+        var steps = new List<string> { "make compile" };
+        var layoutWasAlreadySaved = LayoutsEqual(preferences.ResolveLayout(), workspace.Layout);
+        var layoutPreferencesSaved = command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 });
+        if (!IsDefaultLayout(workspace.Layout) && !layoutPreferencesSaved && !layoutWasAlreadySaved)
+        {
+            var (cliArguments, anarchyArguments) = LayeringSuggestions(workspace.Layout);
+            steps.Add(MakeAnarchyTarget(anarchyArguments));
+            steps.Add($"anarchy-toolkit scaffold library NewLibrary --layer {ShellQuote(command.LibraryLayer!)} {cliArguments}");
+        }
+        else steps.Add("make check_layering");
+        prompter.ShowNextSteps($"{path} is ready", steps, null);
+        return 0;
+    }
+
+    private int ScaffoldTests(string root, SolutionWorkspace workspace, ToolCommand command)
+    {
+        var kind = command.TestKind ?? prompter.SelectOne("Which test kind should be added?", TestProjectScaffolder.Kinds, value => value);
+        if (command.TestKind is null && !prompter.Confirm($"Add the {kind} test project?", true)) return Cancelled();
+        TestProjectPlan plan;
+        try
+        {
+            plan = TestProjectScaffolder.Plan(root, kind, BuildEngineParameters.Read(root), AutomationPreferences.Read(root));
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or IOException or UnauthorizedAccessException or JsonException)
+        {
+            return Fail(exception.Message);
+        }
+
+        if (!TryRun(command.DryRun ? $"Previewing {plan.Kind} tests" : $"Adding {plan.ProjectName}",
+                progress => TestProjectScaffolder.Add(root, workspace.SolutionFile, plan, command.DryRun, progress))) return 1;
+        if (command.DryRun) return 0;
+
+        if (command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 }))
+        {
+            try
+            {
+                SaveLayoutPreferences(root, command.LayoutPreset is not null
+                    ? AutomationPreferences.LayoutOverrides(workspace.Layout)
+                    : command.LayeringOverrides!);
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException or ArgumentException)
+            {
+                return Fail($"Test project created, but preferences could not be saved: {exception.Message}");
+            }
+        }
+
+        var testTarget = plan.Kind switch {
+            "Unit" => "test_unit",
+            "Integration" => "test_integration",
+            _ => "test_end_to_end"
+        };
+        prompter.ShowNextSteps($"{plan.RelativeProjectPath} is ready", ["make compile", $"make {testTarget}"], null);
         return 0;
     }
 
@@ -386,6 +477,44 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
     {
         var baseline = AutomationPreferences.Parse("{}").ResolveLayout();
         return LayoutsEqual(layout, baseline);
+    }
+
+    private static JsonObject LayoutOverrides(ToolCommand command, ApplicationKind kind)
+    {
+        var overrides = command.LayeringOverrides is null
+            ? new JsonObject()
+            : (JsonObject)command.LayeringOverrides.DeepClone();
+        if (command.LayoutPreset is not { } preset) return overrides;
+        if (command.ApplicationFolder is not null && overrides["mode"]?.GetValue<string>() == "prefix")
+            throw new InvalidOperationException("--application-folder only applies to folder layering.");
+
+        var root = overrides["root"]?.GetValue<string>() ?? SolutionLayout.DefaultRoot;
+        var presetOverrides = AutomationPreferences.LayoutOverrides(
+            SolutionLayoutPresets.Create(preset, kind, command.ApplicationFolder ?? "App", root));
+        if (overrides["mode"]?.GetValue<string>() == "prefix")
+        {
+            presetOverrides.Remove("libraryRoot");
+            presetOverrides.Remove("applicationFolders");
+        }
+        foreach (var (key, value) in overrides) presetOverrides[key] = value?.DeepClone();
+        return presetOverrides;
+    }
+
+    private static JsonObject InteractiveLayoutOverrides(SolutionLayout layout)
+    {
+        var overrides = new JsonObject {
+            ["mode"] = layout.Mode == LayeringMode.Folder ? "folder" : "prefix",
+            ["layers"] = JsonSerializer.SerializeToNode(layout.Layers)
+        };
+        if (layout.Root != SolutionLayout.DefaultRoot) overrides["root"] = layout.Root;
+        if (layout.Mode == LayeringMode.Folder)
+        {
+            var baseline = new SolutionLayout(LayeringMode.Folder, layout.Layers) { Root = layout.Root };
+            if (layout.LibraryRoot != baseline.LibraryRoot) overrides["libraryRoot"] = layout.LibraryRoot;
+            if (!LayoutsEqual(layout, baseline))
+                overrides["applicationFolders"] = JsonSerializer.SerializeToNode(layout.ApplicationFolders);
+        }
+        return overrides;
     }
 
     private static bool LayoutsEqual(SolutionLayout left, SolutionLayout right) =>

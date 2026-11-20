@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Automation.Build.Cli.Service;
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using AwesomeAssertions;
+using System.Text.Json.Nodes;
 
 namespace Anarchy.Toolkit.Tests.Unit.Automation.Build.Cli;
 
@@ -26,6 +27,9 @@ public class ToolkitPreferencesTest
         application.Run(["config", "show"], interactive: false).Should().Be(0);
 
         output.ToString().Should().Contain("\"saved\": {}").And.Contain("effectiveLayering");
+        var defaults = JsonNode.Parse(output.ToString())!;
+        defaults["effective"]!["build.configuration"]!["source"]!.GetValue<string>().Should().Be("in-code default");
+        defaults["effective"]!["build.configuration"]!["value"]!.GetValue<string>().Should().Be("Release");
         File.Exists(Path.Combine(root.Path, AutomationPreferences.FileName)).Should().BeFalse();
 
         root.File(AutomationPreferences.FileName, """{ "build": { "configuration": "Debug" } }""");
@@ -33,6 +37,9 @@ public class ToolkitPreferencesTest
         new ToolApplication(new ScriptedPrompter(), Versions, workingDirectory, savedOutput)
             .Run(["config", "show"], interactive: false).Should().Be(0);
         savedOutput.ToString().Should().Contain("\"configuration\": \"Debug\"").And.Contain("effectiveLayering");
+        var saved = JsonNode.Parse(savedOutput.ToString())!;
+        saved["effective"]!["build.configuration"]!["source"]!.GetValue<string>().Should().Be("saved value");
+        saved["effective"]!["build.configuration"]!["value"]!.GetValue<string>().Should().Be("Debug");
     }
 
     [Fact]

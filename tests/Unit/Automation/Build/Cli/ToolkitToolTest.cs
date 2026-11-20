@@ -34,6 +34,12 @@ public class ToolkitToolTest
     [InlineData(new[] { "bootstrap", "MyApp", "--with-skills", "--with-skills" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--layering", "folder" }, ToolMode.Bootstrap, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--layering", "prefix" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layout", "monorepo" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layout", "single-app", "--application-folder", "Shop" }, ToolMode.Bootstrap, false)]
+    [InlineData(new[] { "scaffold", "api", "Orders", "--layout", "single-app" }, ToolMode.Scaffold, false)]
+    [InlineData(new[] { "scaffold", "--layout", "single-app" }, ToolMode.Scaffold, true)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--layout", "other" }, ToolMode.Invalid, false)]
+    [InlineData(new[] { "bootstrap", "MyApp", "--application-folder", "Shop" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--layering", "other" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--layering" }, ToolMode.Invalid, false)]
     [InlineData(new[] { "bootstrap", "MyApp", "--layering", "folder", "--layering", "prefix" }, ToolMode.Invalid, false)]
@@ -151,11 +157,31 @@ public class ToolkitToolTest
     }
 
     [Fact]
+    public void SingleAppPreset_UsesTheApplicationLayerAndAcceptsOneCustomFolder()
+    {
+        var api = SolutionLayoutPresets.Create(SolutionLayoutPreset.SingleApp, ApplicationKind.Api, "Shop");
+        api.Root.Should().Be("src");
+        api.LibraryRoot.Should().Be("src");
+        api.Layers.Should().Equal("Core", "Infrastructure", "Configuration", "Web");
+        api.ApplicationFolders.Should().Equal(new Dictionary<string, string> { ["src/Shop"] = "Web" });
+        api.ProjectPath(new ApplicationSpec(ApplicationKind.Api, "Store")).Should().Be("src/Shop/Store/Store.csproj");
+        LayeringConfiguration.Validate(api).Should().BeEmpty();
+
+        var job = SolutionLayoutPresets.Create(SolutionLayoutPreset.SingleApp, ApplicationKind.Job);
+        job.Layers.Should().Equal("Core", "Infrastructure", "Configuration", "Hosting");
+        job.ProjectPath(new ApplicationSpec(ApplicationKind.Job, "Worker")).Should().Be("src/App/Worker/Worker.csproj");
+        LayeringConfiguration.Validate(job).Should().BeEmpty();
+
+        SolutionLayoutPresets.Create(SolutionLayoutPreset.Monorepo).Should().BeEquivalentTo(SolutionLayout.Default);
+    }
+
+    [Fact]
     public void BootstrapWizard_ValidatesAnswersAndPlansApplicationsInKindOrder()
     {
         var root = TempRoot();
         var prompter = new ScriptedPrompter(
             "bad name", "MyApp", root,
+            false,
             LayeringMode.Folder, "Core, Testing", "",
             new object[] { ApplicationKind.Ui, ApplicationKind.Api },
             "Orders", true, "orders", "Billing", false,
@@ -185,7 +211,7 @@ public class ToolkitToolTest
         File.WriteAllText(Path.Combine(existing, "keep"), "");
         try
         {
-            var prompter = new ScriptedPrompter("MyApp", existing, "", LayeringMode.Prefix, "Core Web", Array.Empty<object>(), false, false, true);
+            var prompter = new ScriptedPrompter("MyApp", existing, "", false, LayeringMode.Prefix, "Core Web", Array.Empty<object>(), false, false, true);
             var plan = new BootstrapWizard(prompter).Run();
             plan!.RootDirectory.Should().Be(Path.GetFullPath("MyApp"));
             plan.Layout.Should().BeEquivalentTo(new SolutionLayout(LayeringMode.Prefix, ["Core", "Web"]));
@@ -199,10 +225,54 @@ public class ToolkitToolTest
     }
 
     [Fact]
+    public void BootstrapWizard_ChoosesSingleAppBeforeLayeringAndUsesItsPreset()
+    {
+        var root = TempRoot();
+        var prompter = new ScriptedPrompter(
+            "Shop", root, true, ApplicationKind.Api, "Shop", LayeringMode.Folder, "", "Orders", false, false, true);
+
+        var plan = new BootstrapWizard(prompter).Run();
+
+        plan.Should().NotBeNull();
+        plan!.Layout.Should().BeEquivalentTo(SolutionLayoutPresets.Create(SolutionLayoutPreset.SingleApp, ApplicationKind.Api, "Shop"));
+        plan.Applications.Select(plan.Layout.ProjectPath).Should().Equal("src/Shop/Orders/Orders.csproj");
+        plan.Layout.Layers.Should().Equal("Core", "Infrastructure", "Configuration", "Web");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Run_InteractiveSingleAppBootstrapAndScaffoldRespectPreferenceConsent(bool savePreferences)
+    {
+        var root = TempRoot();
+        try
+        {
+            var bootstrap = new ScriptedPrompter(
+                "Shop", root, true, ApplicationKind.Api, "Shop", LayeringMode.Folder, "", "Orders", false, savePreferences, true);
+            Application(bootstrap).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", bootstrap.Errors));
+            File.Exists(Path.Combine(root, "src", "Shop", "Orders", "Orders.csproj")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().Be(savePreferences);
+            if (savePreferences)
+                AutomationPreferences.Read(root).ResolveLayout().Should().BeEquivalentTo(
+                    SolutionLayoutPresets.Create(SolutionLayoutPreset.SingleApp, ApplicationKind.Api, "Shop"));
+
+            var scaffold = new ScriptedPrompter(ApplicationKind.Ui, "Admin", true);
+            Application(scaffold, root).Run(["scaffold", "--layout", "single-app", "--application-folder", "Shop"], interactive: true)
+                .Should().Be(0, string.Join("\n", scaffold.Errors));
+            File.Exists(Path.Combine(root, "src", "Shop", "Admin", "Admin.csproj")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().Be(savePreferences);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void Run_WhenWizardIsDeclined_WritesNothing()
     {
         var root = TempRoot();
-        var prompter = new ScriptedPrompter("MyApp", root, LayeringMode.Folder, "", Array.Empty<object>(), false, false, false);
+        var prompter = new ScriptedPrompter("MyApp", root, false, LayeringMode.Folder, "", Array.Empty<object>(), false, false, false);
 
         Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(1);
 
@@ -254,7 +324,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter(
-                "MyApp", root, LayeringMode.Folder, "",
+                "MyApp", root, false, LayeringMode.Folder, "",
                 new object[] { ApplicationKind.Api, ApplicationKind.Job },
                 "Orders", false, "Billing", false,
                 false, false, true);
@@ -321,7 +391,7 @@ public class ToolkitToolTest
         var root = TempRoot();
         try
         {
-            var prompter = new ScriptedPrompter("MyApp", root, LayeringMode.Prefix, "Core, Web",
+            var prompter = new ScriptedPrompter("MyApp", root, false, LayeringMode.Prefix, "Core, Web",
                 new object[] { ApplicationKind.Api }, "Orders", false, true, true, true);
 
             Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
@@ -508,6 +578,82 @@ public class ToolkitToolTest
             var layout = new SolutionLayout(expected, SolutionLayout.DefaultLayers);
             File.Exists(Path.Combine(root, layout.ProjectPath(new ApplicationSpec(ApplicationKind.Api, "Orders"))))
                 .Should().BeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Theory]
+    [InlineData("monorepo", false)]
+    [InlineData("monorepo", true)]
+    [InlineData("single-app", false)]
+    [InlineData("single-app", true)]
+    public void Run_BootstrapsAndScaffoldsWithEachPresetAndOptionalSavedPreferences(string preset, bool savePreferences)
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            var bootstrapArguments = new List<string> { "bootstrap", "Shop", "--output", root, "--layout", preset };
+            if (preset == "single-app") bootstrapArguments.AddRange(["--application-folder", "Shop"]);
+            if (savePreferences) bootstrapArguments.Add("--save-preferences");
+            Application(prompter).Run(bootstrapArguments, interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+
+            var expectedLayout = preset == "single-app"
+                ? SolutionLayoutPresets.Create(SolutionLayoutPreset.SingleApp, ApplicationKind.Api, "Shop")
+                : SolutionLayout.Default;
+            var resolvedAfterBootstrap = SolutionWorkspace.Load(root).Layout;
+            if (savePreferences) resolvedAfterBootstrap.Should().BeEquivalentTo(expectedLayout);
+            else resolvedAfterBootstrap.Should().BeEquivalentTo(SolutionLayout.Default);
+            File.Exists(Path.Combine(root, preset == "single-app" ? "src/Core/Core.csproj" : "src/Library/Core/Core.csproj"))
+                .Should().BeTrue();
+
+            var scaffoldArguments = new List<string> { "scaffold", "api", "Orders", "--layout", preset };
+            if (preset == "single-app") scaffoldArguments.AddRange(["--application-folder", "Shop"]);
+            if (savePreferences) scaffoldArguments.Add("--save-preferences");
+            Application(prompter, root).Run(scaffoldArguments, interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+
+            File.Exists(Path.Combine(root, preset == "single-app" ? "src/Shop/Orders/Orders.csproj" : "src/Api/Orders/Orders.csproj"))
+                .Should().BeTrue();
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().Be(savePreferences);
+            if (savePreferences)
+                AutomationPreferences.Read(root).ResolveLayout().Should().BeEquivalentTo(expectedLayout);
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_SingleAppPresetSupportsCustomRootAndApplicationMapping()
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run([
+                "bootstrap", "Shop", "--output", root, "--layout", "single-app", "--application-folder", "Cli",
+                "--layering-root", "code", "--save-preferences"
+            ], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+
+            var expected = new SolutionLayout(LayeringMode.Folder, ["Core", "Infrastructure", "Configuration", "Web"]) {
+                Root = "code",
+                LibraryRoot = "code",
+                ApplicationFolders = new Dictionary<string, string> { ["code/Cli"] = "Web" }
+            };
+            SolutionWorkspace.Load(root).Layout.Should().BeEquivalentTo(expected);
+            var build = Path.Combine(root, "build", "Program.cs");
+            File.ReadAllText(build).Should().Contain("ILayeringBuild");
+
+            Application(prompter, root).Run([
+                "scaffold", "api", "Terminal", "--layout", "single-app", "--application-folder", "Cli",
+                "--layering-root", "code"
+            ], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            File.Exists(Path.Combine(root, "code", "Cli", "Terminal", "Terminal.csproj")).Should().BeTrue();
+            LayeringConfiguration.Validate(SolutionWorkspace.Load(root).Layout).Should().BeEmpty();
         }
         finally
         {
@@ -736,6 +882,178 @@ public class ToolkitToolTest
                     File.ReadAllText(log).Should().Be($"<{target}>\n<--AgentSkillsDirectories>\n<.agents/team skills>\n<.agents/reviewer skills>\n");
                 }
             }
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Theory]
+    [InlineData(new[] { "scaffold", "library", "Store", "--layer", "Infrastructure" }, ScaffoldTarget.Library, false)]
+    [InlineData(new[] { "scaffold", "tests", "unit" }, ScaffoldTarget.Tests, false)]
+    [InlineData(new[] { "scaffold", "tests" }, ScaffoldTarget.Tests, true)]
+    [InlineData(new[] { "scaffold", "library", "Store", "--layer", "Core", "--dry-run", "--save-preferences" }, ScaffoldTarget.Library, false)]
+    public void CommandLine_ParsesLibraryAndTestScaffolds(string[] args, ScaffoldTarget target, bool interactive)
+    {
+        var command = ToolCommandLine.Parse(args);
+
+        command.Mode.Should().Be(ToolMode.Scaffold);
+        command.ScaffoldTarget.Should().Be(target);
+        command.IsInteractive.Should().Be(interactive);
+        if (args.Contains("--dry-run")) command.DryRun.Should().BeTrue();
+        if (args.Contains("--save-preferences")) command.SavePreferences.Should().BeTrue();
+    }
+
+    [Fact]
+    public void CommandLine_RejectsMalformedLibraryAndTestScaffolds()
+    {
+        ToolCommandLine.Parse(["scaffold", "library", "Store"]).Mode.Should().Be(ToolMode.Invalid);
+        ToolCommandLine.Parse(["scaffold", "library", "Store", "--layer", "Core", "--layer", "Web"]).Mode.Should().Be(ToolMode.Invalid);
+        ToolCommandLine.Parse(["scaffold", "tests", "acceptance"]).Mode.Should().Be(ToolMode.Invalid);
+        ToolCommandLine.Parse(["scaffold", "api", "Orders", "--dry-run"]).Mode.Should().Be(ToolMode.Invalid);
+    }
+
+    [Fact]
+    public void Run_ScaffoldsLibrariesWithinFolderPrefixAndCustomLayouts()
+    {
+        var roots = new[] { TempRoot(), TempRoot(), TempRoot() };
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "Folder", "--output", roots[0]], interactive: false).Should().Be(0);
+            Application(prompter, roots[0]).Run(["scaffold", "library", "Query", "--layer", "Infrastructure"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            var folderProject = Path.Combine(roots[0], "src", "Library", "Infrastructure", "Query", "Query.csproj");
+            File.Exists(folderProject).Should().BeTrue();
+            File.ReadAllText(folderProject).Should().Contain("ProjectReference Include=").And.Contain("Core.csproj");
+            Application(prompter, roots[0]).Run(["scaffold", "library", "Query", "--layer", "Infrastructure"], interactive: false)
+                .Should().Be(1);
+
+            Application(prompter).Run([
+                "bootstrap", "Prefix", "--output", roots[1], "--layering", "prefix", "--layering-layers", "[\"Core\",\"Infrastructure\"]"
+            ], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            Application(prompter, roots[1]).Run([
+                "scaffold", "library", "Data", "--layer", "Infrastructure", "--layering", "prefix", "--layering-layers", "[\"Core\",\"Infrastructure\"]"
+            ], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            var prefixProject = Path.Combine(roots[1], "src", "Infrastructure.Data", "Infrastructure.Data.csproj");
+            File.Exists(prefixProject).Should().BeTrue();
+            File.ReadAllText(prefixProject).Should().Contain("ProjectReference Include=").And.Contain("Core.csproj");
+
+            Application(prompter).Run([
+                "bootstrap", "Custom", "--output", roots[2], "--layering-root", "code", "--layering-library-root", "code/Shared",
+                "--layering-application-folders", "{\"code/Api\":\"Web\",\"code/Jobs\":\"Hosting\",\"code/Ui\":\"Web\"}"
+            ], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            Application(prompter, roots[2]).Run([
+                "scaffold", "library", "Events", "--layer", "Core", "--layering-root", "code", "--layering-library-root", "code/Shared",
+                "--layering-application-folders", "{\"code/Api\":\"Web\",\"code/Jobs\":\"Hosting\",\"code/Ui\":\"Web\"}"
+            ], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            File.Exists(Path.Combine(roots[2], "code", "Shared", "Core", "Events", "Events.csproj")).Should().BeTrue();
+        }
+        finally
+        {
+            foreach (var root in roots)
+                if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_LibraryDryRunWritesNothingAndSavingPersistsOnlyExplicitLayoutValues()
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            var args = new[] {
+                "scaffold", "library", "Events", "--layer", "Infrastructure", "--layering", "prefix",
+                "--layering-layers", "[\"Core\",\"Infrastructure\"]", "--save-preferences", "--dry-run"
+            };
+
+            Application(prompter, root).Run(args, interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+
+            File.Exists(Path.Combine(root, "src", "Infrastructure.Events", "Infrastructure.Events.csproj")).Should().BeFalse();
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeFalse();
+            prompter.Progress.Should().Contain("Dry run: nothing is written.");
+
+            Application(prompter, root).Run(args[..^1], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+
+            var saved = AutomationPreferences.Read(root);
+            saved.Saved["layering"]!.AsObject().Select(property => property.Key).Should().Equal("mode", "layers");
+            saved.Saved["layering"]!["mode"]!.GetValue<string>().Should().Be("prefix");
+            File.Exists(Path.Combine(root, "src", "Infrastructure.Events", "Infrastructure.Events.csproj")).Should().BeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_ScaffoldsTestProjectsUsingConfiguredAliasesAndTestsRoot()
+    {
+        var root = TempRoot();
+        try
+        {
+            var prompter = new ScriptedPrompter();
+            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            File.WriteAllText(Path.Combine(root, ".fallout", "parameters.json"),
+                "{ \"Solution\": \"MyApp.sln\", \"TestKindAliases\": [\"EndToEnd=Acceptance\"] }");
+
+            Application(prompter, root).Run(["scaffold", "tests", "endtoend"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+
+            var project = Path.Combine(root, "tests", "Acceptance", "Acceptance.csproj");
+            File.Exists(project).Should().BeTrue();
+            File.ReadAllText(project).Should().Contain("<TargetFramework>net10.0</TargetFramework>")
+                .And.NotContain("PackageReference");
+            File.ReadAllText(Path.Combine(root, "MyApp.sln")).Should().Contain("tests\\Acceptance\\Acceptance.csproj");
+
+            File.WriteAllText(Path.Combine(root, ".fallout", "parameters.json"), "{ \"Solution\": \"MyApp.sln\" }");
+            Application(prompter, root).Run(["config", "set", "build.testsRoot", "\"quality/tests\""], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            Application(prompter, root).Run(["config", "set", "tests.kindAliases", "[\"Integration=Contract\"]"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            Application(prompter, root).Run(["scaffold", "tests", "integration"], interactive: false)
+                .Should().Be(0, string.Join("\n", prompter.Errors));
+            File.Exists(Path.Combine(root, "quality", "tests", "Contract", "Contract.csproj")).Should().BeTrue();
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeTrue();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Run_TestScaffoldPromptsForKindOnlyWhenInteractiveAndDryRunDoesNotSave()
+    {
+        var root = TempRoot();
+        try
+        {
+            var bootstrap = new ScriptedPrompter();
+            Application(bootstrap).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+
+            var noninteractive = new ScriptedPrompter();
+            Application(noninteractive, root).Run(["scaffold", "tests"], interactive: false).Should().Be(1);
+            noninteractive.Errors.Should().ContainMatch("Interactive input is unavailable*");
+
+            var preview = new ScriptedPrompter("Integration", true);
+            Application(preview, root).Run(["scaffold", "tests", "--dry-run", "--save-preferences"], interactive: true)
+                .Should().Be(0, string.Join("\n", preview.Errors));
+            File.Exists(Path.Combine(root, "tests", "Integration", "Integration.csproj")).Should().BeFalse();
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeFalse();
+
+            Application(new ScriptedPrompter(), root).Run(["scaffold", "tests", "unit", "--save-preferences"], interactive: false)
+                .Should().Be(0);
+            File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeFalse();
+
+            var interactive = new ScriptedPrompter("Integration", true);
+            Application(interactive, root).Run(["scaffold", "tests"], interactive: true)
+                .Should().Be(0, string.Join("\n", interactive.Errors));
+            File.Exists(Path.Combine(root, "tests", "Integration", "Integration.csproj")).Should().BeTrue();
         }
         finally
         {
