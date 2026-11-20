@@ -1,22 +1,36 @@
 # Anarchy.Toolkit.Infrastructure.Telemetry.Serilog
 
-Optional Serilog integration for `Anarchy.Toolkit.Core.Telemetry`. Supply an already-configured Serilog logger and
-its sinks through the composition root:
+Optional Serilog integration for `Anarchy.Toolkit.Core.Telemetry`. Serilog becomes one more Microsoft logging
+provider: the toolkit's instrumentation code does not change, and Core keeps no Serilog dependency.
 
 ```csharp
-services.AddMetrics();
-services.AddSerilogTelemetry(logger);
+services.AddSerilogTelemetry(logger);                    // application-owned logger, never disposed here
+services.AddSerilogTelemetry(config => config.WriteTo.Console()); // logger owned and flushed by the container
 ```
 
-The logger remains owned by the application. Registration does not clear other logging providers or replace an
-existing `IAppTelemetry` registration. Metrics use the application's standard .NET metrics pipeline independently of
-Serilog. `ModuleSerilogTelemetry` wraps the same registration for composition roots using toolkit DI modules. This
-general-purpose package does not require AWS or CloudWatch; those integrations remain separate.
+- Registration does not clear other logging providers, registers a given logger once, and keeps existing
+  `ICoreTelemetry`, `IMetricRecorder` or `AppTelemetry` registrations (it ends with `AddCoreTelemetry()`).
+  `ModuleSerilogTelemetry` is the same registration as a `ModuleTelemetryBase`.
+- `SerilogConsoleDefaults` gives composition roots that own their output (command-line tools) a readable console
+  logger; `AddSerilogConsoleTelemetry()` adds it only when no logging provider is registered. Libraries never add it.
+- `SerilogTelemetry.Create(logger)` builds an `AppTelemetry` over a Serilog logger without DI.
+- `Enrich.WithCorrelationId(correlationIdPropertyName, attemptIdPropertyName)` is an opt-in enricher that reads the
+  ambient `CorrelationContext`. It adds each property only when the event does not already have it
+  (`AddPropertyIfAbsent`), so it never duplicates the properties a Serilog provider already took from the
+  `ILogger.BeginScope` scope that `Infrastructure.CorrelationId` opens. Use it for events written outside such a scope
+  (code that sets `CorrelationContext.SetCorrelationValues` directly); the property names default to those of the
+  correlation package and must match what the scopes use.
+- `Enrich.WithStructuredExceptionContext()` adds a structured `Exceptions` property to events with an exception.
+- `AddTelemetryLogMetrics()` opts into log-based metrics: it decorates the registered `IMetricRecorder` with a
+  `LogMetricRecorder` that also writes each metric as a log event (category `Anarchy.Toolkit.Telemetry.Metrics`)
+  through the application's logging pipeline, for log backends that derive metrics from logs.
 
-The existing toolkit packages still use `Core.Observability` until their telemetry migration is complete.
+Metrics otherwise use the application's standard .NET metrics pipeline. This package has no AWS or vendor
+dependency.
 
 ## Releases
 
 ### 1.0.0
 
-- Added optional DI integration for a consumer-configured Serilog logger and the provider-neutral telemetry facade.
+- Added optional DI integration for a consumer-configured Serilog logger, console defaults for composition roots, a
+  non-DI construction path, the structured-exception and correlation-ID enrichers and opt-in log-based metrics.

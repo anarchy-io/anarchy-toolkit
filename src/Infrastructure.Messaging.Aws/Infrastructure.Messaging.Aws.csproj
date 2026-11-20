@@ -13,6 +13,7 @@
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\Core.Messaging.Abstractions\Core.Messaging.Abstractions.csproj" />
+    <ProjectReference Include="..\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
   </ItemGroup>
 
   <ItemGroup>

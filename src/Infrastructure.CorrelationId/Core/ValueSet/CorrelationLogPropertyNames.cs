@@ -1,9 +1,9 @@
 namespace Anarchy.Toolkit.Infrastructure.CorrelationId.Core.ValueSet;
 
 /// <summary>
-/// Default log property names written by the correlation-id Serilog enricher.
+/// Default structured log property names for correlation and attempt identifiers.
 /// </summary>
-/// <seealso cref="Anarchy.Toolkit.Infrastructure.CorrelationId.Extension.Observability.EnvironmentLoggerConfigurationExtensions"/>
+/// <seealso cref="Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Service.CorrelationContext.BeginScope"/>
 public static class CorrelationLogPropertyNames
 {
     /// <summary>Default log property holding the correlation id: <c>CorrelationId</c>.</summary>

@@ -10,6 +10,7 @@ dotnet add package Anarchy.Toolkit.Infrastructure.Messaging.Aws
 
 - Register publishers with `AddSnsMessageBroker` or `AddSqsMessageBroker` and `AwsMessagingOptions`, or use `ModuleSnsMessageBroker` and `ModuleSqsMessageBroker` with configuration-based options factories.
 - The package also provides shared publisher and request-builder bases, inbound mapping and compression.
+- `InboundMessage.BeginCorrelationScope(logger)` is the consumer entry point for correlation: it reads the correlation and attempt IDs from the mapped message's string attributes and opens the provider-neutral scope from `Infrastructure.CorrelationId`.
 - For integration tests, see [Testing.Aws](https://www.nuget.org/packages/Anarchy.Toolkit.Testing.Aws) and its LocalStack helpers.
 
 ## When to use it
@@ -18,7 +19,7 @@ Use this package at the composition root when application code depends on `IMess
 
 ## How to use it
 
-Register `IAppTelemetry` and the required broker adapters. The example uses explicit options; obtain real account and region values from your host configuration:
+Register `AppTelemetry` and the required broker adapters. The example uses explicit options; obtain real account and region values from your host configuration:
 
 ```csharp
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Entity.Configuration.Amazon;
@@ -31,13 +32,31 @@ services.AddSqsMessageBroker(options);
 
 Alternatively, register the modules with options factories using `UseModule`. Resolve the keyed `topic` or `queue` publisher and build messages with `OutboundMessageBuilder` from the abstractions package. Configure AWS credentials and permissions for the actual destinations, and plan for broker size limits, batch failures and duplicate delivery.
 
+### Consuming messages with correlation
+
+The package maps inbound messages (`InboundMessageMapper.FromSqs(sqsEvent)`) but does not ship a consumer loop, so nothing propagates correlation IDs on its own: your handler opts in by opening the scope around each message.
+
+```csharp
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extension.MessageBroker.Aws;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper.MessageBroker;
+
+foreach (var message in InboundMessageMapper.FromSqs(sqsEvent))
+{
+    using (message.BeginCorrelationScope(logger))
+        await processor.HandleAsync(message, cancellationToken);
+}
+```
+
+The scope sets the async-flowing `CorrelationContext`, opens a standard `ILogger` scope with the correlation and attempt properties (so every logging provider sees them) and tags the current `Activity`. The attribute names default to `CorrelationId` and `AttemptId`; pass other names when the publisher uses different ones. A missing attribute leaves that ID empty rather than generating one. Publishers do not add the attributes: copy `CorrelationContext.CorrelationId` into the outbound message attributes yourself if downstream consumers need it.
+
 See the [registration example](https://anarchy-io.github.io/anarchy-toolkit/getting-started/consuming-packages.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 
 ### 2.0.0
 
-- Route publisher logs and metrics through the host's `IAppTelemetry` instead of `Observer`.
+- Route publisher logs and metrics through the host's `AppTelemetry` instead of `Observer`.
+- Added `InboundMessage.BeginCorrelationScope(logger)`, the consumer entry point that opens a provider-neutral correlation scope from a mapped message's attributes.
 
 ### 1.1.1
 

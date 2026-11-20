@@ -3,6 +3,7 @@ using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Entity;
 using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Service;
 using Anarchy.Toolkit.Infrastructure.CorrelationId.Service.Host.Middleware.Exceptions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Infrastructure.CorrelationId.Service.Host.Middleware;
 
@@ -26,16 +27,21 @@ public class CorrelationIdMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly CorrelationIdOptions _options;
+    private readonly ILogger<CorrelationIdMiddleware> _logger;
+    private readonly Func<string> _generateId = () => Guid.NewGuid().ToString();
 
     /// <summary>
     /// Initializes a new instance of <see cref="CorrelationIdMiddleware"/>.
     /// </summary>
     /// <param name="next">The next delegate in the request pipeline.</param>
     /// <param name="options">The correlation-id options.</param>
-    public CorrelationIdMiddleware(RequestDelegate next, CorrelationIdOptions options)
+    /// <param name="logger">The application logger used for provider-neutral structured scopes.</param>
+    public CorrelationIdMiddleware(RequestDelegate next, CorrelationIdOptions options,
+                                   ILogger<CorrelationIdMiddleware> logger)
     {
         _options = options;
         _next = next;
+        _logger = logger;
     }
 
     /// <summary>
@@ -51,16 +57,20 @@ public class CorrelationIdMiddleware
     /// <exception cref="EmptyArgumentException">A correlation header is present but has no values.</exception>
     public async Task Invoke(HttpContext context)
     {
-        context.Response.OnStarting(() => {
-            AddCorrelationResponseHeaders(context.Response);
-            return Task.CompletedTask;
-        });
-        SetCorrelationContextFromHeaders(context.Request);
-        await _next(context);
-        AddCorrelationResponseHeaders(context.Response);
+        var (correlationId, attemptId) = GetCorrelationValues(context.Request);
+        using (CorrelationContext.BeginScope(_logger, correlationId, attemptId,
+                   _options.CorrelationIdPropertyName, _options.AttemptIdPropertyName))
+        {
+            context.Response.OnStarting(() => {
+                AddCorrelationResponseHeaders(context.Response, correlationId, attemptId);
+                return Task.CompletedTask;
+            });
+            await _next(context);
+            AddCorrelationResponseHeaders(context.Response, correlationId, attemptId);
+        }
     }
-    private Func<string> _generateId = () => Guid.NewGuid().ToString();
-    private void SetCorrelationContextFromHeaders(HttpRequest request)
+
+    private (string? CorrelationId, string? AttemptId) GetCorrelationValues(HttpRequest request)
     {
         var correlationId = GetCorrelationId(request);
         var attemptId = GetAttemptId(request);
@@ -77,8 +87,7 @@ public class CorrelationIdMiddleware
             if (attemptId == null) attemptId = _generateId();
         }
 
-        CorrelationContext.SetCorrelationValues(correlationId: correlationId,
-            attemptId: attemptId);
+        return (correlationId, attemptId);
     }
 
     private string? GetCorrelationId(HttpRequest request)
@@ -106,16 +115,16 @@ public class CorrelationIdMiddleware
         return values[0];
     }
 
-    private void AddCorrelationResponseHeaders(HttpResponse response)
+    private void AddCorrelationResponseHeaders(HttpResponse response, string? correlationId, string? attemptId)
     {
-        if (ShouldWriteToHeader(_options.CorrelationIdHeaderName, CorrelationContext.CorrelationId, response))
+        if (ShouldWriteToHeader(_options.CorrelationIdHeaderName, correlationId, response))
         {
-            response.Headers.Append(_options.CorrelationIdHeaderName, CorrelationContext.CorrelationId);
+            response.Headers.Append(_options.CorrelationIdHeaderName, correlationId);
         }
 
-        if (ShouldWriteToHeader(_options.AttemptIdHeaderName, CorrelationContext.AttemptId, response))
+        if (ShouldWriteToHeader(_options.AttemptIdHeaderName, attemptId, response))
         {
-            response.Headers.Append(_options.AttemptIdHeaderName, CorrelationContext.AttemptId);
+            response.Headers.Append(_options.AttemptIdHeaderName, attemptId);
         }
     }
 

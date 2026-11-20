@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Core\Core.csproj" />
     <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\Core.Health\Core.Health.csproj" />
+    <ProjectReference Include="..\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
   </ItemGroup>
 
   <ItemGroup>
