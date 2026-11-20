@@ -6,7 +6,7 @@ Every repository re-implemented compile, lint, test, pack and run targets, with 
 
 ## Decision
 
-Build automation ships as `Anarchy.Toolkit.Automation.Build`: reusable [Fallout](https://fallout.build/) components (`IStandardBuild`, `ILayeringBuild`, `IMockServerBuild`, `IDockerBuild`, ...) composed in `build/Build.cs`, with a distributed Makefile and scripts as the developer entry point. Deployment components were removed (Automation.Build 3.0.0): packages and container images are built and published; deploying them is left to each organization.
+Build automation ships as `Anarchy.Toolkit.Automation.Build`: reusable Anarchy components (`IStandardBuild`, `ILayeringBuild`, `IMockServerBuild`, `IDockerBuild`, ...) powered by [Fallout Build](https://fallout.build/) and composed in `build/Build.cs`, with a distributed Makefile and scripts as the developer entry point. Deployment components are left out: packages and container images are built and published; deploying them is left to each organization.
 
 ## Consequences
 

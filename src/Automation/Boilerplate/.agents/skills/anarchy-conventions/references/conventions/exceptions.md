@@ -79,11 +79,11 @@ A mid-level exception groups the failures of one area so callers can catch them 
 |---|---|---|
 | `MessageBrokerPublisherException` | `ExternalDependencyException` | `MessagePublishException`, `MessageBatchPublishException` |
 | `MessageBrokerParsingException` | `InvalidFormatException` | `EventEnvelopeParsingException` |
-| `DsPolicyExecutionException` → `DbPolicyExecutionException` | `ExternalDependencyException` | `DbConnectionAcquisitionException`, `DbConnectionReleaseException` |
+| `StoragePolicyExecutionException` → `DbPolicyExecutionException` | `ExternalDependencyException` | `DbConnectionAcquisitionException`, `DbConnectionReleaseException` |
 | `UnitOfWorkTransactionException` | `TransactionException` | `TransactionBeginException`, `TransactionCommitException`, `TransactionRollbackException`, `SessionAlreadyActiveException`, `SessionFinishException` |
 | `UnitOfWorkSessionException` | `TransactionException` | `SessionCallbackException` |
 | `UnableToHandleEventException` | `Exception` | `EventHandlerExecutionException`, `StateAlreadyInitializedEventHandlerException` |
-| `StorageException` → `PersistanceStorageException` | `Exception` | `EmptyEntityListForBatchSaveStorageException`, `DuplicatedEntityStorageException` |
+| `StorageException` → `PersistenceStorageException` | `Exception` | `EmptyEntityListForBatchSaveStorageException`, `DuplicatedEntityStorageException` |
 | `InvalidStartupTypeExceptionBase` (abstract) | `InvalidStateException` | `MissingStartupInterfaceException`, `MissingStartupConstructorException` |
 
 ## Where exception classes live
@@ -94,7 +94,7 @@ Exceptions always live in an `Exceptions` folder whose namespace matches the fol
 |---|---|---|
 | Any project | `src/Core/Exceptions` | `EmptyArgumentException` |
 | An abstraction shared by several implementations | the abstraction project, next to the contract | `Core.Persistence.Abstractions/Service/Storage/Exceptions/TransactionCommitException.cs` (thrown by any `IUnitOfWork`) |
-| One area of one project | the area's folder | `Core.Events/Service/Event/Domain/Exceptions` |
+| One area of one project | the area's folder | `Core.Events/Domain/Exceptions` |
 | One class or feature | a sibling `Exceptions` folder | `Web/Helper/Presentation/Contract/Exceptions/MissingRouteParameterException.cs` |
 
 Never declare an exception in the same file or folder as the class that throws it, and never name the folder `Exception` (singular): it shadows `System.Exception` inside the parent namespace.

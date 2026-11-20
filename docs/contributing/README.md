@@ -12,7 +12,9 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 | Convention | Enforced by |
 |---|---|
 | [Layering](../conventions/layering.md) | `make check_layering` (CI), the [dependency map](../guides/architecture.md#dependency-map) |
-| [Code Organization](../conventions/code-organization.md) | Review; existing names and folders are migrated selectively |
+| [Naming](../conventions/naming.md) | Review |
+| [UseCases and Aggregates](../conventions/usecases-and-aggregates.md) | Review |
+| [Code Organization](../conventions/code-organization.md) | Review; applied to new and touched code |
 | [Dependency Injection](../conventions/dependency-injection.md) | Review |
 | [Observability](../conventions/observability.md) | Review |
 | [Async](../conventions/async.md) | Review |
@@ -29,6 +31,7 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 - **Test-only libraries stay in `Testing.*` kits.** No production project references [AwesomeAssertions](https://awesomeassertions.org/), [Moq](https://github.com/devlooped/moq) or xUnit.
 - **One README per package.** `src/<Project>/README.md` describes the package and has a `## Releases` section with a note per published version. The copies under `docs/packages/` are generated.
 - **New packages are listed** in the [Package Catalog](../packages/README.md), named after their layer (`<Layer>.<Name>`).
+- **Package names follow the dependency hierarchy.** Within a layer, a package may only reference its name ancestors (`Web.MockServer.Ui` to `Web.MockServer` or `Web`), so a feature family such as `Infrastructure.Persistence.Db.*` shows its shared parent in its name. A project may always reference a lower layer; any other same-layer reference is an entry, with its reason, in `build/PackageHierarchy.cs`. `make check_package_hierarchy` and its unit test enforce it. This is a rule of the toolkit's own monorepo, which uses prefix layering; it is not part of the [adopter conventions](../conventions/README.md) and is never imposed on solutions that use folder-mode layering.
 - **Versions are bumped with `make release_bump`**, never by hand, and validated with `make validate_release`.
 
 ### Build and code quality
@@ -64,5 +67,6 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 make lint
 make test_unit
 make check_layering
+make check_package_hierarchy   # when you changed a project reference between packages
 make skills_validate   # when you changed make targets
 ```

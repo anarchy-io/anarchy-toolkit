@@ -12,12 +12,12 @@ dotnet add package Anarchy.Toolkit.Testing.MockServer
 - `MockServerClient` talks to the server's `/__mock` control API: received requests, runtime expectations, resets.
 - `RecordedRequestAssertions` assert on what was received (`ShouldHaveReceived`, `ShouldNotHaveReceived`, `ShouldAllHaveBeenMatched`, `AssertReceivedAsync`), with failures listing the requests that were actually received.
 - `RecordedRequestsFile.Read` reads the JSON-lines file written with `--record`, so you can assert after the server stopped.
-- `MockServerFixture` connects to the server at `MOCKSERVER_URL` (set by the Fallout `IMockServerBuild` targets), or spawns one with `MockServerProcess`.
+- `MockServerFixture` connects to the server at `MOCKSERVER_URL` (set by the Anarchy `IMockServerBuild` targets), or spawns one with `MockServerProcess`.
 
 ## When to use it
 
 Use it in integration and end-to-end tests whose application calls HTTP services that the mock server stands in for.
-Most of the time the mock server is started outside the tests (by Fallout or a Makefile), so tests only assert. Spawning
+Most of the time the mock server is started outside the tests (by Anarchy automation or a Makefile), so tests only assert. Spawning
 it from the tests is there for when they run on their own, e.g. from an IDE.
 
 ## How to use it

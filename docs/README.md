@@ -15,8 +15,8 @@ The **Anarchy I/O Toolkit** is a **.NET developer platform**: an integrated ecos
 | Pillar | What it provides | Start with |
 |---|---|---|
 | **Architecture** | How applications are structured and how dependencies are governed: the layers `Core < Infrastructure < Configuration < Hosting < Web < Automation` in the toolkit, DI modules as the unit of composition, and conventions for async code, exceptions, enums, endpoints and tests. | [Layered Architecture](guides/architecture.md), [Guides](guides/README.md) |
-| **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence ([PostgreSQL](https://www.postgresql.org/), Oracle, MySQL), messaging (AWS SNS/SQS), observability, configuration and secrets, hosting for jobs and workers, REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
-| **Build Ecosystem** | Tools and workflows for developing and delivering applications: the [`Automation.Build`](packages/Automation.Build/README.md) build components (compile, lint, test, layering check, dependency map, packaging, versioning, releases, Docker) and the [`anarchy-toolkit`](packages/Automation.Build.Cli/README.md) CLI (solution bootstrap and scaffolding), with a distributed Makefile and scripts. | [Getting Started](getting-started/README.md), [Fallout Builds](guides/fallout-builds.md) |
+| **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence ([PostgreSQL](https://www.postgresql.org/), Oracle, MySQL), AWS SNS/SQS messaging (the only supplied transport today), telemetry, configuration and secrets, hosting for jobs and workers, REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
+| **Build Ecosystem** | Tools and workflows for developing and delivering applications: the [`Automation.Build`](packages/Automation.Build/README.md) build components (compile, lint, test, layering check, dependency map, packaging, versioning, releases, Docker) and the [`anarchy-toolkit`](packages/Automation.Build.Cli/README.md) CLI (solution bootstrap and scaffolding), with a distributed Makefile and scripts. Powered by [Fallout Build](https://fallout.build/). | [Getting Started](getting-started/README.md), [Anarchy Automation Builds](guides/automation-builds.md) |
 
 ## How the pillars work together
 
@@ -32,11 +32,11 @@ flowchart LR
     end
     subgraph Infrastructure["<b>Infrastructure</b>"]
         I1["Core abstractions · persistence · messaging"]
-        I2["Observability · configuration · hosting"]
+        I2["Telemetry · configuration · hosting"]
         I3["Web · testing kits"]
     end
     subgraph BuildEcosystem["<b>Build Ecosystem</b> (development time)"]
-        B1["Fallout · CLI · scaffolding"]
+        B1["Automation · CLI · scaffolding"]
         B2["Validation · packaging · versioning · releases"]
     end
     Apps["<b>.NET applications</b><br/>APIs · workers · jobs · web apps"]
@@ -50,7 +50,7 @@ flowchart LR
 | You have | Start with | Page |
 |---|---|---|
 | An empty folder | The `anarchy-toolkit` CLI tool: a layered solution with its build, plus APIs, jobs and UIs. | [New solution with the CLI](getting-started/cli-tool.md) |
-| An existing repository | The [Fallout](https://fallout.build/) build components: compile, lint, test, layering, packaging and releases. | [Adding the Fallout build](getting-started/fallout.md) |
+| An existing repository | Anarchy automation components: compile, lint, test, layering, packaging and releases. | [Adding Anarchy automation](getting-started/automation.md) |
 | An existing application | Individual packages, wired through their DI modules. | [Using the packages](getting-started/consuming-packages.md) |
 
 ## Platform architecture and dependency model
@@ -59,12 +59,12 @@ Every project under `src/` is one package, versioned and published on its own to
 
 ```mermaid
 flowchart TB
-    Build["<b>Build</b><br/>Fallout components · CLI tool"]
+    Build["<b>Automation</b><br/>build components · CLI tool"]
     Web["<b>Web</b><br/>REST API · GraphQL · Blazor UI"]
     Hosting["<b>Hosting</b><br/>Startups · jobs · workers"]
-    Configuration["<b>Configuration</b><br/>Settings · secrets · observability bootstrap"]
-    Infrastructure["<b>Infrastructure</b><br/>Databases · AWS messaging · HTTP · Serilog"]
-    Core["<b>Core</b><br/>Abstractions · events · health · observability"]
+    Configuration["<b>Configuration</b><br/>Settings · secrets · telemetry bootstrap"]
+    Infrastructure["<b>Infrastructure</b><br/>Databases · AWS messaging · HTTP · correlation · Serilog"]
+    Core["<b>Core</b><br/>Abstractions · events · health · telemetry"]
     Testing["<b>Testing kits</b><br/>Fixtures · DB/AWS/Web helpers"]
 
     Build --> Web --> Hosting --> Configuration --> Infrastructure --> Core
@@ -78,18 +78,18 @@ The [Package Catalog](packages/README.md) lists every package by layer, and the 
 
 - **Pluggable.** Packages with concrete services register them through an `IDependencyInjectionModule` or an [`IServiceCollection`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) extension, so an application wires each one in a single call. Modules never assume a configuration section: options always come from the application.
 - **Domain-free.** Generic code takes strings and generic parameters instead of domain enums. Domain code (repositories, clients, event payloads, message destinations, UI environments) stays in your applications.
-- **Vendor-neutral.** Company-specific conventions plug in through extension points: an overridable `ObserverFactory` for logs and metrics, options and constructor parameters, and `ConfigureAppConfiguration` hooks for configuration sources.
+- **Vendor-neutral.** Company-specific conventions plug in through extension points: your own logging providers, metric recorder and OTLP exporter registered in DI for logs and metrics, options and constructor parameters, and `ConfigureAppConfiguration` hooks for configuration sources.
 - **Standalone.** Every dependency restores from nuget.org; test-only libraries such as [AwesomeAssertions](https://awesomeassertions.org/) are confined to the `Testing.*` kits.
 
 [Values and Decisions](decisions/README.md) lists every value and the architectural decisions behind the platform.
 
 ## Samples
 
-The [samples](samples/README.md) are runnable applications (a REST API, a Lambda job, a worker, a WebApp, a mock server and their tests) that together show the three pillars composed: each is laid out by the architecture, built on the infrastructure packages and validated by the Fallout build.
+The [samples](samples/README.md) are runnable applications (a REST API, a Lambda job, a worker, a WebApp, a mock server and their tests) that together show the three pillars composed: each is laid out by the architecture, built on the infrastructure packages and validated by the Anarchy build.
 
 ## Learn more
 
-- [Guides](guides/README.md): how the platform fits together, walkthroughs for new and existing solutions, migration recipes and the platform features.
+- [Guides](guides/README.md): how the platform fits together, walkthroughs for new and existing solutions, onboarding recipes and the platform features.
 - [Conventions](conventions/README.md): recommendations for applications on the platform, and how to opt out of each.
 - [Values and Decisions](decisions/README.md): why the platform is built the way it is.
 - [Package Catalog](packages/README.md) and [NuGet.org](https://www.nuget.org/profiles/anarchy-io): every package, by layer.

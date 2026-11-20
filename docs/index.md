@@ -31,15 +31,15 @@ pillars:
   - image_path: /assets/images/features/pillars-infra.png
     alt: "Reusable infrastructure components illustration"
     title: "Infrastructure"
-    excerpt: "Independently published packages for persistence, messaging, observability, configuration, hosting, APIs, UIs and testing: reference only what you use."
+    excerpt: "Independently published packages for persistence, messaging, telemetry, configuration, hosting, APIs, UIs and testing: reference only what you use."
     url: "/packages/"
     btn_class: "btn--primary"
     btn_label: "Browse the packages"
   - image_path: /assets/images/features/pillars-build.png
     alt: "Build automation pipeline illustration"
     title: "Build Ecosystem"
-    excerpt: "Fallout build components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, layering checks, packaging, versioning and releases."
-    url: "/guides/fallout-builds.html"
+    excerpt: "Anarchy automation components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, layering checks, packaging, versioning and releases."
+    url: "/guides/automation-builds.html"
     btn_class: "btn--primary"
     btn_label: "Automate the build"
 feature_row:
@@ -52,15 +52,15 @@ feature_row:
     btn_label: "Bootstrap a solution"
   - image_path: /assets/images/features/fallout.png
     alt: "Build pipeline of connected gears or blocks, flat outline illustration, red-orange accent on dark background"
-    title: "Bring the Fallout build"
+    title: "Bring Anarchy automation"
     excerpt: "Add compile, lint, test, layering, packaging and release targets to an existing repository."
-    url: "/getting-started/fallout.html"
+    url: "/getting-started/automation.html"
     btn_class: "btn--primary"
     btn_label: "Add the build"
   - image_path: /assets/images/features/packages.png
     alt: "Stacked modular building blocks in layers, flat outline illustration, red-orange accent on dark background"
     title: "Pick the packages"
-    excerpt: "Persistence, messaging, observability, hosting, web and testing kits: reference only what you use."
+    excerpt: "Persistence, messaging, telemetry, hosting, web and testing kits: reference only what you use."
     url: "/packages/"
     btn_class: "btn--primary"
     btn_label: "See the catalog"
@@ -81,7 +81,7 @@ Adopt the whole platform, or start with the single piece you need.
 ## Where to go next
 
 - **[Overview](overview/)**: what the platform is, how its three pillars fit together and the ideas behind it.
-- **[Getting Started](getting-started/)**: choose between the CLI tool, the [Fallout](https://fallout.build/) build and individual packages.
+- **[Getting Started](getting-started/)**: choose between the CLI tool, Anarchy automation and individual packages. The build is powered by [Fallout Build](https://fallout.build/).
 - **[NuGet.org](https://www.nuget.org/profiles/anarchy-io)**: every published `Anarchy.Toolkit.*` package and its versions.
 - **[Adoption Advisor](getting-started/advisor.html)**: a few questions about your project, a suggested adoption plan.
 - **[Guides](guides/)**: how the platform fits together, walkthroughs for new and existing solutions, and the platform features.

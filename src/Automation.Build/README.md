@@ -2,13 +2,13 @@
 
 > Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Automation · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
-Reusable [Fallout](https://fallout.build/) build components for .NET repositories.
+Reusable Anarchy build components for .NET repositories, powered by [Fallout Build](https://fallout.build/).
 
 ```bash
 dotnet add build/_build.csproj package Anarchy.Toolkit.Automation.Build
 ```
 
-Implement the components appropriate to your repository on a `FalloutBuild` class. For example, a package-only build can implement `INuGetBuild`, `ILayeringBuild`, `IDependencyMapBuild`, `IDependencyUpgradeBuild` and `IGitHooksBuild`, with an empty `Artifacts` collection. Use `IBoilerplateBuild` for scaffolding, add `IApiReferenceBuild` for a DocFX API reference site, or add the container (`IContainerBuild`, `IDockerBuild`) components as needed. External deployment and publication targets require their respective tools and credentials.
+Implement the components appropriate to your repository on an `AnarchyBuild` class. For example, a package-only build can implement `INuGetBuild`, `ILayeringBuild`, `IDependencyMapBuild`, `IDependencyUpgradeBuild` and `IGitHooksBuild`, with an empty `Artifacts` collection. Use `IBoilerplateBuild` for scaffolding, add `IApiReferenceBuild` for a DocFX API reference site, or add the container (`IContainerBuild`, `IDockerBuild`) components as needed. External deployment and publication targets require their respective tools and credentials.
 
 ### Fallout types in the public API
 
@@ -23,9 +23,7 @@ consumer needs to customize.
 using Anarchy.Toolkit.Automation.Build.Component;
 using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
 using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
-using Fallout.Common;
-
-class Build : FalloutBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
+class Build : AnarchyBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
               IDependencyUpgradeBuild, IGitHooksBuild
 {
     public IReadOnlyCollection<Artifact> Artifacts => [];
@@ -33,9 +31,9 @@ class Build : FalloutBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
 }
 ```
 
-Create Fallout's `.fallout/parameters.json` with the solution path and, for `ILayeringBuild` or `IDependencyMapBuild`, the toolkit's `.anarchy/layering.json` with the solution's layering (see the [schema](https://anarchy-io.github.io/anarchy-toolkit/schemas/layering.schema.json)), then run `dotnet run --project build/_build.csproj -- --help` to see targets and parameters. The included scaffolding target writes its solution setting to `.fallout/parameters.json`; it will not overwrite existing files.
+Create Fallout's `.fallout/parameters.json` with the solution path, then run `dotnet run --project build/_build.csproj -- --help` to see targets and parameters. Layering and other toolkit preferences are optional in the solution-root `.anarchy-toolkit.json` (schema: [anarchy-toolkit.schema.json](https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json)); without overrides, the effective layering baseline is folder mode under `src/Library` with standard application folders and layers. Existing Fallout parameter resolution takes precedence over saved preferences, then in-code defaults. A missing file or layout mode is valid and no mode is inferred. The included scaffolding target writes its engine-owned solution setting to `.fallout/parameters.json`; it will not overwrite existing files.
 
-See the [Fallout builds guide](https://anarchy-io.github.io/anarchy-toolkit/guides/fallout-builds.html) for component details and package publishing.
+See the [Anarchy automation builds guide](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html) for component details and package publishing.
 
 ## Local containers
 
@@ -96,7 +94,7 @@ make compile
 make check_layering
 ```
 
-By default, scaffolding creates a solution containing the build and a starter `src/Core` project, along with `tests/`, `samples/`, `docs/`, `Makefile`, scripts and configuration files. Review the supplied .NET SDK and test-runner settings and enable or adapt the optional Make targets for your build components and tools.
+By default, scaffolding creates a solution containing the build and a starter `src/Core` project, along with `tests/`, `samples/`, `docs/`, `Makefile`, scripts and configuration files. It does not create an automation preferences file unless explicitly asked to save preferences. Review the supplied .NET SDK and test-runner settings and enable or adapt the optional Make targets for your build components and tools.
 
 ### Choosing what to install
 
@@ -109,7 +107,7 @@ Use `--boilerplate-items` for a comma-separated allowlist and `--boilerplate-exc
 | `tests`, `samples`, `docs` | Create the directory and its `.gitkeep`. |
 | `Makefile`, `.gitignore`, `.editorconfig`, `global.json`, `nuget.config` | Install the corresponding packaged file. |
 | `Directory.Build.props` | Create the SQL resource embedding rule if the file is absent. |
-| `scripts` | Install all scripts; individual paths such as `scripts/build.fallout.sh` or `scripts/bootstrap` can also be selected or excluded. |
+| `scripts` | Install all scripts; individual paths such as `scripts/build.anarchy.sh` or `scripts/bootstrap` can also be selected or excluded. |
 | `skills` | Install the toolkit's agent skills into `.agents/skills` (see [Agent skills](#agent-skills)). Opt-in: `all` leaves them out. |
 
 `all` selects every item except `skills`, and `none` selects nothing. Unknown names fail before any files are written. When selecting individual scripts, include their helpers: the launcher needs `scripts/shared/colors.env`, `scripts/console/subtitle.sh` and, unless environment reloading is disabled, `scripts/bootstrap/shell-profile-path.sh`.
@@ -120,7 +118,7 @@ To look before writing, `--boilerplate-dry-run` (`make boilerplate DRY_RUN=true`
 
 ## Agent skills
 
-The toolkit ships eight [Agent Skills](https://agentskills.io/) so coding agents run the solution's operations the way the toolkit intends: `anarchy` (the entry point: CLI, rules and which skill to load), `anarchy-adopt` (adoption, upgrades and migrations), `anarchy-compose` (modules, settings, health reports, workers), `anarchy-conventions` (the recommended coding conventions and the decisions behind them), `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. They are opt-in: `make install_skills` (or `make boilerplate ITEMS=skills`, or `anarchy-toolkit skills install`) copies them to `.agents/skills`, never overwriting existing files.
+The toolkit ships eight [Agent Skills](https://agentskills.io/) so coding agents run the solution's operations the way the toolkit intends: `anarchy` (the entry point: CLI, rules and which skill to load), `anarchy-adopt` (first-time adoption and initial repository setup), `anarchy-compose` (modules, settings, health reports, workers), `anarchy-conventions` (the recommended coding conventions and the decisions behind them), `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. They are opt-in: `make install_skills` (or `make boilerplate ITEMS=skills`, or `anarchy-toolkit skills install`) copies them to `.agents/skills`, never overwriting existing files.
 
 A skill is free text (when to use the commands, how to combine them, what to avoid) plus a commands table generated between `<!-- anarchy:commands:begin … -->` and `<!-- anarchy:commands:end -->` from the Makefiles' `#?`, `#+` and `#!` comments. Make targets declare their skill with a `#@` comment, which `make help COMMAND=<target>` also shows:
 
@@ -142,7 +140,17 @@ the skill. `#@ -` exempts a target.
 | `SyncAgentSkills` | `skills_sync [PREFIX=…]` | Creates each missing skill from a template and rewrites the commands block of every skill, keeping the rest of the file |
 | `ValidateAgentSkills` | `skills_validate [PREFIX=…]` | Fails when a required skill is missing or invalid, still has the template's `TODO` description, lost its `## When to use` or `## Commands` section, or lists outdated commands |
 
-`--agent-skills-prefix` defaults to the solution's name, and `--agent-skills-directories` to `.agents/skills` (new skills are created in the first). `ValidateAgentSkills` is not part of `PullRequest`; run it as its own CI step.
+`--agent-skills-prefix` defaults to the solution's name, and `--agent-skills-directories` to `.agents/skills` (new skills are created in the first). These can also be saved under `agentSkills` in `.anarchy-toolkit.json`. `ValidateAgentSkills` is not part of `PullRequest`; run it as its own CI step.
+
+### Automation preferences
+
+Fallout resolves command-line, environment and `parameters.json` values using its existing precedence before consulting
+the optional root `.anarchy-toolkit.json`, then the in-code default. To inspect or deliberately edit saved overrides,
+use `ShowAnarchyPreferences`, `SetAnarchyPreference --PreferenceKey section.property --PreferenceValue '<JSON>'`,
+`UnsetAnarchyPreference --PreferenceKey section.property` or `ConfigureAnarchyPreferences`; Make wrappers are
+`config_show`, `config_set KEY=section.property VALUE='<JSON>'`, `config_unset KEY=section.property` and
+`config_configure`. Edits merge only requested keys, validate the resulting preferences and write atomically. Normal
+build execution never writes preferences. See the [complete inventory and defaults](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
 
 ## Mock server
 
@@ -177,12 +185,15 @@ What Fallout keeps to itself:
 
 ### 1.0.0
 
+- Breaking: use descriptive `ConfigurationValueSet`, `EnvironmentValueSet`, and `RuntimeValueSet` types without namespace-clash aliases; public automation default changes are classified as breaking. This newly named package remains at its initial 1.0.0.
+- Add `AnarchyBuild` as the standard build host, with Fallout as the underlying engine.
 - New package identity, renamed from `Anarchy.Toolkit.Build.Fallout`; versions below are historical releases under that package ID.
 - Breaking: replace the ECR-named container targets with registry-neutral `Container*` targets, move the Dockerfile default to `docker/Dockerfile` and the publish output to `artifacts/Container/<app>`. The package remains at its initial 1.0.0 on this branch.
+- Add optional unified automation preferences and build preference show/set/unset/configure targets, preserving existing Fallout parameter precedence.
 - Added `IBuildTelemetry` and `[BuildTelemetry]`, which add consumer sinks alongside Fallout's logging and expose the
   toolkit telemetry to build code.
 - Establish adopter organization conventions and apply application-folder mappings only when folder-based layering is selected.
-- `CheckLayering` and `GenerateDependencyMap` read the layering from `.anarchy/layering.json`, replacing the `LayeringLayers`, `LayeringByFolder`, `LayeringRoot` and `LayeringApplicationFolders` parameters and `DependencyMapLayers`; `Automation` is the default top layer. `IDefaultBuild` gains `AnarchyConfigRoot` / `AnarchyConfigDirectory` for the toolkit's configuration folder.
+- `CheckLayering` and `GenerateDependencyMap` resolve optional `layering` overrides from `.anarchy-toolkit.json` against the folder-mode baseline; a missing file or mode is valid.
 
 ### Historical releases under `Anarchy.Toolkit.Build.Fallout`
 

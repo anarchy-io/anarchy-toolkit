@@ -17,7 +17,7 @@ dotnet add package Anarchy.Toolkit.Web.MockServer
 ## When to use it
 
 Use it to stand in for the HTTP services an application calls while integration or end-to-end tests run against it.
-It is a console application whose lifetime is usually driven by the Fallout `IMockServerBuild` targets or a Makefile,
+It is a console application whose lifetime is usually driven by the Anarchy `IMockServerBuild` targets or a Makefile,
 but it can also be run by hand, spawned from a test, or started in-process with `MockServerHost.StartAsync`.
 
 ## How to use it
@@ -100,7 +100,7 @@ the system under test sent:
   `MockServerClient.GetRequestsAsync` and the `AssertReceivedAsync` assertions of `Anarchy.Toolkit.Testing.MockServer`
   read, while the server runs.
 - **In a file**, with `--record <file>`: one JSON object per line, truncated at startup and never cleared by the control
-  API. Read it with `RecordedRequestsFile.Read`, e.g. after the server stopped or from another process. The Fallout
+  API. Read it with `RecordedRequestsFile.Read`, e.g. after the server stopped or from another process. The Anarchy
   `IMockServerBuild` targets record to `artifacts/mock-server/requests.jsonl` by default.
 
 Each record has its sequence, timestamp, method, path, query, headers, body, the expectation (or middleware) that

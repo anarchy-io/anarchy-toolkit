@@ -1,6 +1,6 @@
 # New Solution with the CLI
 
-The `anarchy-toolkit` .NET global tool is the entry point to the platform's **Build Ecosystem**: it creates solutions and adds applications to them. It is the quickest way to adopt all three pillars at once, with a layered solution (Architecture), applications wired to the toolkit packages (Infrastructure) and the Fallout build already in place.
+The `anarchy-toolkit` .NET global tool is the entry point to the platform's **Build Ecosystem**: it creates solutions and adds applications to them. It is the quickest way to adopt all three pillars at once, with a layered solution (Architecture), applications wired to the toolkit packages (Infrastructure) and the Anarchy build already in place, powered by [Fallout Build](https://fallout.build/).
 
 ## Install
 
@@ -23,22 +23,27 @@ anarchy-toolkit bootstrap
 
 It asks for:
 
-1. the solution name;
-2. the output directory, which must be empty or not exist yet;
-3. how projects are mapped to layers: by folder (the default) or by name prefix;
-4. the layers, innermost first (default: `Core, Infrastructure, Configuration, Hosting, Web`); a library project is created per layer, each referencing the one below it;
-5. which applications to start with (APIs, jobs and UIs), and a name for each.
-
-6. whether to install the agent skills (default: no; see [Agent skills](#agent-skills)).
+1. the solution name and output directory, which must be empty or not exist yet;
+2. whether it will contain one application or several, before choosing a layering mode;
+3. for one application, its kind and folder name (default: `App`); for several, which applications to start with and a name for each;
+4. how projects are mapped to layers: by folder (the default) or by name prefix;
+5. the layers, innermost first; a library project is created per layer, each referencing the one below it;
+6. whether to install the agent skills (default: no; see [Agent skills](#agent-skills));
+7. whether to save selected automation preferences (default: no).
 
 It then shows the plan, including each web application's local ports, and writes nothing until you confirm. To skip the questions and create the baseline solution only:
 
 ```bash
-anarchy-toolkit bootstrap MyApp --output ./MyApp [--with-skills] [--layering folder|prefix]
+anarchy-toolkit bootstrap MyApp --output ./MyApp [--with-skills] [--layout monorepo|single-app] [--application-folder MyApp] [layout options] [--save-preferences]
 ```
 
-Folder layering is the default. Use `--layering prefix` to choose project-name prefixes without the wizard; later
-scaffolding reads and follows the selected mode. Use the wizard when you need custom layers.
+`--layout monorepo` keeps shared libraries under `src/`, grouped in `src/Library`; `--layout single-app` puts them
+directly under `src` and maps one application folder to `Web` (API/UI) or `Hosting` (job). The folder defaults to `App`;
+choose names such as `Api`, `Job`, `Cli` or the solution name with `--application-folder`. Use `--layering prefix` to
+choose project-name prefixes without the wizard; use
+`--save-preferences` only when the selected preference should be persisted. Otherwise bootstrap and scaffold use
+operation arguments and defaults without creating or changing `.anarchy-toolkit.json`. Use the wizard when you need
+custom layers. For saved defaults and editor commands, see [Automation Preferences](../guides/automation-preferences.md).
 
 ### What you get
 
@@ -48,8 +53,8 @@ flowchart LR
         direction TB
         Libs["src/Library/&lt;Layer&gt;/<br/>one library per layer"]
         Apps["src/Api · src/Jobs · src/Ui<br/>your applications"]
-        Build["build/_build.csproj<br/>Fallout build host"]
-        Tooling["Makefile · scripts/<br/>.fallout/parameters.json"]
+        Build["build/_build.csproj<br/>Anarchy build host"]
+        Tooling["Makefile · scripts/<br/>.fallout/parameters.json · optional .anarchy-toolkit.json"]
         Props["Directory.Packages.props<br/>central package versions"]
     end
     Apps --> Libs
@@ -87,7 +92,7 @@ anarchy-toolkit scaffold job ClientSync
 anarchy-toolkit scaffold ui UserAdmin
 ```
 
-The tool places each application according to the solution's layering settings, adds it to the solution and references the toolkit package it needs, following the solution's central package management.
+The tool places each application from explicit arguments, optional saved preferences and then the standard in-code folder baseline; a preferences file is not required and the tool does not infer a layout. Pass `--save-preferences` to persist selected choices. It adds the application to the solution and references the toolkit package it needs, following the solution's central package management.
 
 ## Agent skills
 
@@ -101,6 +106,6 @@ Mark your own make targets with `#@ <skill>`, then `make skills_sync` creates th
 
 ## Next steps
 
-- Learn what the generated build can do in [Adding the Fallout build](fallout.md) and the [Fallout Builds guide](../guides/fallout-builds.md).
+- Learn what the generated build can do in [Adding Anarchy automation](automation.md) and the [Anarchy Automation Builds guide](../guides/automation-builds.md).
 - Follow the [Layered Architecture guide](../guides/architecture.md) as the solution grows.
 - The full reference, including the layering options, is the [`Automation.Build.Cli` package page](../packages/Automation.Build.Cli/README.md).

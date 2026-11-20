@@ -44,7 +44,7 @@ src/
 
 - `Core/Entity/DomainModel`: internal business state and behavior. Keep it free to evolve without forcing HTTP contract changes.
 - `Core/Entity/Api/Input`: service/use-case inputs when arguments are complex and do not map to a single domain entity.
-- `Core/Entity/Api/Output`: DTOs produced by services when combining several domain sources (in the toolkit, `HealthCheckReport` and `ExceptionReport` in `Anarchy.Toolkit.Core.Health` (`Entity/Api/Output`) play this role).
+- `Core/Entity/Api/Output`: DTOs produced by services when combining several domain sources (in the toolkit, `HealthCheckReport` and `ExceptionReport` in `Anarchy.Toolkit.Core.Health.Reports` play this role).
 - `Web/Presentation/Contract`: endpoint routes and signatures. One stable contract surface helps tests and client integrations. Controller contracts may extend the toolkit's `IToolkitController` marker.
 - `Web/Presentation/Entity/Input` and `Web/Presentation/Entity/Output`: HTTP request/response shapes owned by the presentation layer. Output DTOs also own their own Core-to-DTO mapping (see below); there is no separate `Web/Service/Builder` layer.
 
@@ -72,7 +72,7 @@ namespace Anarchy.Toolkit.Web.Presentation.Entity.Output.Health;
 public record HealthCheckReportOutput(
     bool Passed,
     TimeSpan Duration,
-    IReadOnlyCollection<HealthCheckEntityOutput> Tests
+    IReadOnlyCollection<HealthCheckOutcomeOutput> Tests
 )
 {
     public static HealthCheckReportOutput FromDto(HealthCheckReport dto)
@@ -80,7 +80,7 @@ public record HealthCheckReportOutput(
         return new HealthCheckReportOutput(
             Passed: dto.Passed,
             Duration: dto.Duration,
-            Tests: dto.Tests.Select(HealthCheckEntityOutput.FromDto).ToArray()
+            Tests: dto.Tests.Select(HealthCheckOutcomeOutput.FromDto).ToArray()
         );
     }
 }
@@ -89,7 +89,7 @@ public record HealthCheckReportOutput(
 Rules for this mapping:
 
 - The factory method lives on the DTO it produces, not on a separate class. If you find yourself creating a `Web/Service/Builder/Output` folder, fold that logic into the DTO instead.
-- When a DTO nests other DTOs (e.g. a collection of items), give each nested DTO its own static factory method and have the parent call it (`Tests = dto.Tests.Select(HealthCheckEntityOutput.FromDto).ToArray()`), rather than inlining the nested mapping.
+- When a DTO nests other DTOs (e.g. a collection of items), give each nested DTO its own static factory method and have the parent call it (`Tests = dto.Tests.Select(HealthCheckOutcomeOutput.FromDto).ToArray()`), rather than inlining the nested mapping.
 - Prefer `FromEntity` when mapping directly from a `Core/Entity/DomainModel(/Persisted)` entity, and `FromDto` when mapping from a `Core/Entity/Api/Output` DTO.
 - **Every `FromEntity`/`FromDto` method must have a unit test** that mirrors the DTO's folder (e.g. `tests/Unit/Web/Presentation/Entity/Output/Health/HealthCheckReportOutputTest.cs`). At minimum, cover field-by-field mapping, nested-collection mapping (count + ordering), and null/optional-field handling.
 

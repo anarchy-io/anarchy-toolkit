@@ -15,16 +15,16 @@ Test projects are never published, so there is **one test project per test kind*
 ```text
 src/
 └── Core.Events/
-    └── Service/Event/Domain/
-        └── EventHandlerBus.cs
+    └── Domain/
+        └── DomainEventHandlerDispatcher.cs
 
 tests/
 └── Unit/
     ├── Unit.csproj
     └── Core/
         └── Events/
-            └── Core/Service/Event/Domain/
-                └── EventHandlerBusTest.cs
+            └── Domain/
+                └── DomainEventHandlerDispatcherTest.cs
 ```
 
 - **One test project per kind**: `tests/<Kind>/<Kind>.csproj` (`tests/Unit/Unit.csproj`). It references every `src/` project it tests.
@@ -33,7 +33,7 @@ tests/
 - **The namespace follows the folder**, with `Anarchy.Toolkit.Tests.<Kind>` as root:
 
   ```csharp
-  namespace Anarchy.Toolkit.Tests.Unit.Core.Events.Core.Service.Event.Domain;
+  namespace Anarchy.Toolkit.Tests.Unit.Core.Events.Domain;
   ```
 
   Because the folders split the project name on its dots, the namespace still reads `<Project>.<SUT path>`.
@@ -43,18 +43,18 @@ tests/
 
 ### Test kinds
 
-| Kind | Project | Runs | [Fallout](https://fallout.build/) target |
+| Kind | Project | Runs | Anarchy target |
 |---|---|---|---|
 | Unit | `tests/Unit/Unit.csproj` | in-process, no infrastructure | `TestUnit` (`make test_unit`) |
 | Integration | `tests/Integration/Integration.csproj` (none yet) | against real local resources (Docker: [PostgreSQL](https://www.postgresql.org/), LocalStack) | `TestIntegration` |
 | End-to-end | `tests/EndToEnd/EndToEnd.csproj` (none yet) | end-to-end through a hosted API or job | `TestEndToEnd` |
 
-The Fallout build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro), [AwesomeAssertions](https://awesomeassertions.org/), [Moq](https://github.com/devlooped/moq), and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
+The Anarchy build discovers test projects by name (a project named after its kind is of that kind), so keep the naming exact. All test projects share `tests/Directory.Build.props`: xunit.v3 on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro), [AwesomeAssertions](https://awesomeassertions.org/), [Moq](https://github.com/devlooped/moq), and a reference to `Anarchy.Toolkit.Testing`. All suites of a kind run in one process, so tests must not rely on process-wide state another suite could change.
 
 #### Why three kinds, and one project per kind
 
 - **Unit tests need no external resources**, so they run everywhere, including continuous delivery: `Pack` and
-  `EcrPublishAppArtifact` depend on `TestUnit`. A broken merge (two pull requests that pass alone but not together) is
+  `ContainerPublishAppArtifact` depend on `TestUnit`. A broken merge (two pull requests that pass alone but not together) is
   caught before a package or image ships, without Docker or a mock server on the delivery agent.
 - **Integration and end-to-end tests validate against an environment**: the local one while developing
   (`make start`, the mock server) and the CI pipeline's for pull requests (`make pull_request`). Keeping them in their
@@ -90,7 +90,7 @@ Correct:   UserServiceTest.cs
 Incorrect: UserServiceTests.cs
 ```
 
-> Some older suites (`Core.Health`, `Core.Observability`, `Infrastructure.CorrelationId`, the `Hosting.Workers` health API, `Infrastructure.Observability.*`, and the `Testing` in-memory sinks) still use `*Tests` class names. They do follow the folder and namespace rules above. New tests should use `Test`.
+> Some older suites (`Core.Health`, `Infrastructure.CorrelationId` and the `Hosting.Workers` health API) still use `*Tests` class names. They do follow the folder and namespace rules above. New tests should use `Test`.
 
 ### Partial test classes
 
@@ -123,7 +123,7 @@ Services, models and entities that hold business rules are usually covered by un
 When the SUT depends on another abstraction, mock it. Avoid configuring `Mock<T>` directly in individual tests unless there is a compelling local reason; prefer a reusable Mocker class (see [Shared test resources](#shared-test-resources)):
 
 ```csharp
-public class EventHandlerBusTest : TestCaseBase
+public class DomainEventHandlerDispatcherTest : TestCaseBase
 {
     private readonly Mock<IDomainEventHandler<DummyStateEntity>> _handler =
         DomainEventHandlerMocker.Mock<DummyStateEntity>(canHandle: false);
@@ -165,11 +165,11 @@ The packable test kits under `src/Testing` are the toolkit's shared test helpers
 Most unit and integration tests should inherit from `TestCaseBase`. It provides:
 
 - `TestEnvironment()`: the test `IHostEnvironment`,
-- `FixtureObserver`: an `InMemoryObserver` for SUTs that need an `Observer`.
+- `FixtureTelemetry`: a `TestTelemetry` for SUTs that need telemetry. Its `Telemetry` is an `AppTelemetry` whose logs and metrics are captured in memory.
 
 Tests that read settings inherit from `TestCaseBase<TAppSettings>` instead, where `TAppSettings` is your own settings type implementing `IAppSettings` (the toolkit never ships a concrete one). It adds `TestSettings()`: a cached `TAppSettings` bound from the `appsettings.json` and `appsettings.Development.json` embedded in the assembly that declares `TAppSettings` (`<EmbeddedResource Include="appsettings*.json" />`). `TestHelper.TestSettings<TAppSettings>()` returns the same instance outside a `TestCaseBase`.
 
-`FixtureObserver` is fully in memory, so its logs (`SinkLogs`) and metrics (`InMemoryMeasurer`) can be asserted when observability is the behavior under test. Avoid asserting incidental logs or metrics in ordinary business-rule tests; assert the business result first.
+`FixtureTelemetry` is fully in memory, so its logs (`Logs`, with their properties and scopes) and metrics (`Metrics`) can be asserted when telemetry is the behavior under test; `services.AddTestTelemetry(FixtureTelemetry)` routes a container's telemetry to the same capture. Avoid asserting incidental logs or metrics in ordinary business-rule tests; assert the business result first.
 
 ```csharp
 public class UserServiceTest : TestCaseBase
@@ -177,7 +177,7 @@ public class UserServiceTest : TestCaseBase
     [Fact]
     public void Activate_WhenUserIsPending_ReturnsActiveUser()
     {
-        var sut = new UserService(FixtureObserver);
+        var sut = new UserService(FixtureTelemetry.Telemetry);
 
         var result = sut.Activate(new UserEntityFixture().Build());
 
@@ -230,7 +230,7 @@ Use the separate native and Lambda methods for responses with variable fields (t
 
 ### Mock server (`Anarchy.Toolkit.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
 
-See the [Mock Server](https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html) guide for choosing between expectations, middlewares and assertions, recording a real upstream and migrating from a [MockServer](https://www.mock-server.com/) container.
+See the [Mock Server](https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html) guide for choosing between expectations, middlewares and assertions, recording a real upstream and replacing a [MockServer](https://www.mock-server.com/) container.
 
 When the application under integration or end-to-end test calls HTTP services you do not run, stand them in with the mock server instead of mocking the clients:
 
@@ -314,9 +314,9 @@ Before adding a test or shared test resource, check:
 
 | You want to... | Do this |
 |---|---|
-| Keep your project names (`*.Tests.Acceptance`, `*.Specs`) | Map them with `TestKindAliases` in `.fallout/parameters.json` (e.g. `["EndToEnd=Acceptance"]`), or override `IsTestProjectOfKind`. See [Fallout builds](https://anarchy-io.github.io/anarchy-toolkit/guides/fallout-builds.html#how-istandardbuild-finds-test-projects). |
+| Keep your project names (`*.Tests.Acceptance`, `*.Specs`) | Map them with `TestKindAliases` in `.fallout/parameters.json` (e.g. `["EndToEnd=Acceptance"]`), or override `IsTestProjectOfKind`. See [Anarchy automation builds](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html#how-istandardbuild-finds-test-projects). |
 | Keep one test project per production project | Fine: projects are matched by name segments, so `MyService.Tests.Unit` and `Other.Tests.Unit` both run in `TestUnit`. |
-| Stay on xUnit v2 / [VSTest](https://github.com/microsoft/vstest) for now | Fallout runs VSTest and Microsoft.Testing.Platform projects side by side; keep the MTP runner out of [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json) until the last project moves. See the [migration recipes](https://anarchy-io.github.io/anarchy-toolkit/guides/migration-recipes.html#xunit-v2-and-vstest-to-xunit-v3-and-mtp). |
+| Use xUnit v2 / [VSTest](https://github.com/microsoft/vstest) | The build's test targets run each project with its own runner. Keep the MTP runner out of [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json), since `dotnet test` then only runs MTP projects, and note that the `Testing.*` kits require xUnit v3. |
 | Use [NUnit](https://nunit.org/), [MSTest](https://learn.microsoft.com/dotnet/core/testing/unit-testing-mstest-intro), Moq-free mocks or another assertion library | The build doesn't care. Only the `Testing.*` kits assume [xUnit v3](https://xunit.net/), Moq (≥ 4.21) and AwesomeAssertions. |
 | Use another tests folder | Set `TestsRoot` in `.fallout/parameters.json`. |
 

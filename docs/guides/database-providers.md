@@ -2,21 +2,6 @@
 
 This guide explains how the toolkit's relational persistence is split between a provider-agnostic core and thin provider adapters, what is specific to each supported database, and how to add a new one.
 
-## Provider package ID migration
-
-Database adapter and test-kit IDs now include their shared parent package:
-
-| Former package ID | New package ID |
-|---|---|
-| `Anarchy.Toolkit.Infrastructure.Persistence.Mysql` | `Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql` |
-| `Anarchy.Toolkit.Infrastructure.Persistence.Oracle` | `Anarchy.Toolkit.Infrastructure.Persistence.Db.Oracle` |
-| `Anarchy.Toolkit.Infrastructure.Persistence.Postgres` | `Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres` |
-| `Anarchy.Toolkit.Testing.Mysql` | `Anarchy.Toolkit.Testing.Db.Mysql` |
-| `Anarchy.Toolkit.Testing.Oracle` | `Anarchy.Toolkit.Testing.Db.Oracle` |
-| `Anarchy.Toolkit.Testing.Postgres` | `Anarchy.Toolkit.Testing.Db.Postgres` |
-
-Each new package ID starts at `1.0.0`; its README carries the old ID's release history under a clearly marked historical heading. Update package references and namespaces from `.Infrastructure.Persistence.{Provider}` to `.Infrastructure.Persistence.Db.{Provider}`, and from `.Testing.{Provider}` to `.Testing.Db.{Provider}`. Existing versions remain published under the former IDs; they were not republished under the new names.
-
 ## How the layers fit together
 
 | Package | Role |

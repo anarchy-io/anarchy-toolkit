@@ -1,6 +1,6 @@
 # Adopting an Existing Solution
 
-How to move a running service onto the platform **in place, while it keeps shipping**: the plumbing changes, the business logic and the contract don't. The order and the techniques come from a real migration plan for a production API with 17 test projects, a [MockServer](https://www.mock-server.com/) container and a pipeline whose make targets could not change.
+How to add the platform to a repository that already runs a service, **in place and in small steps**, so it keeps shipping while it gains the toolkit's build, packages and conventions. The order and the techniques come from a real onboarding plan for a production API with 17 test projects and a pipeline whose make targets could not change.
 
 > Using a coding agent? The `anarchy-adopt` skill and [`agents/ADOPT.md`](https://raw.githubusercontent.com/anarchy-io/anarchy-toolkit/main/agents/ADOPT.md) follow this guide step by step.
 
@@ -11,20 +11,21 @@ How to move a running service onto the platform **in place, while it keeps shipp
 | **One concern per pull request.** Mechanical changes (moves, renames, formatting) never share a commit with behaviour changes. | Reviewers skim the mechanical diff and focus on the rest. |
 | **Every pull request deploys on its own.** | Nothing waits on the next step to work. |
 | **The pipeline contract holds.** [Make](https://www.gnu.org/software/make/) targets the pipeline calls keep their names and meaning. | Many pipelines aren't versioned with the code. |
-| **The contract is pinned by tests.** Routes, bodies, status codes, health paths, metric names and log properties stay the same; snapshots and end-to-end tests prove it. | The migration is invisible to consumers. |
-| **Map before you rename.** Prefer parameters (`SourceRoot`, `TestKindAliases`, `LayeringByFolder`) over moving files. | Fewer, smaller diffs. |
+| **Your service's contract holds.** Routes, bodies, status codes, health paths, metric names and log properties stay as they are; snapshots and end-to-end tests prove it. | Adopting the toolkit is invisible to consumers. |
+| **Describe your layout to the build.** Point it at your folders with configuration (`SourceRoot`, `TestsRoot`, `TestKindAliases`, and optional layering arguments or `.anarchy-toolkit.json` overrides) instead of relocating files. | Fewer, smaller diffs. |
 
 ## The order
 
 ```mermaid
 flowchart LR
-    A1["Repository files<br/>.editorconfig · .gitignore"] --> A2["Fallout build<br/>+ legacy targets"]
-    A2 --> A3["Tests on xUnit v3 / MTP"]
-    A2 --> B["Mock server"]
-    C1["Packages"] --> C2["Validated settings"] --> C3["One module per adapter"] --> D["Startup, health, workers"] --> E["Observability"]
+    A1["Repository files<br/>.editorconfig · .gitignore"] --> A2["Anarchy build<br/>+ your own targets"]
+    A2 --> A3["Layering"]
+    A2 --> A4["Tests on xUnit v3 / MTP"]
+    A4 --> B["Mock server"]
+    C1["Packages"] --> C2["Validated settings"] --> C3["One module per adapter"] --> D["Startup, health, workers"] --> E["Telemetry"]
 ```
 
-The build track (top) and the runtime track (bottom) are independent: two people can work on them in parallel.
+The build track (top) and the runtime track (bottom) are independent: two people can work on them in parallel. The [onboarding recipes](onboarding-recipes.md) give the steps and the "done when" check of each piece.
 
 ### Repository files
 
@@ -34,47 +35,55 @@ Install the toolkit's `.editorconfig` and `.gitignore` into managed blocks, leav
 anarchy-toolkit boilerplate diff .gitignore .editorconfig
 ```
 
-Then run `make lint_fix` in a separate, formatting-only commit. Leave [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json) alone until the tests have moved (step 3).
+Then run `make lint_fix` in a separate, formatting-only commit. Leave [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json) alone until the first xUnit v3 test project exists.
 
-### The Fallout build, next to what you have
+### Anarchy automation, next to your pipeline
 
-Add `build/_build.csproj` with the components that fit (start with `IStandardBuild` and `IBoilerplateBuild`; skip `ILayeringBuild` until the layout is layered), then install the Makefile and scripts without overwriting anything:
+Add `build/_build.csproj` with the components that fit (start with `IStandardBuild` and `IBoilerplateBuild`; add `ILayeringBuild` once the layering is recorded), then install the Makefile and scripts without overwriting anything:
 
 ```bash
 dotnet run --project build/_build.csproj -- SetupBoilerplate --boilerplate-items Makefile,scripts --append-existing --boilerplate-dry-run
 ```
 
-Move the targets your pipeline calls (`install`, `build_release`, `run_smoke_test`, ...) to your own `.mk` files (for example `scripts/make/project/*.mk`), included by your Makefile after the toolkit's and listed in `MAKE_EXTRA_TARGETS`, so `make help` shows the old and the new ones together. If your build also deploys, move it unchanged to a separate `release/` host first; the toolkit's build doesn't deploy ([ADR 0006](https://anarchy-io.github.io/anarchy-toolkit/decisions/0006-fallout-build.html)).
+Keep the targets your pipeline calls (`install`, `build_release`, `run_smoke_test`, ...) in your own `.mk` files (for example `scripts/make/project/*.mk`), included by your Makefile after the toolkit's and listed in `MAKE_EXTRA_TARGETS`, so `make help` lists yours and the toolkit's together. If your build also deploys, keep that in a separate `release/` host: the toolkit's build doesn't deploy ([ADR 0006](https://anarchy-io.github.io/anarchy-toolkit/decisions/0006-fallout-build.html)).
 
-Map your test projects instead of renaming them: `"TestKindAliases": ["EndToEnd=Acceptance"]`. See [Testing: opting out](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html#opting-out-or-adapting).
+If your code or tests are not under `src` and `tests`, say where they are with `SourceRoot` and `TestsRoot`; if your test projects have their own names, declare them with `"TestKindAliases": ["EndToEnd=Acceptance"]`. See [Testing: opting out](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html#opting-out-or-adapting). Coming from NUKE or Cake? See [Coming from another build tool](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html#coming-from-another-build-tool).
 
-### Tests on xUnit v3
+### Layering
 
-One group of projects per pull request, with the same test counts before and after. [Fallout](https://fallout.build/) runs [VSTest](https://github.com/microsoft/vstest) and MTP projects side by side, so the solution can be mixed for as long as needed; set the MTP runner in `global.json` only with the last group. See the [recipe](migration-recipes.md#xunit-v2-and-vstest-to-xunit-v3-and-mtp).
+`ILayeringBuild` uses a folder-mode baseline (`src/Library`, standard application folders and layers) when no preference is saved or passed. Adding it does not require a configuration file. Choose **one** mode for the whole solution: **folder** (recommended) when projects already sit, or can sit, in layer folders such as `src/Library/Core`; **prefix** when they are named `Core.*`, `Infrastructure.*` and so on, as the toolkit's own are. Provide the choice as explicit operation arguments or save selected overrides in `.anarchy-toolkit.json`. Map application folders (`src/Api`, `src/Jobs`) to their layers, and leave the check out of the pull-request gate until it passes locally. The tooling does not infer a mode. See [Layering](https://anarchy-io.github.io/anarchy-toolkit/conventions/layering.html), [Code Organization](https://anarchy-io.github.io/anarchy-toolkit/conventions/code-organization.html) and the [settings-file guide](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html) for what belongs in `.fallout/parameters.json` versus `.anarchy-toolkit.json`.
+
+### Tests
+
+Test projects use xUnit v3 on Microsoft.Testing.Platform, which is what the `Testing.*` kits and the `make test_*` targets expect; see the [recipe](onboarding-recipes.md#add-an-xunit-v3-test-project). Name them by kind, or declare their names ([recipe](onboarding-recipes.md#name-test-projects-by-kind)).
 
 ### Mock server
 
-Replace a MockServer container with the toolkit's mock server: expectation files move unchanged, the unmatched-request check moves into the tests. See the [recipe](migration-recipes.md#mockserver-container-to-the-toolkit-mock-server).
+If your tests call HTTP upstreams, add the toolkit's mock server: expectation files in MockServer's JSON format, and a check that fails the run on unmocked calls. See the [recipe](onboarding-recipes.md#add-the-mock-server).
 
 ### Packages and validated settings
 
-Add the runtime packages you'll use, and nothing else yet. Then add an `AppSettings` with the existing section names, registered with `ModuleAppSettingsBase` next to today's binding: nothing reads it, it only fails the boot when a section is missing. Add validation attributes only where every environment already satisfies them.
+Add the runtime packages you'll use, and nothing else yet. Then add an `AppSettings` with your section names and `ModuleAppSettingsBase`; the boot fails when a section is missing. Add validation attributes only where every environment already satisfies them. See the [recipe](onboarding-recipes.md#add-validated-settings).
 
 ### One module per adapter
 
-Wrap each existing `Add*` extension in a module, smallest first, and call it from today's `Startup` with `services.UseModule(...)`. Each module gets a test that resolves its graph in isolation. See the [recipe](migration-recipes.md#add-extensions-to-modules).
+Give each adapter you register a module, smallest first, applied from the `Startup` with `services.UseModule(...)`, each with a test that resolves its graph in isolation. See the [recipe](onboarding-recipes.md#write-a-module).
 
 ### Startup, health and background work
 
-Move the host to the toolkit's startup base, keeping every middleware in the same order. Then health checks to `ServiceHealthReportBase` (compare paths and bodies first: load balancers depend on them) and hosted services to `MonitoredWorkerBase`.
+Build hosts on the toolkit's startup base, keeping every middleware in the same order, then add [health checks](onboarding-recipes.md#add-a-health-check) and [workers](onboarding-recipes.md#add-a-worker). Keep the health paths and bodies load balancers already depend on.
 
-### Observability last
+### Telemetry last
 
-Run your current monitoring facade and `Observer` side by side, built on the same [Serilog](https://serilog.net/) logger and metrics client, then move call sites over in their own changes. Compare a log event and the metric names before and after on a test environment: dashboards and monitors read them.
+Register `AppTelemetry` (`ModuleLibConfiguration` does it for you) on the logging providers and metrics exporter the application uses: [Serilog](https://serilog.net/) through `AddSerilogTelemetry`, or an OpenTelemetry OTLP exporter for the toolkit's meter. Toolkit packages then write to that pipeline. Check one log line and the metric names on a test environment: dashboards and monitors read them. See [Observability](https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html) and [Bringing your company stack](bringing-your-company-stack.md).
+
+### Pull-request gate
+
+Once the build and its checks are ready, run `make pull_request` locally and in CI. Remove `ILayeringBuild` from `build/Build.cs` to opt out; to adapt your layout, use [layering preferences](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html) or follow the [layering convention's opt-out guidance](https://anarchy-io.github.io/anarchy-toolkit/conventions/layering.html#opting-out-or-adapting).
 
 ## What can stay as it is
 
-Everything the toolkit doesn't need: your business logic, your project names (mapped by parameters), nullable settings, your release and deployment, your exception middleware, your snapshot library. The [conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/) are recommendations; adopt them later or never.
+Everything the toolkit doesn't need: your business logic, your project names (declared in configuration), nullable settings, your release and deployment, your exception middleware, your snapshot library. The [conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/) are recommendations; adopt them later or never.
 
 ## Common surprises
 

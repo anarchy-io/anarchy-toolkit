@@ -1,6 +1,6 @@
 # Anarchy.Toolkit.Automation.Build.Cli
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Build · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Automation · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
 The `anarchy-toolkit` .NET global tool: bootstrap Anarchy-based solutions and scaffold APIs, jobs and UIs into them.
 
@@ -16,10 +16,11 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 | Command | What it does |
 |---|---|
 | `anarchy-toolkit bootstrap` | Guided setup of a new solution. |
-| `anarchy-toolkit bootstrap <name> [--output <dir>] [--with-skills] [--layering folder\|prefix]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one), optionally with the agent skills. Folder layering is the default. |
+| `anarchy-toolkit bootstrap <name> [--output <dir>] [--with-skills] [--layering folder\|prefix] [--save-preferences]` | Creates the baseline solution without prompts, in an empty or new directory (default: the current one), optionally with the agent skills and explicit preference saving. Folder layering is the default. |
 | `anarchy-toolkit scaffold` | Guided addition of an API, job or UI to the current solution. |
-| `anarchy-toolkit scaffold api\|job\|ui <Name>` | Adds one without prompts. |
-| `anarchy-toolkit scaffold api <Name> --no-swagger-theme` | Adds an API whose Swagger UI keeps its own look instead of the toolkit's default theme. |
+| `anarchy-toolkit scaffold api\|job\|ui <Name> [--save-preferences]` | Adds one without prompts; saving selected preferences is opt-in. |
+| `anarchy-toolkit scaffold api <Name> [--swagger-theme\|--no-swagger-theme] [--save-preferences]` | Adds an API; either flag explicitly selects the Swagger theme. Saving preferences is opt-in. |
+| `anarchy-toolkit config show\|set\|unset\|configure` | Inspect saved versus effective preferences, set or clear a typed JSON override, or interactively edit preferences. |
 | `anarchy-toolkit skills install [--output <dir>]` | Installs the toolkit's agent skills into `.agents/skills` of the solution found from the current directory (or `<dir>`). |
 | `anarchy-toolkit boilerplate list` | Lists the packaged boilerplate files (Makefile, scripts, settings files, agent skills). |
 | `anarchy-toolkit boilerplate show <path>` | Prints a packaged file without installing it. |
@@ -34,9 +35,10 @@ The wizard asks for:
 3. how `make check_layering` finds each project's layer (see below);
 4. the layers, innermost first (default: `Core, Infrastructure, Configuration, Hosting, Web`). A library project is created per layer, each referencing the one below it;
 5. which kinds of application to start with, then a name for each one, as many as you like;
-6. whether to install the agent skills (default: no).
+6. whether to install the agent skills (default: no);
+7. whether to save selected automation preferences (default: no).
 
-It then shows the plan, including each web application's local ports, and asks for confirmation before writing anything. Every solution also contains a Fallout build host, Makefile, scripts and configuration. Package versions are always managed centrally: the root `Directory.Packages.props` sets `ManagePackageVersionsCentrally` and pins each toolkit package the solution uses, and the projects' `PackageReference`s carry no versions. Existing files are never overwritten; if a failure occurs after generation starts, inspect the destination before retrying.
+It then shows the plan, including each web application's local ports, and asks for confirmation before writing anything. Every solution also contains an Anarchy build host, Makefile and scripts. Preferences are not saved unless selected in the wizard or requested with `--save-preferences`; a no-save bootstrap remains fully usable with the defaults or repeated explicit layout arguments. Package versions are always managed centrally: the root `Directory.Packages.props` sets `ManagePackageVersionsCentrally` and pins each toolkit package the solution uses, and the projects' `PackageReference`s carry no versions. Existing files are never overwritten; if a failure occurs after generation starts, inspect the destination before retrying.
 
 ### Layering
 
@@ -47,7 +49,7 @@ It then shows the plan, including each web application's local ports, and asks f
 | Job | `src/Jobs/<Name>`, namespace `Jobs.<Name>` | `src/Hosting.Job.<Name>` |
 | UI | `src/Ui/<Name>`, namespace `Ui.<Name>` | `src/Web.Ui.<Name>` |
 
-APIs and UIs belong to the `Web` layer and jobs to the `Hosting` layer; each references its layer's library. The layering settings are written to `.fallout/parameters.json` (`LayeringLayers`, `LayeringByFolder`, `LayeringRoot` and, by folder, `LayeringApplicationFolders`), where `CheckLayering` and `anarchy-toolkit scaffold` read them.
+APIs and UIs belong to the `Web` layer and jobs to the `Hosting` layer; each references its layer's library. The effective layout resolves explicit operation arguments, optional saved values in the root `.anarchy-toolkit.json`, then the in-code baseline: folder mode under `src/Library`, standard app folders and standard layers. The mode is never inferred and no preferences file is required. With `--save-preferences`, bootstrap or scaffold persists only deliberately selected preferences; interactive save consent defaults to No. See the [unified schema](https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json) and [preferences guide](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
 
 ### Applications
 
@@ -61,11 +63,25 @@ Applications are not packable, so `Pack` ignores them. Web applications get loca
 
 ## Scaffold
 
-Run `anarchy-toolkit scaffold` anywhere inside a solution created by `bootstrap` (or any solution whose `.fallout/parameters.json` names its solution file). It places the application according to the solution's layering settings, refuses names already used by a project, and adds it to the solution.
+Run `anarchy-toolkit scaffold` anywhere inside a solution created by `bootstrap` (or any solution whose `.fallout/parameters.json` names its solution file). It uses explicit arguments, saved preferences and then defaults; it does not require `.anarchy-toolkit.json` or infer a layout. It refuses names already used by a project and adds the new application to the solution.
 
 It follows the solution's package management. When the nearest `Directory.Packages.props` above the new project enables central package management (in that file or in `Directory.Build.props`), the package version is added there as a `PackageVersion`, unless the package is already pinned, in which case the existing version is kept, and the project's reference is unversioned. Otherwise the reference carries the version.
 
-Generated APIs use the toolkit's default Swagger UI theme (see the [Web package README](../Web/README.md#swagger-ui-theme)). With `--no-swagger-theme`, the startup disables it with `.Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)`; remove that line to turn it back on.
+Generated APIs use the toolkit's default Swagger UI theme (see the [Web package README](../Web/README.md#swagger-ui-theme)). The `scaffolding.swaggerTheme` preference controls the default. `--swagger-theme` and `--no-swagger-theme` explicitly enable or disable it for one scaffold operation, overriding a saved choice.
+
+### Preference commands
+
+```bash
+anarchy-toolkit config show
+anarchy-toolkit config set build.configuration '"Release"'
+anarchy-toolkit config unset build.configuration
+anarchy-toolkit config configure
+```
+
+`set` takes a `section.property` and a JSON value, merges only that value and preserves unrelated preferences; `unset`
+removes the saved override. Both validate before an atomic write. `show` distinguishes saved overrides from effective
+defaults without creating a file. The interactive wizard previews and asks before writing. There is no automatic config
+save. See the [preference inventory and build/Make equivalents](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
 
 ## Boilerplate
 
@@ -73,7 +89,7 @@ The `boilerplate` commands print plain text, without the banner, so scripts and 
 
 ## Agent skills
 
-`skills install` (and `bootstrap --with-skills`) copies the toolkit's [Agent Skills](https://agentskills.io/) to `.agents/skills`: `anarchy`, the entry point with this tool's commands and the rules; `anarchy-adopt`, for adopting or upgrading the toolkit (including migrating tests, mocks and DI); `anarchy-compose`, for modules, settings, health reports and workers; `anarchy-conventions`, the recommended coding conventions with the values and decisions behind them and how to opt out; and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. Existing files are never overwritten. See [Agent skills](../Automation.Build/README.md#agent-skills) for keeping them in step with the solution's Makefiles.
+`skills install` (and `bootstrap --with-skills`) copies the toolkit's [Agent Skills](https://agentskills.io/) to `.agents/skills`: `anarchy`, the entry point with this tool's commands and the rules; `anarchy-adopt`, for first-time adoption and initial repository setup; `anarchy-compose`, for modules, settings, health reports and workers; `anarchy-conventions`, the recommended coding conventions with the values and decisions behind them and how to opt out; and `anarchy-develop`, `anarchy-environment`, `anarchy-release` and `anarchy-maintenance`. Existing files are never overwritten. See [Agent skills](../Automation.Build/README.md#agent-skills) for keeping them in step with the solution's Makefiles.
 
 ## Requirements
 
@@ -89,14 +105,16 @@ make compile
 make check_layering
 ```
 
-The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Automation`](../Automation/README.md); see the [Fallout package README](../Automation.Build/README.md) for the build targets.
+The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Automation`](../Automation/README.md); see the [automation build package README](../Automation.Build/README.md) for the build targets.
 
 ## Releases
 
 ### 1.0.0
 
 - New package identity, renamed from `Anarchy.Toolkit.Build.Cli.Tool`; versions below are historical releases under that package ID.
+- Add optional root preferences and `config show/set/unset/configure`; bootstrap/scaffold save selected preferences only when explicitly requested or after wizard consent (default No).
 - Establish adopter organization conventions and allow non-interactive bootstrap to select folder-based or prefix-based layering.
+- Resolve layering from explicit arguments, saved overrides, then the documented folder baseline without inference or a required config file; support both positive and negative Swagger-theme overrides.
 - Scaffold APIs and jobs with provider-neutral application telemetry.
 
 ### Historical releases under `Anarchy.Toolkit.Build.Cli.Tool`

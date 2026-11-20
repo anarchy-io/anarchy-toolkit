@@ -29,12 +29,8 @@ Modules follow two rules:
 
    Parameterless modules use `services.UseModule<TModule>(configuration, environment)`.
 
-   Code that reads its own section today (`configuration.GetRequired<T>("Section")` inside an `Add*` extension)
-   converts without changing behaviour: the extension becomes a module taking `Func<IConfiguration, T>`, and the
-   composition root passes the old read, `new ModuleCarrierClient(c => c.GetRequired<CarrierClientSettings>("CarrierClient"))`.
-   The section name moves to the one place that knows the configuration, and the module can later take its settings
-   from the validated `AppSettings` (`c => c.Get<AppSettings>()!.CarrierClient`) without changing.
-2. **Modules wrap, they don't replace.** Where a project already has an `Add*` extension (e.g. `AddSnsMessageBroker`), the module calls it, so consumers that don't use modules keep the same entry point.
+   The composition root passes the read as a lambda: `new ModuleCarrierClient(c => c.GetRequired<CarrierClientSettings>("CarrierClient"))`, or from the validated `AppSettings` (`c => c.Get<AppSettings>()!.CarrierClient`). The section name lives in the one place that knows the configuration, and a missing section fails at startup.
+2. **Modules wrap extensions.** Where a project ships an `Add*` extension (e.g. `AddSnsMessageBroker`), the module calls it, so the same registrations are also available without a module.
 
 Modules live under `DependencyInjection/Module/` and are named `Module<Concern>` (`ModulePostgres`, `ModuleCarrierClient`). `Core.*` projects ship plain [`IServiceCollection`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection) extensions instead (e.g. `AddLocalEventBus()`), since they have no configuration to receive.
 
@@ -43,8 +39,8 @@ Modules live under `DependencyInjection/Module/` and are named `Module<Concern>`
 | You want to... | Do this |
 |---|---|
 | Keep your `IServiceCollection` extensions | Keep them. Every toolkit module wraps an `Add*` extension or plain registrations you can call directly, so modules are never the only entry point. |
-| Move step by step | Wrap one existing extension at a time in a module (rule 2) and call it with `services.UseModule(...)` from your current `Startup`; see the [migration recipes](../guides/migration-recipes.md#add-extensions-to-modules). |
+| Adopt modules step by step | Write one module per adapter (rule 2) and apply it with `services.UseModule(...)` from your `Startup`; see the [recipe](../guides/onboarding-recipes.md#write-a-module). |
 | Keep [`IOptions<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1) | Keep it. `ModuleAppSettingsBase` is optional; you can pass `c => c.GetSection("X").Get<T>()!` to toolkit modules from any settings model. |
 | Use another container ([Autofac](https://autofac.org/), ...) | Modules only touch `IServiceCollection`, which other containers populate from. |
 
-**What you lose by opting out:** start-up validation of all settings in one place, and the one-line wiring of `ModuleLibConfiguration` (settings, observability and secrets together).
+**What you lose by opting out:** start-up validation of all settings in one place, and the one-line wiring of `ModuleLibConfiguration` (settings, telemetry and secrets together).

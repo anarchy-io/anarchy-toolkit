@@ -9,10 +9,10 @@
         {
           "id": "empty",
           "label": "An empty folder: a new service or monorepo",
-          "next": "upstreams",
+          "next": "layering",
           "suggestions": [
             { "title": "Read how the platform fits together", "text": "Ten minutes on the pieces, what stays yours and how a request travels through them.", "link": "guides/mental-model.html" },
-            { "title": "Bootstrap the solution with the CLI", "text": "dotnet tool install --global Anarchy.Toolkit.Automation.Build.Cli, then anarchy-toolkit bootstrap. You get the layered solution, the Fallout build, the Makefile and your first applications.", "link": "getting-started/cli-tool.html", "packages": ["Automation.Build.Cli", "Automation.Build"] },
+            { "title": "Bootstrap the solution with the CLI", "text": "dotnet tool install --global Anarchy.Toolkit.Automation.Build.Cli, then anarchy-toolkit bootstrap. You get the standard folder-layered solution, Anarchy build, Makefile and first applications. Preferences are optional; opt in to saving selected values.", "link": "getting-started/cli-tool.html", "packages": ["Automation.Build.Cli", "Automation.Build"] },
             { "title": "Follow the greenfield walkthrough", "text": "Layout choices, applications, mock server and the pull-request gate, step by step.", "link": "guides/greenfield-solution.html" }
           ]
         },
@@ -22,7 +22,8 @@
           "next": "existing-build",
           "suggestions": [
             { "title": "Read how the platform fits together", "text": "Ten minutes on the pieces, what stays yours and how a request travels through them.", "link": "guides/mental-model.html" },
-            { "title": "Follow the adoption walkthrough", "text": "Small, deployable pull requests in a proven order: repository files, build, tests, mock server, settings, modules, startup, observability.", "link": "guides/adopting-existing-solution.html" },
+            { "title": "Follow the adoption walkthrough", "text": "Small, deployable pull requests in a proven order: repository files, build, layering, tests, mock server, settings, modules, startup, telemetry.", "link": "guides/adopting-existing-solution.html" },
+            { "title": "Choose how the layering check maps projects", "text": "Pick one mode for the whole solution: folder (recommended) when projects sit in layer folders such as src/Library/Core, prefix when they are named Core.*, Infrastructure.*. The folder baseline needs no config file; pass explicit arguments or optionally save overrides in .anarchy-toolkit.json. Map application folders instead of moving files, and add check_layering once it passes locally.", "link": "conventions/layering.html#choose-one-project-layering-mode" },
             { "title": "Sync the repository files first", "text": "anarchy-toolkit boilerplate diff .gitignore .editorconfig, then install them into managed blocks and run make lint_fix in a formatting-only commit.", "link": "guides/adopting-existing-solution.html#repository-files" }
           ]
         },
@@ -37,6 +38,18 @@
       ]
     },
     {
+      "id": "layering",
+      "text": "How should your projects map to layers?",
+      "help": "One mode for the whole solution. Optional overrides live in .anarchy-toolkit.json; without them, folder mode uses src/Library and standard app folders. Layers: Core, Infrastructure, Configuration, Hosting, Web, with Automation for build tooling on top.",
+      "multiple": false,
+      "next": "upstreams",
+      "answers": [
+        { "id": "folder-monorepo", "label": "By folder, several applications sharing a library (recommended)", "suggestions": [ { "title": "Use folder layering with a shared Library", "text": "src/Library/Core, Infrastructure, Configuration and optional Web, plus src/Api, src/Jobs and src/Ui applications. This is the default baseline; save custom library and application mappings only when needed.", "link": "conventions/code-organization.html#monorepo" } ] },
+        { "id": "folder-single", "label": "By folder, a single application", "suggestions": [ { "title": "Bootstrap with the single-app layout", "text": "The bootstrap wizard asks one application or several before layering mode. For non-interactive setup, use --layout single-app: layer projects live directly under src, libraryRoot is src, and one application folder maps to Web (API/UI) or Hosting (job). Choose its folder with --application-folder.", "link": "getting-started/cli-tool.html" } ] },
+        { "id": "prefix", "label": "By project name prefix (Core.*, Infrastructure.*)", "suggestions": [ { "title": "Use prefix layering", "text": "Fully supported and used by the toolkit itself; suited to separately packaged projects. Pass prefix mode to the operation or optionally save { \"layering\": { \"mode\": \"prefix\" } } in .anarchy-toolkit.json.", "link": "conventions/layering.html#choose-one-project-layering-mode" } ] }
+      ]
+    },
+    {
       "id": "capability",
       "text": "Which capabilities do you need?",
       "help": "Pick all that apply.",
@@ -44,10 +57,11 @@
       "next": "company",
       "answers": [
         { "id": "settings", "label": "Validated settings", "suggestions": [ { "title": "Validate settings on start", "text": "One AppSettings class with DataAnnotations, registered with ModuleAppSettingsBase.", "link": "conventions/dependency-injection.html", "packages": ["Configuration"] } ] },
-        { "id": "observability", "label": "Structured logs and metrics", "suggestions": [ { "title": "Log and measure through Observer", "text": "ModuleObservability builds an Observer; plug your backend into an ObserverFactory.", "link": "guides/observability.html", "packages": ["Core.Observability", "Infrastructure.Observability.Serilog", "Configuration"] } ] },
-        { "id": "persistence", "label": "A relational database", "suggestions": [ { "title": "Use the persistence layer", "text": "Unit of work, retry policies, reader/writer repositories and health reports for PostgreSQL, MySQL or Oracle.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db"] } ] },
-        { "id": "messaging", "label": "AWS messaging (SNS/SQS)", "suggestions": [ { "title": "Publish and consume with AWS", "text": "ModuleSnsMessageBroker and ModuleSqsMessageBroker, tested against a local AWS emulator.", "link": "packages/Infrastructure.Messaging.Aws/", "packages": ["Infrastructure.Messaging.Aws", "Testing.Aws"] } ] },
-        { "id": "workers", "label": "Background workers and health endpoints", "suggestions": [ { "title": "Run workers with health", "text": "MonitoredWorkerBase for loops, ServiceHealthReportBase for dependency checks.", "link": "packages/Hosting.Workers/", "packages": ["Hosting.Workers", "Core.Health"] } ] },
+        { "id": "observability", "label": "Structured logs and metrics", "suggestions": [ { "title": "Log and measure through AppTelemetry", "text": "Register telemetry once (ModuleLibConfiguration does it, or services.AddCoreTelemetry()) and inject AppTelemetry. Logs go to your Microsoft logging providers, metrics to the standard .NET meter that OpenTelemetry exports with OTLP. Serilog is optional.", "link": "guides/observability.html", "packages": ["Core.Telemetry", "Configuration"] } ] },
+        { "id": "correlation", "label": "Correlation IDs across requests, workers and messages", "suggestions": [ { "title": "Propagate correlation IDs without a logging dependency", "text": "UseCorrelationId() for HTTP, CorrelationContext.BeginScope for workers, and BeginCorrelationScope on mapped SQS messages put the IDs into ILogger scopes and activity tags, so any provider and OpenTelemetry carry them.", "link": "guides/observability.html#correlation-ids", "packages": ["Infrastructure.CorrelationId"] } ] },
+        { "id": "persistence", "label": "A relational database", "suggestions": [ { "title": "Use the persistence layer", "text": "Unit of work, retry policies, reader/writer repositories and health reports for PostgreSQL, MySQL or Oracle. Install the provider package for your database; it brings Infrastructure.Persistence.Db.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db"] } ] },
+        { "id": "messaging", "label": "AWS messaging (SNS/SQS; the only supplied transport today)", "suggestions": [ { "title": "Publish and consume with AWS", "text": "AWS SNS/SQS is currently the only supplied transport, with modules tested against a local AWS emulator. Core.Messaging.Abstractions is the broker-neutral extension point for implementing another broker.", "link": "packages/Infrastructure.Messaging.Aws/", "packages": ["Infrastructure.Messaging.Aws", "Testing.Aws"] } ] },
+        { "id": "workers", "label": "Background workers and health endpoints", "suggestions": [ { "title": "Run workers with health", "text": "MonitoredWorkerBase for loops, HealthCheckBase for dependency checks.", "link": "packages/Hosting.Workers/", "packages": ["Hosting.Workers", "Core.Health"] } ] },
         { "id": "mocks", "label": "Mocking HTTP upstreams in tests", "suggestions": [ { "title": "Add the mock server", "text": "JSON expectations in MockServer's format, assertions on what was received, no Docker.", "link": "guides/mock-server.html", "packages": ["Web.MockServer", "Testing.MockServer"] } ] }
       ]
     },
@@ -56,9 +70,9 @@
       "text": "Does your pipeline call build or make targets that must keep their names?",
       "multiple": false,
       "answers": [
-        { "id": "yes", "label": "Yes, and the pipeline is hard to change", "suggestions": [ { "title": "Add Fallout next to your targets", "text": "Install the Makefile and scripts with --append-existing, move your targets to your own .mk files listed in MAKE_EXTRA_TARGETS, and keep their names.", "link": "guides/adopting-existing-solution.html#the-fallout-build-next-to-what-you-have", "packages": ["Automation.Build"] } ] },
-        { "id": "deploys", "label": "Yes, and our build also deploys", "suggestions": [ { "title": "Split release from build", "text": "Move the deploying build unchanged to a separate release host first, then add Fallout for development and the pull-request gate.", "link": "decisions/0006-fallout-build.html", "packages": ["Automation.Build"] } ] },
-        { "id": "no", "label": "No, we can change it freely", "suggestions": [ { "title": "Add the Fallout build", "text": "A build host with IStandardBuild, then make pull_request as the pipeline's single command.", "link": "getting-started/fallout.html", "packages": ["Automation.Build"] } ] }
+        { "id": "yes", "label": "Yes, and the pipeline is hard to change", "suggestions": [ { "title": "Add Anarchy automation next to your targets", "text": "Install the Makefile and scripts with --append-existing, keep your targets in your own .mk files listed in MAKE_EXTRA_TARGETS, with their names unchanged.", "link": "guides/adopting-existing-solution.html#anarchy-automation-next-to-your-pipeline", "packages": ["Automation.Build"] } ] },
+        { "id": "deploys", "label": "Yes, and our build also deploys", "suggestions": [ { "title": "Keep release separate from build", "text": "Keep the deploying build in a separate release host next to build/, and use Anarchy automation for development and the pull-request gate.", "link": "decisions/0006-fallout-build.html", "packages": ["Automation.Build"] } ] },
+        { "id": "no", "label": "No, we can change it freely", "suggestions": [ { "title": "Add Anarchy automation", "text": "A build host with IStandardBuild, then make pull_request as the pipeline's single command.", "link": "getting-started/automation.html", "packages": ["Automation.Build"] } ] }
       ]
     },
     {
@@ -66,9 +80,8 @@
       "text": "Which test stack do you use today?",
       "multiple": false,
       "answers": [
-        { "id": "xunit2", "label": "xUnit v2 on VSTest", "suggestions": [ { "title": "Move tests to xUnit v3, one group at a time", "text": "Fallout runs VSTest and MTP projects side by side. Set the MTP runner in global.json only with the last group.", "link": "guides/migration-recipes.html#xunit-v2-and-vstest-to-xunit-v3-and-mtp" } ] },
-        { "id": "xunit3", "label": "xUnit v3", "suggestions": [ { "title": "Use the testing kits", "text": "TestCaseBase, fixtures and in-memory observers for your tests.", "link": "conventions/testing.html#test-kits", "packages": ["Testing"] } ] },
-        { "id": "other", "label": "NUnit, MSTest or something else", "suggestions": [ { "title": "Keep your test framework", "text": "The build runs any test project; only the Testing.* kits assume xUnit v3.", "link": "conventions/testing.html#opting-out-or-adapting" } ] }
+        { "id": "xunit3", "label": "xUnit v3", "suggestions": [ { "title": "Use the testing kits", "text": "TestCaseBase, fixtures and TestTelemetry, which captures logs and metrics in memory, for your tests.", "link": "conventions/testing.html#test-kits", "packages": ["Testing"] } ] },
+        { "id": "other", "label": "NUnit, MSTest, xUnit v2 or something else", "suggestions": [ { "title": "Use your test framework, or start on xUnit v3", "text": "The build runs any test project; only the Testing.* kits assume xUnit v3 on Microsoft.Testing.Platform. New test projects can follow the xUnit v3 recipe.", "link": "guides/onboarding-recipes.html#add-an-xunit-v3-test-project" } ] }
       ]
     },
     {
@@ -77,7 +90,7 @@
       "multiple": false,
       "answers": [
         { "id": "kinds", "label": "By kind: Unit, Integration, EndToEnd", "suggestions": [] },
-        { "id": "other", "label": "Otherwise (Acceptance, Specs, one per project...)", "suggestions": [ { "title": "Map test names instead of renaming", "text": "TestKindAliases in .fallout/parameters.json, e.g. [\"EndToEnd=Acceptance\"]. Keep unit tests free of I/O: packing runs them.", "link": "guides/migration-recipes.html#test-project-names-to-test-kinds" } ] }
+        { "id": "other", "label": "Otherwise (Acceptance, Specs, one per project...)", "suggestions": [ { "title": "Declare your test project names", "text": "TestKindAliases in .fallout/parameters.json, e.g. [\"EndToEnd=Acceptance\"]. Keep unit tests free of I/O: packing runs them.", "link": "guides/onboarding-recipes.html#name-test-projects-by-kind" } ] }
       ]
     },
     {
@@ -86,7 +99,7 @@
       "multiple": false,
       "next": "di",
       "answers": [
-        { "id": "mockserver", "label": "A MockServer container", "suggestions": [ { "title": "Replace the MockServer container", "text": "Expectation files move unchanged; the unmatched-request check moves into the tests with ShouldAllHaveBeenMatched; pin the port.", "link": "guides/migration-recipes.html#mockserver-container-to-the-toolkit-mock-server", "packages": ["Web.MockServer", "Testing.MockServer"] } ] },
+        { "id": "mockserver", "label": "A MockServer container", "suggestions": [ { "title": "Add the toolkit mock server", "text": "JSON expectations in MockServer's format, a check with ShouldAllHaveBeenMatched that fails the run on unmocked calls, and a pinned port.", "link": "guides/onboarding-recipes.html#add-the-mock-server", "packages": ["Web.MockServer", "Testing.MockServer"] } ] },
         { "id": "other", "label": "WireMock, hand-written fakes or real services", "suggestions": [ { "title": "Consider the mock server later", "text": "Keep what works. The toolkit mock server is optional; it pays off when Docker or flaky upstreams slow the pipeline down.", "link": "guides/mock-server.html" } ] },
         { "id": "none", "label": "We have no HTTP upstreams", "suggestions": [] }
       ]
@@ -97,8 +110,8 @@
       "multiple": false,
       "next": "apps",
       "answers": [
-        { "id": "extensions", "label": "Add* extensions that read their own configuration", "suggestions": [ { "title": "Validate settings, then wrap extensions in modules", "text": "Add AppSettings next to today's binding, then one module per adapter, smallest first, each tested in isolation.", "link": "guides/migration-recipes.html#add-extensions-to-modules", "packages": ["Configuration", "Hosting"] } ] },
-        { "id": "startup", "label": "Everything in one Startup", "suggestions": [ { "title": "Extract one module per concern", "text": "Group registrations by adapter into modules, without changing behaviour, then move the host to the toolkit's startup.", "link": "conventions/dependency-injection.html", "packages": ["Configuration", "Hosting"] } ] },
+        { "id": "extensions", "label": "Add* extensions that read their own configuration", "suggestions": [ { "title": "Validate settings, then write one module per adapter", "text": "Add AppSettings, then one module per adapter, smallest first, each tested in isolation.", "link": "guides/onboarding-recipes.html#write-a-module", "packages": ["Configuration", "Hosting"] } ] },
+        { "id": "startup", "label": "Everything in one Startup", "suggestions": [ { "title": "Group registrations into one module per concern", "text": "One module per adapter, without changing behaviour, then build the host on the toolkit's startup.", "link": "conventions/dependency-injection.html", "packages": ["Configuration", "Hosting"] } ] },
         { "id": "keep", "label": "We'd rather keep it as it is", "suggestions": [ { "title": "Call the extensions directly", "text": "Every toolkit module wraps an Add* extension or plain registrations you can call yourself.", "link": "conventions/dependency-injection.html#opting-out-or-adapting" } ] }
       ]
     },
@@ -121,7 +134,7 @@
         { "id": "api", "label": "REST APIs", "suggestions": [ { "title": "Build APIs on Web", "text": "anarchy-toolkit scaffold api <Name>; Input/Output DTOs at the boundary.", "link": "conventions/endpoints.html", "packages": ["Web", "Testing.Web"] } ] },
         { "id": "graphql", "label": "GraphQL APIs", "suggestions": [ { "title": "Serve GraphQL", "text": "GraphQL.NET with GraphiQL on the Web pipeline.", "link": "packages/Web.GraphQL/", "packages": ["Web.GraphQL"] } ] },
         { "id": "job", "label": "Jobs (AWS Lambda, scheduled tasks)", "suggestions": [ { "title": "Build jobs on Hosting", "text": "anarchy-toolkit scaffold job <Name>; JobEntryPointBase with the same modules and settings as your APIs.", "link": "packages/Hosting/", "packages": ["Hosting"] } ] },
-        { "id": "worker", "label": "Long-running workers", "suggestions": [ { "title": "Run workers on MonitoredWorkerBase", "text": "One iteration per call; cancellation, failure logging, heartbeats and health endpoints included.", "link": "guides/migration-recipes.html#hosted-services-to-monitoredworkerbase", "packages": ["Hosting.Workers", "Core.Health"] } ] },
+        { "id": "worker", "label": "Long-running workers", "suggestions": [ { "title": "Run workers on MonitoredWorkerBase", "text": "One iteration per call; cancellation, failure logging, heartbeats and health endpoints included.", "link": "guides/onboarding-recipes.html#add-a-worker", "packages": ["Hosting.Workers", "Core.Health"] } ] },
         { "id": "ui", "label": "Internal web UIs", "suggestions": [ { "title": "Build UIs on Web.Ui", "text": "anarchy-toolkit scaffold ui <Name>; Blazor with cookie-session login.", "link": "guides/building-uis.html", "packages": ["Web.Ui"] } ] }
       ]
     },
@@ -131,7 +144,7 @@
       "multiple": true,
       "answers": [
         { "id": "postgres", "label": "PostgreSQL", "suggestions": [ { "title": "Use the PostgreSQL provider", "text": "ModulePostgres, reader/writer repositories and a container-backed test kit.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db.Postgres", "Testing.Db.Postgres"] } ] },
-        { "id": "mysql", "label": "MySQL", "suggestions": [ { "title": "Use the MySQL provider", "text": "ModuleMysql on MySqlConnector. Moving from MySql.Data changes the driver: test it against your database first.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db.Mysql", "Testing.Db.Mysql"] } ] },
+        { "id": "mysql", "label": "MySQL", "suggestions": [ { "title": "Use the MySQL provider", "text": "ModuleMysql on MySqlConnector. If you use MySql.Data today, the driver differs: test it against your database first.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db.Mysql", "Testing.Db.Mysql"] } ] },
         { "id": "oracle", "label": "Oracle", "suggestions": [ { "title": "Use the Oracle provider", "text": "ModuleOracle, retry policy and a test kit for an oracle-free container.", "link": "guides/database-providers.html", "packages": ["Infrastructure.Persistence.Db.Oracle", "Testing.Db.Oracle"] } ] },
         { "id": "none", "label": "None", "suggestions": [] }
       ]
@@ -141,7 +154,7 @@
       "text": "Do you run local dependencies (databases, brokers, emulators) in Docker?",
       "multiple": false,
       "answers": [
-        { "id": "yes", "label": "Yes", "suggestions": [ { "title": "Manage containers from the build", "text": "IDockerBuild with docker/docker-compose.yml: make start, stop, destroy and container waits.", "link": "guides/fallout-builds.html" } ] },
+        { "id": "yes", "label": "Yes", "suggestions": [ { "title": "Manage containers from the build", "text": "IDockerBuild with docker/docker-compose.yml: make start, stop, destroy and container waits.", "link": "guides/automation-builds.html" } ] },
         { "id": "no", "label": "No", "suggestions": [] }
       ]
     },
@@ -150,10 +163,10 @@
       "text": "Does your organization have its own logging, metrics, auth, feeds or deployment?",
       "multiple": true,
       "answers": [
-        { "id": "observability", "label": "Logging or metrics backend", "suggestions": [ { "title": "Write one ObserverFactory for your company", "text": "Override Enrich, WriteTo and CreateMeasurer; keep it in a company folder and reuse it in every solution.", "link": "guides/bringing-your-company-stack.html", "packages": ["Configuration", "Infrastructure.Observability.Serilog"] } ] },
-        { "id": "legacy-monitoring", "label": "A company monitoring facade already in use", "suggestions": [ { "title": "Run the old facade and Observer side by side", "text": "Build both on the same logger and metrics client, then move call sites in their own changes. Compare logs and metric names on a test environment.", "link": "guides/bringing-your-company-stack.html#migrating-from-a-company-monitoring-facade" } ] },
+        { "id": "observability", "label": "Logging or metrics backend (Datadog, New Relic, Grafana, ...)", "suggestions": [ { "title": "Send telemetry to your backend with OTLP", "text": "Add an OpenTelemetry OTLP exporter listening to the toolkit meter and configure the endpoint, API key and temporality with OTEL_EXPORTER_OTLP_* variables. Package the setup in one ModuleTelemetryBase kept in a company folder and reuse it in every solution.", "link": "guides/bringing-your-company-stack.html", "packages": ["Core.Telemetry", "Configuration"] }, { "title": "Configure Datadog or New Relic", "text": "Both ingest OTLP: no vendor package and no vendor API in your code, only exporter configuration. Notable events are structured logs with a stable EventId that a provider or exporter can map to vendor events.", "link": "guides/observability.html#datadog-and-new-relic" } ] },
+        { "id": "serilog", "label": "We already use Serilog", "suggestions": [ { "title": "Keep Serilog as a logging provider", "text": "AddSerilogTelemetry registers your configured logger as one more Microsoft logging provider, so toolkit logs reach your sinks and instrumentation code stays the same.", "link": "guides/observability.html#serilog-optional", "packages": ["Infrastructure.Telemetry.Serilog"] } ] },
         { "id": "auth", "label": "Auth service or token handlers", "suggestions": [ { "title": "Add your auth handlers in your own module", "text": "A DelegatingHandler for outbound tokens; mock-server expectations and unsigned tokens for tests.", "link": "guides/bringing-your-company-stack.html#extension-points", "packages": ["Infrastructure.Http"] } ] },
-        { "id": "deploy", "label": "A deployment tool the toolkit doesn't ship", "suggestions": [ { "title": "Keep a separate release build", "text": "Fallout builds packages and container images; deploying is yours, in a release host next to build/.", "link": "decisions/0006-fallout-build.html" } ] },
+        { "id": "deploy", "label": "A deployment tool the toolkit doesn't ship", "suggestions": [ { "title": "Keep a separate release build", "text": "Anarchy automation builds packages and container images; deploying is yours, in a release host next to build/.", "link": "decisions/0006-fallout-build.html" } ] },
         { "id": "none", "label": "None of these", "suggestions": [] }
       ]
     },
@@ -163,8 +176,8 @@
       "multiple": false,
       "next": null,
       "answers": [
-        { "id": "all", "label": "All of it: we want the decisions made for us", "suggestions": [ { "title": "Adopt the conventions and the layering check", "text": "Add ILayeringBuild to the pull-request gate and follow every convention; read the values behind them.", "link": "conventions/", "packages": ["Core"] } ] },
-        { "id": "gradually", "label": "Gradually, as we see the benefit", "suggestions": [ { "title": "Adopt conventions one at a time", "text": "Start with Testing and Dependency Injection, which the build and packages benefit from most; record each deviation in an ADR.", "link": "conventions/" } ] },
+        { "id": "all", "label": "All of it: we want the decisions made for us", "suggestions": [ { "title": "Adopt the conventions and the layering check", "text": "Add ILayeringBuild to the pull-request gate and follow every convention, including naming, UseCases and Aggregates; read the values behind them.", "link": "conventions/", "packages": ["Core"] } ] },
+        { "id": "gradually", "label": "Gradually, as we see the benefit", "suggestions": [ { "title": "Adopt conventions one at a time", "text": "Start with Testing and Dependency Injection, which the build and packages benefit from most, then Code Organization and Naming; record each deviation in an ADR.", "link": "conventions/" } ] },
         { "id": "none", "label": "Packages and build only, not the conventions", "suggestions": [ { "title": "Skip the conventions, knowingly", "text": "Every convention page ends with how to opt out and what you lose. Leave ILayeringBuild out of the build.", "link": "decisions/" } ] }
       ]
     }

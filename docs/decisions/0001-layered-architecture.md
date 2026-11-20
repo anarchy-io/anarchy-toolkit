@@ -6,7 +6,7 @@ Shared .NET libraries drift towards a web of references: a "core" project picks 
 
 ## Decision
 
-Projects belong to one of six ordered layers, `Core < Infrastructure < Configuration < Hosting < Web < Automation` in this repository, taken from their name prefix (or their folder). The build tooling retains `Build` as the default top-layer name for existing adopter solutions; layer names are configurable. A project only uses its own layer or lower ones. `ILayeringBuild` (`make check_layering`) fails on upward project references, upward namespace imports and misplaced layer folders, and `make dependency_map` draws the result.
+Projects belong to one of six ordered layers, `Core < Infrastructure < Configuration < Hosting < Web < Automation`, taken from their name prefix or, in folder mode, their folder. Each solution uses one mode and may name its own layers. Optional overrides can be saved in the root `.anarchy-toolkit.json`; without them, the in-code folder baseline applies. A project only uses its own layer or lower ones. `ILayeringBuild` (`make check_layering`) fails on upward project references, upward namespace imports and misplaced layer folders, and `make dependency_map` draws the result. See [ADR 0009](0009-optional-automation-preferences.md) for persistence and default compatibility.
 
 ## Consequences
 

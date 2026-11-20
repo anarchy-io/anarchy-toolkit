@@ -1,10 +1,10 @@
-# Adding the Fallout Build
+# Adding Anarchy Automation
 
-Part of the platform's **Build Ecosystem**, [`Anarchy.Toolkit.Automation.Build`](../packages/Automation.Build/README.md) packages a complete [Fallout](https://fallout.build/) build as reusable components: implement the interfaces you need on your build class and you get their targets, plus a self-documenting Makefile on top. It is what the [CLI tool](cli-tool.md) generates, and it works just as well in a repository you already have.
+Part of the platform's **Build Ecosystem**, [`Anarchy.Toolkit.Automation.Build`](../packages/Automation.Build/README.md) provides reusable build components powered by [Fallout Build](https://fallout.build/): implement the interfaces you need on your build class and you get their targets, plus a self-documenting Makefile on top. It is what the [CLI tool](cli-tool.md) generates, and it works just as well in a repository you already have.
 
 ```mermaid
 flowchart LR
-    Make["make test"] --> Script["scripts/build.fallout.sh"] --> Host["build/_build.csproj<br/>class Build : FalloutBuild, …"]
+    Make["make test"] --> Script["scripts/build.anarchy.sh"] --> Host["build/_build.csproj<br/>class Build : AnarchyBuild, …"]
     Host --> Components["Automation.Build components<br/>IStandardBuild · INuGetBuild · ILayeringBuild · …"]
     Components --> Dotnet["dotnet restore · build · test · pack"]
 ```
@@ -22,6 +22,14 @@ dotnet add build/_build.csproj package Anarchy.Toolkit.Automation.Build
 printf '{ "Solution": "MyApp.sln" }\n' > .fallout/parameters.json
 ```
 
+`.fallout/` is Fallout's folder (its root marker, parameters and generated schema). No toolkit preferences file is
+required: layering defaults to folder mode with libraries under `src/Library` and standard app folders. For a single
+application whose layer projects sit directly under `src/`, pass the layout arguments to operations or explicitly
+save `{ "layering": { "libraryRoot": "src", "applicationFolders": { "src/App": "Web" } } }` in
+`.anarchy-toolkit.json`. See [Layering](../conventions/layering.md#choose-one-project-layering-mode) for monorepos and
+the name-prefix alternative, and [Automation Preferences](../guides/automation-preferences.md) for all settings and
+editing commands.
+
 ## Pick your components
 
 Replace `build/Program.cs` with a build class implementing the components that suit your repository:
@@ -30,9 +38,7 @@ Replace `build/Program.cs` with a build class implementing the components that s
 using Anarchy.Toolkit.Automation.Build.Component;
 using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
 using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
-using Fallout.Common;
-
-class Build : FalloutBuild, IStandardBuild, ILayeringBuild, IDependencyMapBuild,
+class Build : AnarchyBuild, IStandardBuild, ILayeringBuild, IDependencyMapBuild,
               IDependencyUpgradeBuild, IGitHooksBuild, IBoilerplateBuild, IAgentSkillsBuild
 {
     public IReadOnlyCollection<Artifact> Artifacts => [];
@@ -51,7 +57,7 @@ class Build : FalloutBuild, IStandardBuild, ILayeringBuild, IDependencyMapBuild,
 | `IBoilerplateBuild` | `SetupBoilerplate`: installs the Makefile, scripts, configuration files and, on request, the agent skills. |
 | `IAgentSkillsBuild` | `ValidateAgentSkills` and `SyncAgentSkills`: keeps the agent skills in step with the Makefiles. |
 
-The [Fallout Builds guide](../guides/fallout-builds.md) describes every component, its targets and parameters.
+The [Anarchy Automation Builds guide](../guides/automation-builds.md) describes every component, its targets and parameters.
 
 ## Install the Makefile and scripts
 
@@ -72,7 +78,7 @@ make help            # every target, with its parameters
 make install         # set up the local .NET environment, restore and compile
 make lint test       # what a pull request runs
 make check_layering
-make fallout TARGET=Pack
+make anarchy TARGET=Pack
 ```
 
 For CI, `make pull_request` runs linting, the layering check (when implemented) and all tests.
@@ -91,6 +97,7 @@ See [Agent skills](../packages/Automation.Build/README.md#agent-skills) for the 
 
 ## Next steps
 
+- Already have a NUKE or Cake build? See [Coming from another build tool](../guides/automation-builds.md#coming-from-another-build-tool).
 - Organize projects by layer with the [Layered Architecture guide](../guides/architecture.md).
-- Set up automatic NuGet releases with [Fallout Builds → NuGet packages](../guides/fallout-builds.md#nuget-packages).
+- Set up automatic NuGet releases with [Anarchy Automation Builds → NuGet packages](../guides/automation-builds.md#nuget-packages).
 - Add a local database or broker with `IDockerBuild`, described in the [package page](../packages/Automation.Build/README.md#local-containers).

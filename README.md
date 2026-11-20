@@ -13,8 +13,8 @@ The toolkit is built around three pillars. Each one can be adopted on its own, a
 | Pillar | What it provides |
 |---|---|
 | **[Architecture](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html)** | Application structure, dependency boundaries (`Core < Infrastructure < Configuration < Hosting < Web < Automation` in this repository), DI-module composition and engineering conventions. |
-| **[Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/packages/)** | Independently published NuGet packages for persistence, messaging, observability, configuration, hosting, APIs, UIs and testing. |
-| **[Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/getting-started/)** | The Fallout build components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, packaging, versioning and releases. |
+| **[Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/packages/)** | Independently published NuGet packages for persistence, messaging, telemetry, configuration, hosting, APIs, UIs and testing. |
+| **[Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/getting-started/)** | Anarchy automation components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, packaging, versioning and releases, powered by [Fallout Build](https://fallout.build/). |
 
 > 📖 **Using the toolkit?** Start with the documentation at **<https://anarchy-io.github.io/anarchy-toolkit/>** ([overview](https://anarchy-io.github.io/anarchy-toolkit/overview/), [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/), [guides](https://anarchy-io.github.io/anarchy-toolkit/guides/)). Packages are published on [NuGet.org](https://www.nuget.org/profiles/anarchy-io).
 
@@ -51,7 +51,7 @@ Run `make help` for the full, self-documenting list of targets.
 
 | Target | What it does |
 |---|---|
-| `make compile` | Builds the solution (Fallout `Compile`, warnings as errors). |
+| `make compile` | Builds the solution (`Compile`, warnings as errors). |
 | `make build` | Cleans, then builds. |
 | `make lint` | Runs `dotnet format --verify-no-changes`. |
 | `make lint_fix` | Runs `dotnet format`; `AUTO_STAGE=true` stages eligible fixes again. |
@@ -59,13 +59,14 @@ Run `make help` for the full, self-documenting list of targets.
 | `make test_unit` | Runs unit tests only; `COMPILE=true` rebuilds first. |
 | `make check_layering` | Verifies that dependencies only point down the layers. |
 | `make dependency_map` | Regenerates [`docs/dependency-map.html`](docs/dependency-map.html); commit it when project references change. |
+| `make config_show` / `make config_set KEY=… VALUE=…` | Inspect or explicitly edit optional `.anarchy-toolkit.json` automation overrides; `config_unset` clears one and `config_configure` opens the wizard. |
 | `make list_projects` | Lists every project in the solution. |
 | `make list_packages` | Lists every package ID and version. |
 | `make run_dotnet_tool TOOL_ARGS="…"` | Runs the `anarchy-toolkit` tool from source. |
 
 Auto-staging only considers files that were already staged, with no unstaged changes, before linting; partially staged files are left for manual review. Avoid editing files while linting runs.
 
-Tests run on **Microsoft.Testing.Platform** (`global.json` → `test.runner`). `tests/Unit/Unit.csproj` holds every unit test, in folders mirroring the `src/` projects (`src/Core.Events` → `tests/Unit/Core/Events/`). The Fallout test targets route xUnit v3 projects through MSBuild's `Test` target and any VSTest project through `dotnet test`.
+Tests run on **Microsoft.Testing.Platform** (`global.json` → `test.runner`). `tests/Unit/Unit.csproj` holds every unit test, in folders mirroring the `src/` projects (`src/Core.Events` → `tests/Unit/Core/Events/`). The Anarchy test targets route xUnit v3 projects through MSBuild's `Test` target and any VSTest project through `dotnet test`.
 
 Plain `dotnet` also works:
 
@@ -74,15 +75,15 @@ dotnet build Anarchy.Toolkit.sln -c Release
 dotnet pack  Anarchy.Toolkit.sln -c Release -o ./artifacts/packages
 ```
 
-### Running Fallout targets directly
+### Running Anarchy targets directly
 
 ```bash
-make fallout TARGET=Pack                  # e.g. Compile, Lint, TestAll, Pack, Publish, ListProjects
-make fallout TARGET="Lint --IsCiBuild true"
-make fallout_help                         # list all Fallout targets and parameters
+make anarchy TARGET=Pack                  # e.g. Compile, Lint, TestAll, Pack, Publish, ListProjects
+make anarchy TARGET="Lint --IsCiBuild true"
+make anarchy_help                         # list all Anarchy targets and parameters
 ```
 
-`make nuke` and `make nuke_help` remain as aliases for compatibility.
+`make fallout`, `make nuke`, `make fallout_help` and `make nuke_help` remain as aliases for compatibility.
 
 ### Git hooks
 
@@ -103,7 +104,7 @@ Replacing an existing hook requires `--force`.
 | `make pack` | Packs every package into a fresh `artifacts/packages/<run-id>/` directory. |
 | `make publish SOURCE=… [API_KEY=…]` | Packs and pushes to a NuGet feed. |
 
-Every project carries its own `<Version>`. A `ProjectReference` between toolkit projects becomes a NuGet `<dependency>` when packed, so the in-repository development loop and the published dependency metadata both work without switching to `PackageReference`s. Pushes to `main` detect changes, bump the affected packages and publish them; see [CONTRIBUTING.md](.github/CONTRIBUTING.md#publishing-packages-maintainers) and the [Fallout Builds guide](https://anarchy-io.github.io/anarchy-toolkit/guides/fallout-builds.html#automatic-releases).
+Every project carries its own `<Version>`. A `ProjectReference` between toolkit projects becomes a NuGet `<dependency>` when packed, so the in-repository development loop and the published dependency metadata both work without switching to `PackageReference`s. Pushes to `main` detect changes, bump the affected packages and publish them; see [CONTRIBUTING.md](.github/CONTRIBUTING.md#publishing-packages-maintainers) and the [Anarchy Automation Builds guide](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html#automatic-releases).
 
 ### Upgrading dependencies
 
@@ -120,23 +121,24 @@ Upgrades ask for confirmation. `LOCK=Major` (the default), `Minor` or `None` con
 | `src/` | One project per package, named `Anarchy.Toolkit.<project name>`. Each has its own `README.md`, shipped to NuGet.org and to the documentation site. |
 | `tests/` | One test project per test kind. |
 | `samples/` | [Sample applications](samples/README.md) built on the toolkit. Never packed. |
-| `build/` | The Fallout build project (see below). |
+| `build/` | The Anarchy build project (see below). |
 | `docs/` | The [documentation site](#working-on-the-documentation). |
 | `scripts/make/targets/monorepo.mk` | Repository-only Make targets (the tool runner and the documentation targets). |
-| `.fallout/parameters.json` | Marks the repository root and pins `Solution` and `Configuration`. |
+| `.fallout/` | Fallout's folder: marks the repository root, pins `Solution` and `Configuration` in `parameters.json`, and holds the generated `build.schema.json`. The engine fixes its name. |
+| `.anarchy-toolkit.json` | Optional solution-root overrides for automation and layering preferences. No file is required; the toolkit defaults remain usable without it. See [settings and precedence](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html). |
 
 The distributed Makefile and scripts live in `src/Automation/Boilerplate/`, the `Automation` package's source of truth. The root `Makefile` includes them in place, and solutions generated by the tool get them at their root:
 
 - `Makefile` + `scripts/make/`: self-documenting Make targets and help (parsed from `#?`/`#+` markers).
 - `scripts/bootstrap/`: SDK and development-environment installation and shell-profile helpers.
 - `scripts/console/` and `scripts/shared/`: display utilities and shared colors.
-- `scripts/build.fallout.sh`: launcher that reloads the shell environment and runs the build project. Set `FALLOUT_RELOAD_ENV=false` to skip reloading.
+- `scripts/build.anarchy.sh`: launcher that reloads the shell environment and runs the build project. Set `ANARCHY_RELOAD_ENV=false` to skip reloading, or set `ANARCHY_LOG_LEVEL` to change the engine log level.
 
-### The Fallout build project
+### The Anarchy build project
 
 `build/` is a thin consumer of the solution's own build components, `src/Automation.Build`. It references them as a project, so the build always runs the code it builds and packs:
 
-- `Build.cs`: `partial class Build : FalloutBuild, INuGetBuild, …`. The standard targets come from the library.
+- `Build.cs`: `partial class Build : AnarchyBuild, INuGetBuild, …`. The standard targets come from the library.
 - `Build.CodeGeneration.cs`: `GenerateTools`, which regenerates the library's CLI tool wrappers from their specifications.
 - `Directory.Build.targets`: imports the library's `buildTransitive` targets, which load the NuGet.* assemblies from the installed SDK so the build keeps working on newer SDK feature bands.
 

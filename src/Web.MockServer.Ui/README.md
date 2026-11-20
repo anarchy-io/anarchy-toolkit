@@ -40,7 +40,7 @@ return await MockServerEntryPoint.RunAsync(args, server => server
 
 - The URL is printed in the startup banner. It lives under `/__mock`, so it is never matched against expectations nor
   recorded as a received request.
-- `--no-ui` (or `MOCKSERVER_UI=false`) turns it off without changing the host. The Fallout `IMockServerBuild` targets
+- `--no-ui` (or `MOCKSERVER_UI=false`) turns it off without changing the host. The Anarchy `IMockServerBuild` targets
   take `--mock-server-ui false`, and the Make targets `UI=false`, e.g. `make mock_server_start UI=false`.
 - It has no login: it is meant for local and test environments, like the control API.
 - `UseUi(path)` serves it elsewhere under the same rules.

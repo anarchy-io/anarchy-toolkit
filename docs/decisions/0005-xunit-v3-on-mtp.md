@@ -6,14 +6,14 @@ xUnit v2 and [VSTest](https://github.com/microsoft/vstest) are in maintenance. x
 
 ## Decision
 
-The toolkit's tests and `Testing.*` kits use xUnit v3 on MTP, and the boilerplate's [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json) selects the MTP runner for `dotnet test`. [Fallout](https://fallout.build/)'s test targets detect each project's platform and still run VSTest projects.
+The toolkit's tests and `Testing.*` kits use xUnit v3 on MTP, and the boilerplate's [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json) selects the MTP runner for `dotnet test`. Anarchy's test targets detect each project's platform and run it with its own runner.
 
 ## Consequences
 
 - The kits require xUnit v3 (and [Moq](https://github.com/devlooped/moq) 4.21 or later, [AwesomeAssertions](https://awesomeassertions.org/)).
-- With the MTP runner set in `global.json`, `dotnet test` refuses VSTest projects, so mixed solutions keep it unset until the last project moves.
+- With the MTP runner set in `global.json`, `dotnet test` only runs MTP projects.
 - Analyzers such as [xUnit1051](https://xunit.net/xunit.analyzers/rules/xUnit1051) apply under warnings as errors.
 
 ## Alternatives considered
 
-- **Stay on xUnit v2.** No migration cost, but no future features and a deprecated runner.
+- **xUnit v2 on VSTest.** No new platform to learn, but no future features and a deprecated runner.

@@ -13,10 +13,14 @@ contributions (commit titles, history shape, version bumps).
 
 - Trying the `anarchy-toolkit` CLI before releasing it: `make run_dotnet_tool TOOL_ARGS="bootstrap Demo --output /tmp/demo"`.
 - Checking documentation changes: `make docs_serve` (needs Ruby and Bundler) or `make docs_api_serve`.
-- After editing `src/Automation.Build/specification/*.json`: `make fallout TARGET=GenerateTools` regenerates the CLI tool wrappers.
+- After editing `src/Automation.Build/specification/*.json`: `make anarchy TARGET=GenerateTools` regenerates the CLI tool wrappers.
 - After editing `docs/conventions`, `docs/decisions` or a bundled guide: `make skills_docs_sync` copies them into the
   distributed skills' `references/` (`anarchy-conventions`, `anarchy-adopt`, `anarchy`; the list is in
   `docs/scripts/sync-skill-docs.sh`). CI fails when they are out of date; commit both.
+- Adding or changing a project reference between packages of the same layer: `make check_package_hierarchy`. A
+  package may reference its name ancestors (`Web.MockServer.Ui` to `Web.MockServer` or `Web`) and any lower layer;
+  any other same-layer reference needs an entry, with its reason, in `build/PackageHierarchy.cs`. The unit tests run
+  the same check on the current project files.
 - Changing a toolkit make target: update the hand-written part of the matching `anarchy-*` skill in
   `src/Automation/Boilerplate/.agents/skills`, then `make skills_sync skills_validate`.
 
@@ -28,6 +32,7 @@ Run them from the repository root; `make help COMMAND=<target>` describes one.
 | Command | What it does | Parameters |
 |---|---|---|
 | `make run_dotnet_tool` | Runs the anarchy-toolkit tool from source, to test it locally | `TOOL_ARGS` (str): Arguments for the tool (e.g. 'bootstrap MyApp --output /tmp/MyApp'); none shows its help<br>`TOOL_DIR` (str): Directory to run it in, where scaffold looks for a solution (defaults to the current one) |
+| `make check_package_hierarchy` | Verifies the toolkit's package hierarchy: same-layer references only to name ancestors or allowed pairs |  |
 | `make docs_sync` | Copies the package and sample READMEs into the documentation site |  |
 | `make skills_docs_sync` | Copies the conventions, decisions and onboarding guides into the distributed skills' references | `CHECK` (bool): Only check that the skill is up to date, failing otherwise (as CI does) |
 | `make docs_install` | Installs the documentation site's Ruby gems (needs Ruby and Bundler) |  |
