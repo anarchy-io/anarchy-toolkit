@@ -99,6 +99,22 @@ public class ReleaseVersionTasksTest
         ((Action)(() => ReadProjects(paths, p => contents[p]))).Should().Throw<InvalidOperationException>();
     }
 
+    [Theory]
+    [InlineData("src/A/A.csproj")]
+    [InlineData("src/./A/A.csproj")]
+    [InlineData("src/B/../A/A.csproj")]
+    public void ReadProjects_NormalizesInputPathsBeforeReadingAndReturningProjects(string relativePath)
+    {
+        var root = Path.GetFullPath("release-fixture");
+        var expected = Path.Combine(root, "src", "A", "A.csproj");
+        var projects = ReadProjects([Path.Combine(root, relativePath)], path => {
+            path.Should().Be(expected);
+            return "<Project><Version>1.0.0</Version></Project>";
+        });
+
+        projects.Should().ContainSingle().Which.Path.Should().Be(expected);
+    }
+
     [Fact]
     public void MultipleRootsAndCyclesAreBumpedOnce()
     {
