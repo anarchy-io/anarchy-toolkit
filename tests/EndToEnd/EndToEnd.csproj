@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Each scenario owns its temporary workspace and child processes. Run cases (not only classes) in parallel,
+         capped at four to avoid flooding CI runners with simultaneous dotnet SDK processes. -->
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
     <ProjectReference Include="..\..\src\Automation.Build.Cli\Automation.Build.Cli.csproj" />
     <!-- Automation/Build/Component/MockServerTasksTest runs this project without building it, so it must be built first. -->
