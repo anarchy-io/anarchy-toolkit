@@ -1,5 +1,6 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
+using Anarchy.Toolkit.Automation.Infrastructure.Helper;
 using AwesomeAssertions;
 
 namespace Anarchy.Toolkit.Tests.Unit.Automation.Core.Service;
@@ -37,6 +38,19 @@ public class BoilerplateCatalogTest
 
             File.WriteAllText(Path.Combine(root, ".gitignore"), FileMerge(root));
             BoilerplateCatalog.Compare(root, [".gitignore"]).Single().Status.Should().Be(BoilerplateCatalog.FileStatus.Identical);
+
+            var editorConfigPath = Path.Combine(root, ".editorconfig");
+            File.WriteAllText(editorConfigPath, "[*]\nindent_size = 8\n");
+            var editorConfig = BoilerplateCatalog.Compare(root, [".editorconfig"]).Should().ContainSingle().Which;
+            editorConfig.Status.Should().Be(BoilerplateCatalog.FileStatus.Different);
+            editorConfig.Diff.Should().Contain("+root = true");
+            editorConfig.Diff.IndexOf("+# >>> anarchy-toolkit", StringComparison.Ordinal)
+                .Should().BeLessThan(editorConfig.Diff.IndexOf(" [*]", StringComparison.Ordinal));
+
+            var packagedEditorConfig = BoilerplateCatalog.Read(".editorconfig")!;
+            File.WriteAllText(editorConfigPath, FileHelper.MergeManagedBlock(
+                File.ReadAllText(editorConfigPath), packagedEditorConfig, skipExistingLines: false, placeBlockFirst: true));
+            BoilerplateCatalog.Compare(root, [".editorconfig"]).Single().Status.Should().Be(BoilerplateCatalog.FileStatus.Identical);
 
             var unknown = () => BoilerplateCatalog.Compare(root, ["nope"]);
             unknown.Should().Throw<ArgumentException>().WithMessage("*nope*");
@@ -91,5 +105,6 @@ public class BoilerplateCatalogTest
     }
 
     private static string FileMerge(string root) => Anarchy.Toolkit.Automation.Infrastructure.Helper.FileHelper.MergeManagedBlock(
-        File.ReadAllText(Path.Combine(root, ".gitignore")), BoilerplateCatalog.Read(".gitignore")!, skipExistingLines: true);
+        File.ReadAllText(Path.Combine(root, ".gitignore")), BoilerplateCatalog.Read(".gitignore")!,
+        skipExistingLines: true, placeBlockFirst: true);
 }
