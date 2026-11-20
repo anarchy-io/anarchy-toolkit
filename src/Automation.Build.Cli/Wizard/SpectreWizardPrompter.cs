@@ -39,13 +39,15 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
     public void ShowHelp()
     {
         var grid = new Grid().AddColumn(new GridColumn().NoWrap().PadRight(4)).AddColumn();
-        grid.AddRow("[blue]anarchy-toolkit bootstrap[/]", "Guided setup: name, layering, and the APIs, jobs and UIs to start with.");
-        grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]] [[--with-skills]] [[layout options]] [[--save-preferences]][/]", "Create a solution; preferences are not saved unless requested.");
-        grid.AddRow("[blue]anarchy-toolkit scaffold[/]", "Guided addition of an API, job or UI to the solution here.");
+        grid.AddRow("[blue]anarchy-toolkit bootstrap[/]", "Guided setup: choose one application or several, then select the layering mode.");
+        grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]] [[--with-skills]] [[--layout monorepo|single-app]] [[layout options]] [[--save-preferences]][/]", "Create a solution; preferences are not saved unless requested.");
+        grid.AddRow("[blue]anarchy-toolkit scaffold[/]", "Guided addition of an API, job, UI or test project to the solution here.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts.");
+        grid.AddRow("[blue]anarchy-toolkit scaffold library <Name> --layer <Layer> [[--dry-run]] [[--save-preferences]][/]", "Add a library project in a configured layer.");
+        grid.AddRow("[blue]anarchy-toolkit scaffold tests [[unit|integration|endtoend]] [[--dry-run]] [[--save-preferences]][/]", "Add the shared test project for a kind; no kind starts a wizard.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger-theme[/]", "Add an API whose Swagger UI keeps its own look.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --swagger-theme[/]", "Explicitly enable the toolkit's Swagger UI theme.");
-        grid.AddRow("[blue]layout options[/]", "--layering folder|prefix, --layering-layers (JSON array), --layering-root <path>, --layering-library-root <path>, --layering-application-folders (JSON object).");
+        grid.AddRow("[blue]layout options[/]", "--layout monorepo|single-app, --application-folder <name>, --layering folder|prefix, --layering-layers (JSON array), --layering-root <path>, --layering-library-root <path>, --layering-application-folders (JSON object).");
         grid.AddRow("[blue]anarchy-toolkit config show|set|unset|configure[/]", "Show, edit or interactively configure optional solution preferences.");
         grid.AddRow("[blue]anarchy-toolkit skills install [[--output <dir>]][/]", "Install the agent skills into the first configured agentSkills.directories destination.");
         grid.AddRow("[blue]anarchy-toolkit boilerplate list[/]", "List the packaged boilerplate files (Makefile, scripts, settings, skills).");
