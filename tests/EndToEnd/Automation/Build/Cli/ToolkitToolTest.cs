@@ -3,20 +3,16 @@ using Anarchy.Toolkit.Automation.Build.Cli.Service;
 using Anarchy.Toolkit.Automation.Build.Cli.Wizard;
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
+using Anarchy.Toolkit.Tests.EndToEnd.Automation.Build.Cli.Fixture;
 using AwesomeAssertions;
 using Spectre.Console;
 using System.Text.Json.Nodes;
 
 namespace Anarchy.Toolkit.Tests.EndToEnd.Automation.Build.Cli;
 
-public class ToolkitToolTest
+public class ToolkitToolTest(ToolkitSolutionFixture fixture)
 {
-    private static readonly ToolkitPackageVersions Versions = new(new Dictionary<string, string> {
-        ["Anarchy.Toolkit.Automation.Build"] = "1.2.3",
-        ["Anarchy.Toolkit.Web"] = "2.0.0",
-        ["Anarchy.Toolkit.Web.Ui"] = "2.1.0",
-        ["Anarchy.Toolkit.Hosting"] = "3.0.0"
-    });
+    private static ToolkitPackageVersions Versions => ToolkitSolutionFixture.Versions;
 
     private static string TempRoot() => Path.Combine(Path.GetTempPath(), "anarchy-tool-" + Guid.NewGuid());
 
@@ -79,8 +75,10 @@ public class ToolkitToolTest
         if (mode != ToolMode.Invalid) command.IsInteractive.Should().Be(interactive);
     }
 
-    [Fact]
-    public void Boilerplate_PrintsPlainOutputWithoutTheBanner()
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r\n")]
+    public void Boilerplate_PrintsPlainOutputWithoutTheBanner(string newLine)
     {
         var root = TempRoot();
         try
@@ -89,16 +87,16 @@ public class ToolkitToolTest
             var prompter = new ScriptedPrompter();
             string Run(int expectedExitCode, params string[] args)
             {
-                var output = new StringWriter();
+                var output = new StringWriter { NewLine = newLine };
                 new ToolApplication(prompter, Versions, root, output).Run(args, interactive: false).Should().Be(expectedExitCode);
                 return output.ToString();
             }
 
-            Run(0, "boilerplate", "list").Should().Contain("Makefile\n").And.Contain("scripts/build.anarchy.sh");
+            Run(0, "boilerplate", "list").Should().Contain($"Makefile{newLine}").And.Contain("scripts/build.anarchy.sh");
             Run(0, "boilerplate", "show", "Makefile").Should().Be(BoilerplateCatalog.Read("Makefile"));
-            Run(1, "boilerplate", "diff", "Makefile").Should().Be("missing: Makefile\n");
+            Run(1, "boilerplate", "diff", "Makefile").Should().Be($"missing: Makefile{newLine}");
             SolutionScaffolder.Create(root, null, new ScaffoldOptions { Items = "Makefile" });
-            Run(0, "boilerplate", "diff", "Makefile").Should().Be("identical: Makefile\n");
+            Run(0, "boilerplate", "diff", "Makefile").Should().Be($"identical: Makefile{newLine}");
             Run(1, "boilerplate", "show", "nope").Should().BeEmpty();
             prompter.Errors.Should().ContainSingle().Which.Should().Contain("nope");
             prompter.BannersShown.Should().Be(0);
@@ -370,7 +368,8 @@ public class ToolkitToolTest
             File.ReadAllText(Path.Combine(root, "MyApp.sln")).Should().Contain("Admin.csproj");
             File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "Admin.csproj")).Should().NotContain("Version=");
             var updated = File.ReadAllText(Path.Combine(root, "Directory.Packages.props"));
-            updated.Should().Contain("    <PackageVersion Include=\"Anarchy.Toolkit.Web.Ui\" Version=\"2.1.0\" />\n");
+            File.ReadAllLines(Path.Combine(root, "Directory.Packages.props"))
+                .Should().Contain("    <PackageVersion Include=\"Anarchy.Toolkit.Web.Ui\" Version=\"2.1.0\" />");
             updated.Split("Include=\"Anarchy.Toolkit.Web\"").Should().HaveCount(2);
 
             var direct = new ScriptedPrompter();
@@ -421,7 +420,7 @@ public class ToolkitToolTest
         var root = TempRoot();
         try
         {
-            Application(new ScriptedPrompter()).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            fixture.CopyTo(root);
             File.Delete(Path.Combine(root, "Directory.Packages.props"));
 
             var prompter = new ScriptedPrompter();
@@ -444,7 +443,7 @@ public class ToolkitToolTest
         var root = TempRoot();
         try
         {
-            Application(new ScriptedPrompter()).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            fixture.CopyTo(root);
 
             var prompter = new ScriptedPrompter();
             Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
@@ -472,8 +471,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter();
-            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false)
-                .Should().Be(0, string.Join("\n", prompter.Errors));
+            fixture.CopyTo(root);
 
             Application(prompter, root).Run(["config", "set", "scaffolding.swaggerTheme", "false"], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
@@ -511,8 +509,7 @@ public class ToolkitToolTest
         var root = TempRoot();
         try
         {
-            Application(new ScriptedPrompter()).Run(["bootstrap", "MyApp", "--output", root], interactive: false)
-                .Should().Be(0);
+            fixture.CopyTo(root);
 
             var declined = new ScriptedPrompter(ApplicationKind.Api, "Orders", false, true, false);
             Application(declined, root).Run(["scaffold"], interactive: true).Should().Be(0, string.Join("\n", declined.Errors));
@@ -773,8 +770,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter();
-            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false)
-                .Should().Be(0, string.Join("\n", prompter.Errors));
+            fixture.CopyTo(root);
             File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeFalse();
             SolutionWorkspace.Load(root).Layout.Should().BeEquivalentTo(SolutionLayout.Default);
             Application(prompter, root).Run(["scaffold", "api", "Orders"], interactive: false)
@@ -801,8 +797,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter();
-            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false)
-                .Should().Be(0, string.Join("\n", prompter.Errors));
+            fixture.CopyTo(root);
             File.WriteAllText(Path.Combine(root, ".anarchy-toolkit.json"),
                 """{ "layering": { "mode": "folder", "layers": ["Core", "Hosting", "Web"], "libraryRoot": "src/Library", "applicationFolders": { "src/Jobs": "Hosting" } } }""");
 
@@ -825,7 +820,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter();
-            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            fixture.CopyTo(root);
             Directory.Exists(Path.Combine(root, ".agents")).Should().BeFalse();
 
             Application(prompter, Path.Combine(root, "build")).Run(["skills", "install"], interactive: false)
@@ -854,9 +849,7 @@ public class ToolkitToolTest
         var root = TempRoot();
         try
         {
-            var bootstrap = new ScriptedPrompter();
-            Application(bootstrap).Run(["bootstrap", "MyApp", "--output", root], interactive: false)
-                .Should().Be(0, string.Join("\n", bootstrap.Errors));
+            fixture.CopyTo(root);
             File.WriteAllText(Path.Combine(root, ".anarchy-toolkit.json"),
                 """{ "agentSkills": { "directories": [".agents/team skills", ".agents/reviewer skills"] } }""");
             var install = new ScriptedPrompter();
@@ -921,18 +914,17 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter();
-            Application(prompter).Run(["bootstrap", "Folder", "--output", roots[0]], interactive: false).Should().Be(0);
+            fixture.CopyTo(roots[0]);
             Application(prompter, roots[0]).Run(["scaffold", "library", "Query", "--layer", "Infrastructure"], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
             var folderProject = Path.Combine(roots[0], "src", "Library", "Infrastructure", "Query", "Query.csproj");
             File.Exists(folderProject).Should().BeTrue();
             File.ReadAllText(folderProject).Should().Contain("ProjectReference Include=").And.Contain("Core.csproj");
+            File.ReadAllText(Path.Combine(roots[0], "MyApp.sln")).Should().Contain("Infrastructure\\Query\\Query.csproj");
             Application(prompter, roots[0]).Run(["scaffold", "library", "Query", "--layer", "Infrastructure"], interactive: false)
                 .Should().Be(1);
 
-            Application(prompter).Run([
-                "bootstrap", "Prefix", "--output", roots[1], "--layering", "prefix", "--layering-layers", "[\"Core\",\"Infrastructure\"]"
-            ], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            ToolkitSolutionFixture.CreateLibraryWorkspace(roots[1], new SolutionLayout(LayeringMode.Prefix, ["Core", "Infrastructure"]));
             Application(prompter, roots[1]).Run([
                 "scaffold", "library", "Data", "--layer", "Infrastructure", "--layering", "prefix", "--layering-layers", "[\"Core\",\"Infrastructure\"]"
             ], interactive: false)
@@ -940,17 +932,16 @@ public class ToolkitToolTest
             var prefixProject = Path.Combine(roots[1], "src", "Infrastructure.Data", "Infrastructure.Data.csproj");
             File.Exists(prefixProject).Should().BeTrue();
             File.ReadAllText(prefixProject).Should().Contain("ProjectReference Include=").And.Contain("Core.csproj");
+            File.ReadAllText(Path.Combine(roots[1], "MyApp.sln")).Should().Contain("Infrastructure.Data\\Infrastructure.Data.csproj");
 
-            Application(prompter).Run([
-                "bootstrap", "Custom", "--output", roots[2], "--layering-root", "code", "--layering-library-root", "code/Shared",
-                "--layering-application-folders", "{\"code/Api\":\"Web\",\"code/Jobs\":\"Hosting\",\"code/Ui\":\"Web\"}"
-            ], interactive: false).Should().Be(0, string.Join("\n", prompter.Errors));
+            ToolkitSolutionFixture.CreateLibraryWorkspace(roots[2], SolutionLayout.Default with { Root = "code", LibraryRoot = "code/Shared" });
             Application(prompter, roots[2]).Run([
                 "scaffold", "library", "Events", "--layer", "Core", "--layering-root", "code", "--layering-library-root", "code/Shared",
                 "--layering-application-folders", "{\"code/Api\":\"Web\",\"code/Jobs\":\"Hosting\",\"code/Ui\":\"Web\"}"
             ], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
             File.Exists(Path.Combine(roots[2], "code", "Shared", "Core", "Events", "Events.csproj")).Should().BeTrue();
+            File.ReadAllText(Path.Combine(roots[2], "MyApp.sln")).Should().Contain("code\\Shared\\Core\\Events\\Events.csproj");
         }
         finally
         {
@@ -966,7 +957,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter();
-            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            fixture.CopyTo(root);
             var args = new[] {
                 "scaffold", "library", "Events", "--layer", "Infrastructure", "--layering", "prefix",
                 "--layering-layers", "[\"Core\",\"Infrastructure\"]", "--save-preferences", "--dry-run"
@@ -998,7 +989,7 @@ public class ToolkitToolTest
         try
         {
             var prompter = new ScriptedPrompter();
-            Application(prompter).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            fixture.CopyTo(root);
             File.WriteAllText(Path.Combine(root, ".fallout", "parameters.json"),
                 "{ \"Solution\": \"MyApp.sln\", \"TestKindAliases\": [\"EndToEnd=Acceptance\"] }");
 
@@ -1033,8 +1024,7 @@ public class ToolkitToolTest
         var root = TempRoot();
         try
         {
-            var bootstrap = new ScriptedPrompter();
-            Application(bootstrap).Run(["bootstrap", "MyApp", "--output", root], interactive: false).Should().Be(0);
+            fixture.CopyTo(root);
 
             var noninteractive = new ScriptedPrompter();
             Application(noninteractive, root).Run(["scaffold", "tests"], interactive: false).Should().Be(1);
