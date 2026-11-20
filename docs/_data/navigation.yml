@@ -8,7 +8,7 @@ main:
     children:
       - title: "Getting Started"
         url: /getting-started/
-        description: "Choose between the CLI, the Fallout build and the packages"
+        description: "Choose between the CLI, Anarchy automation and the packages"
       - title: "Adoption Advisor"
         url: /getting-started/advisor.html
         description: "A suggested adoption plan for your project"
@@ -58,8 +58,8 @@ start:
         url: /getting-started/
       - title: "New Solution with the CLI"
         url: /getting-started/cli-tool.html
-      - title: "Adding the Fallout Build"
-        url: /getting-started/fallout.html
+      - title: "Adding Anarchy Automation"
+        url: /getting-started/automation.html
       - title: "Using the Packages"
         url: /getting-started/consuming-packages.html
       - title: "Adoption Advisor"
@@ -86,8 +86,8 @@ guides:
         url: /guides/adopting-existing-solution.html
       - title: "Bringing Your Company Stack"
         url: /guides/bringing-your-company-stack.html
-      - title: "Migration Recipes"
-        url: /guides/migration-recipes.html
+      - title: "Onboarding Recipes"
+        url: /guides/onboarding-recipes.html
       - title: "Pitfalls"
         url: /guides/pitfalls.html
       - title: "Adoption Advisor"
@@ -104,8 +104,10 @@ guides:
         url: /guides/mock-server.html
       - title: "Building UIs"
         url: /guides/building-uis.html
-      - title: "Fallout Builds"
-        url: /guides/fallout-builds.html
+      - title: "Anarchy Automation Builds"
+        url: /guides/automation-builds.html
+      - title: "Automation Preferences"
+        url: /guides/automation-preferences.html
       - title: "CLI Tool"
         url: /packages/Automation.Build.Cli/
   - title: "See also"
@@ -124,6 +126,10 @@ conventions:
         url: /conventions/layering.html
       - title: "Code Organization"
         url: /conventions/code-organization.html
+      - title: "Naming"
+        url: /conventions/naming.html
+      - title: "UseCases and Aggregates"
+        url: /conventions/usecases-and-aggregates.html
       - title: "Dependency Injection"
         url: /conventions/dependency-injection.html
       - title: "Endpoints"
@@ -160,8 +166,8 @@ decisions:
         url: /decisions/0002-dependency-injection-modules.html
       - title: "0003 Validated settings"
         url: /decisions/0003-validated-app-settings.html
-      - title: "0004 Observer"
-        url: /decisions/0004-observer-abstraction.html
+      - title: "0004 Telemetry"
+        url: /decisions/0004-telemetry-composition.html
       - title: "0005 xUnit v3 on MTP"
         url: /decisions/0005-xunit-v3-on-mtp.html
       - title: "0006 Fallout build"
@@ -170,6 +176,8 @@ decisions:
         url: /decisions/0007-own-mock-server.html
       - title: "0008 Test levels"
         url: /decisions/0008-test-levels.html
+      - title: "0009 Optional automation preferences"
+        url: /decisions/0009-optional-automation-preferences.html
   - title: "See also"
     children:
       - title: "Conventions"
@@ -180,6 +188,10 @@ decisions:
 packages:
   - title: "Packages"
     url: /packages/
+  - title: "Choose"
+    children:
+      - title: "Which package do I need?"
+        url: /packages/#which-package-do-i-need
   - title: "Infrastructure"
     children:
       - title: "Core"
@@ -187,7 +199,7 @@ packages:
       - title: "Infrastructure"
         url: /packages/#infrastructure-adapters-to-external-systems
       - title: "Configuration"
-        url: /packages/#configuration-settings-secrets-and-observability-bootstrap
+        url: /packages/#configuration-settings-secrets-and-telemetry-bootstrap
       - title: "Hosting"
         url: /packages/#hosting-running-a-process
       - title: "Web"
@@ -196,9 +208,9 @@ packages:
         url: /packages/#testing-kits-reusable-test-helpers
   - title: "Build Ecosystem"
     children:
-      - title: "Build packages"
-        url: /packages/#build-build-tooling
+      - title: "Automation packages"
+        url: /packages/#automation-build-tooling
       - title: "CLI Tool"
         url: /packages/Automation.Build.Cli/
-      - title: "Fallout Build"
+      - title: "Automation Build"
         url: /packages/Automation.Build/

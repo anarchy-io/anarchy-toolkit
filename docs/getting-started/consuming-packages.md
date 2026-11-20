@@ -45,11 +45,11 @@ Modules never assume a configuration section or settings type: options always co
 | Messaging over SNS/SQS | [`Infrastructure.Messaging.Aws`](../packages/Infrastructure.Messaging.Aws/README.md) |
 | A new solution from scratch | The [`anarchy-toolkit` tool](../packages/Automation.Build.Cli/README.md) and [`Automation.Build`](../packages/Automation.Build/README.md) |
 
-Every host registers [`Configuration`](../packages/Configuration/README.md)'s `ModuleLibConfiguration`, which brings settings binding, secrets and the [observability](../guides/observability.md) bootstrap in one module.
+Every host registers [`Configuration`](../packages/Configuration/README.md)'s `ModuleLibConfiguration`, which brings settings binding, secrets and the [telemetry](../guides/observability.md) registration (`AppTelemetry`, correlation IDs) in one module. Not sure which packages you need? See [Which package do I need?](../packages/README.md#which-package-do-i-need).
 
 ## Plugging in your organization's conventions
 
-Organization-specific behavior is not part of the toolkit. Organizations plug their conventions into its extension points instead: an overridable `ObserverFactory` for sinks, log properties and metrics backends; options and constructor parameters; and `ConfigureAppConfiguration` hooks for configuration sources such as the AWS Parameter Store. See [Plugging in an organization's setup](../guides/observability.md#plugging-in-an-organizations-setup).
+Organization-specific behavior is not part of the toolkit. Organizations plug their conventions into its extension points instead: logging providers, an OTLP exporter or an `IMetricRecorder` registered in DI (packaged as a `ModuleTelemetryBase`) for logs and metrics; options and constructor parameters; and `ConfigureAppConfiguration` hooks for configuration sources such as the AWS Parameter Store. See [Your company's setup](../guides/observability.md#your-companys-setup).
 
 Domain code (task orchestration, concrete repositories and clients, domain event payloads, message destinations, Swagger scopes, UI environment URLs) belongs in the consuming applications, not in the toolkit. Generic code takes strings and generic parameters instead of domain enums; enum overloads convert values with `EnumExtension.ToDescription()` (see [Enum Conventions](../conventions/enums.md)). Entities are marked with `IEntity`/`IPersistedEntity`.
 

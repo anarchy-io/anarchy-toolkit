@@ -20,7 +20,7 @@ Use this package to host a toolkit-based REST API on ASP.NET Core or AWS Lambda 
 
 1. Define application settings and a settings module, then derive a startup from `RestApiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>`. Register your services and configure authorization scopes in its service-configuration hook.
 2. Implement controllers with explicit request/response types and call application services rather than database repositories directly. Keep transport DTOs separate from domain entities.
-3. Supply the `IReadOnlyCollection<IServiceHealthReport>` consumed by the health controller, using an empty collection if there are no checks or registering the relevant provider reports.
+3. Supply the `IReadOnlyCollection<IHealthCheck>` consumed by the health controller, using an empty collection if there are no checks or registering the relevant provider reports.
 4. Use `WebAppEntryPoint.RunWebHost<Startup>(args)` for a native host and an `AwsWebAppEntryPointBase` implementation for Lambda. Configure real authentication, secrets and environment-specific settings before deployment.
 
 The [sample API startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/Startup.cs), [native entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Program.cs) and [Lambda entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Web/LambdaEntryPoint.cs) show the complete structure. Test the HTTP pipeline with `Testing.Web`.

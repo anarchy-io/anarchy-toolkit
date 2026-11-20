@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Copies documentation pages into the distributed agent skills, so agents in solutions built on the toolkit can read
-# them offline, at the version of the installed toolkit:
+# them offline, matching the installed toolkit:
 #   docs/conventions, docs/decisions                       -> anarchy-conventions/references/{conventions,decisions}
-#   docs/guides/{adopting-existing-solution,migration-recipes,pitfalls,bringing-your-company-stack}.md
+#   docs/guides/{adopting-existing-solution,onboarding-recipes,pitfalls,bringing-your-company-stack}.md
 #                                                          -> anarchy-adopt/references/guides
 #   docs/guides/{mental-model,greenfield-solution}.md      -> anarchy/references/guides
 # Links between pages copied into the same skill stay relative; every other site link becomes an absolute URL to the
@@ -20,7 +20,7 @@ check=false
 bundles=(
   "anarchy-conventions|conventions|"
   "anarchy-conventions|decisions|"
-  "anarchy-adopt|guides|adopting-existing-solution migration-recipes pitfalls bringing-your-company-stack"
+  "anarchy-adopt|guides|adopting-existing-solution onboarding-recipes pitfalls bringing-your-company-stack"
   "anarchy|guides|mental-model greenfield-solution"
 )
 

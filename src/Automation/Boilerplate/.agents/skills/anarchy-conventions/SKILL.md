@@ -1,6 +1,6 @@
 ---
 name: anarchy-conventions
-description: "The coding conventions recommended for Anarchy Toolkit solutions, with the values and architectural decisions behind them: layering and where a file goes, dependency-injection modules and settings, async and cancellation, exceptions, enums, endpoints and DTOs, logging and metrics through Observer, and test layout and naming. Each one says how to opt out. Load it before writing or reviewing code in a solution built on the toolkit."
+description: "The coding conventions recommended for Anarchy Toolkit solutions, with the values and architectural decisions behind them: layering and where a file goes, project and folder layout (monorepo and single application), naming, UseCases and aggregates with transaction ownership, dependency-injection modules and settings, async and cancellation, exceptions, enums, endpoints and DTOs, logging and metrics through AppTelemetry, and test layout and naming. Each one says how to opt out. Load it before writing or reviewing code in a solution built on the toolkit."
 ---
 
 # Anarchy Toolkit conventions
@@ -14,7 +14,11 @@ what that costs. The published pages may be newer than the installed toolkit: pr
 ## When to use
 
 - Before writing or reviewing code in an Anarchy solution: read the conventions the change touches.
-- When unsure where a file goes, how to name a test, what to throw or how to log: open the matching page.
+- When unsure where a file goes, how to name a type or a test, what to throw or how to log: open the matching page.
+- Before advising on or checking architecture, read any `layering` overrides in the solution-root
+  `.anarchy-toolkit.json`. With no saved override, use folder mode under `src/Library` with standard application
+  folders/layers; a missing file or mode is valid. Do not infer the mode from project names or paths. Explicit
+  operation arguments take precedence over saved overrides and then in-code defaults.
 - When a convention seems wrong for the solution: read its *Why* and *Opting out or adapting* sections.
 
 ## Rules
@@ -33,13 +37,15 @@ what that costs. The published pages may be newer than the installed toolkit: pr
 | Working on | Read |
 |---|---|
 | Where a project, folder or file goes; layer folders; namespace collisions | [layering](references/conventions/layering.md) |
-| Shared project layout, names, helpers, UseCases and aggregates | [code organization](references/conventions/code-organization.md) |
+| Projects versus folders, monorepo and single-application layouts, shared library dependencies, helpers, extensions, resource-based adapters | [code organization](references/conventions/code-organization.md) |
+| Namespaces, type suffixes, service names | [naming](references/conventions/naming.md) |
+| UseCases, aggregates, who owns the transaction | [usecases-and-aggregates](references/conventions/usecases-and-aggregates.md) |
 | Registering services, modules, settings | [dependency-injection](references/conventions/dependency-injection.md) |
 | Controllers, Input/Output DTOs, `ActionResult<T>` | [endpoints](references/conventions/endpoints.md) |
 | `async` methods, cancellation tokens, worker shutdowns | [async](references/conventions/async.md) |
 | Throwing, catching, defining exception types | [exceptions](references/conventions/exceptions.md) |
 | Enums, external value sets, auxiliary tables | [enums](references/conventions/enums.md) |
-| Log messages, metric names and tags, `Observer` call sites | [observability](references/conventions/observability.md) |
+| Log messages, metric names and tags, `AppTelemetry` call sites, correlation scopes | [observability](references/conventions/observability.md) |
 | Test projects, naming, levels, kits, fixtures, mocks | [testing](references/conventions/testing.md) |
 | An overview of all of them | [conventions index](references/conventions/README.md) |
 | Why the toolkit is built this way | [values and decisions](references/decisions/README.md) |

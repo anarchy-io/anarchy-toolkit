@@ -1,6 +1,6 @@
 # Getting Started
 
-Each pillar of the [platform](../README.md#the-three-pillars) can be adopted on its own. The fastest way to get the whole platform is through its **Build Ecosystem**: the **`anarchy-toolkit` CLI tool** creates a complete solution, and the **[Fallout](https://fallout.build/) build components** it relies on can also be added to a repository you already have. Individual **Infrastructure** packages work on their own too.
+Each pillar of the [platform](../README.md#the-three-pillars) can be adopted on its own. The fastest way to get the whole platform is through its **Build Ecosystem**: the **`anarchy-toolkit` CLI tool** creates a complete solution, and its **Anarchy automation components**, powered by [Fallout Build](https://fallout.build/), can also be added to a repository you already have. Individual **Infrastructure** packages work on their own too.
 
 ![Developer workstation with a terminal and code editor, dark theme, red-orange accent lighting, wide banner](../assets/images/headers/getting-started.png)
 
@@ -8,27 +8,30 @@ Each pillar of the [platform](../README.md#the-three-pillars) can be adopted on 
 flowchart TD
     Start{"What do you have?"}
     Start -->|"An empty folder"| CLI["<b>anarchy-toolkit bootstrap</b><br/>solution + build + apps"]
-    Start -->|"A repository, no build tooling"| Fallout["<b>Anarchy.Toolkit.Automation.Build</b><br/>build targets for your solution"]
+    Start -->|"A repository, no build tooling"| Automation["<b>Anarchy.Toolkit.Automation.Build</b><br/>build targets for your solution"]
     Start -->|"An application that needs a capability"| Packages["<b>Individual packages</b><br/>dotnet add package + UseModule"]
     CLI --> Scaffold["anarchy-toolkit scaffold<br/>api · job · ui"]
-    Fallout --> Make["make compile · test · check_layering · pack"]
+    Automation --> Make["make compile · test · check_layering · pack"]
     Scaffold --> Make
 ```
 
 | Path | Best for | Page |
 |---|---|---|
-| **CLI tool** | New services and monorepos: generates the layered solution, the Fallout build, the Makefile and scripts, and APIs, jobs or UIs on the toolkit's packages. | [New solution with the CLI](cli-tool.md) |
-| **Fallout build** | Existing repositories: adds standard compile, lint, test, layering, dependency-map, packaging, release and Docker targets. | [Adding the Fallout build](fallout.md) |
-| **Packages** | Existing applications: add persistence, messaging, observability, hosting or web plumbing one package at a time. | [Using the packages](consuming-packages.md) |
+| **CLI tool** | New services and monorepos: generates the layered solution, the Anarchy build, the Makefile and scripts, and APIs, jobs or UIs on the toolkit's packages. | [New solution with the CLI](cli-tool.md) |
+| **Anarchy automation** | Existing repositories: adds standard compile, lint, test, layering, dependency-map, packaging, release and Docker targets. | [Adding Anarchy automation](automation.md) |
+| **Packages** | Existing applications: add persistence, messaging, telemetry, hosting or web plumbing one package at a time. | [Using the packages](consuming-packages.md) |
 
-Not sure which fits? The [Adoption Advisor](advisor.md) asks a few questions about your project and suggests the packages, steps and pages, in order. The guides walk through both main paths: [Your First Solution](../guides/greenfield-solution.md) and [Adopting an Existing Solution](../guides/adopting-existing-solution.md).
+Automation preferences are optional: use the documented folder baseline without creating a config file, or inspect and
+edit saved defaults in [Automation Preferences](../guides/automation-preferences.md).
+
+Not sure which packages you need? See [Which package do I need?](../packages/README.md#which-package-do-i-need). Not sure which path fits? The [Adoption Advisor](advisor.md) asks a few questions about your project and suggests the packages, steps and pages, in order. The guides walk through both main paths: [Your First Solution](../guides/greenfield-solution.md) and [Adopting an Existing Solution](../guides/adopting-existing-solution.md).
 
 ## Let your agent do it
 
-Using a coding agent? Paste this line into it, from the folder or repository to adopt or migrate:
+Using a coding agent? Paste this line into it, from the folder or repository where you want to adopt it:
 
 ```text
-Follow https://raw.githubusercontent.com/anarchy-io/anarchy-toolkit/main/agents/ADOPT.md to adopt Anarchy Toolkit in this repository, or migrate it to the latest version.
+Follow https://raw.githubusercontent.com/anarchy-io/anarchy-toolkit/main/agents/ADOPT.md to adopt Anarchy Toolkit in this repository.
 ```
 
 The agent works out which path fits, asks before anything destructive, can install the toolkit's [agent skills](cli-tool.md#agent-skills) and verifies the result with the build.
@@ -36,7 +39,7 @@ The agent works out which path fits, asks before anything destructive, can insta
 ## Requirements
 
 - The [.NET 10 SDK](https://dotnet.microsoft.com/download).
-- Bash and [Make](https://www.gnu.org/software/make/), for the generated Makefile and scripts (macOS, Linux or WSL).
+- Bash and [Make](https://www.gnu.org/software/make/) (macOS, Linux or WSL) for the generated Makefile and scripts. Windows users can run supported build targets directly with `dotnet run --project build/_build.csproj -- <Target>`; see [Without Make](../guides/automation-builds.md#without-make-including-windows).
 - Access to nuget.org, where the packages are published under the [`anarchy-io` profile](https://www.nuget.org/profiles/anarchy-io) (or a feed mirroring the `Anarchy.Toolkit.*` packages).
 
 ## See it working

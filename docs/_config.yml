@@ -117,7 +117,7 @@ defaults:
       toc: false
       classes: wide
   - scope:
-      path: "guides/fallout-builds.md"
+      path: "guides/automation-builds.md"
     values:
       toc: false
       classes: wide

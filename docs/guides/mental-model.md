@@ -6,9 +6,9 @@ A map of the platform before you touch it: what each piece is for, how a request
 
 | Pillar | What you get | You can use it without the others? |
 |---|---|---|
-| **Architecture** | A layer chain (`Core < Infrastructure < Configuration < Hosting < Web`), a folder per responsibility, DI modules, and a build check that keeps them honest. | Yes: it is a way of organizing code, plus `ILayeringBuild`. |
-| **Infrastructure** | NuGet packages for the plumbing: settings, observability, persistence, messaging, HTTP, health, workers, web and UI pipelines, test kits, a mock server. | Yes: `dotnet add package` one at a time. |
-| **Build Ecosystem** | The [Fallout](https://fallout.build/) build components, a distributed Makefile and scripts, the `anarchy-toolkit` CLI and agent skills. | Yes: the build runs on any .NET solution. |
+| **Architecture** | A layer chain (`Core < Infrastructure < Configuration < Hosting < Web`, with `Automation` for build tooling on top), a folder per responsibility, DI modules, and a build check that keeps them honest. | Yes: it is a way of organizing code, plus `ILayeringBuild`. |
+| **Infrastructure** | NuGet packages for the plumbing: settings, telemetry, persistence, messaging, HTTP, health, workers, web and UI pipelines, test kits, a mock server. | Yes: `dotnet add package` one at a time. |
+| **Build Ecosystem** | Anarchy automation components powered by [Fallout Build](https://fallout.build/), a distributed Makefile and scripts, the `anarchy-toolkit` CLI and agent skills. | Yes: the build runs on any .NET solution. |
 
 Most teams start with one pillar and add the others when they see the benefit. The [adoption advisor](../getting-started/advisor.md) suggests an order for your situation.
 
@@ -20,11 +20,11 @@ flowchart TB
         Domain["Domain code<br/>entities, use cases, rules"]
         Adapters["Your adapters<br/>repositories, clients, publishers"]
         Root["Composition root<br/>Startup: which modules, which settings"]
-        Company["Your company stack<br/>ObserverFactory, auth, release"]
+        Company["Your company stack<br/>logging, metrics backend, auth, release"]
     end
     subgraph Toolkit["Anarchy.Toolkit packages"]
-        Bases["Base classes and contracts<br/>repository bases, ServiceHealthReportBase, MonitoredWorkerBase"]
-        Modules["Modules<br/>ModulePostgres, ModuleObservability, ModuleAppSettingsBase"]
+        Bases["Base classes and contracts<br/>repository bases, HealthCheckBase, MonitoredWorkerBase"]
+        Modules["Modules<br/>ModulePostgres, ModuleTelemetry, ModuleAppSettingsBase"]
         Hosts["Hosts and pipelines<br/>entry points, middlewares, workers"]
     end
     Domain --> Bases
@@ -39,10 +39,10 @@ The toolkit is [domain-free](../decisions/README.md#values): it never knows your
 ## The life of a request
 
 1. **Entry point.** `Program` calls the toolkit's web host builder with your `Startup` (an `IWebAppStartup`).
-2. **Composition.** `Startup` applies modules with `services.UseModule(...)`: `ModuleLibConfiguration` for settings, observability and secrets, then the infrastructure modules (`ModulePostgres`, `ModuleSnsMessageBroker`, ...) and your own. Settings are validated before the host starts.
+2. **Composition.** `Startup` applies modules with `services.UseModule(...)`: `ModuleLibConfiguration` for settings, telemetry and secrets, then the infrastructure modules (`ModulePostgres`, `ModuleSnsMessageBroker`, ...) and your own. Settings are validated before the host starts.
 3. **Pipeline.** The toolkit's middlewares add the correlation id, request logging and exception mapping; your controllers or endpoints run after them.
 4. **Your code.** A controller maps the input DTO, calls a Core service, which uses a repository contract implemented by an Infrastructure adapter built on a toolkit base (unit of work, retry policy, health report).
-5. **Telemetry.** Every layer logs and measures through the same `Observer`, built by an `ObserverFactory` that decides where it all goes.
+5. **Telemetry.** Every layer logs and measures through the same `AppTelemetry`, written to the standard Microsoft logging and .NET metrics pipelines: the providers and exporters you registered decide where it all goes, and the correlation ID travels with the request.
 
 ## The life of a job or a worker
 

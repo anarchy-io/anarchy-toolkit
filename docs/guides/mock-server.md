@@ -34,8 +34,7 @@ combining them.
 
 ## Expectations
 
-Expectations use [MockServer](https://www.mock-server.com/)'s JSON shape, so files written for a MockServer container
-load as they are: one object or an array per file, with `httpRequest` (method, path, query, headers, body matchers)
+Expectations use [MockServer](https://www.mock-server.com/)'s JSON shape: one object or an array per file, with `httpRequest` (method, path, query, headers, body matchers)
 and `httpResponse` (status, headers, body, delay), plus `priority` and `times`. Paths can be exact, `{id}` templates
 or regular expressions. Keep one file per upstream endpoint or scenario, under a folder per upstream.
 
@@ -134,16 +133,6 @@ Run it with `RECORD_UPSTREAM=https://… make mock_server`, exercise the applica
 or body matchers to the saved `httpRequest` when one path has several answers. The toolkit's unit tests run this
 recipe, so it stays correct.
 
-## Migrating from a MockServer container
+## What it covers
 
-1. Keep the expectation files; point `MockServerExpectations` at their folder. Expectations created at runtime through
-   `PUT /mockserver/expectation` become `MockServerClient.AddExpectationAsync` calls (or `PUT /__mock/expectations`).
-2. Replace `PUT /mockserver/verify` and the retrieval of recorded requests with `AssertReceivedAsync` /
-   `ShouldHaveReceived`, and a build's unmatched-request check with `ShouldAllHaveBeenMatched` on the record file.
-3. Replace `PUT /mockserver/reset` with `ResetAsync`.
-4. Replace proxy recording (a `record.sh` around the container's proxy mode) with the recording middleware above.
-5. Remove the container from Docker Compose and the build's start, wait and log steps: the `IMockServerBuild` targets
-   do that now. Keep Docker only for the services you still run for real.
-
-Feature by feature: matching on JSON bodies, regular expressions, `times` and `priority` behave as in MockServer;
-MockServer's callbacks, templates (Velocity, JavaScript) and proxy forwarding have no equivalent: write a middleware.
+Matching on JSON bodies, regular expressions, `times` and `priority` follow [MockServer](https://www.mock-server.com/)'s expectation format. Callbacks, templates (Velocity, JavaScript) and proxy forwarding are not built in: write a middleware, such as the [recording middleware](#recording-a-real-upstream), and assert on what was received with `AssertReceivedAsync` / `ShouldHaveReceived`, or on unmocked calls with `ShouldAllHaveBeenMatched`. `IMockServerBuild` starts the server around the tests, so no container is needed.

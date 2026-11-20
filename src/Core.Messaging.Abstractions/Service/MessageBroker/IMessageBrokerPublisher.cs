@@ -91,7 +91,7 @@ public interface IMessageBrokerPublisher
     /// With <c>continueOnFailure</c> set to <c>true</c>, this is thrown after all chunks are attempted.
     /// </exception>
     /// <remarks>
-    /// Messages are automatically chunked to comply with broker batch size limits (e.g., AWS SQS/SNS limits).
+    /// Messages are automatically chunked to comply with the broker's batch size limits.
     /// Each chunk is processed independently with separate metrics tracking.
     /// Execution duration and success/failure metrics are recorded for each chunk and overall operation.
     /// </remarks>
@@ -127,7 +127,7 @@ public interface IMessageBrokerPublisher
     /// With <c>continueOnFailure</c> set to <c>true</c>, this is thrown after all chunks are attempted.
     /// </exception>
     /// <remarks>
-    /// Messages are automatically chunked to comply with broker batch size limits (e.g., AWS SQS/SNS limits).
+    /// Messages are automatically chunked to comply with the broker's batch size limits.
     /// You can provide either callback independently or both together.
     /// When both are provided, <paramref name="chunkCallbackBeforeAsync"/> runs before publish and
     /// <paramref name="chunkCallbackAfterAsync"/> runs after the attempt with the success flag.

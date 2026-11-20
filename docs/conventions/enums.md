@@ -20,7 +20,7 @@ In summary:
 - avoid enums for **parsing uncontrolled external values**,
 - prefer **auxiliary tables with integer IDs** when values must stay flexible or cheap to query.
 
-This is also why the toolkit's generic code is **string-based at its core**: `Event.TypeAggregate`/`TypeEvent`, `SupportedAggregateTypes`, message destinations and so on are strings. Consumers bring their own enums and convert them at the edge with `ToDescription()` or the enum-friendly overloads (for example `Event.Create<TAgg, TEvt>(...)` or `SupportedAggregateTypes.Support<TAgg, TEvt>(...)`).
+This is also why the toolkit's generic code is **string-based at its core**: `DomainEventEnvelope.TypeAggregate`/`TypeEvent`, `SupportedAggregateTypes`, message destinations and so on are strings. Consumers bring their own enums and convert them at the edge with `ToDescription()` or the enum-friendly overloads (for example `DomainEventEnvelope.Create<TAgg, TEvt>(...)` or `SupportedAggregateTypes.Support<TAgg, TEvt>(...)`).
 
 ## When to use an enum
 

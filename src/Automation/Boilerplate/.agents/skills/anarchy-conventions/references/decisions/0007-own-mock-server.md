@@ -6,7 +6,7 @@ Integration and end-to-end tests stood in for HTTP upstreams with a [MockServer]
 
 ## Decision
 
-`Anarchy.Toolkit.Web.MockServer` is a .NET host that loads MockServer-format JSON expectations, so existing files keep working, and can be extended with middlewares in your own host. `Testing.MockServer` asserts recorded requests (`ShouldAllHaveBeenMatched`), `IMockServerBuild` starts it around the tests, and `MockServerFixture` spawns it from an IDE.
+`Anarchy.Toolkit.Web.MockServer` is a .NET host that loads MockServer-format JSON expectations and can be extended with middlewares in your own host. `Testing.MockServer` asserts recorded requests (`ShouldAllHaveBeenMatched`), `IMockServerBuild` starts it around the tests, and `MockServerFixture` spawns it from an IDE.
 
 ## Consequences
 
@@ -16,5 +16,5 @@ Integration and end-to-end tests stood in for HTTP upstreams with a [MockServer]
 
 ## Alternatives considered
 
-- **Keep the container.** Still possible: nothing in the toolkit requires the toolkit mock server.
-- **[WireMock.Net](https://github.com/WireMock-Net/WireMock.Net).** Capable, but a different expectation format from the files teams already had.
+- **A MockServer container.** Nothing in the toolkit requires the toolkit mock server, so a container remains an option.
+- **[WireMock.Net](https://github.com/WireMock-Net/WireMock.Net).** Capable, but a different expectation format from MockServer's.

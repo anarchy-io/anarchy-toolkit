@@ -22,9 +22,9 @@ Use this package for API tests that need to exercise routing, middleware, authen
 2. Build requests with `Get`, `Post`, `Put` or `Patch`, and assert status and parsed output with the endpoint test methods. Configure embedded test settings and the mock token issuer for authenticated scenarios.
 3. Use `TestEndpointAsync` when native and Lambda responses should be deterministic and equal. For timestamps, generated IDs or other variable output, call `TestEndpointNativeAsync` and `TestEndpointLambdaAsync` separately and assert the relevant behavior in each.
 
-The runnable [greeting API test](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Tests/Api/GreetingControllerTests.cs) shows the fixture constructor and a request assertion.
+The runnable [greeting API test](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Testing/Api/GreetingControllerTests.cs) shows the fixture constructor and a request assertion.
 
-See the [sample tests](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Tests), [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+See the [sample tests](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Testing), [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
 ## Releases
 

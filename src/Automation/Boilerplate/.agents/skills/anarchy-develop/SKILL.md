@@ -21,11 +21,19 @@ ask the user for the values. Never commit `appsettings.Development.json`.
 - `lint` fails on formatting; `make lint_fix` rewrites the files, then review the diff.
 - `check_layering` fails when a project, file import or folder points to a higher layer. Move the code down a layer or
   invert the dependency; never reference a higher layer. If the layering itself looks wrong, ask the user.
+- **Layering configuration**: before adding a project, scaffolding or judging architecture, read any `layering`
+  overrides in `.anarchy-toolkit.json`. `mode` is `folder` (the layer is the project's application folder, else its
+  first folder under `libraryRoot`) or `prefix` (the name up to the first dot); with no override, folder mode uses
+  `src/Library`, standard app folders and `Core < Infrastructure < Configuration < Hosting < Web < Automation`.
+  Place projects so the effective mode finds their layer and never mix modes. Missing settings are valid; pass
+  operation arguments or explicitly save preferences instead of inferring the layout. Use `anarchy-toolkit config`
+  or the `config_show`, `config_set`, `config_unset`, `config_configure` Make wrappers for deliberate preference
+  editing. Fallout CLI/environment/parameter resolution takes precedence over saved overrides, then code defaults.
 - Analyzer warnings are errors in Release builds; fix them instead of suppressing them.
 - When projects, references or packages changed, run `make dependency_map` and commit `docs/dependency-map.html`.
 
 **Tests**: unit tests need nothing else. Integration tests may need the local environment (`make start`, see
-`anarchy-environment`) or the mock server (`make test_integration_mocked`). For a subset, run the test project
+`anarchy-environment`) or the mock server (`make test_integration_mocked`). Tests that assert telemetry use `FixtureTelemetry` from `TestCaseBase` (an in-memory `AppTelemetry`). For a subset, run the test project
 directly, e.g. `dotnet run --project tests/Unit -c Release -- -class "*OrderTest"`. `COMPILE=true` rebuilds first.
 
 **Test kinds**: the build finds tests by kind (`Unit`, `Integration`, `EndToEnd`) from project names such as
@@ -40,6 +48,11 @@ overriding `IsTestProjectOfKind` in `build/Build.cs` (ask the user first).
 terminal if you need to keep working, and stop them when done.
 
 **Pull request**: `make pull_request` (add `ENV=ci` to match CI exactly) runs lint, the layering check and all tests.
+
+**Windows without Make**: supported build targets can run directly with
+`dotnet run --project build/_build.csproj -- <Target> [--parameter value]`. `Compile`, test targets, `Lint`,
+`CheckLayering` and `Pack` do not require Bash. Make workflows, SDK bootstrap scripts and generated Git hooks still
+need Make and Bash; see [Without Make](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html#without-make-including-windows).
 
 **Something odd**: `make info` prints the environment; `make clean` or `make rebuild` start over.
 
@@ -61,7 +74,7 @@ terminal if you need to keep working, and stop them when done.
 | `make test_unit` | Runs unit tests | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
 | `make test_integration` | Runs integration tests (requires local Docker resources) | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
 | `make test_end_to_end` | Runs end-to-end tests | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
-| `make check_layering` | Verifies the layered architecture: references, imports, layer folders | `BY_FOLDER` (bool): Use layer folders instead of project name prefixes (DEFAULT=LayeringByFolder in .fallout/parameters.json, else false)<br>`LAYERING_ROOT` (str): Root folder relative to the solution (DEFAULT=LayeringRoot in .fallout/parameters.json, else the source root: SourceRoot, else src) |
+| `make check_layering` | Verifies the layered architecture: references, imports, layer folders |  |
 | `make dependency_map` | Generates docs/dependency-map.html: project references, layers and where the code lives |  |
 | `make info` | Prints out host-relevant information |  |
 | `make install` | Sets up the development environment, restores dependencies and compiles | `ENV` (str): Defaults to "dev"; "ci" skips local environment setup<br>`WITH_HOOKS` (bool): Enable local GIT hooks (DEFAULT=false) |

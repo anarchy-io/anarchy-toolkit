@@ -45,8 +45,8 @@ registry: confirm with the user first.
 | `make pack` | Packs every package into a .nupkg under artifacts/packages |  |
 | `make list_packages` | Lists every package (id + version) produced by the solution |  |
 | `make release_bump` | Bumps a package and its transitive package dependents | `RELEASE_PROJECT` (str): Project name to release (required, e.g. Core.Events)<br>`RELEASE_BUMP` (str): Version increment: patch, minor or major (required) |
-| `make release_bump_changed` | Bumps packages affected by changes between Git commits | `RELEASE_BASE` (str): Base Git commit (required)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD; must be checked out)<br>`RELEASE_BUMP` (str): Version increment: patch (default), minor or major |
-| `make release_notes` | Adds missing README release notes from commits affecting each package | `RELEASE_BASE` (str): Base Git commit (required)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD; must be checked out) |
+| `make release_bump_changed` | Bumps packages affected by changes between Git commits | `RELEASE_BASE` (str): Base Git commit or ref (default: saved release.base)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD; must be checked out)<br>`RELEASE_BUMP` (str): Version increment: patch (default), minor or major |
+| `make release_notes` | Adds missing README release notes from commits affecting each package | `RELEASE_BASE` (str): Base Git commit or ref (default: saved release.base)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD; must be checked out) |
 | `make publish` | Packs and pushes all packages to the NuGet feed | `API_KEY` (str): API key for the feed<br>`SOURCE` (str): NuGet feed URL (required) |
-| `make validate_release` | Checks that changed packages and their dependents have the version bumps they need | `RELEASE_BASE` (str): Base Git commit or ref, e.g. main (required)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD) |
+| `make validate_release` | Checks that changed packages and their dependents have the version bumps they need | `RELEASE_BASE` (str): Base Git commit or ref (default: saved release.base)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD) |
 <!-- anarchy:commands:end -->

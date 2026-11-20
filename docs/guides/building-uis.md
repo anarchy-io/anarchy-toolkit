@@ -87,8 +87,8 @@ The login (`POST /endpoint/auth/login`, antiforgery-protected) and logout (`GET 
 A downstream client only names the API and the route:
 
 ```csharp
-public class UserApiClient(IHttpClientFactory factory, IUiSessionContext session, IUiEnvironmentCatalog catalog, Observer observer)
-    : UiApiClientBase(factory, session, catalog, observer), IUserApiClient
+public class UserApiClient(IHttpClientFactory factory, IUiSessionContext session, IUiEnvironmentCatalog catalog, AppTelemetry telemetry)
+    : UiApiClientBase(factory, session, catalog, telemetry), IUserApiClient
 {
     public async Task<UserOutput> GetUserAsync(string id) =>
         await SendAsync<UserOutput>(HttpMethod.Get, await GetApiBaseUriAsync("UserApi"), BindRoute("users/{id}", ("id", id)));
