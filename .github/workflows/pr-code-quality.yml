@@ -29,3 +29,36 @@ jobs:
 
       - name: Run code quality checks
         run: ./src/Automation/Boilerplate/scripts/build.anarchy.sh PullRequest
+
+  windows-without-make:
+    name: "[Pull Request] Build targets without Make"
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Compile
+        run: dotnet run --project build/_build.csproj -- Compile
+
+      - name: Run unit tests
+        run: dotnet run --project build/_build.csproj -- TestUnit
+
+      - name: Run integration tests
+        run: dotnet run --project build/_build.csproj -- TestIntegration
+
+      - name: Run end-to-end tests
+        run: dotnet run --project build/_build.csproj -- TestEndToEnd
+
+      - name: Lint
+        run: dotnet run --project build/_build.csproj -- Lint
+
+      - name: Check layering
+        run: dotnet run --project build/_build.csproj -- CheckLayering
+
+      - name: Pack
+        run: dotnet run --project build/_build.csproj -- Pack
