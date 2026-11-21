@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.0.1
+
+- chore(build): Format package release notes property
+
 ### 2.0.0
 
 - Replace the unused `Observer` constructor argument with `AppTelemetry` and monitor HTTP operations through the host's telemetry pipeline.

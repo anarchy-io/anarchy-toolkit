@@ -1,5 +1,10 @@
 ## Releases
 
+### 1.0.1
+
+- fix(Automation.Build): Handle Windows directory containment
+- chore(build): Format package release notes property
+
 ### 1.0.0
 
 - Breaking: use descriptive `ConfigurationValueSet`, `EnvironmentValueSet`, and `RuntimeValueSet` types without namespace-clash aliases; public automation default changes are classified as breaking. This newly named package remains at its initial 1.0.0.

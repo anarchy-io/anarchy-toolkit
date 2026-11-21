@@ -1,5 +1,9 @@
 ## Releases
 
+### 1.0.1
+
+- chore(build): Format package release notes property
+
 ### 1.0.0
 
 - Added optional DI integration for a consumer-configured Serilog logger, console defaults for composition roots, a

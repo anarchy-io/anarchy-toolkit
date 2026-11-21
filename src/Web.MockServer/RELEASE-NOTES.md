@@ -1,5 +1,10 @@
 ## Releases
 
+### 2.0.1
+
+- fix(Web): Support Windows paths and host architecture
+- chore(build): Format package release notes property
+
 ### 2.0.0
 
 - feat(automation): establish onboarding and layering conventions

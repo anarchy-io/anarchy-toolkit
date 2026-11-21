@@ -26,7 +26,9 @@
   <PropertyGroup>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/anarchy-io/anarchy-toolkit</PackageProjectUrl>
-    <PackageReleaseNotes Condition="Exists('$(MSBuildProjectDirectory)/RELEASE-NOTES.md')">$([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASE-NOTES.md"))</PackageReleaseNotes>
+    <PackageReleaseNotes Condition="Exists('$(MSBuildProjectDirectory)/RELEASE-NOTES.md')">
+      $([System.IO.File]::ReadAllText("$(MSBuildProjectDirectory)/RELEASE-NOTES.md"))
+    </PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/anarchy-io/anarchy-toolkit</RepositoryUrl>
   </PropertyGroup>

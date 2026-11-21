@@ -1,5 +1,9 @@
 ## Releases
 
+### 1.0.1
+
+- chore(build): Format package release notes property
+
 ### 1.0.0
 
 - Introduced `ICoreTelemetry` (Microsoft logger and metric recorder), the provider-neutral `IMetricRecorder` with its

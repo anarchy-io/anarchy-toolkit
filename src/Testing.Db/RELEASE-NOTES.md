@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.0.1
+
+- chore(build): Format package release notes property
+
 ### 2.0.0
 
 - fix(Infrastructure.Persistence.Db)!: preserve unit of work failures

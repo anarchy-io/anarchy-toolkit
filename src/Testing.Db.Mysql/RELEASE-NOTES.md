@@ -1,5 +1,9 @@
 ## Releases
 
+### 1.0.1
+
+- chore(build): Format package release notes property
+
 ### 1.0.0
 
 - New package identity, renamed from `Anarchy.Toolkit.Testing.Mysql`; versions below are historical releases under that package ID.
