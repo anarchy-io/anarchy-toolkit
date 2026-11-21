@@ -8,7 +8,6 @@
     <Copyright>Copyright © 2026 Leandro Melão Medeiros</Copyright>
     <PackageTags>anarchy;toolkit;dotnet</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
   </PropertyGroup>
 
 </Project>
