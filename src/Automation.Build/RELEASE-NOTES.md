@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.0.1
+
+- Updated the Automation dependency for its bundled telemetry guidance.
+
 ### 2.0.0
 
 - Breaking: Generate release entries in each package's `RELEASE-NOTES.md` instead of its README.

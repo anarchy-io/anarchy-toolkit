@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Automation.Build</PackageId>
     <AssemblyName>Anarchy.Toolkit.Automation.Build</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Automation.Build</RootNamespace>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <Description>Anarchy automation components, powered by Fallout Build: solution/test conventions, Microsoft.Testing.Platform-aware test runner, linting, layering checks, NuGet and ECR container release flows and local app runs.</Description>
     <PackageTags>fallout build ci</PackageTags>
     <Nullable>enable</Nullable>

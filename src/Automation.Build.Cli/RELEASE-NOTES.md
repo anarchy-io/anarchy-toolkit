@@ -1,5 +1,13 @@
 ## Releases
 
+### 2.1.0
+
+- Update embedded Web package versions and dependent package references.
+
+### 2.0.1
+
+- Updated the Automation dependencies for their bundled telemetry guidance.
+
 ### 2.0.0
 
 - Breaking: Generate release entries in each package's `RELEASE-NOTES.md` instead of its README.
