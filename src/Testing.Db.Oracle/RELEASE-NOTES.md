@@ -1,0 +1,60 @@
+## Releases
+
+### 1.0.0
+
+- New package identity, renamed from `Anarchy.Toolkit.Testing.Oracle`; versions below are historical releases under that package ID.
+- Include the unit-of-work failure handling and provider-neutral telemetry changes in the shared database test kit.
+
+### Historical releases under `Anarchy.Toolkit.Testing.Oracle`
+
+### 1.2.2
+
+- build(deps): drop package references already resolved transitively
+
+### 1.2.1
+
+- docs(packages): identify each package's pillar and layer
+- build(packages): attribute the copyright to Leandro Melão Medeiros
+- build: relicense under Apache-2.0 and update the package metadata
+
+### 1.2.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+
+### 1.1.7
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
+### 1.1.6
+
+- References `Anarchy.Toolkit.Infrastructure.Persistence.Oracle` 1.1.5, aligned with the .NET 10 LTS.
+
+### 1.1.5
+
+- refactor(src): clean up code style across library packages
+- chore(deps): update AWS SDK, Lambda ASP.NET Core server and MySqlConnector packages
+
+### 1.1.4
+
+- chore(deps): update AWS SDK packages
+
+### 1.1.2
+
+- build: migrate local automation to build tooling
+
+### 1.1.1
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+
+### 1.1.0
+
+- Updated the database testing and Oracle persistence dependencies alongside configurable maximum pool size support.
+
+### 1.0.1
+
+- Added a package-specific NuGet README.
+
+### 1.0.0
+
+- Introduced Oracle integration test helpers, including a singleton variant and options mapper.
