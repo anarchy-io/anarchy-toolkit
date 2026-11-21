@@ -4,7 +4,7 @@
     <AssemblyName>Anarchy.Toolkit.Configuration</AssemblyName>
     <PackageId>Anarchy.Toolkit.Configuration</PackageId>
     <RootNamespace>Anarchy.Toolkit.Configuration</RootNamespace>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <Description>Application configuration: settings contracts, environment and secret handling, and the provider-neutral telemetry bootstrap (ModuleTelemetry) that applications extend through dependency injection.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.0.1
+
+- chore(build): Format package release notes property
+
 ### 2.0.0
 
 - Preserve the original session failure when transaction startup, rollback or cleanup fails; propagate caller cancellation and reject concurrent sessions.

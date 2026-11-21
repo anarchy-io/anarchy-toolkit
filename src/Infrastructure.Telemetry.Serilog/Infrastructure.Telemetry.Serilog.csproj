@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Telemetry.Serilog</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Telemetry.Serilog</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Telemetry.Serilog</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Description>Optional Serilog integration for Anarchy telemetry: logging provider registration, console defaults for composition roots, a structured-exception enricher and opt-in log-based metrics.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

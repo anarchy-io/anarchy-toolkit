@@ -1,5 +1,11 @@
 ## Releases
 
+### 1.0.1
+
+- fix(Automation.Build): Handle Windows directory containment
+- fix(Web): Support Windows paths and host architecture
+- chore(build): Format package release notes property
+
 ### 1.0.0
 
 - New package identity, renamed from `Anarchy.Toolkit.Build.Cli.Tool`; versions below are historical releases under that package ID.
