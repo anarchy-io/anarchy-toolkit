@@ -103,6 +103,10 @@ public partial interface IStandardBuild : IDefaultBuild
     string RelativePath(Project project) =>
         Solution.Directory.GetRelativePathTo(project.Path).ToString().Replace('\\', '/');
 
-    internal static bool IsInDirectory(AbsolutePath path, AbsolutePath directory) =>
-        path.ToString().StartsWith(directory.ToString().TrimEnd('/', '\\') + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+    internal static bool IsInDirectory(AbsolutePath path, AbsolutePath directory)
+    {
+        var prefix = directory.ToString();
+        if (!Path.EndsInDirectorySeparator(prefix)) prefix += Path.DirectorySeparatorChar;
+        return path.ToString().StartsWith(prefix, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+    }
 }
