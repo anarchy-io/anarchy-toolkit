@@ -8,7 +8,7 @@ namespace Anarchy.Toolkit.Automation.Core.Service;
 /// </summary>
 /// <remarks>
 /// Works with <see cref="ReleaseVersionTasks"/>: <see cref="Collect"/> gathers the commit subjects of a release range,
-/// <see cref="Plan"/> turns them into README edits, and <see cref="AddEntry"/> edits a single README.
+/// <see cref="Plan"/> turns them into release-notes edits, and <see cref="AddEntry"/> edits a single document.
 /// </remarks>
 public static class ReleaseNotesTasks
 {
@@ -56,15 +56,15 @@ public static class ReleaseNotesTasks
     }
 
     /// <summary>
-    /// Plans the README edits, keyed by README path, without writing any files: each package with
-    /// <paramref name="messages"/> gets an entry for its current version in the <c>README.md</c> next to its project
-    /// (created when <paramref name="read"/> returns null). READMEs that already list the version are left out.
+    /// Plans the release-notes edits, keyed by file path, without writing any files: each package with
+    /// <paramref name="messages"/> gets an entry for its current version in the <c>RELEASE-NOTES.md</c> next to its
+    /// project (created when <paramref name="read"/> returns null). Files that already list the version are left out.
     /// </summary>
     /// <param name="projects">The projects, with their current versions.</param>
     /// <param name="messages">The commit subjects keyed by project path, as returned by <see cref="Collect"/>.</param>
-    /// <param name="read">Reads a README's content, or returns <see langword="null"/> when it does not exist.</param>
-    /// <returns>The new README contents, keyed by README path.</returns>
-    /// <exception cref="System.InvalidOperationException">Thrown when <see cref="AddEntry"/> fails for a README.</exception>
+    /// <param name="read">Reads a release-notes file, or returns <see langword="null"/> when it does not exist.</param>
+    /// <returns>The new release-notes contents, keyed by file path.</returns>
+    /// <exception cref="System.InvalidOperationException">Thrown when <see cref="AddEntry"/> fails for a file.</exception>
     public static IReadOnlyDictionary<string, string> Plan(
         IReadOnlyCollection<Project> projects, IReadOnlyDictionary<string, IReadOnlyList<string>> messages,
         Func<string, string?> read)
@@ -72,8 +72,8 @@ public static class ReleaseNotesTasks
         var edits = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var project in projects.Where(p => messages.ContainsKey(p.Path)))
         {
-            var path = Path.Combine(Path.GetDirectoryName(project.Path)!, "README.md");
-            var content = read(path) ?? $"# {project.Name}\n";
+            var path = Path.Combine(Path.GetDirectoryName(project.Path)!, "RELEASE-NOTES.md");
+            var content = read(path) ?? "";
             var updated = AddEntry(content, project.Version, messages[project.Path]);
             if (updated != content) edits.Add(path, updated);
         }
@@ -82,14 +82,14 @@ public static class ReleaseNotesTasks
 
     /// <summary>
     /// Adds an entry at the beginning of the <c>## Releases</c> section (appended when missing), unless that version
-    /// is already listed. Code fences are ignored, and the README's line endings are kept.
+    /// is already listed. Code fences are ignored, and the document's line endings are kept.
     /// </summary>
-    /// <param name="readme">The README content.</param>
+    /// <param name="readme">The document content.</param>
     /// <param name="version">The release version, used as the <c>###</c> heading.</param>
     /// <param name="subjects">The commit subjects, listed as bullets (trimmed, single-line and deduplicated).</param>
     /// <returns>The updated content, or <paramref name="readme"/> unchanged when the version is already listed.</returns>
     /// <exception cref="System.InvalidOperationException">
-    /// Thrown when the README has more than one Releases section, or <paramref name="subjects"/> has no non-blank subject.
+    /// Thrown when the document has more than one Releases section, or <paramref name="subjects"/> has no non-blank subject.
     /// </exception>
     public static string AddEntry(string readme, string version, IReadOnlyList<string> subjects)
     {
@@ -115,7 +115,7 @@ public static class ReleaseNotesTasks
             if (inFence) continue;
             if (Regex.IsMatch(text, @"^ {0,3}##[ \t]+Releases[ \t]*#*[ \t]*$", RegexOptions.IgnoreCase))
             {
-                if (sectionStart >= 0) throw new InvalidOperationException("README contains more than one Releases section.");
+                if (sectionStart >= 0) throw new InvalidOperationException("Document contains more than one Releases section.");
                 sectionStart = line.Index + line.Length;
                 continue;
             }

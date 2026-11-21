@@ -29,7 +29,7 @@ release_bump_changed: #? Bumps packages affected by changes between Git commits
 	${MAKE} anarchy SKIP_TITLE=true TARGET="GenerateReleaseFromChanges$(if $(filter undefined,$(origin RELEASE_BASE)),, --ReleaseBase '$(RELEASE_BASE)')$(if $(RELEASE_HEAD), --ReleaseHead $(RELEASE_HEAD),)$(if $(RELEASE_BUMP), --ReleaseBump $(RELEASE_BUMP),)"
 
 .PHONY: release_notes
-release_notes: #? Adds missing README release notes from commits affecting each package
+release_notes: #? Adds missing release notes to each package's RELEASE-NOTES.md from its commits
 #+ RELEASE_BASE|str|Base Git commit or ref (default: saved release.base)
 #+ RELEASE_HEAD|str|Head Git commit (defaults to HEAD; must be checked out)
 	${MAKE} anarchy SKIP_TITLE=true TARGET="GenerateReleaseNotes$(if $(filter undefined,$(origin RELEASE_BASE)),, --ReleaseBase '$(RELEASE_BASE)')$(if $(RELEASE_HEAD), --ReleaseHead $(RELEASE_HEAD),)"

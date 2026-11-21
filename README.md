@@ -100,7 +100,7 @@ Replacing an existing hook requires `--force`.
 | Target | What it does |
 |---|---|
 | `make release_bump RELEASE_PROJECT=Core.Events RELEASE_BUMP=patch` | Bumps a package and all its dependents. |
-| `make release_notes RELEASE_BASE=origin/main RELEASE_HEAD=HEAD` | Fills missing release notes in the affected packages' READMEs. |
+| `make release_notes RELEASE_BASE=origin/main RELEASE_HEAD=HEAD` | Fills missing entries in the affected packages' `RELEASE-NOTES.md` files. |
 | `make pack` | Packs every package into a fresh `artifacts/packages/<run-id>/` directory. |
 | `make publish SOURCE=… [API_KEY=…]` | Packs and pushes to a NuGet feed. |
 

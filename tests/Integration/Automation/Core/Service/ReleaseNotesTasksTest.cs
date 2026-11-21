@@ -79,11 +79,11 @@ public class ReleaseNotesTasksTest
             subjects[a].Should().Equal("feat: A functionality");
             subjects[b].Should().Equal("feat: A functionality");
             subjects[c].Should().Equal("fix: C functionality");
-            var edits = ReleaseNotesTasks.Plan(projects, subjects, path => path == Path.Combine(root, "src", "B", "README.md")
+            var edits = ReleaseNotesTasks.Plan(projects, subjects, path => path == Path.Combine(root, "src", "B", "RELEASE-NOTES.md")
                 ? "## Releases\n\n### 1.0.1\n\n- Hand-written\n" : "## Releases\n\n### 1.0.0\n");
             edits.Should().HaveCount(2);
-            edits[Path.Combine(root, "src", "A", "README.md")].Should().Contain("- feat: A functionality").And.NotContain("fix: C");
-            edits[Path.Combine(root, "src", "C", "README.md")].Should().Contain("- fix: C functionality");
+            edits[Path.Combine(root, "src", "A", "RELEASE-NOTES.md")].Should().Contain("- feat: A functionality").And.NotContain("fix: C");
+            edits[Path.Combine(root, "src", "C", "RELEASE-NOTES.md")].Should().Contain("- fix: C functionality");
             ((Action)(() => ReleaseNotesTasks.Collect(root, projects, "HEAD", "HEAD~3"))).Should().Throw<InvalidOperationException>();
         }
         finally { TestDirectory.Delete(root); }

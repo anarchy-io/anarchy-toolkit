@@ -1,7 +1,8 @@
 ## Releases
 
-### 1.0.1
+### 2.0.0
 
+- Breaking: Generate release entries in each package's `RELEASE-NOTES.md` instead of its README.
 - fix(Automation.Build): Handle Windows directory containment
 - chore(build): Format package release notes property
 
