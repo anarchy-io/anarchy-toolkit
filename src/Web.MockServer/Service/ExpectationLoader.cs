@@ -105,7 +105,7 @@ public static class ExpectationLoader
         }).ToList();
     }
 
-    private static (string Root, string Pattern) SplitGlob(string glob)
+    internal static (string Root, string Pattern) SplitGlob(string glob)
     {
         var parts = glob.Replace('\\', '/').Split('/');
         var firstWildcard = Array.FindIndex(parts, p => p.IndexOfAny(['*', '?', '[', '{']) >= 0);
@@ -113,6 +113,9 @@ public static class ExpectationLoader
             return firstWildcard == 0 ? (Directory.GetCurrentDirectory(), glob) : (Path.GetDirectoryName(Path.GetFullPath(glob)) ?? ".", Path.GetFileName(glob));
 
         var root = string.Join('/', parts[..firstWildcard]);
+        var pathRoot = Path.GetPathRoot(glob);
+        if (Path.IsPathFullyQualified(glob) && pathRoot is not null && root.Length < pathRoot.Length)
+            root = pathRoot;
         return (Path.GetFullPath(root.Length == 0 ? "/" : root), string.Join('/', parts[firstWildcard..]));
     }
 }
