@@ -5,7 +5,7 @@ This guide describes how applications built on the toolkit write logs and emit m
 > **A guide, not a rule.** This page explains how the platform works. The conventions it mentions are recommendations: see the [Observability convention](../conventions/observability.md) for the rules, why they exist and how to opt out.
 {: .notice--info}
 
-The toolkit adds **no logging or metrics backend of its own**. It writes through the standard Microsoft logging ([`ILogger`](https://learn.microsoft.com/dotnet/core/extensions/logging)) and .NET metrics ([`System.Diagnostics.Metrics`](https://learn.microsoft.com/dotnet/core/diagnostics/metrics)) APIs, so whatever your application plugs into them (the console, [OpenTelemetry](https://opentelemetry.io/docs/languages/dotnet/) and its OTLP exporter, [Serilog](https://serilog.net/), a vendor's logging provider) receives the toolkit's telemetry too, without changing any instrumentation code.
+The toolkit adds **no logging or metrics backend of its own**. By default it writes through the standard Microsoft logging ([`ILogger`](https://learn.microsoft.com/dotnet/core/extensions/logging)) and .NET metrics ([`System.Diagnostics.Metrics`](https://learn.microsoft.com/dotnet/core/diagnostics/metrics)) APIs, so whatever your application plugs into them receives the toolkit's telemetry too. Optional recorders can send toolkit metrics elsewhere without changing instrumentation code.
 
 ## The building blocks
 
@@ -15,6 +15,7 @@ The toolkit adds **no logging or metrics backend of its own**. It writes through
 | `Anarchy.Toolkit.Infrastructure.CorrelationId` | `CorrelationContext`, the `UseCorrelationId()` middleware and `CorrelationContext.BeginScope(...)` for non-HTTP entry points. Provider-neutral: no Serilog dependency. |
 | `Anarchy.Toolkit.Configuration` | `ModuleTelemetry`, which registers telemetry, the correlation context and `IApplicationContext`; `ModuleLibConfiguration` applies it with the settings. |
 | `Anarchy.Toolkit.Infrastructure.Telemetry.Serilog` | Optional. Serilog as one more logging provider, a console default for tools, a correlation enricher, a structured-exception enricher and opt-in log-based metrics. |
+| `Anarchy.Toolkit.Infrastructure.Telemetry.StatsD` | Optional. DogStatsD recorder with application-supplied client configuration. |
 | `Anarchy.Toolkit.Infrastructure.Messaging.Aws` | `InboundMessage.BeginCorrelationScope(logger)`: the entry point for consumers of mapped SQS messages. |
 | `Anarchy.Toolkit.Testing` | `TestTelemetry`: an `AppTelemetry` whose logs and metrics are captured in memory, for tests. |
 
@@ -136,6 +137,15 @@ export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
 ```
 
 Keep keys out of source control: they belong in the host's secret store or environment, like any other secret (see [Configuration](../packages/Configuration/README.md)).
+
+### DogStatsD (optional)
+
+When a DogStatsD-compatible receiver is required instead of OTLP, `Infrastructure.Telemetry.StatsD` supplies
+`AddStatsDTelemetry` and `ModuleStatsDTelemetry`. The composition root supplies a `StatsdClient.StatsdConfig` with
+its own endpoint, prefix and tags. Histograms and durations use DogStatsD histograms, or distributions when enabled;
+durations remain in seconds. This replaces the toolkit's standard meter recorder, not the logging pipeline. See the
+[package README](../packages/Infrastructure.Telemetry.StatsD/README.md) for protocol compatibility, ownership and
+serverless flushing.
 
 ### Notable events
 

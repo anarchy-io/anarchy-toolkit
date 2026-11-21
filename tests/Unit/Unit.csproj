@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Messaging.Aws\Infrastructure.Messaging.Aws.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Telemetry.Serilog\Infrastructure.Telemetry.Serilog.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Telemetry.StatsD\Infrastructure.Telemetry.StatsD.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Mysql\Infrastructure.Persistence.Db.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Oracle\Infrastructure.Persistence.Db.Oracle.csproj" />

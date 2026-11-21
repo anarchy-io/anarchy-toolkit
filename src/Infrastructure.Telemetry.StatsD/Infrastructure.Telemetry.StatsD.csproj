@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Telemetry.StatsD</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Telemetry.StatsD</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Telemetry.StatsD</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Optional DogStatsD metrics recorder and dependency injection integration for Anarchy telemetry.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
+    <PackageReference Include="DogStatsD-CSharp-Client" />
+  </ItemGroup>
+
+</Project>
