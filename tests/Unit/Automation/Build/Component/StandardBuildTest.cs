@@ -122,4 +122,24 @@ public class StandardBuildTest
             root.DeleteDirectory();
         }
     }
+
+    [Fact]
+    public void IsInDirectory_GivenFilesystemRoot_RecognizesDescendant()
+    {
+        var root = AbsolutePath.Create(Path.GetPathRoot(Path.GetTempPath())!);
+        var child = AbsolutePath.Create(Path.Combine(root.ToString(), "project", "App.csproj"));
+
+        IStandardBuild.IsInDirectory(child, root).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsInDirectory_GivenDifferentCase_UsesHostPathComparison()
+    {
+        var root = AbsolutePath.Create(Path.Combine(Path.GetTempPath(), "AnarchySource"));
+        var child = AbsolutePath.Create(Path.Combine(Path.GetTempPath(), "anarchysource", "App.csproj"));
+        var sibling = AbsolutePath.Create(Path.Combine(Path.GetTempPath(), "AnarchySourceOther", "App.csproj"));
+
+        IStandardBuild.IsInDirectory(child, root).Should().Be(OperatingSystem.IsWindows());
+        IStandardBuild.IsInDirectory(sibling, root).Should().BeFalse();
+    }
 }
