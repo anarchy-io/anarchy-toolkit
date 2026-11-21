@@ -21,7 +21,7 @@ fixes, minor for features, major for breaking changes). It also bumps every pack
 - Several packages changed: `make release_bump_changed RELEASE_BASE=main` bumps all of them.
 
 **Release notes**: commit the changes first, then `make release_notes RELEASE_BASE=main` adds a `### <version>` entry
-under `## Releases` in each changed package's README from the commit titles. Review the notes.
+under `## Releases` in each changed package's `RELEASE-NOTES.md` from the commit titles. Review the notes.
 
 **Check**: `make validate_release RELEASE_BASE=main` fails when a changed package or one of its dependents lacks the
 bump it needs. Run it before committing versions.
@@ -46,7 +46,7 @@ registry: confirm with the user first.
 | `make list_packages` | Lists every package (id + version) produced by the solution |  |
 | `make release_bump` | Bumps a package and its transitive package dependents | `RELEASE_PROJECT` (str): Project name to release (required, e.g. Core.Events)<br>`RELEASE_BUMP` (str): Version increment: patch, minor or major (required) |
 | `make release_bump_changed` | Bumps packages affected by changes between Git commits | `RELEASE_BASE` (str): Base Git commit or ref (default: saved release.base)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD; must be checked out)<br>`RELEASE_BUMP` (str): Version increment: patch (default), minor or major |
-| `make release_notes` | Adds missing README release notes from commits affecting each package | `RELEASE_BASE` (str): Base Git commit or ref (default: saved release.base)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD; must be checked out) |
+| `make release_notes` | Adds missing release notes to each package's RELEASE-NOTES.md from its commits | `RELEASE_BASE` (str): Base Git commit or ref (default: saved release.base)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD; must be checked out) |
 | `make publish` | Packs and pushes all packages to the NuGet feed | `API_KEY` (str): API key for the feed<br>`SOURCE` (str): NuGet feed URL (required) |
 | `make validate_release` | Checks that changed packages and their dependents have the version bumps they need | `RELEASE_BASE` (str): Base Git commit or ref (default: saved release.base)<br>`RELEASE_HEAD` (str): Head Git commit (defaults to HEAD) |
 <!-- anarchy:commands:end -->
