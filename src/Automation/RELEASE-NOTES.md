@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.0.1
+
+- Updated the bundled telemetry decision to describe the optional DogStatsD adapter.
+
 ### 2.0.0
 
 - Breaking: Generate release entries in each package's `RELEASE-NOTES.md` instead of its README.

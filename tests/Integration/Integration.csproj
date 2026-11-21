@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Telemetry.StatsD\Infrastructure.Telemetry.StatsD.csproj" />
   </ItemGroup>
 
 </Project>

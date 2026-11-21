@@ -12,7 +12,8 @@ Toolkit code writes telemetry through `Core.Telemetry`, which is built on the st
 - **`AppTelemetry`** is a concrete class that receives `ICoreTelemetry` and holds the toolkit conventions on top: call-site attribution, standard metric names, timers, monitored actions, log helpers and `LogContext` scopes. Toolkit packages depend on it (or on `ICoreTelemetry` when they need only the primitives), so every package emits through the same pipeline.
 - **Registration is DI-first.** `AddCoreTelemetry()` uses `TryAdd`, so what the application registered is kept, and anything registered later wins. Applications replace the logging providers, the recorder, `ICoreTelemetry` or `AppTelemetry` through DI; a `ModuleTelemetryBase` packages that choice as a module. Instances the application supplies are never disposed by the toolkit.
 - **Serilog is optional.** `Infrastructure.Telemetry.Serilog` registers Serilog as one more logging provider and adds opt-in extras (console defaults for tools, enrichers, log-based metrics). Swapping providers changes only the composition root.
-- **Notable events are structured logs, not a vendor API.** A stable `EventId` and properties, plus a counter when the count matters. Routing them to Datadog Events or New Relic custom events is configuration of a provider or exporter; no vendor package ships.
+- **Notable events are structured logs, not a vendor API.** A stable `EventId` and properties, plus a counter when the count matters. Routing them to Datadog Events or New Relic custom events is configuration of a provider or exporter.
+- **DogStatsD is an optional adapter.** `Infrastructure.Telemetry.StatsD` depends on the DogStatsD client for applications that need that protocol. It is not a dependency of Core, and OTLP remains the preferred default. The application owns the endpoint and settings.
 - **Correlation IDs are provider-neutral.** They travel in `ILogger` scopes and `Activity` tags, set by the middleware and by the entry points of workers and message consumers.
 
 ## Consequences
@@ -27,4 +28,4 @@ Toolkit code writes telemetry through `Core.Telemetry`, which is built on the st
 
 - **`ILogger` and `System.Diagnostics.Metrics` directly, with no facade.** Standard, but without the call-site conventions and with the same boilerplate repeated in every package.
 - **A Serilog-based facade in Core.** Rejected: it forces one logging library on every adopter. Serilog remains available as an optional provider.
-- **A vendor SDK ([Datadog](https://www.datadoghq.com/), New Relic) inside the packages.** Rejected by the [Vendor-neutral value](README.md#values): OTLP and providers cover the vendors through configuration.
+- **A vendor SDK ([Datadog](https://www.datadoghq.com/), New Relic) inside Core or required by other packages.** Rejected by the [Vendor-neutral value](README.md#values): OTLP and providers cover vendors through configuration. A separate opt-in protocol adapter does not impose that dependency on other consumers.

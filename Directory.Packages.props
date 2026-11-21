@@ -23,6 +23,7 @@
     <!-- Latest Dapper version (2.1.89) has introduced a few data mapping bugs, pinning to last working version -->
     <PackageVersion Include="Dapper" Version="[2.1.79]" />
     <PackageVersion Include="Docfx.App" Version="2.81.0" />
+    <PackageVersion Include="DogStatsD-CSharp-Client" Version="9.2.1" />
     <PackageVersion Include="Fallout.Common" Version="11.0.18" />
     <PackageVersion Include="Fallout.Tooling.Generator" Version="11.0.18" />
     <PackageVersion Include="GraphQL" Version="8.8.5" />
