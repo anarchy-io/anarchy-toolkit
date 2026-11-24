@@ -51,6 +51,53 @@ See the [Anarchy automation builds guide](https://anarchy-io.github.io/anarchy-t
 
 The waits show a progress bar on interactive terminals and plain lines otherwise (CI, redirected output).
 
+### Prepare local services for tests
+
+Implement `ITestEnvironmentBuild` instead of `IDockerBuild` on a build that uses `IStandardBuild` (including builds
+that get it through `INuGetBuild` or `IMockServerBuild`). Integration and end-to-end targets, including their mock-server
+variants, will then start Compose and wait for the services configured through `DockerStart`; unit tests will not.
+For example, set these preferences in `.anarchy-toolkit.json` and define a health check on the Compose service:
+
+```json
+{ "docker": { "waitFor": ["postgres"], "waitForHealthy": true } }
+```
+
+Use the name that Docker can inspect (for example an explicit Compose `container_name`). Set `docker.timeout` and
+`docker.startTimeout` if the defaults are too short. `make test_integration` and `make test_end_to_end` prepare the
+environment automatically; `make prepare_test_environment` (`PrepareTestEnvironment`) does it without running tests.
+`make start` remains available for Compose alone. Nothing stops the environment or removes data after a test run.
+For host-run tests, publish the required ports and configure the tests to connect through those host ports.
+
+### Run repository-owned migrations with Flyway
+
+Add `IFlywayBuild` if the repository owns the migration history it uses in delivery as well as local development.
+It is not necessary for throwaway test databases initialized by their container images, or for partial copies of a
+schema owned elsewhere. `IFlywayBuild` exposes both targets below. With `ITestEnvironmentBuild` also present, the
+test preparation chain starts Compose, waits for the configured database containers, and runs `FlywayMigrate` before
+tests. Neither component is required for builds that do not need this workflow.
+
+| Target | Make | What it does |
+|---|---|---|
+| `FlywayMigrate` | `flyway_migrate` | Applies pending migrations. Also starts and waits for Compose if `ITestEnvironmentBuild` is present. |
+| `FlywayInfo` | `flyway_info` | Shows migration status without starting Compose. The database must already be reachable. |
+
+Configure the build parameters in `.fallout/parameters.json`, or pass them to Fallout for an individual run:
+
+| Fallout parameter | Make override | Value |
+|---|---|---|
+| `FlywayImage` | `FLYWAY_IMAGE` | Flyway CLI image tag or digest; defaults to `redgate/flyway:11.8.2`. |
+| `FlywayConfigFiles` | `FLYWAY_CONFIG_FILES` | One or more `.conf` or `.toml` paths, in loading order. Use the same format for all files in a run. Keep credentials out of tracked configuration. |
+| `FlywayLocations` | `FLYWAY_LOCATIONS` | Migration directories. If omitted, Flyway's configured or image-default locations apply. |
+| `FlywayNetwork` | `FLYWAY_NETWORK` | Docker network for the one-shot container. Set it to the database's Compose network (often `<project>_default`) to use the service hostname in the JDBC URL. If omitted, Docker's default network applies. |
+
+```sh
+make flyway_info FLYWAY_CONFIG_FILES=docker/flyway-local.conf FLYWAY_LOCATIONS=db/migrations FLYWAY_NETWORK=myapp_default
+```
+
+Paths are relative to the repository root or absolute. The build mounts configured files and migration directories
+read-only and passes their container paths to Flyway. The CLI container is removed when it exits. A nonzero exit
+fails the target and blocks any dependent tests.
+
 ## Container images
 
 `IContainerBuild` publishes a runnable app, builds its image from `docker/Dockerfile` by default, then pushes it to the

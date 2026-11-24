@@ -117,7 +117,7 @@ public class TargetGraphTest
     [Theory]
     [MemberData(nameof(TargetCases))]
     public void Target_HasExpectedDependenciesAndGuards(string name, string dependencies, int actions, int conditions,
-                                                        int requirements)
+                                                         int requirements)
     {
         var target = Targets.Value.Single(t => t.Name == name);
         target.ExecutionDependencies.Select(t => t.Name)
@@ -132,6 +132,46 @@ public class TargetGraphTest
 
         target.DelegateRequirements.Should()
             .HaveCount(requirements);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TestEnvironment_PreparesOnlyEnvironmentSuitesAndOrdersOptionalMigrationAfterReadiness(bool withFlyway)
+    {
+        var targets = withFlyway ? CreateTargets(new ProvisionedTestBuild()) : CreateTargets(new EnvironmentTestBuild());
+
+        IEnumerable<string> Dependencies(string name) => targets.Single(t => t.Name == name)
+            .ExecutionDependencies.Select(t => t.Name);
+
+        foreach (var target in new[] { "TestIntegration", "TestEndToEnd", "TestIntegrationWithMockServer", "TestEndToEndWithMockServer" })
+            Dependencies(target).Should().BeEquivalentTo("Compile", "PrepareTestEnvironment");
+
+        Dependencies("TestUnit").Should().Equal("Compile");
+        Dependencies("DockerStart").Should().BeEmpty();
+        if (withFlyway)
+        {
+            Dependencies("PrepareTestEnvironment").Should().BeEquivalentTo("DockerStart", "FlywayMigrate");
+            Dependencies("FlywayMigrate").Should().Equal("DockerStart");
+            Dependencies("FlywayInfo").Should().BeEmpty();
+        }
+        else
+        {
+            Dependencies("PrepareTestEnvironment").Should().Equal("DockerStart");
+            targets.Select(t => t.Name).Should().NotContain(["FlywayMigrate", "FlywayInfo"]);
+        }
+    }
+
+    [Fact]
+    public void FlywayTargets_WithoutTestEnvironment_DoNotStartComposeOrChangeTheTestGraph()
+    {
+        var targets = CreateTargets(new StandaloneFlywayTestBuild());
+
+        foreach (var target in new[] { "FlywayMigrate", "FlywayInfo" })
+            targets.Single(t => t.Name == target).ExecutionDependencies.Should().BeEmpty();
+
+        foreach (var target in new[] { "TestUnit", "TestIntegration", "TestEndToEnd" })
+            targets.Single(t => t.Name == target).ExecutionDependencies.Select(t => t.Name).Should().Equal("Compile");
     }
 
     [Theory]
@@ -830,9 +870,15 @@ public class TargetGraphTest
         AbsolutePath IFalloutBuild.RootDirectory => AbsolutePath.Create(root);
     }
 
-    private sealed class TestBuild : FalloutBuild, IContainerBuild, INuGetBuild, ILayeringBuild,
-                                     IDependencyMapBuild, IBoilerplateBuild, IDependencyUpgradeBuild, IGitHooksBuild,
-                                     IDockerBuild, IMockServerBuild, IFalloutBuild
+    private sealed class EnvironmentTestBuild : TestBuild, ITestEnvironmentBuild;
+
+    private sealed class ProvisionedTestBuild : TestBuild, ITestEnvironmentBuild, IFlywayBuild;
+
+    private sealed class StandaloneFlywayTestBuild : TestBuild, IFlywayBuild;
+
+    private class TestBuild : FalloutBuild, IContainerBuild, INuGetBuild, ILayeringBuild,
+                              IDependencyMapBuild, IBoilerplateBuild, IDependencyUpgradeBuild, IGitHooksBuild,
+                              IDockerBuild, IMockServerBuild, IFalloutBuild
     {
         Verbosity IFalloutBuild.Verbosity => Fallout.Common.Verbosity.Quiet;
         public AbsolutePath TestRoot { get; set; } = AbsolutePath.Create(Directory.GetCurrentDirectory());

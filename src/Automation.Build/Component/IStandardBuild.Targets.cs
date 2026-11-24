@@ -40,19 +40,21 @@ public partial interface IStandardBuild
         .Executes(() => RunTestsOfKind(TestKind.Unit));
 
     /// <summary>
-    /// Runs the <c>Integration</c> test projects (see <see cref="IsTestProjectOfKind"/>) after <see cref="Compile"/>.
+    /// Runs the <c>Integration</c> test projects after compilation and any opted-in local environment preparation.
     /// </summary>
     Target TestIntegration => d => d
         .Description("Runs test projects: Integration")
         .DependsOn(Compile)
+        .TryDependsOn<ITestEnvironmentBuild>(x => x.PrepareTestEnvironment)
         .Executes(() => RunTestsOfKind(TestKind.Integration));
 
     /// <summary>
-    /// Runs the <c>EndToEnd</c> test projects (see <see cref="IsTestProjectOfKind"/>) after <see cref="Compile"/>.
+    /// Runs the <c>EndToEnd</c> test projects after compilation and any opted-in local environment preparation.
     /// </summary>
     Target TestEndToEnd => d => d
         .Description("Runs test projects: EndToEnd")
         .DependsOn(Compile)
+        .TryDependsOn<ITestEnvironmentBuild>(x => x.PrepareTestEnvironment)
         .Executes(() => RunTestsOfKind(TestKind.EndToEnd));
 
     /// <summary>
