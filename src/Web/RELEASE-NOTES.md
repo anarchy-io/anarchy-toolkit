@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.1.0
+
+- Update the persistence-abstractions dependency.
+
 ### 2.0.1
 
 - fix(Web): Support Windows paths and host architecture
