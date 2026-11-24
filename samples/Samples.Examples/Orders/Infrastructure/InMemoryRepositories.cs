@@ -31,3 +31,26 @@ public sealed class InMemoryStockRepository(InMemoryUnitOfWork unitOfWork, IDict
         return Task.CompletedTask;
     }
 }
+
+// These in-memory stores demonstrate enlistment, not a durable event store or a publishing relay.
+public sealed class InMemoryOrderEvents(InMemoryUnitOfWork unitOfWork) : IOrderEvents
+{
+    private readonly List<Order> _events = [];
+
+    public Task SaveAsync(Order order, CancellationToken cancellationToken)
+    {
+        unitOfWork.Enlist(() => _events.Add(order));
+        return Task.CompletedTask;
+    }
+}
+
+public sealed class InMemoryOrderOutbox(InMemoryUnitOfWork unitOfWork) : IOrderOutbox
+{
+    private readonly List<Order> _pending = [];
+
+    public Task EnqueueAsync(Order order, CancellationToken cancellationToken)
+    {
+        unitOfWork.Enlist(() => _pending.Add(order));
+        return Task.CompletedTask;
+    }
+}

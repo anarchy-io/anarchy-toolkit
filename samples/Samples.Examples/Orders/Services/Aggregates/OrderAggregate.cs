@@ -13,6 +13,8 @@ public sealed class OrderAggregate(
     IUnitOfWork unitOfWork,
     IOrderRepository orders,
     IStockRepository stock,
+    IOrderEvents events,
+    IOrderOutbox outbox,
     AppTelemetry telemetry)
 {
     public Task<Order> PlaceAsync(PlaceOrderInput input, CancellationToken cancellationToken = default) =>
@@ -28,6 +30,8 @@ public sealed class OrderAggregate(
             var order = new Order(Guid.NewGuid().ToString("N"), input.Sku, input.Quantity);
             await stock.ReserveAsync(input.Sku, input.Quantity, ct);
             await orders.SaveAsync(order, ct);
+            await events.SaveAsync(order, ct);
+            await outbox.EnqueueAsync(order, ct);
             return order;
         }, cancellationToken);
 }

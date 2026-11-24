@@ -20,6 +20,8 @@ public static class OrdersExample
         services.AddSingleton<InMemoryUnitOfWork>();
         services.AddSingleton<IUnitOfWork>(sp => sp.GetRequiredService<InMemoryUnitOfWork>());
         services.AddSingleton<IOrderRepository, InMemoryOrderRepository>();
+        services.AddSingleton<IOrderEvents, InMemoryOrderEvents>();
+        services.AddSingleton<IOrderOutbox, InMemoryOrderOutbox>();
         services.AddSingleton<IStockRepository>(sp => new InMemoryStockRepository(
             sp.GetRequiredService<InMemoryUnitOfWork>(), new Dictionary<string, int> { ["ABC-1"] = 5 }));
         services.AddSingleton<OrderAggregate>();
