@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Testing.Kafka</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Testing.Kafka</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Testing.Kafka</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Kafka message fixture and consumer helper for tests against a Kafka-compatible broker.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure.Messaging.Kafka\Infrastructure.Messaging.Kafka.csproj" />
+  </ItemGroup>
+</Project>
