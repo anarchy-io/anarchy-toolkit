@@ -2,6 +2,7 @@
 
 ### 2.0.1
 
+- Add Make targets to prepare local test containers and provision adopter-owned Flyway migrations.
 - Updated the bundled telemetry decision to describe the optional DogStatsD adapter.
 - Updated bundled conventions, decisions, and adoption guidance for CloudEvents, Kafka, and event persistence.
 

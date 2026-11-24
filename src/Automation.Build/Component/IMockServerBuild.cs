@@ -158,12 +158,14 @@ public interface IMockServerBuild : IStandardBuild
     Target TestIntegrationWithMockServer => d => d
         .Description("Runs test projects: Integration, with the mock server")
         .DependsOn(Compile)
+        .TryDependsOn<ITestEnvironmentBuild>(x => x.PrepareTestEnvironment)
         .Executes(() => WithMockServer(() => RunTestsOfKind(TestKind.Integration)));
 
     /// <summary>Runs the <c>EndToEnd</c> tests with a mock server, started for them unless one is already running.</summary>
     Target TestEndToEndWithMockServer => d => d
         .Description("Runs test projects: EndToEnd, with the mock server")
         .DependsOn(Compile)
+        .TryDependsOn<ITestEnvironmentBuild>(x => x.PrepareTestEnvironment)
         .Executes(() => WithMockServer(() => RunTestsOfKind(TestKind.EndToEnd)));
 
     /// <summary>

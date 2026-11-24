@@ -32,8 +32,10 @@ ask the user for the values. Never commit `appsettings.Development.json`.
 - Analyzer warnings are errors in Release builds; fix them instead of suppressing them.
 - When projects, references or packages changed, run `make dependency_map` and commit `docs/dependency-map.html`.
 
-**Tests**: unit tests need nothing else. Integration tests may need the local environment (`make start`, see
-`anarchy-environment`) or the mock server (`make test_integration_mocked`). Tests that assert telemetry use `FixtureTelemetry` from `TestCaseBase` (an in-memory `AppTelemetry`). For a subset, run the test project
+**Tests**: unit tests need nothing else. If the build opts into `ITestEnvironmentBuild`, integration and end-to-end
+targets start the Compose environment and wait for configured readiness; otherwise start required local services with
+`make start` (see `anarchy-environment`). `make test_integration_mocked` also manages the mock server. Tests that assert
+telemetry use `FixtureTelemetry` from `TestCaseBase` (an in-memory `AppTelemetry`). For a subset, run the test project
 directly, e.g. `dotnet run --project tests/Unit -c Release -- -class "*OrderTest"`. `COMPILE=true` rebuilds first.
 
 **Test kinds**: the build finds tests by kind (`Unit`, `Integration`, `EndToEnd`) from project names such as
@@ -72,7 +74,7 @@ need Make and Bash; see [Without Make](https://anarchy-io.github.io/anarchy-tool
 | `make pull_request` | Runs all tests and validations for the Pull Request CI-pipeline |  |
 | `make test` | Runs all solution tests |  |
 | `make test_unit` | Runs unit tests | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
-| `make test_integration` | Runs integration tests (requires local Docker resources) | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
+| `make test_integration` | Runs integration tests, preparing local services if the build opts in | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
 | `make test_end_to_end` | Runs end-to-end tests | `COMPILE` (bool): Rebuilds the solution before running tests (DEFAULT=false) |
 | `make check_layering` | Verifies the layered architecture: references, imports, layer folders |  |
 | `make dependency_map` | Generates docs/dependency-map.html: project references, layers and where the code lives |  |

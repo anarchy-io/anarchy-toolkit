@@ -34,7 +34,7 @@ endif
 	${MAKE} anarchy SKIP_TITLE=true TARGET="TestUnit"
 
 .PHONY: test_integration
-test_integration: #? Runs integration tests (requires local Docker resources)
+test_integration: #? Runs integration tests, preparing local services if the build opts in
 #+ COMPILE|bool|Rebuilds the solution before running tests (DEFAULT=false)
 	@$(SCRIPTS_DIR)/console/title.sh 'cyan' 'Running Integration Tests'
 ifeq ($(COMPILE),true)

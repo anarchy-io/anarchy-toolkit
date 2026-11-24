@@ -2,6 +2,7 @@
 
 ### 2.0.1
 
+- Add opt-in Compose readiness for integration and end-to-end tests, plus one-shot Flyway migrate/info targets for adopters.
 - Updated the Automation dependency for its bundled telemetry guidance.
 
 ### 2.0.0
