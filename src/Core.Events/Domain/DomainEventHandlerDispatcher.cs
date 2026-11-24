@@ -55,13 +55,13 @@ public class DomainEventHandlerDispatcher<T>(ImmutableList<IDomainEventHandler<T
             }
             catch (Exception ex)
             {
-                throw new EventHandlerExecutionException(domainEvent.TypeEvent, handler.GetType(), ex);
+                throw new EventHandlerExecutionException(domainEvent.Type, handler.GetType(), ex);
             }
         }
 
         if (!wasHandled)
         {
-            throw new NoHandlersForEventException(domainEvent.TypeEvent);
+            throw new NoHandlersForEventException(domainEvent.Type);
         }
 
         return entityState ?? throw new EmptyStateAfterHandlerDispatchException();

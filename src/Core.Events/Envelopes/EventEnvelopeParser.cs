@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Core.Events.Envelopes.Exceptions;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
-using Newtonsoft.Json;
 
 namespace Anarchy.Toolkit.Core.Events.Envelopes;
 
@@ -8,9 +7,8 @@ namespace Anarchy.Toolkit.Core.Events.Envelopes;
 /// Deserializes an inbound broker message body into a typed event envelope using Newtonsoft.Json.
 /// </summary>
 /// <remarks>
-/// Newtonsoft.Json is used deliberately because it can bind the primary constructors of
-/// <see cref="DomainEventEnvelope"/> and <see cref="PersistedDomainEvent"/>. The parser is
-/// stateless and thread-safe.
+/// Uses <see cref="EventEnvelopeMessageMapper"/> to deserialize the envelope body without mapping broker metadata.
+/// The parser is stateless and thread-safe.
 /// </remarks>
 /// <typeparam name="TInboundMessage">The broker-specific inbound message type.</typeparam>
 /// <typeparam name="TEventEnvelope">The envelope type to produce.</typeparam>
@@ -31,18 +29,6 @@ public class EventEnvelopeParser<TInboundMessage, TEventEnvelope> : IEventEnvelo
     public Task<TEventEnvelope> FromInboundMessage(TInboundMessage inboundMessage,
                                                    CancellationToken? cancellationToken = null)
     {
-        try
-        {
-            // Deserializing with Newtonsoft.Json intentionally for relaxed requirements on polymorphic types.
-            // Do not change to System.Text.Json without careful consideration on available constructors on
-            // the DomainEventEnvelope / PersistedDomainEvent types
-            var result = JsonConvert.DeserializeObject<TEventEnvelope>(inboundMessage.Message)
-                         ?? throw new EventEnvelopeParsingException(typeof(TEventEnvelope));
-            return Task.FromResult(result);
-        }
-        catch (JsonException ex)
-        {
-            throw new EventEnvelopeParsingException(typeof(TEventEnvelope), ex);
-        }
+        return Task.FromResult(EventEnvelopeMessageMapper.ToEnvelope<TEventEnvelope>(inboundMessage));
     }
 }

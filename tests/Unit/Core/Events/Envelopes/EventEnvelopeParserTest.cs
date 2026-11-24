@@ -31,10 +31,10 @@ public class EventEnvelopeParserTest
         var result =
             await new EventEnvelopeParser<InboundMessage, DomainEventEnvelope>().FromInboundMessage(fixtureInboundMessage);
 
-        var payload = ((JObject)result.Payload!).ToObject<DummyEventPayload>();
+        var payload = ((JObject)result.Data!).ToObject<DummyEventPayload>();
 
-        result.Should().BeEquivalentTo(fixtureEvent, options => options.Excluding(x => x.Payload));
-        payload.Should().BeEquivalentTo(fixtureEvent.Payload, options =>
+        result.Should().BeEquivalentTo(fixtureEvent, options => options.Excluding(x => x.Data));
+        payload.Should().BeEquivalentTo(fixtureEvent.Data, options =>
             options.Using<DateTimeOffset>(assertionContext =>
                     assertionContext.Subject.Should().BeCloseTo(assertionContext.Expectation, TimeSpan.FromMilliseconds(10)))
                 .When(info => info.Path.EndsWith("LastModificationTime")));
@@ -59,7 +59,7 @@ public class EventEnvelopeParserTest
             DummyTypeAggregate.DummyTask,
             TestHelper.RandomId("Test.AggregateId"),
             DummyTypeEvent.DummyOrderCreated,
-            moment: TestHelper.LowPrecisionNow());
+            time: TestHelper.LowPrecisionNow());
         var fixtureInboundMessage = new InboundMessageFixture(fixtureEvent).Build();
 
         var result =

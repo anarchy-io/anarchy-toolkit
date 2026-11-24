@@ -27,12 +27,13 @@ public class GenericEventEnvelopeTest : EventEnvelopeTestBase
         string typeAggregate,
         string aggregateId,
         string typeEvent,
-        object? payload = null)
+        object? payload = null,
+        DateTimeOffset? time = null)
         : EventEnvelopeBase<IEventEnvelopePayload>(typeAggregate, aggregateId, typeEvent, payload,
-            TestHelper.LowPrecisionNow())
+            time ?? TestHelper.LowPrecisionNow())
     {
         public override EventEnvelopeBase<IEventEnvelopePayload> DeepClone() =>
-            new GenericEventEnvelope(TypeAggregate, AggregateId, TypeEvent, Payload);
+            new GenericEventEnvelope(AggregateType, Subject, Type, Data, Time);
     }
 
     protected static object GetGenericRandomPayload() => new {

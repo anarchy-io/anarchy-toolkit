@@ -28,9 +28,9 @@ public static class LogContextExtensions
     public static KeyValuePair<string, object?>[] ForEvent(IEventEnvelope domainEvent)
     {
         return [
-            new("AggregateId", domainEvent.AggregateId),
-            new("TypeAggregate", domainEvent.TypeAggregate),
-            new("TypeEvent", domainEvent.TypeEvent)
+            new("AggregateId", domainEvent.Subject),
+            new("TypeAggregate", domainEvent.AggregateType),
+            new("TypeEvent", domainEvent.Type)
         ];
     }
 
