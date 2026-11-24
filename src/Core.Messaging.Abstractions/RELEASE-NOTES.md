@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- Breaking: Use the broker-neutral `BrokerReference` for received message references and allow an optional outbound deduplication ID.
+- Preserve a read-only snapshot of message attributes for transport-independent mapping.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property
