@@ -6,6 +6,17 @@
   "build": {
     "configuration": "Release"
   },
+  "docker": {
+    "waitFor": [
+      "anarchy-db-postgres",
+      "anarchy-db-mysql",
+      "anarchy-db-oracle",
+      "anarchy-infra-aws"
+    ],
+    "waitForHealthy": true,
+    "timeout": 600,
+    "startTimeout": 600
+  },
   "documentation": {
     "dependencyMapOutput": "docs/portal/dependency-map.html",
     "apiReferenceConfig": "docs/api-reference/docfx.json"

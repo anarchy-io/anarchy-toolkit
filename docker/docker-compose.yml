@@ -1,0 +1,77 @@
+volumes:
+  anarchy-db-postgres-data:
+    name: 'anarchy-db-postgres-data'
+    driver: 'local'
+  anarchy-db-mysql-data:
+    name: 'anarchy-db-mysql-data'
+    driver: 'local'
+  anarchy-db-oracle-data:
+    name: 'anarchy-db-oracle-data'
+    driver: 'local'
+
+services:
+  anarchy-infra-aws:
+    container_name: anarchy-infra-aws
+    image: motoserver/moto:5.2.2
+    env_file: container-shared.env
+    ports: ['4566:5000']
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/moto-api/data.json')
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  anarchy-db-mysql:
+    container_name: anarchy-db-mysql
+    image: mysql:8.4.10
+    env_file: container-shared.env
+    ports: ['3306:3306']
+    volumes:
+      - anarchy-db-mysql-data:/var/lib/mysql
+      - ./db/mysql:/opt/anarchy/db/mysql:ro
+      - ./db/mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD', 'sh', '/opt/anarchy/db/mysql/healthcheck.sh']
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 30s
+
+  anarchy-db-oracle:
+    container_name: anarchy-db-oracle
+    image: gvenzl/oracle-free:23.26.4-slim-faststart
+    env_file: container-shared.env
+    ports: ['1521:1521']
+    volumes:
+      - anarchy-db-oracle-data:/opt/oracle/oradata
+      # The SQL*Plus hook loads init/ from this directory; only entrypoint/ is auto-run by the image.
+      - ./db/oracle:/opt/anarchy/db/oracle:ro
+      - ./db/oracle/entrypoint:/container-entrypoint-initdb.d:ro
+    stop_grace_period: 1m
+    healthcheck:
+      test: ['CMD', 'sh', '/opt/anarchy/db/oracle/healthcheck.sh']
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 120s
+
+  anarchy-db-postgres:
+    container_name: anarchy-db-postgres
+    image: postgres:16.1-alpine3.19
+    env_file: container-shared.env
+    ports: ['5432:5432']
+    volumes:
+      - anarchy-db-postgres-data:/var/lib/postgresql/data
+      - ./db/postgres:/opt/anarchy/db/postgres:ro
+      - ./db/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD', 'sh', '/opt/anarchy/db/postgres/healthcheck.sh']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s

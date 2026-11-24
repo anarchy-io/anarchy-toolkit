@@ -16,6 +16,8 @@
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Postgres\Infrastructure.Persistence.Db.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Mysql\Infrastructure.Persistence.Db.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Oracle\Infrastructure.Persistence.Db.Oracle.csproj" />
+    <ProjectReference Include="..\..\src\Testing.Aws\Testing.Aws.csproj" />
+    <ProjectReference Include="..\..\samples\Samples.Api\Samples.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +29,10 @@
     <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Postgres/Types/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Postgres.Queries.Common.%(Filename)%(Extension)" />
     <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Mysql/Types/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Mysql.Queries.Common.%(Filename)%(Extension)" />
     <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Oracle/Types/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Oracle.Queries.Common.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
 
 </Project>
