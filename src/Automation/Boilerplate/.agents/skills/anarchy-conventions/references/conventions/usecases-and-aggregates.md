@@ -103,7 +103,7 @@ An aggregate must never commit, roll back or dispose a transaction its caller ow
 - A UseCase that owns the transaction runs the work in a managed session: `RunInManagedSessionAsync`.
 - An aggregate that must work both alone and inside a caller's transaction uses `RunInJoinedOrManagedSessionAsync`: it joins the caller's transaction when there is one and otherwise owns a managed session.
 - An aggregate that only ever participates uses `RunInJoinedSessionAsync`; it cannot begin, commit or roll back (`TransactionNotOwnedException`).
-- A failure thrown inside the session rolls everything back at the owner, and cancellation propagates after rollback and cleanup. The unit of work rejects nested and concurrent sessions.
+- An exception escaping the owner's managed callback rolls its transaction back; a joined callback does not roll back by itself. If the owner catches an exception and continues, it is responsible for ensuring the transaction is still valid and the partial changes are acceptable. Cancellation propagates after rollback and cleanup. The unit of work rejects nested and concurrent sessions.
 
 ```csharp
 // The UseCase owns the transaction…
@@ -116,6 +116,36 @@ public Task<Order> PlaceAsync(PlaceOrderInput input, CancellationToken cancellat
 ```
 
 The package details (failure data, cleanup, connection handling) are in the [`Infrastructure.Persistence.Db` README](https://anarchy-io.github.io/anarchy-toolkit/packages/Infrastructure.Persistence.Db/).
+
+### Coordinating repositories and events
+
+All writes that must succeed together—including the entity, its related entities, the domain-event record and the
+outbox task—must use the **same database transaction**. Configure the unit of work and every participating writer
+with the same writer connection pool and `IAsyncFlowContext`; a second database, an independently opened connection,
+an ad-hoc session or a message broker does not enlist automatically. Run the writes sequentially in the session and
+let failures escape to its owner. Do not publish to the broker inside the transaction: a separate relay publishes
+committed outbox rows and marks them published afterwards. The sample's in-memory stores illustrate the orchestration,
+not database isolation or durability.
+
+The relational events package provides outbox repository contracts, not concrete outbox repositories, an application
+event-store writer, schema, provider SQL or a coordinator that automatically enlists them. Supply those pieces and persist the same logical event in both stores
+inside the aggregate's session. A unique event or operation ID enforced by the database is preferable to treating a
+payload hash as a universal idempotency key: identical payloads can represent distinct occurrences, and retries must
+reuse the original ID. Decide whether duplicate insertion is an error or a no-op in the application's SQL and test it.
+Outbox delivery is normally **at least once**: a relay can crash after publishing and before marking the row. Consumers
+must deduplicate using a stable message ID. Concurrent relays also need an application-specific claiming strategy.
+
+`IUnitOfWork` does not expose nested transactions or aggregate-level savepoints. The relational batch loop uses a
+savepoint per insert only while a transaction is active; it can report duplicates after other inserts have succeeded.
+Let that exception reach the owner to roll back the entire operation, unless the owner explicitly accepts partial
+success. A custom savepoint arrangement must use the same connection, respect provider limitations (Oracle does not
+release savepoints), and only catch failures for which the provider leaves the transaction usable. It does not transfer
+ownership of the outer transaction to the aggregate. Without a transaction, individual batch-loop writes can commit
+before a later failure.
+
+Cleanup is application policy: only delete published rows, keep them long enough for recovery, auditing and consumer
+deduplication, and do not delete pending rows. Define and test retention and cleanup in the application-specific
+outbox implementation. Database-level retention does not itself guarantee delivery.
 
 ## Opting out or adapting
 

@@ -71,7 +71,7 @@ So `Infrastructure.Persistence.Db.Oracle` may get a `Core/` folder if it has to 
 
 ## Where does a new file go?
 
-1. **Pick the project by layer, then the folder by responsibility.** Code of the project's own layer goes at its root. Only code for an inner layer gets a layer folder: a repository contract is `Core/Service/Repository/...` even when it ships in an Infrastructure package (see `Infrastructure.Persistence.Db/Core/Service/Repository/Storage/Event/`).
+1. **Pick the project by layer, then the folder by responsibility.** Code of the project's own layer goes at its root. Only code for an inner layer gets a layer folder: a repository contract is `Core/Service/Repository/...` even when it ships in an Infrastructure package (see `Infrastructure.Persistence.Db.Events/Core/Service/Repository/Storage/Event/`).
 2. **Extension classes** live under `Extensions/`, organized by subject, and use the subject's namespace. The
    toolkit's own extensions still sit under `Extension/` in many projects, with their published namespaces; new code
    follows [Code Organization](code-organization.md#extensions).

@@ -17,6 +17,7 @@ The toolkit adds **no logging or metrics backend of its own**. By default it wri
 | `Anarchy.Toolkit.Infrastructure.Telemetry.Serilog` | Optional. Serilog as one more logging provider, a console default for tools, a correlation enricher, a structured-exception enricher and opt-in log-based metrics. |
 | `Anarchy.Toolkit.Infrastructure.Telemetry.StatsD` | Optional. DogStatsD recorder with application-supplied client configuration. |
 | `Anarchy.Toolkit.Infrastructure.Messaging.Aws` | `InboundMessage.BeginCorrelationScope(logger)`: the entry point for consumers of mapped SQS messages. |
+| `Anarchy.Toolkit.Infrastructure.Messaging.Kafka` | Kafka publisher logs and records publish duration/count through `AppTelemetry`; Kafka inbound mapping does not start a correlation scope. |
 | `Anarchy.Toolkit.Testing` | `TestTelemetry`: an `AppTelemetry` whose logs and metrics are captured in memory, for tests. |
 
 Which of these to install is summarized in [Which package do I need?](../packages/README.md#which-package-do-i-need).

@@ -156,7 +156,7 @@ namespace Acme.Infrastructure.Repositories.Orders.DynamoDb; // another
 4. The composition root selects and registers the implementation.
 5. Core never depends on an infrastructure technology, and the choice of technology never leaks into the contract.
 
-This holds in folder-mode layouts and in prefix-layered projects alike. The toolkit's database packages follow it at package level: contracts in `Core.Persistence.Abstractions`, the shared relational layer in `Infrastructure.Persistence.Db`, one adapter per database in `Infrastructure.Persistence.Db.<Provider>` ([Database Providers](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html)).
+This holds in folder-mode layouts and in prefix-layered projects alike. The toolkit's database packages follow it at package level: contracts in `Core.Persistence.Abstractions`, the shared, business-neutral relational layer in `Infrastructure.Persistence.Db`, event-store bases and outbox contracts in `Infrastructure.Persistence.Db.Events`, one adapter per database in `Infrastructure.Persistence.Db.<Provider>` ([Database Providers](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html)).
 
 ## Summary
 

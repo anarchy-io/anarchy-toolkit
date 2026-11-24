@@ -31,3 +31,5 @@ Architectural decision records, written after the fact for choices made while th
 | [0007](0007-own-mock-server.md) | An in-process mock server instead of a [MockServer](https://www.mock-server.com/) container |
 | [0008](0008-test-levels.md) | Three test levels, one project per level |
 | [0009](0009-optional-automation-preferences.md) | Optional automation preferences, precedence and stable public defaults |
+| [0010](0010-kafka-messaging-transport.md) | Kafka as a second messaging transport |
+| [0011](0011-events-persistence-package.md) | Event and outbox persistence in a separate package |

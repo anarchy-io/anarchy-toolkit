@@ -108,6 +108,8 @@ guides:
         url: /guides/automation-builds.html
       - title: "Automation Preferences"
         url: /guides/automation-preferences.html
+      - title: "GitHub Package Publishing"
+        url: /guides/github-package-publishing.html
       - title: "CLI Tool"
         url: /packages/Automation.Build.Cli/
   - title: "See also"
