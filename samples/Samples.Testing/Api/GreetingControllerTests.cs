@@ -11,8 +11,8 @@ namespace Anarchy.Toolkit.Samples.Testing.Api;
 /// <summary>
 /// Exercises the example API through both the native (Kestrel/TestServer) and the AWS Lambda pipelines.
 /// </summary>
-public class GreetingControllerTests(WebApplicationFactory<Startup> factory)
-    : RestApiTestCaseBase<Startup, AppSettings>(new TestableLambdaEntrypoint<Startup>(), factory, ["samples:read"])
+public class GreetingControllerTests(WebApplicationFactory<SampleApiStartup> factory)
+    : RestApiTestCaseBase<SampleApiStartup, AppSettings>(new TestableLambdaEntrypoint<SampleApiStartup>(), factory, ["samples:read"])
 {
     public sealed record GreetingOutput(string Message);
 

@@ -4,12 +4,16 @@
     <AssemblyName>Anarchy.Toolkit.Samples.Api</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Samples.Api</RootNamespace>
     <OutputType>Exe</OutputType>
+    <StartupObject>Anarchy.Toolkit.Samples.Api.EntryPointLocal</StartupObject>
     <Description>Sample REST API (Kestrel locally, AWS Lambda behind API Gateway once deployed) built on the toolkit.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Web\Web.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Postgres\Infrastructure.Persistence.Db.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Mysql\Infrastructure.Persistence.Db.Mysql.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Oracle\Infrastructure.Persistence.Db.Oracle.csproj" />
   </ItemGroup>
 
 </Project>

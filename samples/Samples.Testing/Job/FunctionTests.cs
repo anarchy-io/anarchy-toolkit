@@ -8,15 +8,21 @@ namespace Anarchy.Toolkit.Samples.Testing.Job;
 public class FunctionTests
 {
     [Fact]
-    public async Task HandleAsync_GreetsWithTheGreetingFromTheEnvironment()
+    public async Task LocalJob_DoesNotLoadLambdaParameterStore()
     {
-        // Development keeps the Parameter Store out of the way; the greeting comes from an environment variable
+        using var _ = new EnvironmentVariableContext("DOTNET_ENVIRONMENT", "Production");
+        using var __ = new EnvironmentVariableContext("Greeting", "Hi");
+        await using var job = new EntryPointLocal.Job();
+
+        (await job.GreetAsync("Ada")).Should().Be("Hi, Ada!");
+    }
+
+    [Fact]
+    public async Task ScheduledHandler_UsesTheSameConfiguredJob()
+    {
         using var _ = new EnvironmentVariableContext("DOTNET_ENVIRONMENT", "Development");
         using var __ = new EnvironmentVariableContext("Greeting", "Hi");
-        await using var function = new Function();
-
-        var result = await function.HandleAsync("Ada");
-
-        result.Should().Be("Hi, Ada!");
+        await using var handler = new EntryPointScheduled();
+        await handler.HandleAsync();
     }
 }

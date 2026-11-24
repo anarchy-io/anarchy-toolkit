@@ -22,7 +22,7 @@ public class DatabaseHealthEndpointIntegrationTest
     public async Task HealthServices_ReportsAllDatabaseProvidersAsPassed()
     {
         var ct = TestContext.Current.CancellationToken;
-        await using var factory = new WebApplicationFactory<Startup>();
+        await using var factory = new WebApplicationFactory<SampleApiStartup>();
         using var client = factory.CreateClient();
 
         using var response = await client.GetAsync("/health/services", ct);
@@ -45,7 +45,7 @@ public class DatabaseHealthEndpointIntegrationTest
     public async Task HealthServices_WhenDatabaseProviderIsUnavailable_ReturnsUnhealthyReport()
     {
         var ct = TestContext.Current.CancellationToken;
-        await using var factory = new WebApplicationFactory<Startup>().WithWebHostBuilder(builder =>
+        await using var factory = new WebApplicationFactory<SampleApiStartup>().WithWebHostBuilder(builder =>
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
                 new Dictionary<string, string?> { ["Postgres:Port"] = "1" })));
         using var client = factory.CreateClient();
@@ -64,7 +64,7 @@ public class DatabaseHealthEndpointIntegrationTest
     [Fact]
     public async Task DatabaseHosts_BindAsUrisAndProduceLocalhostConnectionStrings()
     {
-        await using var factory = new WebApplicationFactory<Startup>();
+        await using var factory = new WebApplicationFactory<SampleApiStartup>();
         var services = factory.Services;
         var settings = services.GetRequiredService<AppSettings>();
 
