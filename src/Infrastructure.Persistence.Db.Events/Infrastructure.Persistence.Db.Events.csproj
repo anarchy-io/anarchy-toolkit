@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Db.Events</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Db.Events</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Db.Events</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Provider-agnostic relational event-store repository bases and transactional outbox contracts and records.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Events\Core.Events.csproj" />
+    <ProjectReference Include="..\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
+    <PackageReference Include="Dapper" />
+  </ItemGroup>
+
+</Project>
