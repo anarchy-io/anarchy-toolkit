@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- Add structured CloudEvents conversion for SQS messages, SNS notifications, and publish requests, with broker context kept separate.
+- Adopt the broker-neutral inbound reference contract.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property

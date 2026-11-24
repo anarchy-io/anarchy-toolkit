@@ -44,7 +44,7 @@ public static class InboundMessageMapper
     {
         return new InboundMessage(
             id: message.MessageId ?? string.Empty,
-            receiptHandle: message.ReceiptHandle ?? string.Empty,
+            brokerReference: message.ReceiptHandle ?? string.Empty,
             message: ExtractBody(message) ?? string.Empty,
             source: message.EventSourceArn,
             partitionKey: message.Attributes?.GetValueOrDefault("MessageGroupId"),

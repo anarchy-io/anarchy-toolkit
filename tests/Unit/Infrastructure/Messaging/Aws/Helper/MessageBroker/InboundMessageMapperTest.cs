@@ -74,7 +74,7 @@ public class InboundMessageMapperTest : TestCaseBase
         using (new AssertionScope())
         {
             result.Id.Should().Be(fixtureSqsMessage.MessageId);
-            result.ReceiptHandle.Should().Be(fixtureSqsMessage.ReceiptHandle);
+            result.BrokerReference.Should().Be(fixtureSqsMessage.ReceiptHandle);
             result.Source.Should().Be(fixtureSqsMessage.EventSourceArn);
             result.PartitionKey.Should().Be(groupId);
             result.Attributes.Keys.Should().Contain(["EmptyStringValue", "StringValue"]);
