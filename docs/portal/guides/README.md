@@ -28,6 +28,7 @@ Not sure where to start? The [adoption advisor](../getting-started/advisor.md) a
 | [Mock Server](mock-server.md) | Standing in for HTTP upstreams: expectations, your own host, assertions and recording. |
 | [Building UIs](building-uis.md) | `Web.Ui`: [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) startup, cookie-session login, environment catalog, downstream API clients, components. |
 | [Anarchy Automation Builds](automation-builds.md) | The `Automation.Build` components, test discovery and runners, artifacts, releases and CLI tool wrappers. |
+| [GitHub Package Publishing](github-package-publishing.md) | Repository-owner setup for the toolkit's NuGet publishing workflow and `main` protections. |
 | [CLI Tool](../packages/Automation.Build.Cli/README.md) | The `anarchy-toolkit` CLI: bootstrapping a solution and scaffolding APIs, jobs and UIs. |
 
 The [Package Catalog](../packages/README.md) documents each package, including the `Testing.*` kits, and answers [Which package do I need?](../packages/README.md#which-package-do-i-need) for the families that are split by role (`Automation*`, `Infrastructure.Persistence.Db.*` and `Testing.Db.*`, `Core.Telemetry` and `Infrastructure.Telemetry.Serilog`).

@@ -3,6 +3,7 @@
 ### 2.0.1
 
 - Updated the bundled telemetry decision to describe the optional DogStatsD adapter.
+- Updated bundled conventions, decisions, and adoption guidance for CloudEvents, Kafka, and event persistence.
 
 ### 2.0.0
 

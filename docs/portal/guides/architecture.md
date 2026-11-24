@@ -30,6 +30,10 @@ The test kits (`Testing.*`) and the test projects under `tests/` (one per test k
 
 Because the toolkit uses prefix layering for independently published packages, its package names also encode their dependencies: within a layer, a package may only reference its **name ancestors** (`Web.MockServer.Ui` to `Web.MockServer` or `Web`; `Infrastructure.Persistence.Db.Postgres` to `Infrastructure.Persistence.Db`), and any lower layer. The few other same-layer references are listed with their reasons in `build/PackageHierarchy.cs`, and `make check_package_hierarchy` enforces the rule. It is specific to this repository: solutions that use folder-mode layering are never held to it.
 
+`Infrastructure.Messaging.CloudEvents` references the lower-layer `Core.Events` envelopes, not the AWS transport or persistence/outbox packages. Its CloudEvents representation can therefore be used independently of either adapter.
+
+Event-store bases and Outbox contracts and records are in `Infrastructure.Persistence.Db.Events`, which references `Infrastructure.Persistence.Db` (its name ancestor) and `Core.Events`. Applications implement their own Outbox repositories. The generic `Infrastructure.Persistence.Db` and provider adapters do not reference the events package. `Infrastructure.Persistence.Db` itself still references `Core.Events`: that is the generic local event bus used for transaction lifecycle notifications, not business-event coupling. The generic attribute-ID cache sits in `Core.Persistence.Abstractions` so any layer above can use it. See [ADR 0011](../decisions/0011-events-persistence-package.md).
+
 ## Inside a project
 
 A project's code sits at its root, organized by responsibility folders (`Entity/`, `Service/`, `Repository/`, `DependencyInjection/`, ...), and namespaces follow folders. Folders named after a lower layer hold the classes a project introduces for that layer. The full rules, with the table of allowed layer folders, are in the [Layering convention](../conventions/layering.md#inside-a-project); [Where does a new file go?](../conventions/layering.md#where-does-a-new-file-go) answers the everyday question.
@@ -44,6 +48,7 @@ A project that has concrete services to register exposes them through one or mor
 | `Infrastructure.Persistence.Db.Oracle` | `ModuleOracle(connectionOptions, resilienceOptions)`, `ModuleOracleHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
 | `Infrastructure.Persistence.Db.Mysql` | `ModuleMysql(connectionOptions, resilienceOptions)`, `ModuleMysqlHealthReport` | Same shape as `ModulePostgres` / `ModulePostgresHealthReport`. |
 | `Infrastructure.Messaging.Aws` | `ModuleSnsMessageBroker(options)`, `ModuleSqsMessageBroker(options)` | Keyed `topic` (SNS) and `queue` (SQS) publishers. |
+| `Infrastructure.Messaging.Kafka` | `ModuleKafkaMessageBroker(options)` | Keyed `kafka` publisher. The application owns the consumer loop and offset policy. |
 | `Infrastructure.CorrelationId` | `ModuleCorrelationId(options?)` | Defaults unless a factory supplies options. |
 | `Infrastructure.Telemetry.Serilog` | `ModuleSerilogTelemetry(logger)` | Optional: Serilog as a logging provider (a `ModuleTelemetryBase`). |
 | `Hosting.Workers` | `ModuleApplicationHealth(assembly)` | The workers' health endpoints (`/health/instance`, `/health/services`, `/health/status`) with the build metadata embedded in `assembly`. `AddServiceHealthCheckWorker(assembly)` registers them together with the `ServiceHealthCheckWorker` that serves them. |

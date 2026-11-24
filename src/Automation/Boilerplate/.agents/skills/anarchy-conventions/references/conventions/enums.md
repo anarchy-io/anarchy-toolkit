@@ -19,7 +19,7 @@ In summary:
 - avoid enums for **parsing uncontrolled external values**,
 - prefer **auxiliary tables with integer IDs** when values must stay flexible or cheap to query.
 
-This is also why the toolkit's generic code is **string-based at its core**: `DomainEventEnvelope.TypeAggregate`/`TypeEvent`, `SupportedAggregateTypes`, message destinations and so on are strings. Consumers bring their own enums and convert them at the edge with `ToDescription()` or the enum-friendly overloads (for example `DomainEventEnvelope.Create<TAgg, TEvt>(...)` or `SupportedAggregateTypes.Support<TAgg, TEvt>(...)`).
+This is also why the toolkit's generic code is **string-based at its core**: `DomainEventEnvelope.AggregateType`/`Type`, `SupportedAggregateTypes`, message destinations and so on are strings. Consumers bring their own enums and convert them at the edge with `ToDescription()` or the enum-friendly overloads (for example `DomainEventEnvelope.Create<TAgg, TEvt>(...)` or `SupportedAggregateTypes.Support<TAgg, TEvt>(...)`).
 
 ## When to use an enum
 
@@ -52,17 +52,25 @@ If such values are parsed directly into an enum, the application fails whenever 
 
 ## The auxiliary-table pattern
 
-For flexible string attributes you want to persist without duplicating text everywhere, use auxiliary tables (lookup tables with an integer id and a unique name). The outbox package does this for its event attributes, through `EventTypeTable.TypeAggregate`, `TypeEvent` and `TypeTask`.
+For flexible string attributes you want to persist without duplicating text everywhere, use auxiliary tables (lookup tables with an integer id and a unique name). Event persistence uses `EventTypeTable.TypeAggregate` and `TypeEvent` to identify dimensions for type lookup.
 
 At write time, the application keeps working with readable string values at the boundary, but stores a numeric foreign key in the main table.
 
-Under the hood, `AttributeIdCacheBase<TAttributeTypes, TId>` (`Anarchy.Toolkit.Infrastructure.Persistence.Db`) keeps a small in-memory cache per auxiliary-table type:
+The event writer resolves each type ID against the caller's database and active transaction, if any. Despite its name,
+`EventWriterMultiAttributeIdCache` does not share identifiers between lookups: its callbacks do not expose database
+identity or transaction commit outcome, so a shared cache could mix databases or expose an uncommitted ID. Rollback
+handler registration is not required for this resolution path. Concurrent first-time registration relies on provider
+get-or-insert SQL and database unique constraints to coordinate inserts safely.
+
+For other auxiliary tables, `AttributeIdCacheBase<TAttributeTypes, TId>` (`Anarchy.Toolkit.Core.Persistence.Abstractions.Model`, supporting `string` and `Guid` identifiers as well as numeric ones)
+offers a process-wide in-memory cache per auxiliary-table type:
 
 1. on first access, it hydrates all known values for that auxiliary table,
 2. it keeps a `name -> id` map in memory for fast lookups,
 3. if a value is missing, it inserts that single value and caches the returned id.
 
-This provides the flexibility of strings without repeatedly paying their storage and lookup cost in the main data tables. Derive from `AttributeIdCacheBase` for your own auxiliary tables (see `EventWriterMultiAttributeIdCache` for an example), e.g.:
+This can avoid repeated lookups as well as storing strings in the main data tables. Derive from `AttributeIdCacheBase`
+for your own auxiliary tables where sharing a cache is safe, e.g.:
 
 ```csharp
 public sealed class ClientTypeIdCache : AttributeIdCacheBase<ClientTypeTable, int>
@@ -71,13 +79,17 @@ public sealed class ClientTypeIdCache : AttributeIdCacheBase<ClientTypeTable, in
 }
 ```
 
-### Why the cache is cleared on rollback
+### Transaction and database isolation for caches
 
-One edge case requires attention: a transaction can insert a new auxiliary-table row, cache the generated id, and then roll back.
+The cache is a generic, business-neutral abstraction; event-specific lookups live in `Infrastructure.Persistence.Db.Events`. `AttributeIdCacheBase` shares entries for each closed generic type across the process; it does not partition them by
+database or track transaction outcomes. A transaction can hydrate or insert an uncommitted row and publish its ID to
+another caller before it rolls back. Clearing the cache on rollback cannot prevent that earlier exposure and can race
+with an in-flight lookup.
 
-If the cached id were kept, future writes could reuse an identifier that no longer exists and trigger foreign-key failures.
-
-To prevent that, the outbox's `RolledBackTransactionEventHandler` listens for the unit of work's `RolledBackUowTransactionLocalEvent` and calls `Clear()` on the relevant caches. The next lookup re-hydrates from the database and rebuilds a consistent cache. Do the same for any cache of your own that can be populated inside a transaction.
+Use a shared cache only when entries are scoped to the correct database and known to be committed before publication;
+otherwise resolve against the caller's database and transaction without sharing IDs. A rolled-back ID must not be reused
+by later lookups. In either approach, enforce unique names and make the database get-or-insert operation safe under
+concurrent registration.
 
 ## Event attributes: why auxiliary tables are the right fit
 
@@ -163,7 +175,7 @@ When in doubt, prefer the option that keeps the boundary explicit and avoids let
 | You want to... | Do this |
 |---|---|
 | Use enums for externally owned values | Possible: add a fallback member (`Unknown`) and map unknown strings to it, so new values don't throw. |
-| Skip auxiliary tables | Keep values in configuration or code; `AttributeIdCacheBase` is only needed for the table pattern. |
+| Skip auxiliary tables | Keep values in configuration or code; `AttributeIdCacheBase` is optional even when using tables. |
 | Map with your own attributes or [`JsonStringEnumConverter`](https://learn.microsoft.com/dotnet/api/system.text.json.serialization.jsonstringenumconverter) | Fine: [`[Description]`](https://learn.microsoft.com/dotnet/api/system.componentmodel.descriptionattribute) mapping is a helper, not a requirement of any package. |
 
-**What you lose by opting out:** decoupling from upstream value changes, and the cached auxiliary-table lookups in the persistence packages.
+**What you lose by opting out:** decoupling from upstream value changes and the compact integer lookups provided by auxiliary tables.

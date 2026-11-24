@@ -29,9 +29,9 @@ and exporters:
 - **Correlate:** `UseCorrelationId()` covers HTTP. Workers and message consumers open
   `CorrelationContext.BeginScope(...)`; mapped SQS messages can call `BeginCorrelationScope(logger)`.
 
-The toolkit currently supplies only AWS SNS/SQS messaging. `Core.Messaging.Abstractions` is the broker-neutral
-extension point for another transport. See [Bringing your company stack](guides/bringing-your-company-stack.md) for
-organization-owned integrations and where their modules belong.
+The toolkit supplies AWS SNS/SQS and Kafka messaging over `Core.Messaging.Abstractions`. Applications own consumer loops,
+offset/acknowledgement policy, retries and deduplication. See [Bringing your company stack](guides/bringing-your-company-stack.md)
+for organization-owned integrations and where their modules belong.
 
 ## Agent skills
 

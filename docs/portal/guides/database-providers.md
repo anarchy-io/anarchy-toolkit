@@ -7,7 +7,8 @@ This guide explains how the toolkit's relational persistence is split between a 
 | Package | Role |
 |---|---|
 | [`Core.Persistence.Abstractions`](../packages/Core.Persistence.Abstractions/README.md) | Unit-of-work, flow-context, storage-policy and repository contracts. No database driver. |
-| [`Infrastructure.Persistence.Db`](../packages/Infrastructure.Persistence.Db/README.md) | Everything that is not provider-specific: the `IDbDialect` contract, unit of work, connection pool, resilience, repository bases, health reports and the transactional outbox bases. |
+| [`Infrastructure.Persistence.Db`](../packages/Infrastructure.Persistence.Db/README.md) | Everything that is not provider-specific: the `IDbDialect` contract, unit of work, connection pool, resilience, repository bases and health reports. It contains no business-event or outbox code; it references `Core.Events` only for generic transaction lifecycle notifications on the local event bus. |
+| [`Infrastructure.Persistence.Db.Events`](../packages/Infrastructure.Persistence.Db.Events/README.md) | Event-store database bases and Outbox contracts and records, including `RolledBackTransactionEventHandler` in its service namespace. Applications implement Outbox repositories. It builds on the generic bases and is optional; see [ADR 0011](../decisions/0011-events-persistence-package.md). |
 | `Infrastructure.Persistence.Db.<Provider>` | A thin adapter closing the generic bases over the provider's connection and dialect. |
 | [`Testing.Db`](../packages/Testing.Db/README.md) and `Testing.Db.<Provider>` | Test helpers, with the same split. |
 
@@ -39,7 +40,7 @@ Test with [`Testing.Db.Mysql`](../packages/Testing.Db.Mysql/README.md), which pr
 
 Provide SQL written for the target database for your repositories and outbox implementations; the toolkit does not translate it.
 
-**Oracle SQL.** SQL files must not end with `;` (ODP.NET rejects it) and use `:Name` binds (Dapper turns on `BindByName`). Since Oracle cannot select from an `INSERT` (`IDbDialect.CanSelectFromInsert`), the outbox's get-or-insert of type IDs runs `Common.<Type>.Insert.IfMissing` (a `MERGE`), then `Common.<Type>.Get.ByName`. Cast IDs with `CAST(… AS NUMBER(9|18))` so ODP.NET returns `int`/`long`. Savepoints are never released, as Oracle has no such statement, and `TruncateTableAsync` uses a plain `TRUNCATE TABLE` (no identity restart or cascade).
+**Oracle SQL.** SQL files must not end with `;` (ODP.NET rejects it) and use `:Name` binds (Dapper turns on `BindByName`). Since Oracle cannot select from an `INSERT` (`IDbDialect.CanSelectFromInsert`), event writers use `Common.<Type>.Insert.IfMissing`, then `Common.<Type>.Get.ByName` to resolve type IDs. Cast IDs with `CAST(… AS NUMBER(9|18))` so ODP.NET returns `int`/`long`. Savepoints are never released, as Oracle has no such statement, and `TruncateTableAsync` uses a plain `TRUNCATE TABLE` (no identity restart or cascade).
 
 ## Adding a database provider
 
@@ -52,6 +53,6 @@ A new provider only adds a thin adapter, mirroring the existing provider project
    - a `Module<Provider>` under `DependencyInjection/Module/`.
 2. **Health, in the same project**: reader and writer subclasses of `DbHealthReportBase`, an `Add<Provider>HealthReports()` extension and a `Module<Provider>HealthReport`.
 3. **`Testing.Db.<Provider>`**: helpers delegating to `DbTestHelper`.
-4. **The outbox, outside the toolkit**: the toolkit only ships the `Db*RepositoryBase<TConnection, TDialect>` outbox bases. Applications (or an adapters package) add keyed-DI implementations over them, with the provider's SQL in a `Queries/` folder next to them (`LoadSql` resolves from the most derived type's namespace). Override `IdSequenceName` if the sequences are named differently.
+4. **Events and the outbox**: `Infrastructure.Persistence.Db.Events` supplies event-store reader/writer bases and Outbox contracts. Applications provide concrete event repositories and provider SQL in a `Queries/` folder next to them (`LoadSql` resolves from the most derived type's namespace), and implement their own Outbox repositories and schema.
 
 Then run `make check_layering`: provider projects belong to the `Infrastructure` layer and must not reference any higher layer.
