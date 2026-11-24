@@ -68,6 +68,8 @@ Auto-staging only considers files that were already staged, with no unstaged cha
 
 Tests run on **Microsoft.Testing.Platform** (`global.json` → `test.runner`). `tests/Unit/Unit.csproj` holds the in-process unit tests, `tests/Integration/Integration.csproj` the tests that drive real tools such as Git and the .NET SDK, and `tests/EndToEnd/EndToEnd.csproj` those that run the CLI, the packaged Makefile and scripts, or the mock server as a user would; each mirrors the `src/` projects in its folders (`src/Core.Events` → `tests/Unit/Core/Events/`). The Anarchy test targets route xUnit v3 projects through MSBuild's `Test` target and any VSTest project through `dotnet test`.
 
+To run the database integration tests locally, see the [Compose environment](docker/README.md).
+
 Plain `dotnet` also works:
 
 ```bash

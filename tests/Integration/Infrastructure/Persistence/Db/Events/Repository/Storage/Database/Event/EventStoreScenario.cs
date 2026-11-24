@@ -24,92 +24,38 @@ using Postgres = Anarchy.Toolkit.Tests.Integration.Infrastructure.Persistence.Db
 
 namespace Anarchy.Toolkit.Tests.Integration.Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event;
 
-/// <summary>Runs toolkit repository bases in a disposable, invocation-specific database namespace.</summary>
+/// <summary>Runs toolkit repository bases against the event-store fixture installed by Compose.</summary>
 internal static class EventStoreScenario
 {
-    public static async Task RunPostgresAsync()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var name = NewNamespace();
-        const string adminString = "Host=localhost;Port=5432;Database=anarchy_test;Username=anarchy_test;Password=anarchy_test;Pooling=false";
-        await using var admin = new NpgsqlConnection(adminString);
-        await admin.OpenAsync(ct);
-        await admin.ExecuteAsync(new CommandDefinition($"CREATE SCHEMA {name}", cancellationToken: ct));
-        try
-        {
-            var connectionString = $"{adminString};Search Path={name}";
-            await RunAsync(() => new NpgsqlConnection(connectionString),
-                (pool, context) => new PostgresDbUnitOfWork(pool, context),
-                (policy, telemetry) => new AdapterSet(new Postgres.TestOrderWriter(policy, telemetry),
-                    new Postgres.TestOrderReader(policy, telemetry), new Postgres.TestEventWriter(policy, telemetry),
-                    new Postgres.TestEventReader(policy, telemetry)),
-                PostgresDbDialect.IsUniqueViolation, PostgresDdl, ct);
-        }
-        finally
-        {
-            await admin.ExecuteAsync(new CommandDefinition($"DROP SCHEMA {name} CASCADE", cancellationToken: CancellationToken.None));
-        }
-    }
+    public static Task RunPostgresAsync(Func<NpgsqlConnection> connectionFactory) => RunAsync(connectionFactory,
+        (pool, context) => new PostgresDbUnitOfWork(pool, context),
+        (policy, telemetry) => new AdapterSet(new Postgres.TestOrderWriter(policy, telemetry),
+            new Postgres.TestOrderReader(policy, telemetry), new Postgres.TestEventWriter(policy, telemetry),
+            new Postgres.TestEventReader(policy, telemetry)),
+        PostgresDbDialect.IsUniqueViolation);
 
-    public static async Task RunMysqlAsync()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var name = NewNamespace();
-        const string adminString = "Server=localhost;Port=3306;User ID=root;Password=anarchy_test_root;Pooling=false;Ignore Command Transaction=true;DateTime Kind=Utc";
-        await using var admin = new MySqlConnection(adminString);
-        await admin.OpenAsync(ct);
-        await admin.ExecuteAsync(new CommandDefinition($"CREATE DATABASE {name}", cancellationToken: ct));
-        try
-        {
-            var connectionString = $"{adminString};Database={name}";
-            await RunAsync(() => new MySqlConnection(connectionString),
-                (pool, context) => new MysqlDbUnitOfWork(pool, context),
-                (policy, telemetry) => new AdapterSet(new Mysql.TestOrderWriter(policy, telemetry),
-                    new Mysql.TestOrderReader(policy, telemetry), new Mysql.TestEventWriter(policy, telemetry),
-                    new Mysql.TestEventReader(policy, telemetry)),
-                MysqlDbDialect.IsUniqueViolation, MysqlDdl, ct);
-        }
-        finally
-        {
-            await admin.ExecuteAsync(new CommandDefinition($"DROP DATABASE {name}", cancellationToken: CancellationToken.None));
-        }
-    }
+    public static Task RunMysqlAsync(Func<MySqlConnection> connectionFactory) => RunAsync(connectionFactory,
+        (pool, context) => new MysqlDbUnitOfWork(pool, context),
+        (policy, telemetry) => new AdapterSet(new Mysql.TestOrderWriter(policy, telemetry),
+            new Mysql.TestOrderReader(policy, telemetry), new Mysql.TestEventWriter(policy, telemetry),
+            new Mysql.TestEventReader(policy, telemetry)),
+        MysqlDbDialect.IsUniqueViolation);
 
-    public static async Task RunOracleAsync()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var name = NewNamespace();
-        const string adminString = "User Id=system;Password=anarchy_test;Data Source=localhost:1521/FREEPDB1;Pooling=false";
-        await using var admin = new OracleConnection(adminString);
-        await admin.OpenAsync(ct);
-        await admin.ExecuteAsync(new CommandDefinition($"CREATE USER {name} IDENTIFIED BY \"AnarchyTest42\" DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS", cancellationToken: ct));
-        try
-        {
-            await admin.ExecuteAsync(new CommandDefinition($"GRANT CREATE SESSION, CREATE TABLE, CREATE SEQUENCE TO {name}", cancellationToken: ct));
-            var connectionString = $"User Id={name};Password=AnarchyTest42;Data Source=localhost:1521/FREEPDB1;Pooling=false";
-            await RunAsync(() => new OracleConnection(connectionString),
-                (pool, context) => new OracleDbUnitOfWork(pool, context),
-                (policy, telemetry) => new AdapterSet(new OracleAdapter.TestOrderWriter(policy, telemetry),
-                    new OracleAdapter.TestOrderReader(policy, telemetry), new OracleAdapter.TestEventWriter(policy, telemetry),
-                    new OracleAdapter.TestEventReader(policy, telemetry)),
-                OracleDbDialect.IsUniqueViolation, OracleDdl, ct);
-        }
-        finally
-        {
-            await admin.ExecuteAsync(new CommandDefinition($"DROP USER {name} CASCADE", cancellationToken: CancellationToken.None));
-        }
-    }
-
-    private static string NewNamespace() => $"at_{Guid.NewGuid():N}"[..15];
+    public static Task RunOracleAsync(Func<OracleConnection> connectionFactory) => RunAsync(connectionFactory,
+        (pool, context) => new OracleDbUnitOfWork(pool, context),
+        (policy, telemetry) => new AdapterSet(new OracleAdapter.TestOrderWriter(policy, telemetry),
+            new OracleAdapter.TestOrderReader(policy, telemetry), new OracleAdapter.TestEventWriter(policy, telemetry),
+            new OracleAdapter.TestEventReader(policy, telemetry)),
+        OracleDbDialect.IsUniqueViolation);
 
     private static async Task RunAsync<TConnection>(
         Func<TConnection> connectionFactory,
         Func<IDbConnectionPool<TConnection>, IAsyncFlowContext<StorageConnectionEnvelopeBase<TConnection>>, IUnitOfWork> createUnitOfWork,
         Func<IStoragePolicy<TConnection>, AppTelemetry, AdapterSet> createAdapters,
-        Func<Exception, bool> isUniqueViolation,
-        IReadOnlyList<string> ddl, CancellationToken ct)
+        Func<Exception, bool> isUniqueViolation)
         where TConnection : DbConnection
     {
+        var ct = TestContext.Current.CancellationToken;
         await using var pool = new TestConnectionPool<TConnection>(connectionFactory);
         var context = new AsyncLocalFlowContext<StorageConnectionEnvelopeBase<TConnection>>();
         var policy = new DbPolicy<TConnection>(pool, context);
@@ -124,8 +70,17 @@ internal static class EventStoreScenario
             async (connection, token) => await connection.DataStorageConnection.QuerySingleAsync<int>(
                 new CommandDefinition(sql, cancellationToken: token ?? CancellationToken.None)), cancellationToken: ct);
 
-        // All DDL is outside transactions; Oracle implicitly commits it.
-        foreach (var statement in ddl) await ExecuteAsync(statement);
+        // Clear only the fixtures from a previous run. Delete events before the type rows they reference.
+        await owner.RunInManagedSessionAsync(async token => {
+            await ExecuteAsync("""
+                DELETE FROM domain_event
+                WHERE aggregate_id IN ('order-1', 'order-2', 'order-3')
+                  AND type_aggregate_id IN (SELECT id FROM type_registry WHERE name = 'OrderType')
+                  AND type_event_id IN (SELECT id FROM type_registry WHERE name = 'OrderPlaced')
+                """);
+            await ExecuteAsync("DELETE FROM test_order WHERE id IN (1, 2, 3)");
+            await ExecuteAsync("DELETE FROM type_registry WHERE name IN ('ConcurrentType', 'UncommittedType', 'OrderType', 'OrderPlaced')");
+        }, ct);
 
         // Both database hydrations must finish before either insert, so this exercises the first-registration race
         // rather than merely scheduling two tasks which may happen to run serially.
@@ -272,22 +227,4 @@ internal static class EventStoreScenario
             return result;
         }
     }
-
-    private static readonly string[] PostgresDdl = [
-        "CREATE TABLE type_registry (id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, name VARCHAR(200) NOT NULL UNIQUE)",
-        "CREATE TABLE test_order (id BIGINT PRIMARY KEY, sku VARCHAR(100) NOT NULL)",
-        "CREATE TABLE domain_event (id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, type_aggregate_id INTEGER NOT NULL REFERENCES type_registry(id), aggregate_id VARCHAR(100) NOT NULL, type_event_id INTEGER NOT NULL REFERENCES type_registry(id), payload TEXT, custom_attributes TEXT, occurred_at TIMESTAMPTZ NOT NULL, UNIQUE (type_aggregate_id, aggregate_id, type_event_id))"
-    ];
-
-    private static readonly string[] MysqlDdl = [
-        "CREATE TABLE type_registry (id INTEGER AUTO_INCREMENT PRIMARY KEY, name VARCHAR(200) NOT NULL UNIQUE)",
-        "CREATE TABLE test_order (id BIGINT PRIMARY KEY, sku VARCHAR(100) NOT NULL)",
-        "CREATE TABLE domain_event (id BIGINT AUTO_INCREMENT PRIMARY KEY, type_aggregate_id INTEGER NOT NULL, aggregate_id VARCHAR(100) NOT NULL, type_event_id INTEGER NOT NULL, payload TEXT, custom_attributes TEXT, occurred_at DATETIME(6) NOT NULL, FOREIGN KEY (type_aggregate_id) REFERENCES type_registry(id), FOREIGN KEY (type_event_id) REFERENCES type_registry(id), UNIQUE (type_aggregate_id, aggregate_id, type_event_id))"
-    ];
-
-    private static readonly string[] OracleDdl = [
-        "CREATE TABLE type_registry (id NUMBER(9) GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, name VARCHAR2(200) NOT NULL UNIQUE)",
-        "CREATE TABLE test_order (id NUMBER(18) PRIMARY KEY, sku VARCHAR2(100) NOT NULL)",
-        "CREATE TABLE domain_event (id NUMBER(18) GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, type_aggregate_id NUMBER(9) NOT NULL REFERENCES type_registry(id), aggregate_id VARCHAR2(100) NOT NULL, type_event_id NUMBER(9) NOT NULL REFERENCES type_registry(id), payload VARCHAR2(4000), custom_attributes VARCHAR2(4000), occurred_at TIMESTAMP WITH TIME ZONE NOT NULL, UNIQUE (type_aggregate_id, aggregate_id, type_event_id))"
-    ];
 }
