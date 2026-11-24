@@ -1,5 +1,6 @@
 using Anarchy.Toolkit.Core.Entity;
 using Anarchy.Toolkit.Core.Exceptions;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
@@ -20,7 +21,7 @@ public sealed record OutboundMessage : IEntity
     public readonly string Id;
 
     ///<summary>
-    /// The location the message will be published to. This can be a queue or topic name for example
+    /// The broker location the message will be published to, such as a queue or topic.
     ///</summary>
     public readonly string Destination;
 
@@ -40,7 +41,7 @@ public sealed record OutboundMessage : IEntity
     public readonly string? DeduplicationId;
 
     ///<summary>
-    /// Custom meta-data attributes that are attached to the message
+    /// Read-only snapshot of the custom metadata attached to the message.
     ///</summary>
     public readonly IReadOnlyDictionary<string, string> Attributes;
 
@@ -52,9 +53,7 @@ public sealed record OutboundMessage : IEntity
     /// <param name="messageBuffer">The UTF-8 encoded message body. Must not be empty.</param>
     /// <param name="partitionKey">Optional partition/message-group key.</param>
     /// <param name="deduplicationId">
-    /// Deduplication identifier. Despite the default value, it is validated as required (see the
-    /// <see cref="OutboundMessage(string, string, string, string?, string?, IReadOnlyDictionary{string, string}?)"/>
-    /// constructor).
+    /// Optional deduplication identifier, interpreted only by transports that support it.
     /// </param>
     /// <param name="attributes">Optional custom attributes; defaults to an empty dictionary.</param>
     /// <exception cref="EmptyArgumentException">
@@ -87,13 +86,12 @@ public sealed record OutboundMessage : IEntity
     /// <param name="message">The message body. Required.</param>
     /// <param name="partitionKey">Optional partition/message-group key.</param>
     /// <param name="deduplicationId">
-    /// Deduplication identifier. Despite the default value, it is validated as required: passing
-    /// <see langword="null"/> or whitespace throws.
+    /// Optional deduplication identifier, interpreted only by transports that support it.
     /// </param>
     /// <param name="attributes">Optional custom attributes; defaults to an empty dictionary.</param>
     /// <exception cref="EmptyArgumentException">
-    /// <paramref name="id"/>, <paramref name="destination"/>, <paramref name="message"/> or
-    /// <paramref name="deduplicationId"/> is null, empty or whitespace.
+    /// <paramref name="id"/>, <paramref name="destination"/> or <paramref name="message"/> is null, empty or whitespace,
+    /// or <paramref name="deduplicationId"/> is supplied but empty or whitespace.
     /// </exception>
     public OutboundMessage(
         string id,
@@ -112,7 +110,7 @@ public sealed record OutboundMessage : IEntity
         if (string.IsNullOrWhiteSpace(message))
             throw new EmptyArgumentException(nameof(message));
 
-        if (string.IsNullOrWhiteSpace(deduplicationId))
+        if (deduplicationId is not null && string.IsNullOrWhiteSpace(deduplicationId))
             throw new EmptyArgumentException(nameof(deduplicationId));
 
         Id = id;
@@ -120,6 +118,8 @@ public sealed record OutboundMessage : IEntity
         Message = message;
         DeduplicationId = deduplicationId;
         PartitionKey = partitionKey;
-        Attributes = attributes ?? new Dictionary<string, string>();
+        Attributes = attributes is null
+            ? ReadOnlyDictionary<string, string>.Empty
+            : new ReadOnlyDictionary<string, string>(new Dictionary<string, string>(attributes, StringComparer.Ordinal));
     }
 }

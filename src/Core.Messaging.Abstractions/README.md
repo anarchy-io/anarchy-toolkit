@@ -10,11 +10,11 @@ dotnet add package Anarchy.Toolkit.Core.Messaging.Abstractions
 
 - Depend on `IMessageBrokerPublisher` for outbound publishing.
 - Model inbound and outbound messages and construct outbound messages with `OutboundMessageBuilder`.
-- Supply a concrete broker adapter, such as [Infrastructure.Messaging.Aws](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Messaging.Aws), at the composition root.
+- Supply a concrete broker adapter, such as [Infrastructure.Messaging.Aws](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Messaging.Aws) or [Infrastructure.Messaging.Kafka](https://www.nuget.org/packages/Anarchy.Toolkit.Infrastructure.Messaging.Kafka), at the composition root.
 
 ## When to use it
 
-Reference these contracts in application code that publishes messages but should not know whether SNS, SQS or another broker sends them. The package defines the message shape and publishing interface; it does not connect to a broker or consume messages on its own.
+Reference these contracts in application code that publishes messages but should not know whether SNS, SQS, Kafka or another broker sends them. The package defines the message shape and publishing interface; it does not connect to a broker or consume messages on its own.
 
 ## How to use it
 
@@ -28,7 +28,7 @@ var message = builder.Build("{\"userId\":123}");
 await publisher.PublishAsync(message, cancellationToken);
 ```
 
-Register a concrete `IMessageBrokerPublisher` in the host and resolve the appropriate keyed publisher when using the AWS adapters. The builder also accepts partition keys and attributes; enum destinations are resolved through their descriptions. Batch publishing can report per-chunk outcomes and may throw if any chunk fails, so handle partial success deliberately.
+Register a concrete `IMessageBrokerPublisher` in the host and resolve the appropriate keyed publisher. The builder also accepts partition keys, optional deduplication IDs and attributes; enum destinations are resolved through their descriptions. An inbound message's `BrokerReference` is an opaque broker location, not necessarily an acknowledgement token. Batch publishing can report per-chunk outcomes and may throw if any chunk fails, so handle partial success deliberately.
 
 See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 

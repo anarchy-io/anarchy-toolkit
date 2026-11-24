@@ -1,6 +1,5 @@
 using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
-using System.Collections.ObjectModel;
 
 namespace Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker;
 
@@ -61,7 +60,8 @@ public interface IOutboundMessageBuilder
 /// <remarks>
 /// Every built message gets a new random GUID as both <see cref="OutboundMessage.Id"/> and
 /// <see cref="OutboundMessage.DeduplicationId"/>. When <paramref name="source"/> is not empty it is added as
-/// the <c>Source</c> attribute, overriding any caller-supplied <c>Source</c> attribute. The builder is immutable and
+/// the <c>Source</c> attribute, overriding any caller-supplied <c>Source</c> attribute. This is a message attribute,
+/// not the broker receive location or a CloudEvent source. The builder is immutable and
 /// thread-safe.
 /// </remarks>
 /// <param name="destination">The default queue/topic name used by <see cref="Build(string, string?, IReadOnlyDictionary{string, string}?)"/>.</param>
@@ -69,7 +69,7 @@ public interface IOutboundMessageBuilder
 /// <example>
 /// <code language="csharp">
 /// var builder = new OutboundMessageBuilder("orders-events.fifo", source: "order-service");
-/// var outbound = builder.Build(domainEvent.ToJson(), partitionKey: domainEvent.AggregateId);
+/// var outbound = builder.Build(json, partitionKey: "order-123");
 /// await publisher.PublishAsync(outbound);
 /// </code>
 /// </example>
@@ -171,6 +171,6 @@ public class OutboundMessageBuilder(string destination, string? source = null)
             result["Source"] = source;
         }
 
-        return new ReadOnlyDictionary<string, string>(result);
+        return result;
     }
 }

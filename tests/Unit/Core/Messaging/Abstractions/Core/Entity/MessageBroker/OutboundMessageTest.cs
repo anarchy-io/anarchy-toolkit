@@ -8,6 +8,14 @@ namespace Anarchy.Toolkit.Tests.Unit.Core.Messaging.Abstractions.Core.Entity.Mes
 public class OutboundMessageTest : TestCaseBase
 {
     [Fact]
+    public void Constructor_WhenDeduplicationIdIsOmitted_AllowsMessage()
+    {
+        var result = new OutboundMessage("id", "destination", "message");
+
+        result.DeduplicationId.Should().BeNull();
+    }
+
+    [Fact]
     public void Constructor_WithStringMessage_AssignsAllProperties()
     {
         var attributes = new Dictionary<string, string> { ["Key"] = "Value" };
@@ -35,6 +43,17 @@ public class OutboundMessageTest : TestCaseBase
         result.Message.Should().Be("message");
         result.PartitionKey.Should().Be("partition");
         result.DeduplicationId.Should().Be("dedup");
+    }
+
+    [Fact]
+    public void Constructor_WithAttributes_StoresSnapshot()
+    {
+        var attributes = new Dictionary<string, string> { ["Key"] = "Value" };
+        var result = new OutboundMessage("id", "destination", "message", attributes: attributes);
+
+        attributes.Clear();
+
+        result.Attributes.Should().Contain("Key", "Value");
     }
 
     [Fact]
