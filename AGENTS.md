@@ -7,7 +7,7 @@ Ecosystem), delivered from this .NET 10 monorepo as independently published NuGe
 
 ## Rules
 
-- Never stage, revert or discard changes you did not make: the working tree may hold the developer's own work in
+- Never stage, revert or discard changes you did not make without asking: the working tree may hold the developer's own work in
   progress.
 - Load the `anarchy-contribute` skill before committing: it has the checks, commit and history rules, version bumps
   and the pull request description. @.github/CONTRIBUTING.md is the human version and wins on any disagreement.
