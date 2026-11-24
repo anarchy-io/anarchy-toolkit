@@ -24,7 +24,7 @@ Use this package at the composition boundary of a service that needs typed setti
 3. Register `ModuleLibConfiguration<TAppSettingsDiModule, TAppSettings>` using `UseModule`. Configure logging providers, a metric recorder or an `ICoreTelemetry` in the host, or pass them as a `ModuleTelemetryBase` through `new ModuleLibConfiguration<…>(new ModuleTelemetry(…))`.
 4. Choose configuration sources and secret providers in the host. Keep credentials outside committed configuration and grant the AWS permissions needed by any selected remote provider.
 
-The [sample API settings module](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/DependencyInjection/ModuleAppSettings.cs) and [startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/Startup.cs) show the wiring end to end.
+The [sample API settings module](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/DependencyInjection/ModuleAppSettings.cs) and [startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/SampleApiStartup.cs) show the wiring end to end.
 
 See the [observability guide](https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
