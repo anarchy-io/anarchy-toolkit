@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.1.0
+
+- Add generic attribute-ID caching and transaction-local resolution supporting numeric, GUID, and string identifiers.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property

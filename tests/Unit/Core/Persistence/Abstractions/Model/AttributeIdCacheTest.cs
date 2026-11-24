@@ -1,8 +1,8 @@
-using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
+using Anarchy.Toolkit.Core.Persistence.Abstractions.Model;
 using Anarchy.Toolkit.Testing;
 using Moq;
 
-namespace Anarchy.Toolkit.Tests.Unit.Infrastructure.Persistence.Db.Core.Model;
+namespace Anarchy.Toolkit.Tests.Unit.Core.Persistence.Abstractions.Model;
 
 public class AttributeIdCacheTest : TestCaseBase
 {
