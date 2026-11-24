@@ -10,9 +10,10 @@ jobs:
   pull_request_checks_linux:
     name: "Linux"
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
+        id: checkout
         with:
           fetch-depth: 0
 
@@ -30,13 +31,24 @@ jobs:
       - name: Check the conventions skill matches the docs
         run: docs/portal/scripts/sync-skill-docs.sh --check
 
+      # PullRequest compiles the entire solution, including the showcase projects,
+      # even though Samples.Testing is not part of the regular test run.
       - name: Run code quality checks
         run: make pull_request
+
+      - name: Collect local environment logs on failure
+        if: ${{ failure() && steps.checkout.outcome == 'success' }}
+        run: make container_logs
+
+      # This job owns the Compose stack and its volumes on the ephemeral runner.
+      - name: Tear down local environment
+        if: ${{ always() && steps.checkout.outcome == 'success' }}
+        run: make destroy
 
   pull_request_checks_windows:
     name: "Windows"
     runs-on: windows-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,4 +60,8 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Run code quality checks
-        run: dotnet run --project build/_build.csproj -- PullRequest
+        run: |
+          dotnet run --project build/_build.csproj -- Compile
+          dotnet run --project build/_build.csproj -- Lint
+          dotnet run --project build/_build.csproj -- CheckLayering
+          dotnet run --project build/_build.csproj -- TestUnit
