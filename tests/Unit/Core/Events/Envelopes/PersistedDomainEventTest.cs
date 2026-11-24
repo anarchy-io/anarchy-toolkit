@@ -3,6 +3,7 @@ using Anarchy.Toolkit.Core.Extension;
 using Anarchy.Toolkit.Testing.Helper;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Dummy;
 using AwesomeAssertions;
+using Newtonsoft.Json;
 
 namespace Anarchy.Toolkit.Tests.Unit.Core.Events.Envelopes;
 
@@ -30,19 +31,24 @@ public class PersistedDomainEventTest() : GenericEventEnvelopeTest(
         var sut = PersistedDomainEvent.Create(42L, DummyTypeAggregate.DummyOrder, "id", DummyTypeEvent.DummyOrderCreated);
 
         sut.Id.Should().Be(42L);
-        sut.TypeAggregate.Should().Be("dummy_order");
-        sut.TypeEvent.Should().Be("dummy_order_created");
+        sut.AggregateType.Should().Be("dummy_order");
+        sut.Type.Should().Be("dummy_order_created");
     }
 
     [Fact]
-    public void DeepClone_KeepsIdAndMoment()
+    public void DeepCloneAndJson_KeepStorageIdTimeAndCustomAttributes()
     {
-        var sut = PersistedDomainEvent.Create(42L, DummyTypeAggregate.DummyOrder, "id", DummyTypeEvent.DummyOrderCreated);
+        var sut = PersistedDomainEvent.Create(42L, DummyTypeAggregate.DummyOrder, "id", DummyTypeEvent.DummyOrderCreated,
+            data: "[1,2]", customAttributes: new Dictionary<string, string> { ["origin"] = "orders" });
 
         var clone = sut.DeepClone();
+        var json = JsonConvert.SerializeObject(sut);
+        var roundTrip = JsonConvert.DeserializeObject<PersistedDomainEvent>(json);
 
         clone.Should().NotBeSameAs(sut);
-        clone.Id.Should().Be(42L);
-        clone.Moment.Should().Be(sut.Moment);
+        clone.Should().BeEquivalentTo(sut, options => options.Excluding(x => x.Data));
+        clone.CastData<int[]>().Should().Equal(1, 2);
+        roundTrip.Should().BeEquivalentTo(sut, options => options.Excluding(x => x.Data));
+        roundTrip!.CastData<int[]>().Should().Equal(1, 2);
     }
 }

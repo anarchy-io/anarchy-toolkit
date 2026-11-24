@@ -42,8 +42,8 @@ public sealed class DomainEventProcessorBaseTest : IDisposable
             It.IsAny<DummyStateEntity>(), It.IsAny<CancellationToken?>()), Times.Once);
         _sut.StoredEntities.Should().HaveCount(1);
         var stored = _telemetry.Logs.Should().ContainSingle(log => log.Message.Contains("Storing state")).Which;
-        stored.Scopes.Should().Contain("AggregateId", fixtureEvents[0].AggregateId)
-            .And.Contain("TypeEvent", fixtureEvents[0].TypeEvent);
+        stored.Scopes.Should().Contain("AggregateId", fixtureEvents[0].Subject)
+            .And.Contain("TypeEvent", fixtureEvents[0].Type);
     }
 
     [Fact]

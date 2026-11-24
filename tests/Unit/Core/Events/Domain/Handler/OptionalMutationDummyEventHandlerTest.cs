@@ -20,7 +20,7 @@ public class OptionalMutationDummyEventHandlerTest : DomainEventHandlerTestBase<
                                                               DomainEventEnvelope domainEvent,
                                                               CancellationToken? cancellationToken = null)
         {
-            modelEntity.Status = domainEvent.TypeEvent;
+            modelEntity.Status = domainEvent.Type;
             return Task.FromResult(modelEntity);
         }
     }

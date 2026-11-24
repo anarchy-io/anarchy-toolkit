@@ -85,13 +85,13 @@ public abstract class DomainEventHandlerBase<TDomainModelEntity>(
     /// <returns><see langword="true"/> when the aggregate/event type combination is supported.</returns>
     protected bool CanHandleEventType(DomainEventEnvelope domainEvent)
     {
-        if (!supportedAggregateTypes.TryGetValue(domainEvent.TypeAggregate, out var supportedEventTypes))
+        if (!supportedAggregateTypes.TryGetValue(domainEvent.AggregateType, out var supportedEventTypes))
         {
             return false;
         }
 
         return supportedEventTypes is not { Count: > 0 } ||
-               supportedEventTypes.Any(x => x == domainEvent.TypeEvent);
+               supportedEventTypes.Any(x => x == domainEvent.Type);
     }
 
     /// <summary>

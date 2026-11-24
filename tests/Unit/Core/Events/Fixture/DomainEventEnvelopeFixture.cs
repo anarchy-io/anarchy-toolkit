@@ -25,9 +25,9 @@ public class DomainEventEnvelopeFixture : EntityFixtureBase<DomainEventEnvelope>
     public static DomainEventEnvelope CreateForReadyOrder(string? aggregateId = null)
     {
         return new DomainEventEnvelopeFixture().Build(new {
-            TypeAggregate = DummyTypeAggregate.DummyOrder.ToDescription(),
-            AggregateId = aggregateId ?? TestHelper.RandomId("Test.AggregateId"),
-            TypeEvent = DummyTypeEvent.DummyOrderReady.ToDescription()
+            AggregateType = DummyTypeAggregate.DummyOrder.ToDescription(),
+            Subject = aggregateId ?? TestHelper.RandomId("Test.AggregateId"),
+            Type = DummyTypeEvent.DummyOrderReady.ToDescription()
         });
     }
 }

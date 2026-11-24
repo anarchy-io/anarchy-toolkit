@@ -26,18 +26,18 @@ public abstract class EventEnvelopeTestBase(
         // Assert
         using (new AssertionScope())
         {
-            sut.AggregateId.Should().Be(aggregateId);
-            sut.TypeAggregate.Should().Be(expectedTypeAggregate);
-            sut.TypeEvent.Should().Be(expectedTypeEvent);
+            sut.Subject.Should().Be(aggregateId);
+            sut.AggregateType.Should().Be(expectedTypeAggregate);
+            sut.Type.Should().Be(expectedTypeEvent);
 
-            if (sut.Payload == null)
+            if (sut.Data == null)
             {
                 return;
             }
 
-            var payloadProperties = sut.Payload.GetType()
+            var payloadProperties = sut.Data.GetType()
                 .GetProperties()
-                .ToDictionary(x => x.Name, x => x.GetValue(sut.Payload)?.GetType());
+                .ToDictionary(x => x.Name, x => x.GetValue(sut.Data)?.GetType());
 
             payloadProperties.Should().BeEquivalentTo(expectedPayloadProperties);
         }
@@ -51,13 +51,14 @@ public abstract class EventEnvelopeTestBase(
         var clone = sut.DeepClone();
 
         clone.Should().NotBeSameAs(sut);
-        clone.Should().BeEquivalentTo(sut, options => options.Excluding(x => x.Moment));
+        clone.Should().BeEquivalentTo(sut);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void Constructor_WhenEmptyAggregateId_ThrowsException(string? value)
+    [InlineData(" ")]
+    public void Constructor_WhenEmptySubject_ThrowsException(string? value)
     {
         // Act
         var act = () => Sut(value!, expectedTypeAggregate, expectedTypeEvent);
@@ -69,7 +70,8 @@ public abstract class EventEnvelopeTestBase(
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void Constructor_WhenEmptyTypeAggregate_ThrowsException(string? value)
+    [InlineData(" ")]
+    public void Constructor_WhenEmptyAggregateType_ThrowsException(string? value)
     {
         // Act
         var act = () => Sut(TestHelper.RandomId("test."), value!, expectedTypeEvent);
@@ -81,7 +83,8 @@ public abstract class EventEnvelopeTestBase(
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void Constructor_WhenEmptyTypeEvent_ThrowsException(string? value)
+    [InlineData(" ")]
+    public void Constructor_WhenEmptyType_ThrowsException(string? value)
     {
         // Act
         var act = () => Sut(TestHelper.RandomId("test."), expectedTypeAggregate, value!);

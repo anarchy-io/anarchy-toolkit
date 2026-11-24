@@ -36,6 +36,32 @@ await bus.PublishAsync(new OrderPlaced(), absorbErrors: false, ct: cancellationT
 
 Each publish resolves handlers in a new DI scope and awaits them sequentially. Handler exceptions are logged and absorbed by default; set `absorbErrors: false` to propagate the first failure. No registered handlers is a no-op. For external delivery, compose this package with a broker adapter instead.
 
+### Publish an event envelope through a broker
+
+```csharp
+using Anarchy.Toolkit.Core.Events.Envelopes;
+
+var envelope = new DomainEventEnvelope("order", orderId, "order-created", data: new { Total = 10m });
+var outbound = EventEnvelopeMessageMapper.ToOutboundMessage(envelope, "orders", publicationId);
+await publisher.PublishAsync(outbound);
+
+// On the consuming side, given the inbound message from a broker adapter:
+var received = EventEnvelopeMessageMapper.ToEnvelope<DomainEventEnvelope>(inbound);
+```
+
+`ToInboundMessage` also creates an inbound message from an envelope when the broker source, message ID and delivery
+reference are known. `ToEnvelope<T>` accepts either inbound or outbound messages.
+
+Reuse the same publication ID on retries; by default it is also the message's deduplication ID. The mapper defaults the
+partition key to the event's `Subject`. Both defaults can be overridden. A `PersistedDomainEvent.Id` is a storage ID,
+not a broker message ID or CloudEvent ID.
+
+The body contains the complete envelope, including its `CustomAttributes`. For broker filtering, attributes also
+project `AggregateType`, `Subject` and `Type`. These projections take precedence over explicit message attributes,
+which in turn override any colliding custom attributes in the broker metadata only. The receiver reads event metadata
+from the body, not the broker attributes, source, destination or delivery identity. Broker locations do not identify
+the event producer in other formats such as CloudEvents.
+
 See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [architecture guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html).
 
 ## Releases

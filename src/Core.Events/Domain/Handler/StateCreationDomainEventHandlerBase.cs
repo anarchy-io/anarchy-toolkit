@@ -21,7 +21,7 @@ namespace Anarchy.Toolkit.Core.Events.Domain.Handler;
 /// {
 ///     public override Task&lt;Order&gt; HandleAsync(DomainEventEnvelope domainEvent, Order? entity,
 ///                                              CancellationToken? cancellationToken = null)
-///         =&gt; Task.FromResult(new Order(domainEvent.AggregateId, domainEvent.CastPayload&lt;OrderCreated&gt;()));
+///         =&gt; Task.FromResult(new Order(domainEvent.Subject, domainEvent.CastData&lt;OrderCreated&gt;()));
 /// }
 /// </code>
 /// </example>

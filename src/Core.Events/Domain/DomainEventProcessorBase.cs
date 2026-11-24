@@ -66,14 +66,14 @@ public abstract class DomainEventProcessorBase<T>(DomainEventHandlerDispatcher<T
     public async Task<ImmutableArray<T>> ExecuteAsync(ImmutableArray<DomainEventEnvelope> domainEvents,
                                                       CancellationToken? cancellationToken = null)
     {
-        var stateEntities = await HydrateStateEntitiesAsync(domainEvents.Select(x => x.AggregateId).ToArray(),
+        var stateEntities = await HydrateStateEntitiesAsync(domainEvents.Select(x => x.Subject).ToArray(),
                                                             cancellationToken);
 
         foreach (var domainEvent in domainEvents)
         {
             using (Telemetry.WithEvent(domainEvent))
             {
-                stateEntities.TryGetValue(domainEvent.AggregateId, out var currentState);
+                stateEntities.TryGetValue(domainEvent.Subject, out var currentState);
                 var handledEventState = await HandleEventAsync(domainEvent, currentState, cancellationToken);
 
                 if (handledEventState is null)
@@ -81,7 +81,7 @@ public abstract class DomainEventProcessorBase<T>(DomainEventHandlerDispatcher<T
                     continue;
                 }
 
-                stateEntities[domainEvent.AggregateId] = await StoreStateEntity(handledEventState, cancellationToken);
+                stateEntities[domainEvent.Subject] = await StoreStateEntity(handledEventState, cancellationToken);
             }
         }
 

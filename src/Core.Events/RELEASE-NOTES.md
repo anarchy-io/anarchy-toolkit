@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- Breaking: Align event envelope properties with CloudEvents terminology, including `AggregateType`, `Subject`, `Type`, `Time`, and `Data`.
+- Preserve custom event attributes across serialization, cloning, and broker-neutral message conversions.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property
