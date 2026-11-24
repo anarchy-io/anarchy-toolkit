@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Messaging.Kafka</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Messaging.Kafka</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Messaging.Kafka</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Apache Kafka publisher and inbound mapping for the message-broker contracts.</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Messaging.Abstractions\Core.Messaging.Abstractions.csproj" />
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
+    <PackageReference Include="Confluent.Kafka" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+</Project>
