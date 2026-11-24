@@ -63,6 +63,8 @@ Install or update it with `dotnet tool update --global Anarchy.Toolkit.Automatio
 | `anarchy-toolkit scaffold library <Name> --layer <Layer> [layout options] [--dry-run] [--save-preferences]` | Adds a library to the effective folder or prefix layout, referencing the next lower layer when present. |
 | `anarchy-toolkit scaffold tests [unit\|integration\|endtoend] [--dry-run] [--save-preferences]` | Creates the shared test project for a kind, honoring `TestKindAliases`; no kind starts an interactive choice. |
 | `anarchy-toolkit scaffold api <Name> [--swagger-theme\|--no-swagger-theme]` | Explicitly enables or disables Swagger UI's theme for the generated API. |
+| `anarchy-toolkit scaffold api\|ui <Name> [--container]` | Optionally generates a container web entry point. APIs also support `--lambda-api`. |
+| `anarchy-toolkit scaffold job <Name> [--job-mode worker\|once] [--lambda-event]` | Selects a local worker (default) or one-shot job, optionally with a scheduled Lambda. |
 | `anarchy-toolkit config show\|set\|unset\|configure` | Inspect effective preferences and their saved/default source, edit a typed JSON override, remove an override or use the interactive editor. |
 | `anarchy-toolkit skills install [--output <dir>]` | Installs these skills into the solution's `.agents/skills`. |
 | `anarchy-toolkit boilerplate list\|show <path>\|diff [<path>...]` | Lists or prints the packaged Makefile, scripts and settings files, or diffs the solution's copies against them, without installing anything. |

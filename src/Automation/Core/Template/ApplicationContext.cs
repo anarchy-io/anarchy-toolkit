@@ -24,4 +24,13 @@ public sealed record ApplicationContext(
     string Namespace,
     string? PackageVersion,
     (int Http, int Https)? Ports,
-    string? LibraryReference);
+    string? LibraryReference)
+{
+    /// <summary>The effective layering mode; folder mode uses project-specific startup names.</summary>
+    public LayeringMode LayeringMode { get; init; } = LayeringMode.Prefix;
+
+    /// <summary>The startup class and filename for this application.</summary>
+    public string StartupName => LayeringMode == LayeringMode.Folder
+        ? App.Name + "Startup"
+        : App.Kind == ApplicationKind.Job ? "JobStartup" : "Startup";
+}

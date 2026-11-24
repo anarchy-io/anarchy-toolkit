@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Automation</PackageId>
     <AssemblyName>Anarchy.Toolkit.Automation</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Automation</RootNamespace>
-    <Version>2.0.1</Version>
+    <Version>3.0.0</Version>
     <Description>Command-line foundations for Anarchy solutions: starter solution scaffolding, build hosts, application templates and dotnet CLI helpers.</Description>
     <PackageTags>anarchy cli scaffold</PackageTags>
     <Nullable>enable</Nullable>

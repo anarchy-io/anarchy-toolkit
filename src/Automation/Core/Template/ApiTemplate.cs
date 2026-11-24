@@ -12,23 +12,14 @@ internal static class ApiTemplate
     {
         var app = context.App;
         var ns = context.Namespace;
-        var ports = ApplicationTemplates.PortsOf(context);
         var scope = ApplicationTemplates.Kebab(app.Name);
         var themeUsing = app.SwaggerTheme ? string.Empty : "\nusing Anarchy.Toolkit.Web.Entity.Swagger;";
         var disableTheme = app.SwaggerTheme
             ? string.Empty
             : "\n            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)";
-        return new Dictionary<string, string> {
+        var files = new Dictionary<string, string> {
             [$"{context.ProjectName}.csproj"] = ApplicationTemplates.Project("Microsoft.NET.Sdk.Web", context, exe: true),
-            ["Program.cs"] = $"""
-                using {ns}.Composition;
-                using Anarchy.Toolkit.Web;
-
-                // Local development: Kestrel on http://localhost:{ports.Http} and https://localhost:{ports.Https}.
-                WebAppEntryPoint.RunWebHost<Startup>(args, {ports.Http}, {ports.Https});
-
-                """,
-            ["Composition/Startup.cs"] = $$"""
+            [$"Composition/{context.StartupName}.cs"] = $$"""
                 using {{ns}}.Composition.DependencyInjection;
                 using {{ns}}.Infrastructure.Entity.Configuration;
                 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
@@ -39,7 +30,7 @@ internal static class ApiTemplate
 
                 namespace {{ns}}.Composition;
 
-                public sealed class Startup(IWebHostEnvironment environment, IConfiguration configuration)
+                public sealed class {{context.StartupName}}(IWebHostEnvironment environment, IConfiguration configuration)
                     : RestApiWebAppStartupBase<ModuleAppSettings, AppSettings>(environment, configuration)
                 {
                     protected override string ApiName => "{{app.Name}} API";
@@ -110,5 +101,7 @@ internal static class ApiTemplate
 
                 """
         };
+        foreach (var (path, content) in WebEntryPointTemplates.Render(context)) files.Add(path, content);
+        return files;
     }
 }

@@ -182,8 +182,8 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
             false,
             LayeringMode.Folder, "Core, Testing", "",
             new object[] { ApplicationKind.Ui, ApplicationKind.Api },
-            "Orders", true, "orders", "Billing", false,
-            "Billing", "Admin", false,
+            "Orders", false, false, true, "orders", "Billing", false, false, false,
+            "Billing", "Admin", false, false,
             false, false, true);
 
         var plan = new BootstrapWizard(prompter).Run();
@@ -227,7 +227,7 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
     {
         var root = TempRoot();
         var prompter = new ScriptedPrompter(
-            "Shop", root, true, ApplicationKind.Api, "Shop", LayeringMode.Folder, "", "Orders", false, false, true);
+            "Shop", root, true, ApplicationKind.Api, "Shop", LayeringMode.Folder, "", "Orders", false, false, false, false, true);
 
         var plan = new BootstrapWizard(prompter).Run();
 
@@ -246,7 +246,7 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
         try
         {
             var bootstrap = new ScriptedPrompter(
-                "Shop", root, true, ApplicationKind.Api, "Shop", LayeringMode.Folder, "", "Orders", false, savePreferences, true);
+                "Shop", root, true, ApplicationKind.Api, "Shop", LayeringMode.Folder, "", "Orders", false, false, false, savePreferences, true);
             Application(bootstrap).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", bootstrap.Errors));
             File.Exists(Path.Combine(root, "src", "Shop", "Orders", "Orders.csproj")).Should().BeTrue();
             File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().Be(savePreferences);
@@ -254,7 +254,7 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
                 AutomationPreferences.Read(root).ResolveLayout().Should().BeEquivalentTo(
                     SolutionLayoutPresets.Create(SolutionLayoutPreset.SingleApp, ApplicationKind.Api, "Shop"));
 
-            var scaffold = new ScriptedPrompter(ApplicationKind.Ui, "Admin", true);
+            var scaffold = new ScriptedPrompter(ApplicationKind.Ui, "Admin", false, true);
             Application(scaffold, root).Run(["scaffold", "--layout", "single-app", "--application-folder", "Shop"], interactive: true)
                 .Should().Be(0, string.Join("\n", scaffold.Errors));
             File.Exists(Path.Combine(root, "src", "Shop", "Admin", "Admin.csproj")).Should().BeTrue();
@@ -324,7 +324,7 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
             var prompter = new ScriptedPrompter(
                 "MyApp", root, false, LayeringMode.Folder, "",
                 new object[] { ApplicationKind.Api, ApplicationKind.Job },
-                "Orders", false, "Billing", false,
+                "Orders", false, false, false, "Billing", JobExecutionMode.Worker, false, false,
                 false, false, true);
 
             Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
@@ -351,7 +351,7 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
             api.Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Web\" />").And.NotContain("Version=").And.Contain("<IsPackable>false</IsPackable>")
                 .And.Contain("<RootNamespace>Api.Orders</RootNamespace>").And.Contain(@"..\..\Library\Web\Web.csproj");
             File.ReadAllText(Path.Combine(root, "src", "Jobs", "Billing", "Billing.csproj"))
-                .Should().Contain(@"..\..\Library\Hosting\Hosting.csproj").And.NotContain("<OutputType>");
+                .Should().Contain(@"..\..\Library\Hosting\Hosting.csproj").And.Contain("<OutputType>Exe</OutputType>");
             var parameters = JsonNode.Parse(File.ReadAllText(Path.Combine(root, ".fallout", "parameters.json")))!.AsObject();
             parameters["Solution"]!.GetValue<string>().Should().Be("MyApp.sln");
             parameters.Select(parameter => parameter.Key).Should().NotContain(key => key.StartsWith("Layering"));
@@ -359,12 +359,12 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
             prompter.Confirmations.Should().Contain(entry => entry.Prompt.Contains("Save the selected layering preferences") && !entry.DefaultValue);
 
             // Scaffold from a subdirectory: the solution is found upwards and its layout and ports are respected.
-            var scaffold = new ScriptedPrompter(ApplicationKind.Ui, "Orders", "Admin", true);
+            var scaffold = new ScriptedPrompter(ApplicationKind.Ui, "Orders", "Admin", false, true);
             Application(scaffold, Path.Combine(root, "src", "Api")).Run(["scaffold"], interactive: true)
                 .Should().Be(0, string.Join("\n", scaffold.Errors));
 
             scaffold.ValidationErrors.Should().ContainSingle().Which.Should().Contain("Orders already exists");
-            File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "Program.cs")).Should().Contain("args, 5002, 5003");
+            File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "EntryPointLocal.cs")).Should().Contain("args, 5002, 5003");
             File.ReadAllText(Path.Combine(root, "MyApp.sln")).Should().Contain("Admin.csproj");
             File.ReadAllText(Path.Combine(root, "src", "Ui", "Admin", "Admin.csproj")).Should().NotContain("Version=");
             var updated = File.ReadAllText(Path.Combine(root, "Directory.Packages.props"));
@@ -391,7 +391,7 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
         try
         {
             var prompter = new ScriptedPrompter("MyApp", root, false, LayeringMode.Prefix, "Core, Web",
-                new object[] { ApplicationKind.Api }, "Orders", false, true, true, true);
+                new object[] { ApplicationKind.Api }, "Orders", false, false, false, true, true, true);
 
             Application(prompter).Run(["bootstrap"], interactive: true).Should().Be(0, string.Join("\n", prompter.Errors));
 
@@ -451,9 +451,9 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
             Application(prompter, root).Run(["scaffold", "api", "Billing", "--no-swagger-theme"], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
 
-            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Composition", "Startup.cs"))
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Composition", "OrdersStartup.cs"))
                 .Should().NotContain("SwaggerThemeOptions");
-            File.ReadAllText(Path.Combine(root, "src", "Api", "Billing", "Composition", "Startup.cs"))
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Billing", "Composition", "BillingStartup.cs"))
                 .Should().Contain("using Anarchy.Toolkit.Web.Entity.Swagger;")
                 .And.Contain("            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false);");
             File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeFalse();
@@ -480,16 +480,16 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
             Application(prompter, root).Run(["scaffold", "api", "Billing", "--swagger-theme"], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
 
-            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Composition", "Startup.cs"))
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Orders", "Composition", "OrdersStartup.cs"))
                 .Should().Contain("theme.Enabled = false");
-            File.ReadAllText(Path.Combine(root, "src", "Api", "Billing", "Composition", "Startup.cs"))
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Billing", "Composition", "BillingStartup.cs"))
                 .Should().NotContain("theme.Enabled = false");
 
             Application(prompter, root).Run(["config", "set", "scaffolding.swaggerTheme", "true"], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
             Application(prompter, root).Run(["scaffold", "api", "Claims", "--no-swagger-theme"], interactive: false)
                 .Should().Be(0, string.Join("\n", prompter.Errors));
-            File.ReadAllText(Path.Combine(root, "src", "Api", "Claims", "Composition", "Startup.cs"))
+            File.ReadAllText(Path.Combine(root, "src", "Api", "Claims", "Composition", "ClaimsStartup.cs"))
                 .Should().Contain("theme.Enabled = false");
             AutomationPreferences.Read(root).Get<bool?>("scaffolding.swaggerTheme").Should().BeTrue();
 
@@ -511,12 +511,12 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
         {
             fixture.CopyTo(root);
 
-            var declined = new ScriptedPrompter(ApplicationKind.Api, "Orders", false, true, false);
+            var declined = new ScriptedPrompter(ApplicationKind.Api, "Orders", false, false, false, true, false);
             Application(declined, root).Run(["scaffold"], interactive: true).Should().Be(0, string.Join("\n", declined.Errors));
             File.Exists(Path.Combine(root, ".anarchy-toolkit.json")).Should().BeFalse();
             declined.Confirmations.Last().DefaultValue.Should().BeFalse();
 
-            var accepted = new ScriptedPrompter(ApplicationKind.Api, "Billing", true, true, true);
+            var accepted = new ScriptedPrompter(ApplicationKind.Api, "Billing", true, false, false, true, true);
             Application(accepted, root).Run(["scaffold"], interactive: true).Should().Be(0, string.Join("\n", accepted.Errors));
             accepted.Confirmations.Last().DefaultValue.Should().BeFalse();
             AutomationPreferences.Read(root).Get<bool?>("scaffolding.swaggerTheme").Should().BeTrue();
@@ -525,6 +525,57 @@ public class ToolkitToolTest(ToolkitSolutionFixture fixture)
         {
             if (Directory.Exists(root)) Directory.Delete(root, true);
         }
+    }
+
+    [Fact]
+    public void Workspace_DiscoversLegacyAndExplicitEntryPointPorts()
+    {
+        var root = TempRoot();
+        try
+        {
+            fixture.CopyTo(root);
+            var legacy = Path.Combine(root, "src", "Api", "Legacy");
+            var current = Path.Combine(root, "src", "Api", "Current");
+            Directory.CreateDirectory(legacy);
+            Directory.CreateDirectory(current);
+            File.WriteAllText(Path.Combine(legacy, "Program.cs"), "WebAppEntryPoint.RunWebHost<Startup>(args);");
+            File.WriteAllText(Path.Combine(current, "EntryPointLocal.cs"), "WebAppEntryPoint.RunWebHost<CurrentStartup>(args, 5002, 5003);");
+
+            SolutionWorkspace.Load(root).UsedPorts.Should().BeEquivalentTo(new[] { 5000, 5001, 5002, 5003 });
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void CommandLine_ParsesEntryPointChoicesAndRejectsUnsupportedCombinations()
+    {
+        var api = ToolCommandLine.Parse(["scaffold", "api", "Orders", "--container", "--lambda-api"]);
+        api.Application!.Container.Should().BeTrue();
+        api.Application.ApiLambda.Should().BeTrue();
+        var job = ToolCommandLine.Parse(["scaffold", "job", "Billing", "--job-mode", "once", "--lambda-event"]);
+        job.Application!.JobMode.Should().Be(JobExecutionMode.Once);
+        job.Application.EventLambda.Should().BeTrue();
+        ToolCommandLine.Parse(["scaffold", "job", "Billing"]).Application!.JobMode.Should().Be(JobExecutionMode.Worker);
+        ToolCommandLine.Parse(["scaffold", "ui", "Admin", "--lambda-api"]).Mode.Should().Be(ToolMode.Invalid);
+        ToolCommandLine.Parse(["scaffold", "job", "Billing", "--job-mode", "other"]).Mode.Should().Be(ToolMode.Invalid);
+        ToolCommandLine.Parse(["scaffold", "job", "Billing", "--job-mode", "0"]).Mode.Should().Be(ToolMode.Invalid);
+        ToolCommandLine.Parse(["scaffold", "api", "Orders", "--container", "--container"]).Mode.Should().Be(ToolMode.Invalid);
+    }
+
+    [Fact]
+    public void ScaffoldWizard_RecordsSelectedEntryPoints()
+    {
+        var workspace = new SolutionWorkspace("/work", "/work/Shop.sln", SolutionLayout.Default, [], []);
+        var prompter = new ScriptedPrompter(ApplicationKind.Api, "Orders", true, true, true, true, false);
+
+        var app = new ScaffoldWizard(prompter).Run(workspace);
+
+        app!.Container.Should().BeTrue();
+        app.ApiLambda.Should().BeTrue();
+        prompter.ShownScaffold.Should().Be(app);
     }
 
     [Fact]

@@ -43,7 +43,7 @@ public sealed class ScaffoldWizard(IWizardPrompter prompter)
             answer => ApplicationScaffolder.Validate(workspace.Layout, new ApplicationSpec(kind, answer), workspace.ProjectNames));
         var swaggerTheme = kind != ApplicationKind.Api ||
                            prompter.Confirm("Use the toolkit's Swagger UI theme?", defaultSwaggerTheme);
-        var app = new ApplicationSpec(kind, name, swaggerTheme);
+        var app = EntryPointWizard.Ask(prompter, new ApplicationSpec(kind, name, swaggerTheme));
         prompter.ShowScaffold(workspace, app);
 
         if (!prompter.Confirm($"Add the {Labels.Of(kind)}?", true)) return null;

@@ -31,6 +31,10 @@ public static class ApplicationScaffolder
     public static string? Validate(SolutionLayout layout, ApplicationSpec app, IEnumerable<string> taken)
     {
         if (!NameRules.IsValidApplicationName(app.Name)) return $"'{app.Name}': {NameRules.ApplicationNameHelp}";
+        if (app.Container && !app.IsWebHost) return "Container web hosting is only available for APIs and UIs.";
+        if (app.ApiLambda && app.Kind != ApplicationKind.Api) return "API Gateway Lambda is only available for APIs.";
+        if (app.EventLambda && app.Kind != ApplicationKind.Job) return "Event Lambda is only available for jobs.";
+        if (!Enum.IsDefined(app.JobMode)) return "Invalid job execution mode.";
         if (!layout.Layers.Contains(SolutionLayout.LayerOf(app.Kind)))
             return $"A {app.Kind} belongs to the {SolutionLayout.LayerOf(app.Kind)} layer, which the solution does not have.";
         if (!layout.Supports(app.Kind)) return layout.MissingApplicationFolder(app.Kind);
@@ -66,7 +70,7 @@ public static class ApplicationScaffolder
             CentralPackages.Ensure(centralPackages, app.PackageId, packageVersion);
             referenceVersion = null;
         }
-        var context = new ApplicationContext(app, layout.ProjectName(app), layout.RootNamespace(app), referenceVersion, ports, library);
+        var context = new ApplicationContext(app, layout.ProjectName(app), layout.RootNamespace(app), referenceVersion, ports, library) { LayeringMode = layout.Mode };
         foreach (var (file, content) in ApplicationTemplates.Render(context))
             FileHelper.WriteNewText(Path.Combine(directory, file), content);
     }

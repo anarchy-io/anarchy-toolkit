@@ -63,7 +63,20 @@ APIs and UIs belong to the `Web` layer and jobs to the `Hosting` layer; each ref
 | Job | `Anarchy.Toolkit.Hosting`: job entry point (e.g. an AWS Lambda handler) and service |
 | UI | `Anarchy.Toolkit.Web.Ui`: Blazor UI with cookie-session login and a home page |
 
-Applications are not packable, so `Pack` ignores them. Web applications get local ports from 5000 upwards, two per application, skipping ports already used in the solution. Review each application's settings (auth service URLs, client IDs and scopes) before running it.
+Applications are not packable, so `Pack` ignores them. Web applications get local ports from 5000 upwards, two per application, skipping ports already used in legacy `Program.cs` and explicit `EntryPointLocal.cs` files. In folder layering mode startup classes use `<ProjectName>Startup`; prefix mode retains `Startup` or `JobStartup`. Review each application's settings (auth service URLs, client IDs and scopes) before running it.
+
+Every application has a root-level `EntryPointLocal`. The guided wizards offer applicable optional hosts; named commands do not prompt:
+
+```bash
+anarchy-toolkit scaffold api Orders --container --lambda-api
+anarchy-toolkit scaffold ui Admin --container
+anarchy-toolkit scaffold job Reports --job-mode once --lambda-event
+anarchy-toolkit scaffold job Processor --job-mode worker
+```
+
+Jobs default to a long-running worker; `once` runs the service once and exits. The scheduled Lambda handler invokes the same scoped service and does not start the worker. Deploy it with the generated assembly/type/handler string; scheduling is configured in your cloud infrastructure. For SQS, adapt the handler to accept `SQSEvent`, configure Lambda JSON serialization and an event-source mapping, process each message in its own scope, and return `SQSBatchResponse` with individual failures when partial-batch reporting is enabled. `Anarchy.Toolkit.Infrastructure.Messaging.Aws` offers inbound-message mapping; no SQS dependency is added unless you choose it.
+
+Web containers use `RUNTIME_HOST=container` and `PORT` (default 3000), listen on all interfaces, and expose `/health/instance`. Their forwarded-header settings trust the upstream network; restrict access to trusted proxies or customize the configuration. The API Lambda targets API Gateway REST/HTTP API payload v1. Interactive-server Blazor needs persistent connections, so UI Lambda is not offered: deploy UIs to AWS EC2 or ECS, or Azure virtual machines or Azure Container Apps instead. Configure WebSockets and connection affinity or an appropriate shared backplane when scaling. `ASPNETCORE_ENVIRONMENT` and `DOTNET_ENVIRONMENT` control application configuration independently of `RUNTIME_HOST`; set them explicitly for local development and CI.
 
 ### Scaffold libraries and test suites
 
