@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Transport-independent mapping between Anarchy event envelopes and CloudEvents.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Events\Core.Events.csproj" />
+    <PackageReference Include="CloudNative.CloudEvents.NewtonsoftJson" />
+  </ItemGroup>
+
+</Project>
