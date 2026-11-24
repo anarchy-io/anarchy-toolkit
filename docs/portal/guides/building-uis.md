@@ -4,6 +4,10 @@
 
 [`samples/Samples.Ui`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) is a runnable example of the features described in this guide.
 
+## Hosting
+
+Interactive-server Blazor maintains a persistent connection and is not supported by the toolkit's API Gateway Lambda scaffold. Run it as a long-lived process on AWS EC2 or ECS, or on Azure Virtual Machines or Azure Container Apps. Enable WebSockets and configure connection affinity or an appropriate shared backplane when scaling to multiple instances. A scaffolded container entry point uses `RUNTIME_HOST=container` and `PORT` (default 3000); otherwise the local entry point listens on loopback. `ASPNETCORE_ENVIRONMENT` and `DOTNET_ENVIRONMENT` select configuration separately from the hosting mode. The container host trusts forwarded headers from its upstream network, so restrict access to trusted proxies or customize the configuration.
+
 ## What you get
 
 | Piece | Where | What it does |

@@ -23,7 +23,7 @@ Use this package to host a toolkit-based REST API on ASP.NET Core or AWS Lambda 
 3. Supply the `IReadOnlyCollection<IHealthCheck>` consumed by the health controller, using an empty collection if there are no checks or registering the relevant provider reports.
 4. Use `WebAppEntryPoint.RunWebHost<Startup>(args)` for a native host and an `AwsWebAppEntryPointBase` implementation for Lambda. Configure real authentication, secrets and environment-specific settings before deployment.
 
-The [sample API startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/Startup.cs), [native entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Program.cs) and [Lambda entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Web/LambdaEntryPoint.cs) show the complete structure. Test the HTTP pipeline with `Testing.Web`.
+The [sample API startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/SampleApiStartup.cs), [native entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/EntryPointLocal.cs) and [Lambda entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/EntryPointLambda.cs) show the complete structure. Test the HTTP pipeline with `Testing.Web`.
 
 See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/conventions/endpoints.html), [API sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Api) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
