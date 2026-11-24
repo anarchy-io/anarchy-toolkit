@@ -23,7 +23,7 @@ Choose this package for a long-running process that needs hosted workers, operat
 2. If health endpoints are required, call `services.AddServiceHealthCheckWorker(typeof(YourWorker).Assembly)` from startup. Register settings implementing `IWorkerHealthCheckAppSettings`, including the health service port, and make the listener reachable only as appropriate for your deployment.
 3. Supply the `IReadOnlyCollection<IHealthCheck>` used by the endpoint, or use a provider's health-report registration. Without reports, the package installs an empty collection. Embed build metadata in the supplied assembly if it should appear in status output.
 
-The [sample worker startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Worker/Composition/WorkerStartup.cs) demonstrates registering a heartbeat and a custom hosted worker.
+The [sample worker startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Worker/Composition/SampleWorkerStartup.cs) demonstrates registering a heartbeat and a custom hosted worker.
 
 See the [worker sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Worker) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
