@@ -1,19 +1,36 @@
+using Anarchy.Toolkit.Automation.Core.Entity;
+
 namespace Anarchy.Toolkit.Automation.Core.Template;
 
-/// <summary>
-/// A job on <c>JobEntryPointBase</c> (e.g. an AWS Lambda handler) delegating to one scoped service.
-/// </summary>
+/// <summary>A locally runnable job with an optional scheduled Lambda handler.</summary>
 internal static class JobTemplate
 {
-    /// <summary>
-    /// The project files, keyed by path relative to the project directory.
-    /// </summary>
     public static IReadOnlyDictionary<string, string> Render(ApplicationContext context)
     {
         var ns = context.Namespace;
-        return new Dictionary<string, string> {
-            [$"{context.ProjectName}.csproj"] = ApplicationTemplates.Project("Microsoft.NET.Sdk", context, exe: false),
-            ["Function.cs"] = $$"""
+        var startup = context.StartupName;
+        var worker = context.App.JobMode == JobExecutionMode.Worker;
+        var files = new Dictionary<string, string> {
+            [$"{context.ProjectName}.csproj"] = ApplicationTemplates.Project("Microsoft.NET.Sdk", context, exe: true),
+            ["EntryPointLocal.cs"] = worker ? $$"""
+                using {{ns}}.Composition;
+                using Anarchy.Toolkit.Hosting.Host;
+                using Microsoft.Extensions.Hosting;
+
+                namespace {{ns}};
+
+                public static class EntryPointLocal
+                {
+                    public static async Task Main(string[] args)
+                    {
+                        await using var worker = new EntryPointWorker();
+                        await worker.App.RunAsync();
+                    }
+                }
+
+                public sealed class EntryPointWorker : WorkerEntryPointBase<{{startup}}>;
+
+                """ : $$"""
                 using {{ns}}.Composition;
                 using {{ns}}.Core.Service;
                 using Anarchy.Toolkit.Hosting.Host;
@@ -21,21 +38,26 @@ internal static class JobTemplate
 
                 namespace {{ns}};
 
-                /// <summary>
-                /// Job handler (<c>{{ns}}::{{ns}}.Function::HandleAsync</c> as an AWS Lambda function).
-                /// </summary>
-                public sealed class Function : JobEntryPointBase<JobStartup>
+                public static class EntryPointLocal
                 {
-                    public async Task<string> HandleAsync(string input)
+                    public static async Task Main(string[] args)
                     {
-                        using var scope = App.Services.CreateScope();
+                        await using var job = new LocalJob();
+                        Console.WriteLine(await job.RunAsync(args.FirstOrDefault() ?? "local"));
+                    }
+                }
 
+                public sealed class LocalJob : JobEntryPointBase<{{startup}}>
+                {
+                    public async Task<string> RunAsync(string input)
+                    {
+                        await using var scope = App.Services.CreateAsyncScope();
                         return await scope.ServiceProvider.GetRequiredService<JobService>().RunAsync(input);
                     }
                 }
 
                 """,
-            ["Composition/JobStartup.cs"] = $$"""
+            [$"Composition/{startup}.cs"] = $$"""
                 using {{ns}}.Composition.DependencyInjection;
                 using {{ns}}.Core.Service;
                 using {{ns}}.Infrastructure.Entity.Configuration;
@@ -48,21 +70,21 @@ internal static class JobTemplate
 
                 namespace {{ns}}.Composition;
 
-                public sealed class JobStartup(IHostEnvironment environment, IConfiguration configuration)
+                public sealed class {{startup}}(IHostEnvironment environment, IConfiguration configuration)
                     : JobStartupBase<ModuleAppSettings, AppSettings>(environment, configuration)
                 {
                     protected override IServiceCollection ConfigureJobCustomServices(IServiceCollection services) =>
                         services
                             .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
-                            .AddScoped<JobService>();
+                            .AddScoped<JobService>(){{(worker ? "\n            .AddHostedService<JobWorker>()" : "")}};
                 }
 
                 """,
-            ["Composition/DependencyInjection/ModuleAppSettings.cs"] = $"""
-                using {ns}.Infrastructure.Entity.Configuration;
+            ["Composition/DependencyInjection/ModuleAppSettings.cs"] = $$"""
+                using {{ns}}.Infrastructure.Entity.Configuration;
                 using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Entity;
 
-                namespace {ns}.Composition.DependencyInjection;
+                namespace {{ns}}.Composition.DependencyInjection;
 
                 public sealed class ModuleAppSettings : ModuleAppSettingsBase<AppSettings>;
 
@@ -72,9 +94,6 @@ internal static class JobTemplate
 
                 namespace {{ns}}.Infrastructure.Entity.Configuration;
 
-                /// <summary>
-                /// The job's settings, supplied by the environment.
-                /// </summary>
                 public sealed class AppSettings : IAppSettings;
 
                 """,
@@ -94,5 +113,47 @@ internal static class JobTemplate
 
                 """
         };
+        if (worker)
+            files["Core/Service/JobWorker.cs"] = $$"""
+                using Microsoft.Extensions.DependencyInjection;
+                using Microsoft.Extensions.Hosting;
+
+                namespace {{ns}}.Core.Service;
+
+                public sealed class JobWorker(IServiceScopeFactory scopes) : BackgroundService
+                {
+                    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+                    {
+                        while (!stoppingToken.IsCancellationRequested)
+                        {
+                            await using (var scope = scopes.CreateAsyncScope())
+                                await scope.ServiceProvider.GetRequiredService<JobService>().RunAsync("worker");
+                            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                        }
+                    }
+                }
+
+                """;
+        if (context.App.EventLambda)
+            files["EntryPointLambda.cs"] = $$"""
+                using {{ns}}.Composition;
+                using {{ns}}.Core.Service;
+                using Anarchy.Toolkit.Hosting.Host;
+                using Microsoft.Extensions.DependencyInjection;
+
+                namespace {{ns}};
+
+                /// <summary>Scheduled Lambda handler: <c>{{ns}}::{{ns}}.EntryPointLambda::HandleAsync</c>.</summary>
+                public sealed class EntryPointLambda : JobEntryPointBase<{{startup}}>
+                {
+                    public async Task HandleAsync()
+                    {
+                        await using var scope = App.Services.CreateAsyncScope();
+                        await scope.ServiceProvider.GetRequiredService<JobService>().RunAsync("scheduled");
+                    }
+                }
+
+                """;
+        return files;
     }
 }

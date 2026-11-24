@@ -20,7 +20,7 @@ public static class ToolCommandLine
     /// <summary>Flag to enable the toolkit's Swagger UI theme for a scaffolded API.</summary>
     public const string SwaggerTheme = "--swagger-theme";
     /// <summary>Usage for application, library and test-project scaffolding.</summary>
-    public const string ScaffoldUsage = "anarchy-toolkit scaffold api|job|ui <Name> | library <Name> --layer <Layer> | tests [unit|integration|endtoend] [--dry-run] [--save-preferences]";
+    public const string ScaffoldUsage = "anarchy-toolkit scaffold api|job|ui <Name> [--container] [--lambda-api|--lambda-event] [--job-mode worker|once] | library <Name> --layer <Layer> | tests [unit|integration|endtoend] [--dry-run] [--save-preferences]";
     /// <summary>Usage for showing or editing preferences.</summary>
     public const string ConfigUsage = "anarchy-toolkit config show|set <section.property> <json-value>|unset <section.property>|configure [--output <solution-directory>]";
 
@@ -132,6 +132,10 @@ public static class ToolCommandLine
         }
 
         bool? swaggerTheme = null;
+        var container = false;
+        var apiLambda = false;
+        var eventLambda = false;
+        JobExecutionMode? jobMode = null;
         var save = false;
         var dryRun = false;
         string? layer = null;
@@ -142,6 +146,24 @@ public static class ToolCommandLine
         {
             switch (args[index])
             {
+                case "--container" when !container && application?.IsWebHost == true:
+                    container = true;
+                    break;
+                case "--lambda-api" when !apiLambda && application?.Kind == ApplicationKind.Api:
+                    apiLambda = true;
+                    break;
+                case "--lambda-event" when !eventLambda && application?.Kind == ApplicationKind.Job:
+                    eventLambda = true;
+                    break;
+                case "--job-mode" when jobMode is null && application?.Kind == ApplicationKind.Job && HasValue(args, index):
+                    var requestedMode = args[++index];
+                    if (!string.Equals(requestedMode, "worker", StringComparison.OrdinalIgnoreCase) &&
+                        !string.Equals(requestedMode, "once", StringComparison.OrdinalIgnoreCase))
+                        return Invalid("--job-mode must be 'worker' or 'once'.");
+                    jobMode = string.Equals(requestedMode, "worker", StringComparison.OrdinalIgnoreCase)
+                        ? JobExecutionMode.Worker
+                        : JobExecutionMode.Once;
+                    break;
                 case NoSwaggerTheme when swaggerTheme is null && application?.Kind == ApplicationKind.Api:
                     swaggerTheme = false;
                     break;
@@ -173,6 +195,8 @@ public static class ToolCommandLine
         if (target != ScaffoldTarget.Library && layer is not null) return Invalid("--layer is only valid for scaffold library.");
         if (applicationFolder is not null && preset != SolutionLayoutPreset.SingleApp)
             return Invalid("--application-folder can only be used with --layout single-app.");
+        if (application is not null)
+            application = application with { Container = container, ApiLambda = apiLambda, EventLambda = eventLambda, JobMode = jobMode ?? JobExecutionMode.Worker };
         return new ToolCommand(ToolMode.Scaffold, Application: application) {
             ScaffoldTarget = target,
             LibraryName = libraryName,

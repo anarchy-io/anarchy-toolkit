@@ -45,7 +45,7 @@ public static class ApplicationTemplates
     internal static string Project(string sdk, ApplicationContext context, bool exe) => $$"""
         <Project Sdk="{{sdk}}">
           <PropertyGroup>
-        {{(exe ? "    <OutputType>Exe</OutputType>\n" : "")}}    <TargetFramework>net10.0</TargetFramework>
+        {{(exe ? $"    <OutputType>Exe</OutputType>\n    <StartupObject>{context.Namespace}.EntryPointLocal</StartupObject>\n" : "")}}    <TargetFramework>net10.0</TargetFramework>
             <ImplicitUsings>enable</ImplicitUsings>
             <Nullable>enable</Nullable>
             <RootNamespace>{{context.Namespace}}</RootNamespace>

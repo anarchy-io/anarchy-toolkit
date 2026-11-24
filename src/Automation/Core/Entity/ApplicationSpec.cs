@@ -16,6 +16,18 @@ namespace Anarchy.Toolkit.Automation.Core.Entity;
 /// </param>
 public sealed record ApplicationSpec(ApplicationKind Kind, string Name, bool SwaggerTheme = true)
 {
+    /// <summary>Whether to generate a container host for a web application.</summary>
+    public bool Container { get; init; }
+
+    /// <summary>Whether to generate an API Gateway Lambda handler for an API.</summary>
+    public bool ApiLambda { get; init; }
+
+    /// <summary>Whether to generate a scheduled Lambda handler for a job.</summary>
+    public bool EventLambda { get; init; }
+
+    /// <summary>How a job runs locally; defaults to a long-running worker.</summary>
+    public JobExecutionMode JobMode { get; init; } = JobExecutionMode.Worker;
+
     /// <summary>
     /// Whether the application listens on local HTTP ports.
     /// </summary>

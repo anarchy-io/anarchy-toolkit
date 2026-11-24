@@ -1,5 +1,9 @@
 ## Releases
 
+### 3.0.0
+
+- Update the Automation dependency for its breaking application-scaffold defaults and explicit entry points.
+
 ### 2.0.1
 
 - Add opt-in Compose readiness for integration and end-to-end tests, plus one-shot Flyway migrate/info targets for adopters.

@@ -16,7 +16,7 @@ namespace Anarchy.Toolkit.Automation.Core.Service;
 /// <param name="SolutionFile">The full path of the solution file.</param>
 /// <param name="Layout">The effective layout resolved from optional preferences.</param>
 /// <param name="ProjectNames">The names of the projects under the layout's root.</param>
-/// <param name="UsedPorts">The local ports already used by <c>RunWebHost</c> calls in the solution's <c>Program.cs</c> files.</param>
+/// <param name="UsedPorts">The local ports already used by <c>RunWebHost</c> calls in the solution's legacy and explicit entry-point files.</param>
 public sealed partial record SolutionWorkspace(
     string Root,
     string SolutionFile,
@@ -79,7 +79,7 @@ public sealed partial record SolutionWorkspace(
             : [];
         var projects = files.Where(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
             .Select(Path.GetFileNameWithoutExtension).OfType<string>().ToArray();
-        var ports = files.Where(file => Path.GetFileName(file) == "Program.cs")
+        var ports = files.Where(file => Path.GetFileName(file) is "Program.cs" or "EntryPointLocal.cs")
             .SelectMany(file => RunWebHostRegex().Matches(File.ReadAllText(file)))
             .SelectMany(match => match.Groups[1].Success
                 ? new[] { int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value) }

@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- Breaking: scaffold jobs as runnable workers by default, rather than Lambda-only libraries; choose a one-shot job explicitly when needed.
+- Generate explicit local entry points, optional container and Lambda handlers, and application-specific startup names in folder layouts.
+
 ### 2.0.1
 
 - Add Make targets to prepare local test containers and provision adopter-owned Flyway migrations.

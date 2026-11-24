@@ -42,7 +42,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         grid.AddRow("[blue]anarchy-toolkit bootstrap[/]", "Guided setup: choose one application or several, then select the layering mode.");
         grid.AddRow("[blue]anarchy-toolkit bootstrap <name> [[--output <dir>]] [[--with-skills]] [[--layout monorepo|single-app]] [[layout options]] [[--save-preferences]][/]", "Create a solution; preferences are not saved unless requested.");
         grid.AddRow("[blue]anarchy-toolkit scaffold[/]", "Guided addition of an API, job, UI or test project to the solution here.");
-        grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts.");
+        grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts. Options: --container, --lambda-api, --lambda-event, --job-mode worker|once (where applicable).");
         grid.AddRow("[blue]anarchy-toolkit scaffold library <Name> --layer <Layer> [[--dry-run]] [[--save-preferences]][/]", "Add a library project in a configured layer.");
         grid.AddRow("[blue]anarchy-toolkit scaffold tests [[unit|integration|endtoend]] [[--dry-run]] [[--save-preferences]][/]", "Add the shared test project for a kind; no kind starts a wizard.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger-theme[/]", "Add an API whose Swagger UI keeps its own look.");
@@ -100,9 +100,9 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         console.MarkupLine($"[grey]Layering by {(plan.Layout.Mode == LayeringMode.Folder ? "folder" : "name prefix")}: {Markup.Escape(string.Join(" < ", plan.Layout.Layers))}[/]");
 
         var table = NewProjectTable();
-        table.AddRow("build", "build/_build.csproj", "", "");
+        table.AddRow("build", "build/_build.csproj", "", "", "");
         foreach (var layer in plan.Layout.Layers)
-            table.AddRow("library", Markup.Escape(plan.Layout.LibraryProjectPath(layer)), Markup.Escape(layer), "");
+            table.AddRow("library", Markup.Escape(plan.Layout.LibraryProjectPath(layer)), Markup.Escape(layer), "", "");
         var ports = plan.Ports;
         foreach (var app in plan.Applications)
             AddApplicationRow(table, plan.Layout, app, ports.TryGetValue(app, out var port) ? port : null);
@@ -120,14 +120,15 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         console.Write(table);
     }
 
-    private static Table NewProjectTable() => new Table().Border(TableBorder.Rounded).AddColumns("Kind", "Project", "Layer", "Local URLs");
+    private static Table NewProjectTable() => new Table().Border(TableBorder.Rounded).AddColumns("Kind", "Project", "Layer", "Local URLs", "Entry points");
 
     private static void AddApplicationRow(Table table, SolutionLayout layout, ApplicationSpec app, (int Http, int Https)? port) =>
         table.AddRow(
             Labels.Of(app.Kind),
             Markup.Escape(layout.ProjectPath(app)),
             SolutionLayout.LayerOf(app.Kind),
-            port is { } p ? $"http://localhost:{p.Http}, https://localhost:{p.Https}" : "");
+            port is { } p ? $"http://localhost:{p.Http}, https://localhost:{p.Https}" : "",
+            Markup.Escape(string.Join(", ", new[] { app.Kind == ApplicationKind.Job ? app.JobMode.ToString() : "local", app.Container ? "container" : null, app.ApiLambda ? "API Lambda" : null, app.EventLambda ? "scheduled Lambda" : null }.OfType<string>())));
 
     /// <inheritdoc/>
     public void RunWithProgress(string title, Action<Action<string>> action)

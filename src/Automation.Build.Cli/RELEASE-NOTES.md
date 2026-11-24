@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- Breaking: scaffold jobs as runnable workers by default; `--job-mode once` selects a one-shot job.
+- Ask for optional container and Lambda entry points in application wizards, with corresponding non-interactive flags.
+
 ### 2.1.0
 
 - Update embedded Web package versions and dependent package references.

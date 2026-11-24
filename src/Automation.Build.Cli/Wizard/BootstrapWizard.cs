@@ -98,7 +98,7 @@ public sealed class BootstrapWizard(IWizardPrompter prompter)
             var taken = layout.Layers.Concat(applications.Select(layout.ProjectName)).ToArray();
             var appName = prompter.Ask($"Name of {Labels.Of(kind)} #{number}", null,
                 answer => ApplicationScaffolder.Validate(layout, new ApplicationSpec(kind, answer), taken));
-            applications.Add(new ApplicationSpec(kind, appName));
+            applications.Add(EntryPointWizard.Ask(prompter, new ApplicationSpec(kind, appName)));
             number++;
         } while (allowMore && prompter.Confirm($"Add another {Labels.Of(kind)}?", false));
     }
