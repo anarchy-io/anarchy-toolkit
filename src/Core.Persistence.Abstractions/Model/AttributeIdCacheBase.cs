@@ -1,11 +1,10 @@
 using System.Collections.Concurrent;
-using System.Numerics;
 
-namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
+namespace Anarchy.Toolkit.Core.Persistence.Abstractions.Model;
 
 /// <summary>
 /// Provides a static, in-memory, thread-safe cache for mapping string-based attribute
-/// values to strongly-typed numeric identifiers, partitioned by a type attribute.
+/// values to strongly-typed identifiers, partitioned by a type attribute.
 /// </summary>
 /// <typeparam name="TAttributeTypes">
 /// Enum type that identifies the attribute “dimension” or category (for example,
@@ -13,8 +12,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
 /// This is used as the first-level key for the cache.
 /// </typeparam>
 /// <typeparam name="TId">
-/// Numeric identifier type used for the cached IDs (for example, <c>int</c> or
-/// <c>long</c>). Must implement <see cref="System.Numerics.IBinaryNumber{TId}"/>.
+/// Identifier type used for the cached IDs (for example, <c>int</c>, <see cref="Guid"/>, or <see cref="string"/>).
 /// </typeparam>
 /// <remarks>
 /// <para>
@@ -43,8 +41,14 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
 /// passing delegates that know how to hydrate and/or insert into the backing store.
 /// </para>
 /// <para>
-/// **Caveats &amp; things to watch out for:**
+/// Safety requirements and limitations:
 /// <list type="bullet">
+/// <item>
+/// This cache has no database identity or transaction outcome. Use it only when every caller of the same closed
+/// generic type refers to the same logical dataset and both callbacks return only committed, stable mappings. A
+/// callback executing in an open transaction can expose an uncommitted ID to another caller, even if a rollback later
+/// clears the cache. Use <see cref="AttributeIdResolver{TAttributeTypes,TId}"/> when that cannot be guaranteed.
+/// </item>
 /// <item>
 /// The cache is **never automatically invalidated or evicted**. You must call
 /// <see cref="Clear"/> explicitly (per closed generic type) when the underlying
@@ -57,9 +61,9 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
 /// enough to create distinct containers.
 /// </item>
 /// <item>
-/// Under contention, multiple concurrent calls may trigger hydration or insertion to
-/// work in parallel, but the internal <see cref="System.Collections.Concurrent.ConcurrentDictionary{TKey,TValue}"/>
-/// ensures the final cached mapping is consistent.
+/// Concurrent calls may hydrate or insert the same name more than once. The storage operation must atomically
+/// get or insert a unique name and all callbacks must return the same committed ID for that name. A concurrent
+/// dictionary alone cannot reconcile conflicting IDs returned by the backing store.
 /// </item>
 /// <item>
 /// Because the cache is static and long-lived, avoid caching unbounded or highly
@@ -69,7 +73,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Model;
 /// </para>
 /// </remarks>
 public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
-    where TAttributeTypes : Enum where TId : IBinaryNumber<TId>
+    where TAttributeTypes : Enum
 {
     /// <summary>A single cached row: the identifier of a named attribute value.</summary>
     /// <param name="Id">Identifier of the row in the backing store.</param>
@@ -118,8 +122,8 @@ public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
     /// </list>
     /// </para>
     /// <para>
-    /// Be aware that calling <see cref="Clear"/> in a hot path can briefly increase
-    /// load on the backing store, as the next lookups will need to re-hydrate.
+    /// An in-flight lookup may still return a value obtained before the clear. Coordinate callers with out-of-band
+    /// changes if they must not observe stale values. Clearing also increases backing-store load as lookups rehydrate.
     /// </para>
     /// </remarks>
     public static void Clear() => Container.Clear();
@@ -139,10 +143,8 @@ public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
     /// </param>
     /// <param name="callbackHydrateAll">
     /// Delegate used to hydrate **all** known rows for the given
-    /// <paramref name="typeAttribute"/> when its cache is still empty. It is called at
-    /// most once per attribute value per process lifetime, unless
-    /// <see cref="Clear"/> is invoked. The returned collection is bulk-added into the
-    /// cache before attempting a lookup again.
+    /// <paramref name="typeAttribute"/> when its cache is still empty. Concurrent calls may invoke it more than once;
+    /// an empty result also permits later hydration. The returned collection is added into the cache before lookup.
     /// </param>
     /// <param name="callbackInsertMissing">
     /// Delegate used to insert a **single** missing value for the given
@@ -163,7 +165,7 @@ public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
     /// <paramref name="attributeKey"/>; if found, return immediately.</item>
     /// <item>
     /// If the cache for <paramref name="typeAttribute"/> is empty, invoke
-    /// <paramref name="callbackHydrateAll"/> once, add all returned rows to the cache, and
+    /// <paramref name="callbackHydrateAll"/>, add all returned rows to the cache, and
     /// re-check for <paramref name="attributeKey"/>.
     /// </item>
     /// <item>
@@ -196,8 +198,8 @@ public abstract class AttributeIdCacheBase<TAttributeTypes, TId>
     /// Multiple concurrent calls for the same <paramref name="typeAttribute"/> and
     /// <paramref name="attributeKey"/> may race: it is possible for
     /// <paramref name="callbackHydrateAll"/> or <paramref name="callbackInsertMissing"/> to be invoked
-    /// more than once under heavy contention. Implement these delegates to be idempotent
-    /// or otherwise safe for such scenarios.
+    /// more than once under contention. Enforce uniqueness and use an atomic get-or-insert in storage; all callbacks
+    /// must return the same committed mapping.
     /// </item>
     /// <item>
     /// Because the cache never evicts entries automatically, avoid using unbounded
