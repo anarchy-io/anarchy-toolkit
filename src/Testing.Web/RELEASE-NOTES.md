@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.1.0
+
+- Update dependencies for the persistence abstractions.
+
 ### 2.0.1
 
 - fix(Web): Support Windows paths and host architecture

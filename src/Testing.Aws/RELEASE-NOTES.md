@@ -1,5 +1,9 @@
 ## Releases
 
+### 3.0.0
+
+- Update dependencies for the broker-neutral message contracts and AWS CloudEvents mapping.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property

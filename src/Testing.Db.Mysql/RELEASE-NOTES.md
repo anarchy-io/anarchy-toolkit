@@ -1,5 +1,9 @@
 ## Releases
 
+### 2.0.0
+
+- Update dependencies for the relational event-persistence split and event contract changes.
+
 ### 1.0.1
 
 - chore(build): Format package release notes property
