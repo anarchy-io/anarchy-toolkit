@@ -1,0 +1,4 @@
+BEGIN
+    INSERT INTO type_registry (name) VALUES (:Name);
+EXCEPTION WHEN DUP_VAL_ON_INDEX THEN NULL;
+END;

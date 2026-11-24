@@ -25,13 +25,17 @@
     <ProjectReference Include="..\..\src\Core\Core.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.CorrelationId\Infrastructure.CorrelationId.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Messaging.Aws\Infrastructure.Messaging.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Messaging.CloudEvents\Infrastructure.Messaging.CloudEvents.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Messaging.Kafka\Infrastructure.Messaging.Kafka.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Telemetry.Serilog\Infrastructure.Telemetry.Serilog.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Telemetry.StatsD\Infrastructure.Telemetry.StatsD.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db\Infrastructure.Persistence.Db.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Events\Infrastructure.Persistence.Db.Events.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Mysql\Infrastructure.Persistence.Db.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Oracle\Infrastructure.Persistence.Db.Oracle.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Postgres\Infrastructure.Persistence.Db.Postgres.csproj" />
     <ProjectReference Include="..\..\src\Testing.Aws\Testing.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Testing.Kafka\Testing.Kafka.csproj" />
     <ProjectReference Include="..\..\src\Testing.Db.Mysql\Testing.Db.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Testing.MockServer\Testing.MockServer.csproj" />
     <ProjectReference Include="..\..\src\Web\Web.csproj" />

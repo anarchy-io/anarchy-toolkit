@@ -6,11 +6,27 @@
     <AssemblyName>Anarchy.Toolkit.Tests.Integration</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Tests.Integration</RootNamespace>
     <Nullable>enable</Nullable>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Telemetry.StatsD\Infrastructure.Telemetry.StatsD.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Events\Infrastructure.Persistence.Db.Events.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Postgres\Infrastructure.Persistence.Db.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Mysql\Infrastructure.Persistence.Db.Mysql.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure.Persistence.Db.Oracle\Infrastructure.Persistence.Db.Oracle.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/**/*.sql" />
+    <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Postgres/Queries/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Postgres.Queries.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Mysql/Queries/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Mysql.Queries.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Oracle/Queries/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Oracle.Queries.%(Filename)%(Extension)" />
+    <!-- Each dimension has its own physical SQL resource so every type-table query has a unique embedded identity. -->
+    <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Postgres/Types/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Postgres.Queries.Common.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Mysql/Types/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Mysql.Queries.Common.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Infrastructure/Persistence/Db/Events/Repository/Storage/Database/Event/Adapters/Oracle/Types/*.sql" LogicalName="$(AssemblyName).Infrastructure.Persistence.Db.Events.Repository.Storage.Database.Event.Adapters.Oracle.Queries.Common.%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
