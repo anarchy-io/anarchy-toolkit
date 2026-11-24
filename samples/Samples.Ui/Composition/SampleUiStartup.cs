@@ -16,7 +16,7 @@ using Anarchy.Toolkit.Web.Ui.Entity.Ui;
 
 namespace Anarchy.Toolkit.Samples.Ui.Composition;
 
-public sealed class Startup(IWebHostEnvironment environment, IConfiguration configuration)
+public sealed class SampleUiStartup(IWebHostEnvironment environment, IConfiguration configuration)
     : UiWebAppStartupBase<ModuleAppSettings, AppSettings>(environment, configuration)
 {
     protected override string ApiName => "Samples UI";
