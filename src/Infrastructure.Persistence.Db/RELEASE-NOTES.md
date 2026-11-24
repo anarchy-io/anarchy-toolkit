@@ -1,5 +1,9 @@
 ## Releases
 
+### 3.0.0
+
+- Breaking: Keep the relational package generic; event-store bases and Outbox contracts are in `Infrastructure.Persistence.Db.Events`, and reusable attribute-ID resolution is in `Core.Persistence.Abstractions`.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property

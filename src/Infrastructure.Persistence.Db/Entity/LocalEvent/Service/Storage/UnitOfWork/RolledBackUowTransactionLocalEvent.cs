@@ -7,8 +7,8 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.LocalEvent.Servic
 /// Published after a storage transaction has been rolled back.
 /// </summary>
 /// <remarks>
-/// Handled by <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Repository.Storage.Database.Event.LocalEventHandlers.RolledBackTransactionEventHandler"/>
-/// to invalidate cached type identifiers that may no longer exist in the database.
+/// Available to local event handlers that need to observe transaction rollback. Event type ID resolution no longer
+/// requires a rollback handler because identifiers are not shared across lookups.
 /// </remarks>
 public sealed record RolledBackUowTransactionLocalEvent : UowTransactionLocalEvent
 {

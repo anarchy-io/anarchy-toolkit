@@ -10,7 +10,7 @@ dotnet add package Anarchy.Toolkit.Infrastructure.Persistence.Db
 
 - `IDbDialect`, connection-pool and options bases, unit of work, resilience policy and retry builder provide the common database layer.
 - Build repositories on the reader, writer and batch-writer bases; database health reports use the dialect's health-check SQL.
-- Transactional outbox and event-store contracts, records and repository bases are included. Consumers supply provider-specific concrete repositories and SQL.
+- For event-store bases and transactional Outbox contracts, use `Anarchy.Toolkit.Infrastructure.Persistence.Db.Events`; applications implement their own Outbox repositories.
 - Use a provider adapter for PostgreSQL, Oracle or MySQL, or implement a new dialect and adapter.
 
 ## When to use it
@@ -20,7 +20,7 @@ Use this package when implementing a relational adapter or shared repository beh
 ## How to use it
 
 1. Select an existing provider, or implement `IDbDialect`, connection-string and pool types, a unit of work, retry policy and provider-specific repository bases for a new database.
-2. Derive concrete reader/writer repositories and provide their SQL and mappings. For event-store or outbox functionality, supply the provider-specific concrete repositories and embedded SQL as described in the provider guide.
+2. Derive concrete reader/writer repositories and provide their SQL and mappings.
 3. Configure reader and writer hosts, credentials, command timeout and resilience settings at the host. `DbConnectionOptions.MaximumPoolSize` defaults to 100 and is applied by the included providers.
 4. Register the provider module and optional health reports, then inject the repository and unit-of-work abstractions into application services. Define transaction and retry boundaries explicitly, especially when an operation has non-database side effects.
 
