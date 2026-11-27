@@ -1,5 +1,10 @@
 ## Releases
 
+### 4.0.0
+
+- **Breaking:** extension classes take the `Extensions` suffix under `Extensions/<extended namespace>/`, helpers live in `Helpers/<Subject>/`, and their namespaces follow those folders: update `using` directives.
+- **Breaking:** depends on the new major versions of `Core` and `Core.Messaging.Abstractions`.
+
 ### 3.0.0
 
 - Add structured CloudEvents conversion for SQS messages, SNS notifications, and publish requests, with broker context kept separate.

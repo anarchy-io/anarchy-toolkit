@@ -1,7 +1,7 @@
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
+namespace Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Enrichers;
 
 internal sealed class StructuredExceptionEnricher : ILogEventEnricher
 {

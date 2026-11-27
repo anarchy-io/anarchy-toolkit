@@ -7,7 +7,7 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.ValueSet.MessageBroker;
 /// </summary>
 /// <remarks>
 /// The <see cref="DescriptionAttribute"/> value is the wire name written to the <c>CompressionType</c> message attribute
-/// and parsed back by <see cref="Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper.MessageBroker.InboundMessageMapper"/>.
+/// and parsed back by <see cref="Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helpers.MessageBroker.InboundMessageMapper"/>.
 /// </remarks>
 public enum CompressionType
 {

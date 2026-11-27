@@ -1,6 +1,7 @@
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database.Exceptions;
 using Microsoft.Extensions.Logging;
 using System.Data.Common;

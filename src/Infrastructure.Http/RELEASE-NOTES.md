@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- **Breaking:** the MSAL certificate authentication handler, its settings and exceptions move to the new opt-in `Anarchy.Toolkit.Infrastructure.Http.Msal`, so this package no longer depends on Microsoft.Identity.Client.
+- **Breaking:** extension classes take the `Extensions` suffix under `Extensions/<extended namespace>/`, helpers live in `Helpers/<Subject>/`, and their namespaces follow those folders: update `using` directives.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property

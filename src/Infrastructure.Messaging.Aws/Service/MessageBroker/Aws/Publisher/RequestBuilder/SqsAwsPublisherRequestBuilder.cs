@@ -1,9 +1,9 @@
 using Amazon.SQS.Model;
 using Anarchy.Toolkit.Core.Exceptions;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Entity.Configuration.Amazon;
-using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extension.MessageBroker.Aws;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extensions.Amazon.SQS.Model;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.ValueSet.MessageBroker;
 
 namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher.RequestBuilder;

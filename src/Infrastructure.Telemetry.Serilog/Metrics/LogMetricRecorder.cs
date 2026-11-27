@@ -1,8 +1,9 @@
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Extensions.Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
+namespace Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Metrics;
 
 /// <summary>
 /// Decorates an <see cref="IMetricRecorder"/> so every metric is also written as a log event through the

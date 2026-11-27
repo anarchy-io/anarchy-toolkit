@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Composition.Module;
 using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Entity;
-using Anarchy.Toolkit.Infrastructure.CorrelationId.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.CorrelationId.Extensions.Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

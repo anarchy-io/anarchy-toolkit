@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Newtonsoft.Json.Serialization;
 using System.Text;
 
