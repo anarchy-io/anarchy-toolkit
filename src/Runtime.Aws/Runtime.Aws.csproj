@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Anarchy.Toolkit.Runtime.Aws</AssemblyName>
+    <PackageId>Anarchy.Toolkit.Runtime.Aws</PackageId>
+    <RootNamespace>Anarchy.Toolkit.Runtime.Aws</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Opt-in AWS Lambda hosting for Jobs and event handlers: LambdaJobEntryPointBase, which carries the X-Ray trace id of each invocation into the toolkit's request context.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bootstrap.Aws\Bootstrap.Aws.csproj" />
+    <ProjectReference Include="..\Runtime\Runtime.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda.Core" />
+  </ItemGroup>
+
+</Project>

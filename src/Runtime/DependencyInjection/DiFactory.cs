@@ -1,0 +1,71 @@
+using Anarchy.Toolkit.Bootstrap.Core.Service;
+using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
+using Anarchy.Toolkit.Bootstrap.Service.AppSecret;
+using Anarchy.Toolkit.Core.Composition.Module;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Entity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+namespace Anarchy.Toolkit.Runtime.DependencyInjection;
+
+/// <summary>
+/// Composes the generic cross-cutting service registrations shared by all Jobs and Workers.
+/// </summary>
+/// <remarks>
+/// This factory only wires the generic <typeparamref name="TAppSettingsDiModule"/> module plus a small set of
+/// cross-cutting singletons. Domain-specific modules (infrastructure, aggregates, brokers, etc.) are supplied
+/// by the consumer through the <c>extraModules</c> parameter.
+/// <para>Registered services: the <see cref="IHostEnvironment"/>, the memory cache, the
+/// <typeparamref name="TAppSettingsDiModule"/> module, default <see cref="CorrelationIdOptions"/>,
+/// <see cref="IHttpContextAccessor"/>, a scoped <see cref="ICachedSecretManagementService"/>
+/// (<see cref="CachedSecretManagementService"/>, which requires an <see cref="ISecretManagementService"/> registration)
+/// and <see cref="TimeProvider.System"/>.</para>
+/// </remarks>
+/// <typeparam name="TAppSettingsDiModule">The module that binds and registers <typeparamref name="TAppSettings"/>.</typeparam>
+/// <typeparam name="TAppSettings">The consumer's concrete application settings type.</typeparam>
+public static class DiFactory<TAppSettingsDiModule, TAppSettings>
+    where TAppSettingsDiModule : class, IAppSettingsDiModule<TAppSettings>, new()
+    where TAppSettings : class, IAppSettings
+{
+    /// <summary>
+    /// Registers the generic configuration module and cross-cutting services, followed by any
+    /// consumer-supplied dependency-injection modules.
+    /// </summary>
+    /// <param name="services">The service collection to populate.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="environment">The host environment.</param>
+    /// <param name="extraModules">
+    /// Additional consumer-supplied modules (for example infrastructure or domain modules) to register
+    /// after the generic configuration module.
+    /// </param>
+    /// <returns>The same <see cref="IServiceCollection"/> instance for fluent chaining.</returns>
+    public static IServiceCollection Build(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        params IDependencyInjectionModule[] extraModules)
+    {
+        ServiceCollectionServiceExtensions
+
+            // Generic cross-cutting registrations
+            .AddSingleton<CorrelationIdOptions>(services
+                .AddSingleton(environment)
+                .AddMemoryCache()
+                .UseModule<TAppSettingsDiModule>(configuration, environment))
+            .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
+            .AddScoped<ICachedSecretManagementService, CachedSecretManagementService>()
+            .AddSingleton(TimeProvider.System)
+            ;
+
+        foreach (var module in extraModules)
+        {
+            module.RegisterServices(services, configuration, environment);
+        }
+
+        return services;
+    }
+}
