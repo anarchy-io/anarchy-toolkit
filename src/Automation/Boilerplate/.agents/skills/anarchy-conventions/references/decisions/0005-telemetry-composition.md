@@ -1,4 +1,4 @@
-# 0004. Telemetry composed over the standard .NET APIs
+# 0005. Telemetry composed over the standard .NET APIs
 
 ## Context
 

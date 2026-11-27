@@ -21,7 +21,7 @@ How an application built on the toolkit wires itself up. The package READMEs (in
 
 One `IDependencyInjectionModule` (`Anarchy.Toolkit.Core.Composition.Module`) per feature or adapter, in
 `DependencyInjection/Module/Module<Name>.cs` of the lowest layer that holds everything it registers (usually
-`Configuration`):
+`Bootstrap`):
 
 ```csharp
 public sealed class ModuleCarrierClient(Func<IConfiguration, CarrierClientSettings> settings) : IDependencyInjectionModule
@@ -38,7 +38,7 @@ public sealed class ModuleCarrierClient(Func<IConfiguration, CarrierClientSettin
 ```
 
 The composition root applies it: `services.UseModule(new ModuleCarrierClient(...), configuration, environment)`
-(`using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;`), or `UseModule<T>` for a
+(`using Anarchy.Toolkit.Core;`), or `UseModule<T>` for a
 parameterless module. Rules:
 
 1. **No hard-coded configuration.** A module never reads a section name or assumes the settings type: options come in
@@ -54,7 +54,7 @@ one place, and a missing section fails at startup.
 
 ## Settings
 
-One `AppSettings` class implementing `IAppSettings` (`Anarchy.Toolkit.Configuration`), with DataAnnotations on its
+One `AppSettings` class implementing `IAppSettings` (`Anarchy.Toolkit.Bootstrap`), with DataAnnotations on its
 properties, and a `ModuleAppSettings : ModuleAppSettingsBase<AppSettings>`. It binds the root configuration, validates
 on start (`ValidateDataAnnotations`, `ValidateOnStart`), and registers `AppSettings`, `IOptions<AppSettings>` and
 `IAppSettings`; override `RegisterAdditionalTypesForSettings` to expose capability interfaces (`IAwsAppSettings`,
@@ -73,7 +73,7 @@ Workers serve them with `AddServiceHealthCheckWorker(assembly)` (`/health/instan
 ## Workers
 
 Derive `MonitoredWorkerBase(telemetry, recurringIntervalInSeconds, delayedIntervalInSeconds)`
-(`Anarchy.Toolkit.Hosting.Workers`) and implement `RunIterationAsync`: return `true` when it did work (next run after
+(`Anarchy.Toolkit.Runtime.Workers`) and implement `RunIterationAsync`: return `true` when it did work (next run after
 the recurring interval) or `false` when idle (after the delayed one). Start, stop, failures and a `health.ping` metric
 per iteration are recorded; an exception ends the loop and is logged as fatal without stopping the host. Register it
 with `services.AddHostedService<TWorker>()` in a module.

@@ -22,7 +22,7 @@ Use this package for integration tests that need to verify PostgreSQL queries, D
 2. Create the required fixture from embedded test settings, or pass a settings instance directly:
 
 ```csharp
-using Anarchy.Toolkit.Testing.Db.Postgres.Helper;
+using Anarchy.Toolkit.Testing.Db.Postgres.Helpers.Database;
 
 var policy = PostgresHelper.DbPolicyFixture<TestAppSettings>();
 var unitOfWork = PostgresHelper.DbUnitOfWorkFixture<TestAppSettings>();

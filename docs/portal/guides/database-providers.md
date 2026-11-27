@@ -8,7 +8,7 @@ This guide explains how the toolkit's relational persistence is split between a 
 |---|---|
 | [`Core.Persistence.Abstractions`](../packages/Core.Persistence.Abstractions/README.md) | Unit-of-work, flow-context, storage-policy and repository contracts. No database driver. |
 | [`Infrastructure.Persistence.Db`](../packages/Infrastructure.Persistence.Db/README.md) | Everything that is not provider-specific: the `IDbDialect` contract, unit of work, connection pool, resilience, repository bases and health reports. It contains no business-event or outbox code; it references `Core.Events` only for generic transaction lifecycle notifications on the local event bus. |
-| [`Infrastructure.Persistence.Db.Events`](../packages/Infrastructure.Persistence.Db.Events/README.md) | Event-store database bases and Outbox contracts and records, including `RolledBackTransactionEventHandler` in its service namespace. Applications implement Outbox repositories. It builds on the generic bases and is optional; see [ADR 0011](../decisions/0011-events-persistence-package.md). |
+| [`Infrastructure.Persistence.Db.Events`](../packages/Infrastructure.Persistence.Db.Events/README.md) | Event-store database bases and Outbox contracts and records, including `RolledBackTransactionEventHandler` in its service namespace. Applications implement Outbox repositories. It builds on the generic bases and is optional; see [ADR 0007](../decisions/0007-events-persistence-package.md). |
 | `Infrastructure.Persistence.Db.<Provider>` | A thin adapter closing the generic bases over the provider's connection and dialect. |
 | [`Testing.Db`](../packages/Testing.Db/README.md) and `Testing.Db.<Provider>` | Test helpers, with the same split. |
 

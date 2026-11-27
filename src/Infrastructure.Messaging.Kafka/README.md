@@ -5,7 +5,7 @@
 Apache Kafka publisher and inbound mapper for `Core.Messaging.Abstractions`, using the Confluent .NET client. Works with Kafka-compatible brokers; no AWS, CloudEvents or outbox dependency.
 
 ```csharp
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Infrastructure.Messaging.Kafka.DependencyInjection.Module;
 using Confluent.Kafka;
 

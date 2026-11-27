@@ -46,6 +46,15 @@ The OpenAPI document is served as OpenAPI 3.2 by default; set `SwaggerOptions.Op
 
 See the [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Swashbuckle.AspNetCore](https://www.nuget.org/packages/Swashbuckle.AspNetCore) | Generates the OpenAPI document and serves Swagger UI | Yes: the operation filters implement its `IOperationFilter`; `SwaggerOptions` sets the OpenAPI version |
+| [Microsoft.OpenApi](https://www.nuget.org/packages/Microsoft.OpenApi) | The OpenAPI document model | Yes: the filters take `OpenApiOperation` |
+
 ## Releases
 
 See the [release notes](RELEASE-NOTES.md) for the complete release history.

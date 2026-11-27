@@ -1,4 +1,4 @@
-# 0002. Dependency-injection modules that receive their configuration
+# 0003. Dependency-injection modules that receive their configuration
 
 ## Context
 

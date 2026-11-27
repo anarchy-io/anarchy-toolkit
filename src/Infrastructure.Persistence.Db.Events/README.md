@@ -31,6 +31,14 @@ a SQL `NULL` is read as an empty attribute dictionary.
   string aliased `CustomAttributes`. Cast a native JSON column to text where the driver requires it.
 - Outbox implementations define their own schema, serialization, duplicate handling, retention and cleanup policy.
 
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Dapper](https://www.nuget.org/packages/Dapper) | Runs the event-store repositories' SQL | No |
+
 ## Releases
 
 See the [release notes](RELEASE-NOTES.md) for the complete release history.

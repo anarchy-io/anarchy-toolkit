@@ -16,13 +16,15 @@ description: "Maintaining an Anarchy Toolkit solution's tooling: upgrade NuGet d
 
 **Update dependencies**: `make upgrade_dependencies INSTALL_TOOL=true` lists outdated packages; with the user's
 agreement, add `UPGRADE=true`. Respect the compatibility notes in `Directory.Packages.props`, then run
-`make compile test_unit`. Without the flags it prompts, which fails in non-interactive shells.
+`make test_unit` (it compiles first). Without the flags it prompts, which fails in non-interactive shells.
 
 **Git hooks**: `make git_hooks_enable OPTIONS="--dry-run"` previews the pre-commit hook (lint fix and tests); run it
 without `--dry-run` once the user agrees. `--force` replaces an existing hook: ask first.
 
 **Build targets**: every operation has a make target; for anything else, `make anarchy_help` lists the build targets
-and parameters, and `make anarchy TARGET="<Target> --<Parameter> <value>"` runs one. `make fallout`, `make nuke` and
+and parameters, and `make anarchy TARGET="<Target> --<Parameter> <value>"` runs one. To run several, list them in a
+single call (`make anarchy TARGET="Lint CheckLayering"` or `dotnet run --project build/_build.csproj -- Lint CheckLayering`)
+so their shared `Restore`/`Compile` run once. `make fallout`, `make nuke` and
 their `_help` variants remain compatibility aliases.
 
 **Boilerplate**: `make boilerplate ITEMS=Makefile,scripts APPEND=true` installs packaged files into the solution. It

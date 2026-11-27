@@ -65,7 +65,7 @@ Use the service collection extension or `UseModule(new ModuleCloudEventEnvelopeM
 ```csharp
 using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents.Envelopes;
-using Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents.Extensions.Microsoft.Extensions.DependencyInjection;
 using CloudNative.CloudEvents;
 
 services.AddCloudEventEnvelopeMapper(_ => new OrderMapper(new Uri("/orders", UriKind.Relative)));
@@ -87,6 +87,14 @@ public sealed class OrderMapper(Uri source) : CloudEventEnvelopeMapper(source)
 Each CloudEvent property and the custom extensions have a protected virtual hook in each direction (`Map*ToCloudEvent` and `Map*FromCloudEvent`). Configure the two Anarchy extension names in the constructor, or override `AggregateTypeAttributeName` and `PersistedIdAttributeName`. Omitting names uses the constants in the mapping table; when custom names are configured, only those names are used for that mapping, in both directions.
 
 Override `IdContextAttributeName`, `SourceContextAttributeName`, `SpecVersionContextAttributeName`, `DataContentTypeContextAttributeName`, or `DataSchemaContextAttributeName` to rename the corresponding envelope-only keys. Return stable names: the mapper uses the same keys to read and write context, and does not also recognize a default key when it has been overridden. CloudEvents wire field names are unchanged.
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) (through `CloudNative.CloudEvents.NewtonsoftJson`) | Writes and reads the structured CloudEvents JSON | No |
 
 ## Releases
 

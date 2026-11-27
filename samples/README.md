@@ -10,13 +10,13 @@ No single sample covers the whole platform; together they show its three pillars
 
 | Project | Packages referenced directly | Capabilities shown |
 |---|---|---|
-| `Samples.Api` | `Web`, `Infrastructure.Persistence.Db.Postgres`, `Infrastructure.Persistence.Db.Mysql`, `Infrastructure.Persistence.Db.Oracle` | REST pipeline, configuration, telemetry, Lambda hosting, health reports for all three database providers |
-| `Samples.Job` | `Hosting` | Job hosting, configuration, telemetry |
-| `Samples.Worker` | `Hosting`, `Hosting.Workers` | Worker hosting, heartbeat and monitored workers |
-| `Samples.Ui` | `Web.Ui` | Blazor UI, cookie-session login, downstream API clients |
-| `Samples.MockServer` | `Web.MockServer`, `Web.MockServer.Ui` | HTTP mock server with expectations and middlewares |
-| `Samples.Examples` | `Configuration`, `Core.Persistence.Abstractions`, `Infrastructure.Telemetry.Serilog` | Telemetry providers and exporters, a UseCase and an Aggregate |
-| `Samples.Testing` | `Testing`, `Testing.Web`, `Testing.MockServer` | Showcase of the Testing packages: in-memory telemetry, API, job and UI smoke tests, mock-server assertions |
+| `Samples.Api` | `Runtime.Web.Aws`, `Runtime.Web.Swagger`, `Infrastructure.Persistence.Db.Postgres`, `Infrastructure.Persistence.Db.Mysql`, `Infrastructure.Persistence.Db.Oracle` | REST pipeline, configuration, telemetry, Lambda hosting, health reports for all three database providers |
+| `Samples.Job` | `Runtime.Aws` | Job hosting, configuration, telemetry |
+| `Samples.Worker` | `Runtime`, `Runtime.Workers`, `Bootstrap.Aws` | Worker hosting, heartbeat and monitored workers |
+| `Samples.Ui` | `Runtime.Web.Ui` | Blazor UI, cookie-session login, downstream API clients |
+| `Samples.MockServer` | `Runtime.Web.MockServer`, `Runtime.Web.MockServer.Ui` | HTTP mock server with expectations and middlewares |
+| `Samples.Examples` | `Bootstrap`, `Core.Persistence.Abstractions`, `Infrastructure.Telemetry.Serilog` | Telemetry providers and exporters, a UseCase and an Aggregate |
+| `Samples.Testing` | `Testing`, `Testing.Runtime.Web.Aws`, `Testing.MockServer` | Showcase of the Testing packages: in-memory telemetry, API, job and UI smoke tests, mock-server assertions |
 
 The API's `/health/services` endpoint probes the local PostgreSQL, MySQL, and Oracle databases. The standard Integration
 suite also exercises SNS/SQS against Moto; see the [local Compose guide](../docker/README.md), [Package Catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/), and [Database Providers](../docs/portal/guides/database-providers.md).
@@ -26,7 +26,7 @@ suite also exercises SNS/SQS against Moto; see the [local Compose guide](../dock
 | [`Samples.Api`](Samples.Api) | REST API | `RestApiWebAppStartupBase`, a controller using `AppTelemetry`, local Kestrel and container hosting through `EntryPointLocal`, and AWS Lambda behind API Gateway through `EntryPointLambda`, which opts into Parameter Store through its `ConfigureAppConfiguration` hook. `GET /health/services` reports the connection health of PostgreSQL, MySQL, and Oracle through the Toolkit's provider health reports. |
 | [`Samples.Job`](Samples.Job) | Local and AWS Lambda job | `JobStartupBase` + `JobEntryPointBase`, a scoped service wrapped in `AppTelemetry.MonitoredActionAsync`; run locally once or invoke the scheduled Lambda handler. |
 | [`Samples.Worker`](Samples.Worker) | EC2/systemd worker | `WorkerEntryPointBase`, `HeartbeatWorker` and a custom `MonitoredWorkerBase`. |
-| [`Samples.Ui`](Samples.Ui) | WebApp | `UiWebAppStartupBase` with two environments, an orders page built from the `Web.Ui` components (`LoginForm`, `SessionBadge`, `NotificationHost`, `JsonModalHost`/`JsonViewLink`, `Pagination`, `TablePaginationFooter`, `ConfirmationModal`, `TypedConfirmationModal`), and a `UiApiClientBase` client. Stub auth and orders endpoints under `/stub` (local hosts only) let it run without external services. |
+| [`Samples.Ui`](Samples.Ui) | WebApp | `UiWebAppStartupBase` with two environments, an orders page built from the `Runtime.Web.Ui` components (`LoginForm`, `SessionBadge`, `NotificationHost`, `JsonModalHost`/`JsonViewLink`, `Pagination`, `TablePaginationFooter`, `ConfirmationModal`, `TypedConfirmationModal`), and a `UiApiClientBase` client. Stub auth and orders endpoints under `/stub` (local hosts only) let it run without external services. |
 | [`Samples.MockServer`](Samples.MockServer) | Mock server host | `MockServerEntryPoint` with JSON expectations for a payments service (`mocks/`), a conventional middleware rejecting requests without a bearer token, and an inline one computing stock levels from the request when no expectation matches. Serves the UI at `/__mock/ui`. |
 | [`Samples.Examples`](Samples.Examples) | Console examples | Run one with `dotnet run --project samples/Samples.Examples -- <name>`. Telemetry: `default` (`AddCoreTelemetry()` with Microsoft logging and standard metrics), `serilog` (`AddSerilogTelemetry` with a consumer sink receiving the toolkit's events), `swap` (the same `CheckoutService` on Microsoft logging, then Serilog), `recorder` (a custom `IMetricRecorder`) and `otlp` (OpenTelemetry exporting the toolkit meter over OTLP; set `OTLP_ENDPOINT`). `orders` shows a `PlaceOrderUseCase` that owns the transaction and an `OrderAggregate` that joins it, over an in-memory `IUnitOfWork`. |
 | [`Samples.Testing`](Samples.Testing) | Compiled Testing showcase | Smoke tests running the API through both the native and Lambda pipelines (`RestApiTestCaseBase`), invoking the job handler, and exercising the UI's shell and stubs. Asserting what an application sent to the payments and stock services stood in by `Samples.MockServer` (`MockServerFixture`, `AssertReceivedAsync`). |

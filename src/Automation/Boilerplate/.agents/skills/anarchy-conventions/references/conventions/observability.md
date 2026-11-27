@@ -6,7 +6,7 @@ How logs and metrics are written through `AppTelemetry`: wording, naming, tags a
 
 ## Why
 
-- **Logs and metrics describe the same events.** One call site gives both the same class and method context, so a dashboard and a log search line up. See [ADR 0004](../decisions/0004-telemetry-composition.md).
+- **Logs and metrics describe the same events.** One call site gives both the same class and method context, so a dashboard and a log search line up. See [ADR 0005](../decisions/0005-telemetry-composition.md).
 - **Searchable by default.** Structured properties and consistent tense make logs filterable without knowing who wrote them.
 - **Cheap metrics.** Low-cardinality tags keep the number of metric series, and the bill, predictable.
 - **Any backend.** The conventions sit on the standard Microsoft logging and .NET metrics APIs, so they hold whichever provider or exporter the application chooses.

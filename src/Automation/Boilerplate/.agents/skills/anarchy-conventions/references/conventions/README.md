@@ -19,7 +19,7 @@ Each convention exists for a reason recorded in the [values and decisions](../de
 | [Naming](naming.md) | Plural namespaces, singular types, meaningful suffixes, responsibility-oriented service names. | Your own names, written down in an ADR or `AGENTS.md`. |
 | [UseCases and Aggregates](usecases-and-aggregates.md) | Workflows as UseCases, multi-entity coordination in aggregates, explicit transaction ownership. | Services that call repositories; your own unit of work. |
 | [Dependency Injection](dependency-injection.md) | One module per concern, options supplied by the application, settings validated on start. | Calling the `Add*` extensions directly; keeping [`IOptions<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1). |
-| [Endpoints](endpoints.md) | Input/Output DTOs at the Web boundary, [`ActionResult<T>`](https://learn.microsoft.com/aspnet/core/web-api/action-return-types), contract-first interfaces. | Returning domain types, minimal APIs. |
+| [Endpoints](endpoints.md) | Input/Output DTOs at the API boundary, [`ActionResult<T>`](https://learn.microsoft.com/aspnet/core/web-api/action-return-types), contract-first interfaces. | Returning domain types, minimal APIs. |
 
 ## Code
 

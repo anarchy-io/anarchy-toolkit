@@ -7,7 +7,7 @@ This convention explains how test cases and shared test resources are named and 
 
 ## Why
 
-One project per test kind lets the build run each level on its own (unit tests before packing, integration with containers, end-to-end with the mock server), and naming that mirrors `src/` makes a test easy to find. See [ADR 0005](../decisions/0005-xunit-v3-on-mtp.md) and [ADR 0008](../decisions/0008-test-levels.md).
+One project per test kind lets the build run each level on its own (unit tests before packing, integration with containers, end-to-end with the mock server), and naming that mirrors `src/` makes a test easy to find. See [ADR 0009](../decisions/0009-xunit-v3-on-mtp.md) and [ADR 0008](../decisions/0008-test-levels.md).
 
 ## Test layout
 
@@ -29,8 +29,8 @@ tests/
 ```
 
 - **One test project per kind**: `tests/<Kind>/<Kind>.csproj` (`tests/Unit/Unit.csproj`). It references every `src/` project it tests.
-- **One folder per tested project**, built from the `src/` project name with each dot-separated segment as a nested folder: `src/Core` → `Core/`, `src/Core.Events` → `Core/Events/`, `src/Infrastructure.Persistence.Db.Postgres` → `Infrastructure/Persistence/Postgres/`, `src/Web.Ui` → `Web/Ui/`. The tests of a project therefore sit next to the folders of the projects that extend its name (`Core/` holds `src/Core`'s tests alongside `Events/`, `Health/`, …).
-- **Inside that folder, mirror the SUT's path** in its project. Do not invent folders that do not exist in the source namespace. Some suites (the `Core.*` projects, `Hosting.Workers` and parts of `Infrastructure.Persistence.Db.Postgres`) still wrap that path in a layer folder (`Core/`, `Configuration/`, `Infrastructure/`), as in the example above; follow the layout already used by the suite you are adding to.
+- **One folder per tested project**, built from the `src/` project name with each dot-separated segment as a nested folder: `src/Core` → `Core/`, `src/Core.Events` → `Core/Events/`, `src/Infrastructure.Persistence.Db.Postgres` → `Infrastructure/Persistence/Db/Postgres/`, `src/Runtime.Web.Ui` → `Runtime/Web/Ui/`. The tests of a project therefore sit next to the folders of the projects that extend its name (`Core/` holds `src/Core`'s tests alongside `Events/`, `Health/`, …).
+- **Inside that folder, mirror the SUT's path** in its project. Do not invent folders that do not exist in the source namespace, and do not wrap the path in an extra layer folder: a `Core/` folder under a test project folder only mirrors a `Core/` layer folder of the SUT's project.
 - **The namespace follows the folder**, with `Anarchy.Toolkit.Tests.<Kind>` as root:
 
   ```csharp
@@ -90,8 +90,6 @@ This is the default, not a requirement:
 Correct:   UserServiceTest.cs
 Incorrect: UserServiceTests.cs
 ```
-
-> Some older suites (`Core.Health`, `Infrastructure.CorrelationId` and the `Hosting.Workers` health API) still use `*Tests` class names. They do follow the folder and namespace rules above. New tests should use `Test`.
 
 ### Partial test classes
 
@@ -155,7 +153,7 @@ Mocks can still be used for dependencies outside the boundary under test, but do
 
 ### End-to-end tests
 
-APIs and jobs built on the toolkit are validated end-to-end in `*.EndToEnd.Tests` projects. These tests exercise the hosted application and can verify several integrations together. They should validate externally observable behavior (an API response, a processed message, a completed job) rather than implementation details.
+APIs and jobs built on the toolkit are validated end-to-end in the `EndToEnd` test project. These tests exercise the hosted application and can verify several integrations together. They should validate externally observable behavior (an API response, a processed message, a completed job) rather than implementation details.
 
 ## Test kits
 
@@ -217,11 +215,11 @@ Use them in database integration tests, so the concrete repository reaches Postg
 
 `SqsHelper<TAppSettings>`, `AwsMessageBrokerHelper` (constructed with an `IAwsAppSettings`) and `SqsMessageFixture` create, purge and read LocalStack SNS/SQS resources and build `SQSEvent` payloads for message-driven tests.
 
-### `RestApiTestCaseBase` (`Anarchy.Toolkit.Testing.Web`)
+### `RestApiTestCaseBase` (`Anarchy.Toolkit.Testing.Runtime.Web`)
 
-REST API end-to-end tests should inherit from `RestApiTestCaseBase<TStartup, TAppSettings>`; the mock bearer token's issuer defaults to `AuthService.Host` from the test settings of `TAppSettings`. It supplies a hosted `HttpClient`, route helpers (`Get`, `Post`, `Put`, `Patch`), authorization-token setup, response parsing and status assertions.
+REST API end-to-end tests should inherit from `RestApiTestCaseBase<TStartup, TAppSettings>`; the mock bearer token's issuer defaults to `AuthService.Host` from the test settings of `TAppSettings`. It supplies a hosted `HttpClient`, route helpers (`Get`, `Post`, `Put`, `Patch`), authorization-token setup, response parsing and status assertions, and tests the native ASP.NET Core pipeline (`TestEndpointNativeAsync(...)`, or `TestEndpointAsync(...)`).
 
-Its key benefit is that it exercises both hosting models:
+APIs also deployed as AWS Lambda functions inherit from `AwsRestApiTestCaseBase<TStartup, TAppSettings>` (`Anarchy.Toolkit.Testing.Runtime.Web.Aws`) instead, which exercises both hosting models:
 
 - `TestEndpointNativeAsync(...)` tests the native ASP.NET Core pipeline,
 - `TestEndpointLambdaAsync(...)` tests the API Gateway-to-Lambda entry point,
@@ -229,7 +227,7 @@ Its key benefit is that it exercises both hosting models:
 
 Use the separate native and Lambda methods for responses with variable fields (timestamps, durations, generated ids). Use `TestEndpointAsync(...)` when both paths should return the same result.
 
-### Mock server (`Anarchy.Toolkit.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
+### Mock server (`Anarchy.Toolkit.Runtime.Web.MockServer`, `Anarchy.Toolkit.Testing.MockServer`)
 
 See the [Mock Server](../guides/mock-server.md) guide for choosing between expectations, middlewares and assertions, recording a real upstream and replacing a [MockServer](https://www.mock-server.com/) container.
 
@@ -245,11 +243,11 @@ Reset the server (`ResetAsync`) at the start of tests that assert on received re
 
 ## Shared test resources
 
-Resources shared across *many* packages belong in the test kits under `src/Testing`. Resources used by the tests of a single package live at the root of that package's folder, next to the layer folders, grouped like this:
+Resources shared across *many* packages belong in the test kits under `src/Testing`. Resources used by the tests of a single package live at the root of that package's folder, next to the folders that mirror the source, grouped like this:
 
 ```text
 tests/Unit/Core/Events/
-├── Core/...            ← tests, mirroring src
+├── Domain/...          ← tests, mirroring src
 ├── Dummy/              ← test-local stand-ins for consumer types (enums, entities, payloads)
 ├── Fixture/            ← builders of real instances (…Fixture)
 ├── Mock/               ← mocking-framework setups (…Mocker / …Mock)

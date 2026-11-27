@@ -1,4 +1,4 @@
-# 0011. Event and outbox persistence in a separate package
+# 0007. Event and outbox persistence in a separate package
 
 ## Context
 

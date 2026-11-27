@@ -17,20 +17,33 @@ description: "Day-to-day development in an Anarchy Toolkit solution: set up the 
 applications have `appsettings.json.template` files. It prompts for each value: run it in an interactive terminal or
 ask the user for the values. Never commit `appsettings.Development.json`.
 
-**Before committing**: `make compile test_unit lint check_layering`.
+**Chaining targets (keep runs short)**: every make target that wraps a build target first builds `build/_build.csproj`,
+then runs that target with its dependencies, usually `Restore` and often `Compile`. `make test_unit lint check_layering`
+therefore repeats all of that three times, and so does the output you read. To run several checks:
+- Prefer an existing combined target: `make pull_request` (lint, layering, all tests) or `make test` (all tests).
+- Otherwise run the build targets in one call, so shared dependencies run once:
+  `dotnet run --project build/_build.csproj -- Lint CheckLayering TestUnit`. Target names are the PascalCase ones in
+  `make anarchy_help` (`make check_layering` is `CheckLayering`, `make dependency_map` is `GenerateDependencyMap`).
+- Already compiled and nothing changed since? Add `--skip Restore Compile` to skip those dependencies (`--skip` with no
+  names skips every dependency). Do not skip after editing code.
+- Use single make targets for one-off runs, and run a test project directly for a subset (see **Tests**).
+
+**Before committing**: `dotnet run --project build/_build.csproj -- Lint CheckLayering TestUnit` (one restore and compile
+for all three), or `make pull_request` when the other test kinds can run too.
 - `lint` fails on formatting; `make lint_fix` rewrites the files, then review the diff.
 - `check_layering` fails when a project, file import or folder points to a higher layer. Move the code down a layer or
   invert the dependency; never reference a higher layer. If the layering itself looks wrong, ask the user.
 - **Layering configuration**: before adding a project, scaffolding or judging architecture, read any `layering`
   overrides in `.anarchy-toolkit.json`. `mode` is `folder` (the layer is the project's application folder, else its
   first folder under `libraryRoot`) or `prefix` (the name up to the first dot); with no override, folder mode uses
-  `src/Library`, standard app folders and `Core < Infrastructure < Configuration < Hosting < Web < Automation`.
+  `src/Library`, the `src/Apps/{Apis,Jobs,Ui}` application folders and `Core < Infrastructure < Bootstrap < Runtime < Apps`.
   Place projects so the effective mode finds their layer and never mix modes. Missing settings are valid; pass
   operation arguments or explicitly save preferences instead of inferring the layout. Use `anarchy-toolkit config`
   or the `config_show`, `config_set`, `config_unset`, `config_configure` Make wrappers for deliberate preference
   editing. Fallout CLI/environment/parameter resolution takes precedence over saved overrides, then code defaults.
 - Analyzer warnings are errors in Release builds; fix them instead of suppressing them.
-- When projects, references or packages changed, run `make dependency_map` and commit `docs/dependency-map.html`.
+- When projects, references or packages changed, add `GenerateDependencyMap` to the same call and commit
+  `docs/dependency-map.html`.
 
 **Tests**: unit tests need nothing else. If the build opts into `ITestEnvironmentBuild`, integration and end-to-end
 targets start the Compose environment and wait for configured readiness; otherwise start required local services with
@@ -52,7 +65,8 @@ terminal if you need to keep working, and stop them when done.
 **Pull request**: `make pull_request` (add `ENV=ci` to match CI exactly) runs lint, the layering check and all tests.
 
 **Windows without Make**: supported build targets can run directly with
-`dotnet run --project build/_build.csproj -- <Target> [--parameter value]`. `Compile`, test targets, `Lint`,
+`./scripts/build.anarchy.ps1 <Target> [--parameter value]` (PowerShell launcher, same defaults as
+`build.anarchy.sh`) or `dotnet run --project build/_build.csproj -- <Target> [--parameter value]`. `Compile`, test targets, `Lint`,
 `CheckLayering` and `Pack` do not require Bash. Make workflows, SDK bootstrap scripts and generated Git hooks still
 need Make and Bash; see [Without Make](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html#without-make-including-windows).
 

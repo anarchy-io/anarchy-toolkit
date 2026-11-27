@@ -200,14 +200,14 @@ packages:
         url: /packages/#core-domain-and-application-abstractions
       - title: "Infrastructure"
         url: /packages/#infrastructure-adapters-to-external-systems
-      - title: "Configuration"
-        url: /packages/#configuration-settings-secrets-and-telemetry-bootstrap
-      - title: "Hosting"
-        url: /packages/#hosting-running-a-process
-      - title: "Web"
-        url: /packages/#web-api-and-ui-pipelines
+      - title: "Bootstrap"
+        url: /packages/#bootstrap-settings-secrets-and-telemetry-bootstrap
+      - title: "Runtime"
+        url: /packages/#runtime-running-processes-apis-and-uis
       - title: "Testing kits"
         url: /packages/#testing-kits-reusable-test-helpers
+      - title: "Third-party dependencies"
+        url: /packages/third-party-dependencies.html
   - title: "Build Ecosystem"
     children:
       - title: "Automation packages"

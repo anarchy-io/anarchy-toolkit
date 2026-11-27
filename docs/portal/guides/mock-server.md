@@ -1,7 +1,7 @@
 # Mock Server
 
 How to stand in for the HTTP services an application calls, in integration and end-to-end tests and while developing:
-`Anarchy.Toolkit.Web.MockServer` (the server), `Anarchy.Toolkit.Testing.MockServer` (assertions) and the
+`Anarchy.Toolkit.Runtime.Web.MockServer` (the server), `Anarchy.Toolkit.Testing.MockServer` (assertions) and the
 `IMockServerBuild` targets (lifecycle). The package READMEs list every option; this guide is about choosing and
 combining them.
 
@@ -18,12 +18,13 @@ combining them.
 | Keeping mocks in step with an OpenAPI document | `make mock_server_sync_openapi SPEC=<file-or-url>`. |
 | Recording a real upstream's answers as expectations | A forwarding middleware, see [Recording a real upstream](#recording-a-real-upstream). |
 | Editing expectations while the server runs | `--watch` (or `ARGS=--watch`), or `POST /__mock/reload`. |
-| Looking at what happened | The UI at `/__mock/ui` (with `Anarchy.Toolkit.Web.MockServer.Ui`), `-v detailed`, or `GET /__mock/logs`. |
+| Looking at what happened | The UI at `/__mock/ui` (with `Anarchy.Toolkit.Runtime.Web.MockServer.Ui` and `.UseUi()`), `-v detailed`, or `GET /__mock/logs`. |
 
 ## Setting it up
 
-1. Add a runnable project whose name ends in `MockServer` (for example `src/Api/MockServer`), referencing
-   `Anarchy.Toolkit.Web.MockServer`, with `return await MockServerEntryPoint.RunAsync(args);` as its `Program.cs`.
+1. Add a runnable project whose name ends in `MockServer` (for example `tests/MockServer`, which
+   `anarchy-toolkit bootstrap --with-mock-server` creates with the UI and a `mocks` folder), referencing
+   `Anarchy.Toolkit.Runtime.Web.MockServer`, with `return await MockServerEntryPoint.RunAsync(args);` as its `Program.cs`.
 2. Implement `IMockServerBuild` in `build/Build.cs` and point it at the expectations, in
    `.fallout/parameters.json` (`"MockServerExpectations": ["tests/mocks"]`) or in code.
 3. Point the application's upstream base URLs at the mock server in its test settings. The targets set

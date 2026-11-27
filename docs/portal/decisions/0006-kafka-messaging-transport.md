@@ -1,4 +1,4 @@
-# 0010. Kafka as a second messaging transport
+# 0006. Kafka as a second messaging transport
 
 ## Context
 

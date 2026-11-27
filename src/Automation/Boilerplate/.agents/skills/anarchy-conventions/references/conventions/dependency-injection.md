@@ -6,9 +6,9 @@ How services are registered: one `IDependencyInjectionModule` per concern, appli
 
 ## Why
 
-- **The application owns its configuration.** Modules take their options from the caller, so the same package works with any section name, settings type or secret store. See [ADR 0002](../decisions/0002-dependency-injection-modules.md) and the [Pluggable value](../decisions/README.md#values).
+- **The application owns its configuration.** Modules take their options from the caller, so the same package works with any section name, settings type or secret store. See [ADR 0003](../decisions/0003-dependency-injection-modules.md) and the [Pluggable value](../decisions/README.md#values).
 - **Composable and testable.** A module is a unit you can register on an empty `ServiceCollection` in a test and resolve in isolation.
-- **Settings fail early.** `ModuleAppSettingsBase<TAppSettings>` validates the settings with [DataAnnotations](https://learn.microsoft.com/dotnet/api/system.componentmodel.dataannotations) on start, instead of on the first request that reads them. See [ADR 0003](../decisions/0003-validated-app-settings.md).
+- **Settings fail early.** `ModuleAppSettingsBase<TAppSettings>` validates the settings with [DataAnnotations](https://learn.microsoft.com/dotnet/api/system.componentmodel.dataannotations) on start, instead of on the first request that reads them. See [ADR 0004](../decisions/0004-validated-app-settings.md).
 
 ## The rules
 
@@ -42,4 +42,4 @@ Modules live under `DependencyInjection/Module/` and are named `Module<Concern>`
 | Keep [`IOptions<T>`](https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptions-1) | Keep it. `ModuleAppSettingsBase` is optional; you can pass `c => c.GetSection("X").Get<T>()!` to toolkit modules from any settings model. |
 | Use another container ([Autofac](https://autofac.org/), ...) | Modules only touch `IServiceCollection`, which other containers populate from. |
 
-**What you lose by opting out:** start-up validation of all settings in one place, and the one-line wiring of `ModuleLibConfiguration` (settings, telemetry and secrets together).
+**What you lose by opting out:** start-up validation of all settings in one place, and the one-line wiring of `ModuleLibConfiguration` (settings and telemetry together, plus secrets when you opt in with `WithSecretManagement(...)`, e.g. `new ModuleAwsSecretManagement()` from `Bootstrap.Aws`).

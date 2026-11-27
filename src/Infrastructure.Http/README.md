@@ -29,6 +29,14 @@ without checking its status; a non-success status is not a telemetry failure unl
 
 See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [architecture guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html).
 
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) | Serializes request bodies (`JsonContent`) and reads responses | Yes: `ReadContentAsync` takes `JsonSerializerSettings` |
+
 ## Releases
 
 See the [release notes](RELEASE-NOTES.md) for the complete release history.

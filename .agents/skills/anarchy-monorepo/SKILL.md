@@ -18,7 +18,7 @@ contributions (commit titles, history shape, version bumps).
   distributed skills' `references/` (`anarchy-conventions`, `anarchy-adopt`, `anarchy`; the list is in
   `docs/portal/scripts/sync-skill-docs.sh`). CI fails when they are out of date; commit both.
 - Adding or changing a project reference between packages of the same layer: `make check_package_hierarchy`. A
-  package may reference its name ancestors (`Web.MockServer.Ui` to `Web.MockServer` or `Web`) and any lower layer;
+  package may reference its name ancestors (`Runtime.Web.MockServer.Ui` to `Runtime.Web.MockServer`, `Runtime.Web` or `Runtime`) and any lower layer;
   any other same-layer reference needs an entry, with its reason, in `build/PackageHierarchy.cs`. The unit tests run
   the same check on the current project files.
 - Changing a toolkit make target: update the hand-written part of the matching `anarchy-*` skill in

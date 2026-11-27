@@ -1,4 +1,4 @@
-# 0007. An in-process mock server instead of a MockServer container
+# 0010. An in-process mock server instead of a MockServer container
 
 ## Context
 

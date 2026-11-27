@@ -14,7 +14,7 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 | [Layering](../conventions/layering.md) | `make check_layering` (CI), the [dependency map](../guides/architecture.md#dependency-map) |
 | [Naming](../conventions/naming.md) | Review |
 | [UseCases and Aggregates](../conventions/usecases-and-aggregates.md) | Review |
-| [Code Organization](../conventions/code-organization.md) | Review; applied to new and touched code |
+| [Code Organization](../conventions/code-organization.md) | Review |
 | [Dependency Injection](../conventions/dependency-injection.md) | Review |
 | [Observability](../conventions/observability.md) | Review |
 | [Async](../conventions/async.md) | Review |
@@ -30,8 +30,8 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 - **Follow the [values](../decisions/README.md#values).** In particular: packages are domain-free (no business enums, entities or destinations), vendor-neutral (company specifics go behind extension points) and standalone (every dependency restores from nuget.org).
 - **Test-only libraries stay in `Testing.*` kits.** No production project references [AwesomeAssertions](https://awesomeassertions.org/), [Moq](https://github.com/devlooped/moq) or xUnit.
 - **One README per package.** `src/<Project>/README.md` describes the package and links to `RELEASE-NOTES.md`, which has a note per published version. The copies under `docs/portal/packages/` are generated.
-- **New packages are listed** in the [Package Catalog](../packages/README.md), named after their layer (`<Layer>.<Name>`).
-- **Package names follow the dependency hierarchy.** Within a layer, a package may only reference its name ancestors (`Web.MockServer.Ui` to `Web.MockServer` or `Web`), so a feature family such as `Infrastructure.Persistence.Db.*` shows its shared parent in its name. A project may always reference a lower layer; any other same-layer reference is an entry, with its reason, in `build/PackageHierarchy.cs`. `make check_package_hierarchy` and its unit test enforce it. This is a rule of the toolkit's own monorepo, which uses prefix layering; it is not part of the [adopter conventions](../conventions/README.md) and is never imposed on solutions that use folder-mode layering.
+- **New packages are listed** in the [Package Catalog](../packages/README.md), named after their layer (`<Layer>.<Name>`): `Core`, `Infrastructure`, `Bootstrap`, `Runtime`, `Automation`, plus the `Testing.*` kits.
+- **Package names follow the dependency hierarchy.** Within a layer, a package may only reference its name ancestors (`Runtime.Web.MockServer.Ui` to `Runtime.Web.MockServer`, `Runtime.Web` or `Runtime`), so a feature family such as `Infrastructure.Persistence.Db.*` shows its shared parent in its name. A project may always reference a lower layer; any other same-layer reference is an entry, with its reason, in `build/PackageHierarchy.cs`. `make check_package_hierarchy` and its unit test enforce it. This is a rule of the toolkit's own monorepo, which uses prefix layering; it is not part of the [adopter conventions](../conventions/README.md) and is never imposed on solutions that use folder-mode layering.
 - **Versions are bumped with `make release_bump`**, never by hand, and validated with `make validate_release`.
 
 ### Build and code quality
@@ -64,9 +64,10 @@ Each [adopter convention](../conventions/README.md) applies in full, without its
 ## Checks before a pull request
 
 ```bash
-make lint
-make test_unit
-make check_layering
+make pull_request              # lint, the layering check and every test kind, in one build run
 make check_package_hierarchy   # when you changed a project reference between packages
 make skills_validate   # when you changed make targets
 ```
+
+Each make target rebuilds the build project first, so to run a subset, chain the targets in one call instead of several
+make targets: `dotnet run --project build/_build.csproj -- Lint TestUnit CheckLayering CheckPackageHierarchy`.

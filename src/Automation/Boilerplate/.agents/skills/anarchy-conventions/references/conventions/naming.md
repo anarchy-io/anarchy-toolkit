@@ -16,7 +16,7 @@ How to name namespaces, types and services so that a name says what the code is 
 
 - Use **plural** nouns for namespace segments and **singular** nouns for types.
 - Reflect architectural ownership and responsibility; avoid redundant segments.
-- Keep namespaces and physical folders aligned (extension classes are the exception, see [Extensions](code-organization.md#extensions)).
+- Keep namespaces and physical folders aligned, extension classes included (see [Extensions](code-organization.md#extensions)).
 - Prefer responsibility-specific namespaces where they add clarity; keep `Helpers` for shared helper functions.
 - Do not invent a namespace distinction only to avoid a name collision; give the type a more descriptive name instead.
 
@@ -24,7 +24,7 @@ How to name namespaces, types and services so that a name says what the code is 
 Acme.Core.Events.Domain
 Acme.Core.Repositories
 Acme.Infrastructure.Messaging
-Acme.Configuration.Telemetry
+Acme.Bootstrap.Telemetry
 ```
 
 Use `Exceptions`, `Extensions`, `Helpers`, `UseCases` and `Services.Aggregates` as appropriate.

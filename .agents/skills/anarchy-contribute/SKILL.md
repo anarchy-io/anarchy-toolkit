@@ -28,9 +28,12 @@ they disagree, CONTRIBUTING.md wins: report the difference.
 ## Before committing
 
 1. `dotnet build Anarchy.Toolkit.sln -c Release -p:TreatWarningsAsErrors=true`: analyzer findings only show here.
-2. `make test_unit lint check_layering`. Fix `lint` with `make lint_fix` and review the diff.
-3. Projects, references or packages changed: `make check_package_hierarchy dependency_map`, and commit
-   `docs/portal/dependency-map.html`.
+2. One build call, so restore and compile run once (chained make targets repeat them, and the build project's own
+   build, for each target): `dotnet run --project build/_build.csproj -- Lint CheckLayering TestUnit`. When projects,
+   references or packages changed, append `CheckPackageHierarchy GenerateDependencyMap` to the same call and commit
+   `docs/portal/dependency-map.html`. Fix `lint` with `make lint_fix` and review the diff.
+3. Iterating on a failure without code changes in between: rerun only the failing target with `--skip Restore Compile`,
+   or the test project directly (`cd tests/Unit && dotnet run -c Release --no-build -- -class "*MyTest"`).
 4. Fallout parameters or targets changed: commit the regenerated `.fallout/build.schema.json`.
 5. Make targets changed: update the hand-written part of their skill, then `make skills_sync skills_validate`.
 

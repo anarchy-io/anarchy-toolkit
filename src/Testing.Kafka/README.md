@@ -5,7 +5,7 @@
 Helpers for testing `Infrastructure.Messaging.Kafka`: `KafkaMessageFixture.FromOutbound` makes a consumed record without a broker, while `KafkaTestConsumer` reads a real Kafka-compatible broker from the beginning of a specified partition.
 
 ```csharp
-using Anarchy.Toolkit.Testing.Kafka.Helper;
+using Anarchy.Toolkit.Testing.Kafka.Helpers.MessageBroker;
 using Confluent.Kafka;
 
 // Create a unique topic and publish before reading. Supply your test broker configuration.

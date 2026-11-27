@@ -26,6 +26,15 @@ Use this adapter when relational persistence runs on Oracle and your application
 
 See the [Oracle and persistence notes](https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html#provider-notes) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
 
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Dapper](https://www.nuget.org/packages/Dapper) (also through `Infrastructure.Persistence.Db`) | Runs the repositories' SQL and maps results | Yes: through `Infrastructure.Persistence.Db`'s type handlers |
+| [Polly](https://www.nuget.org/packages/Polly.Core) (`Polly.Core`, through `Infrastructure.Persistence.Db`) | Retries transient database failures | Yes: through the resilience policy builder |
+
 ## Releases
 
 See the [release notes](RELEASE-NOTES.md) for the complete release history.

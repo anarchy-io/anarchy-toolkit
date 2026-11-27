@@ -9,7 +9,7 @@ Keep it in your own libraries, in the layer it belongs to, under a folder named 
 ```text
 src/Library/
 ├── Infrastructure/Acme/     metric recorders, auth handlers, correlation propagation
-└── Configuration/Acme/      ModuleAcmeConfiguration, AcmeTelemetryModule, config sources
+└── Bootstrap/Acme/          ModuleAcmeConfiguration, AcmeTelemetryModule, config sources
 ```
 
 Once two solutions need it, move it to a shared internal package (`Acme.Toolkit.*`) on your private feed. Until then, copying it with an `// Origin: <repo>/<path>` header keeps track of where each copy came from.
@@ -23,11 +23,12 @@ Once two solutions need it, move it to a shared internal package (`Acme.Toolkit.
 | A metrics client the exporter cannot reach | Your own `IMetricRecorder` registered in DI, or a decorator around the default | [Observability](observability.md#your-companys-setup) |
 | Vendor events (Datadog Events, New Relic custom events) | A logging provider or log exporter that maps the toolkit's structured log events (stable `EventId`) | [Observability](observability.md#notable-events) |
 | Log property names, correlation headers | `CorrelationIdOptions` passed to `ModuleTelemetry` / `ModuleCorrelationId`; standard properties through your provider's enrichers | [Infrastructure.CorrelationId](../packages/Infrastructure.CorrelationId/README.md) |
-| Configuration sources and secrets | `ConfigureAppConfiguration` hooks on the hosts | [Hosting](../packages/Hosting/README.md) |
-| Outbound auth (token handlers) | A [`DelegatingHandler`](https://learn.microsoft.com/dotnet/api/system.net.http.delegatinghandler) registered in your own module | [Infrastructure.Http](../packages/Infrastructure.Http/README.md) |
+| Configuration sources and secrets | `ConfigureAppConfiguration` hooks on the hosts; a remote secret store through `ModuleLibConfiguration.WithSecretManagement(...)` (secrets stay in memory locally). On AWS, the opt-in `Bootstrap.Aws` package adds SSM Parameter Store (`AddAwsSystemsManagerParameterStore`), Secrets Manager (`GetAwsSecretValue`) and KMS (`ModuleAwsSecretManagement`) | [Runtime](../packages/Runtime/README.md), [Bootstrap.Aws](../packages/Bootstrap.Aws/README.md) |
+| Outbound auth (token handlers) | A [`DelegatingHandler`](https://learn.microsoft.com/dotnet/api/system.net.http.delegatinghandler) registered in your own module; for Microsoft Entra ID with certificate credentials, the opt-in `MsalCertificateHttpClientConfiguration<TClient>` | [Infrastructure.Http](../packages/Infrastructure.Http/README.md), [Infrastructure.Http.Msal](../packages/Infrastructure.Http.Msal/README.md) |
 | Inbound auth in tests | Mock-server expectations for your identity provider and an unsigned-token handler in test settings | [Mock Server](mock-server.md#your-own-host) |
 | Private NuGet feeds | `nuget.config` with package source mapping; login scripts as extra make targets | [Anarchy automation builds](automation-builds.md) |
-| Deployment ([CodeDeploy](https://aws.amazon.com/codedeploy/), Lambda zips, your deploy tool) | A separate release build next to `build/`, with its own make targets | [ADR 0006](../decisions/0006-fallout-build.md) |
+| Hosting on AWS Lambda | `LambdaJobEntryPointBase<TStartup>` (`Runtime.Aws`) for jobs, `AwsWebAppEntryPointBase<TStartup>` (`Runtime.Web.Aws`) for APIs; `UseAmazonTraceId()` for containers behind an AWS load balancer | [Runtime.Aws](../packages/Runtime.Aws/README.md), [Runtime.Web.Aws](../packages/Runtime.Web.Aws/README.md) |
+| Deployment ([CodeDeploy](https://aws.amazon.com/codedeploy/), Lambda zips, your deploy tool) | A separate release build next to `build/`, with its own make targets | [ADR 0011](../decisions/0011-fallout-build.md) |
 | Messaging transport | `Core.Messaging.Abstractions` defines the broker-neutral extension point. The toolkit supplies AWS SNS/SQS in `Infrastructure.Messaging.Aws` and Kafka in `Infrastructure.Messaging.Kafka`; applications still own consumer loops, offset/acknowledgement policy, retries and deduplication. | [Package Catalog](../packages/README.md#infrastructure-adapters-to-external-systems) |
 | Pipeline-specific targets | Your own `.mk` files in `MAKE_EXTRA_TARGETS` | [Adopting an existing solution](adopting-existing-solution.md#anarchy-automation-next-to-your-pipeline) |
 
@@ -57,6 +58,8 @@ public sealed class ModuleAcmeConfiguration : IDependencyInjectionModule
             environment);
 }
 ```
+
+On AWS, chain `.WithSecretManagement(new ModuleAwsSecretManagement())` onto `ModuleLibConfiguration` to decrypt secrets with KMS in remote environments.
 
 The destination (endpoint, API key, temporality) is the exporter's configuration, usually the `OTEL_EXPORTER_OTLP_*` environment variables, so the same module serves every environment. Keep keys in the host's secret store.
 

@@ -35,7 +35,7 @@ ready, logs in `artifacts/mock-server/mock-server.log`) over `make mock_server`,
 tests and expose it as `MOCKSERVER_URL`. Recorded requests go to `artifacts/mock-server/requests.jsonl`.
 
 Before concluding the mock server lacks something, check what it already does (guide:
-https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html, and the `Anarchy.Toolkit.Web.MockServer` and
+https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html, and the `Anarchy.Toolkit.Runtime.Web.MockServer` and
 `Anarchy.Toolkit.Testing.MockServer` package READMEs in the NuGet cache):
 
 | Need | Use |

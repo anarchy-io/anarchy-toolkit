@@ -23,10 +23,10 @@ Not sure where to start? The [adoption advisor](../getting-started/advisor.md) a
 |---|---|
 | [Layered Architecture](architecture.md) | The layers, the toolkit's DI modules, the layering check and the dependency map. |
 | [Automation Preferences](automation-preferences.md) | Optional root-level automation overrides, settings inventory, defaults, precedence and explicit editing commands. |
-| [Observability](observability.md) | `ICoreTelemetry` and `AppTelemetry`, standard logging and metrics, OTLP, optional Serilog, correlation IDs, Datadog and New Relic configuration, testing telemetry. |
+| [Observability](observability.md) | `ICoreTelemetry` and `AppTelemetry`, standard logging and metrics, OTLP, optional Serilog, correlation IDs, the AWS request context, Datadog and New Relic configuration, testing telemetry. |
 | [Database Providers](database-providers.md) | The provider-agnostic persistence layer, [PostgreSQL](https://www.postgresql.org/)/Oracle/MySQL specifics, adding a provider. |
 | [Mock Server](mock-server.md) | Standing in for HTTP upstreams: expectations, your own host, assertions and recording. |
-| [Building UIs](building-uis.md) | `Web.Ui`: [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) startup, cookie-session login, environment catalog, downstream API clients, components. |
+| [Building UIs](building-uis.md) | `Runtime.Web.Ui`: [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) startup, cookie-session login, environment catalog, downstream API clients, components. |
 | [Anarchy Automation Builds](automation-builds.md) | The `Automation.Build` components, test discovery and runners, artifacts, releases and CLI tool wrappers. |
 | [GitHub Package Publishing](github-package-publishing.md) | Repository-owner setup for the toolkit's NuGet publishing workflow and `main` protections. |
 | [CLI Tool](../packages/Automation.Build.Cli/README.md) | The `anarchy-toolkit` CLI: bootstrapping a solution and scaffolding APIs, jobs and UIs. |

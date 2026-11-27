@@ -6,11 +6,13 @@ Short, self-contained recipes for setting up each piece of a toolkit-based solut
 
 The toolkit's test kits (`Anarchy.Toolkit.Testing*`) and test targets expect [xUnit v3](https://xunit.net/) projects running on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro) (MTP).
 
-1. Create the project: `<OutputType>Exe</OutputType>`, a reference to `xunit.v3` and to the `Testing` kit your tests need (`Testing`, `Testing.Web`, `Testing.Db.Postgres`, ...). The kits need [Moq](https://github.com/devlooped/moq) 4.21 or later and bring [AwesomeAssertions](https://awesomeassertions.org/).
+1. Create the project: `<OutputType>Exe</OutputType>`, a reference to `xunit.v3` and to the `Testing` kit your tests need (`Testing`, `Testing.Runtime.Web`, `Testing.Runtime.Web.Aws`, `Testing.Db.Postgres`, ...). The kits need [Moq](https://github.com/devlooped/moq) 4.21 or later and bring [AwesomeAssertions](https://awesomeassertions.org/).
 2. Use the v3 companion packages when you need them: `AutoFixture.Xunit3`, `Snapshooter.Xunit3`.
 3. Write tests as in the [Testing convention](../conventions/testing.md): derive from `TestCaseBase`, pass `TestContext.Current.CancellationToken` to calls that take a token ([xUnit1051](https://xunit.net/xunit.analyzers/rules/xUnit1051), an error in Release builds with warnings as errors), and keep `MemberData` members static.
 4. Select the MTP runner in [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json): `{ "test": { "runner": "Microsoft.Testing.Platform" } }`.
 5. If the CI server needs test results as files, add [`Microsoft.Testing.Extensions.TrxReport`](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-extensions-test-reports) and pass `--report-trx`.
+
+A bootstrapped solution already has `tests/Unit`, `tests/Integration` and `tests/EndToEnd`, each referencing the shared, non-executable `tests/Common` project (renamed with the `tests.commonProject` preference); `anarchy-toolkit scaffold tests <kind>` adds a missing one.
 
 Done when: `make test_unit` discovers and runs the project and reports its tests.
 
@@ -26,8 +28,8 @@ Done when: `make test_unit`, `make test_integration` and `make test_end_to_end` 
 
 Use it to stand in for HTTP upstreams in integration and end-to-end tests, without Docker.
 
-1. Add a runnable project whose name ends in `MockServer` (for example `src/MockServer`), referencing `Anarchy.Toolkit.Web.MockServer`, with `return await MockServerEntryPoint.RunAsync(args);` as its entry point.
-2. Put expectation files (JSON in MockServer's format) in a folder per upstream, and add `IMockServerBuild` to the build with `"MockServerExpectations": ["src/MockServer/expectations"]`.
+1. Add a runnable project whose name ends in `MockServer` (for example `tests/MockServer`, which `anarchy-toolkit bootstrap --with-mock-server` creates), referencing `Anarchy.Toolkit.Runtime.Web.MockServer`, with `return await MockServerEntryPoint.RunAsync(args);` as its entry point.
+2. Put expectation files (JSON in MockServer's format) in a folder per upstream, and add `IMockServerBuild` to the build with `"MockServerExpectations": ["tests/MockServer/mocks"]`.
 3. Pin the port your test settings use (`"MockServerPort": 6001`): an explicit port fails loudly when it is taken.
 4. Point the applications' development and test settings at it.
 5. In the integration and end-to-end tests, reference `Testing.MockServer` and call `ShouldAllHaveBeenMatched()` on the recorded requests in an assembly fixture, so an unmocked call fails the run.
@@ -60,7 +62,7 @@ Done when: the module test passes and the application resolves the service at st
 ## Add validated settings
 
 1. Add `AppSettings : IAppSettings` with one property per section, each marked `[Required, ValidateObjectMembers]` where it must be present.
-2. Add `ModuleAppSettings : ModuleAppSettingsBase<AppSettings>` and register `ModuleLibConfiguration<ModuleAppSettings, AppSettings>`, which also registers telemetry and secrets.
+2. Add `ModuleAppSettings : ModuleAppSettingsBase<AppSettings>` and register `ModuleLibConfiguration<ModuleAppSettings, AppSettings>`, which also registers telemetry and, locally, in-memory secrets; opt into a remote secret store with `.WithSecretManagement(new ModuleAwsSecretManagement())` from `Bootstrap.Aws`. In a bootstrapped monorepo with shared settings, these already exist once: `AppSettings` in the Infrastructure library, `ModuleAppSettings` and the `appsettings*.json` files in the Bootstrap library.
 3. List the keys a developer must provide in `appsettings.json.template`; `make appsettings` asks for them.
 4. Add a test that boots the settings from each environment's configuration, and one that removes a section and expects the boot to fail.
 

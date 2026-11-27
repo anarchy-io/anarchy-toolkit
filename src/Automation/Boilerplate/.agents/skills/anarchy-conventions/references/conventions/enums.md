@@ -149,7 +149,7 @@ When you do use enums, the toolkit relies on the `[Description(...)]` attribute 
 The same convention is wired into serialization and persistence:
 
 - `DescriptionEnumJsonConverter<TEnum>` / `DescriptionEnumJsonConverterFactory` (System.Text.Json, `Anarchy.Toolkit.Core`),
-- `DescribableEnumJsonConverter` (System.Text.Json factory registered by the Web presentation pipeline),
+- `DescribableEnumJsonConverter` (System.Text.Json factory registered by the `Runtime.Web` presentation pipeline),
 - `DescriptionEnumTypeHandler<TEnum>` ([Dapper](https://github.com/DapperLib/Dapper), provider-agnostic, in `Anarchy.Toolkit.Infrastructure.Persistence.Db`).
 
 These are convenient for **stable local mappings**. They should not be used as blanket parsers for arbitrary upstream data you do not own.

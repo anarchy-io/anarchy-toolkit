@@ -18,18 +18,20 @@ Why the platform looks the way it does. The [conventions](../conventions/README.
 
 ## Decisions
 
-Architectural decision records, written after the fact for choices made while the toolkit grew. Each one records the context, the decision, its consequences and the alternatives considered.
+Architectural decision records, in reading order: architecture and code organization, then runtime composition, messaging and persistence, testing, and finally the build and scaffolding. Written after the fact for choices made while the toolkit grew. Each one records the context, the decision, its consequences and the alternatives considered.
 
 | ADR | Decision |
 |---|---|
-| [0001](0001-layered-architecture.md) | Layered architecture, checked by the build |
-| [0002](0002-dependency-injection-modules.md) | Dependency-injection modules that receive their configuration |
-| [0003](0003-validated-app-settings.md) | One validated settings object per application |
-| [0004](0004-telemetry-composition.md) | Telemetry composed over the standard .NET logging and metrics APIs |
-| [0005](0005-xunit-v3-on-mtp.md) | [xUnit v3](https://xunit.net/) on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro) |
-| [0006](0006-fallout-build.md) | [Fallout](https://fallout.build/) for the build, without deployment components |
-| [0007](0007-own-mock-server.md) | An in-process mock server instead of a [MockServer](https://www.mock-server.com/) container |
+| [0001](0001-layered-architecture.md) | Layered architecture (`Core < Infrastructure < Bootstrap < Runtime < Apps`), checked by the build |
+| [0002](0002-extensions-and-helpers.md) | Extensions and helpers in dedicated folders, with namespaces that follow them |
+| [0003](0003-dependency-injection-modules.md) | Dependency-injection modules that receive their configuration |
+| [0004](0004-validated-app-settings.md) | One validated settings object, shared by a monorepo's applications by default |
+| [0005](0005-telemetry-composition.md) | Telemetry composed over the standard .NET logging and metrics APIs |
+| [0006](0006-kafka-messaging-transport.md) | Kafka as a second messaging transport |
+| [0007](0007-events-persistence-package.md) | Event and outbox persistence in a separate package |
 | [0008](0008-test-levels.md) | Three test levels, one project per level |
-| [0009](0009-optional-automation-preferences.md) | Optional automation preferences, precedence and stable public defaults |
-| [0010](0010-kafka-messaging-transport.md) | Kafka as a second messaging transport |
-| [0011](0011-events-persistence-package.md) | Event and outbox persistence in a separate package |
+| [0009](0009-xunit-v3-on-mtp.md) | [xUnit v3](https://xunit.net/) on [Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro) |
+| [0010](0010-own-mock-server.md) | An in-process mock server instead of a [MockServer](https://www.mock-server.com/) container |
+| [0011](0011-fallout-build.md) | [Fallout](https://fallout.build/) for the build, without deployment components |
+| [0012](0012-optional-automation-preferences.md) | Optional automation preferences, precedence and stable public defaults |
+| [0013](0013-solution-scaffolding.md) | What a bootstrapped solution contains |

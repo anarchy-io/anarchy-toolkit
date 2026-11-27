@@ -52,7 +52,7 @@ settled, start a fresh session to carry it out; bring only the agreed plan and n
   non-interactive setup can pass `--layout monorepo|single-app`, and `--application-folder` names the single app's
   folder. See [Automation Preferences](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html)
   for the owner and precedence of `.fallout/parameters.json`, `.anarchy-toolkit.json` and one-run arguments.
-- Make and Bash are optional when running supported build targets directly: `dotnet run --project build/_build.csproj -- <Target> [--parameter value]`. See [Without Make](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html#without-make-including-windows).
+- Make and Bash are optional when running supported build targets directly: `./scripts/build.anarchy.ps1 <Target>` on Windows, or `dotnet run --project build/_build.csproj -- <Target> [--parameter value]`. See [Without Make](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html#without-make-including-windows).
 
 ## More help
 

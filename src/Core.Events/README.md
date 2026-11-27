@@ -21,7 +21,7 @@ Use the local bus to notify other components within the same process, or use the
 Register `AppTelemetry` and the bus, then register each handler explicitly. For example, with an application-defined `OrderPlaced : ILocalEvent` and `OrderPlacedHandler : ILocalEventHandler<OrderPlaced>`:
 
 ```csharp
-using Anarchy.Toolkit.Core.Events.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Core.Events.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Core.Events.Local;
 using Anarchy.Toolkit.Core.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +63,14 @@ from the body, not the broker attributes, source, destination or delivery identi
 the event producer in other formats such as CloudEvents.
 
 See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [architecture guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html).
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) | Serializes and parses event envelopes and their data | Indirectly: an envelope's `Data` may hold a `JToken` |
 
 ## Releases
 

@@ -1,6 +1,6 @@
 # Building UIs
 
-`Anarchy.Toolkit.Web.Ui` provides a generic UI host: an interactive-server Blazor application that runs without a login, with an opt-in cookie session where users sign in with OAuth client credentials and the UI calls downstream APIs on their behalf. Everything domain-specific (APIs, pages and environment URLs) is supplied by the application. The examples below build an administration UI for a user-management API.
+`Anarchy.Toolkit.Runtime.Web.Ui` provides a generic UI host: an interactive-server Blazor application that runs without a login, with an opt-in cookie session where users sign in with OAuth client credentials and the UI calls downstream APIs on their behalf. Everything domain-specific (APIs, pages and environment URLs) is supplied by the application. The examples below build an administration UI for a user-management API.
 
 [`samples/Samples.Ui`](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Ui) is a runnable example of the features described in this guide.
 
@@ -12,16 +12,16 @@ Interactive-server Blazor maintains a persistent connection and is not supported
 
 | Piece | Where | What it does |
 |---|---|---|
-| `AddToolkitUi` / `ToolkitUiBuilder` | `Ui/Extension/DependencyInjection` | Razor components, interactive server mode, presenters and routing options; `AddCookieSession` adds the cookie session, cascading auth state and `LoginPresenter`. |
-| `UseToolkitUi` / `MapToolkitUi` | `Extension/Service/Builder` | Static assets and antiforgery; the login/logout endpoints when the cookie session is on. |
-| `UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>` | `Ui/Composition/Startup` | Thin startup wrapper over the above, plus the toolkit common middlewares; session opt-in through `GetUiAuthenticationOptions` and add-ons through `ConfigureUi`. |
+| `AddToolkitUi` / `ToolkitUiBuilder` | `Composition`, `Extensions/Microsoft/Extensions/DependencyInjection` | Razor components, interactive server mode, presenters and routing options; `AddCookieSession` adds the cookie session, cascading auth state and `LoginPresenter`. |
+| `UseToolkitUi` / `MapToolkitUi` | `Extensions/Microsoft/AspNetCore/Builder` | Static assets and antiforgery; the login/logout endpoints when the cookie session is on. |
+| `UiWebAppStartupBase<TAppSettingsDiModule, TAppSettings>` | `Composition/Startup` | Thin startup wrapper over the above, plus the toolkit common middlewares; session opt-in through `GetUiAuthenticationOptions` and add-ons through `ConfigureUi`. |
 | `UiAuthenticationOptions` | `Entity/Ui` | Cookie settings, login/logout/home paths, OAuth `Scope`, and the `Environments` a session can target. |
 | `UiRoutingOptions` | `Entity/Ui` | Route prefixes and the optional `/{environment}` link prefix, for hosts served behind an API gateway stage. |
 | `UiEnvironment` / `IUiEnvironmentCatalog` | `Core/Entity/Ui`, `Core/Service/Ui` | Auth service URL and named downstream API URLs per environment. |
 | `IUiSessionContext` | `Core/Service/Ui/Session` | Access token, client name and target environment of the signed-in user. |
-| `UiApiClientBase` + `AddToolkitUiApiHttpClient` | `Infrastructure/Service/Http/Client`, `Configuration/Extension/Microsoft/DependencyInjection` | Bearer-authenticated JSON/GraphQL calls to the session's environment; failures raise `DownstreamHttpRequestException` with a readable body. |
-| `NotificationService`, `JsonModalState`, `PaginationState` | `Ui/Presentation` | Circuit-scoped notifications and JSON modal, client-side pagination. |
-| Components | `Ui/Template/Component` | `LoginForm`, `RedirectToLogin`, `RootRedirect`, `LogoutRedirect`, `SessionBadge`, `NotificationHost`, `JsonModalHost`, `JsonViewLink`, `JsonObjectProperties`, `ConfirmationModal`, `TypedConfirmationModal`, `Pagination`, `TablePaginationFooter`, `EnvironmentPill`, `UiHeadAssets`, `UiBodyScripts`, `LoginLayout`. |
+| `UiApiClientBase` + `AddToolkitUiApiHttpClient` | `Infrastructure/Http/Client`, `Extensions/Microsoft/Extensions/DependencyInjection` | Bearer-authenticated JSON/GraphQL calls to the session's environment; failures raise `DownstreamHttpRequestException` with a readable body. |
+| `NotificationService`, `JsonModalState`, `PaginationState` | `Presentation/Service`, `Presentation/Model` | Circuit-scoped notifications and JSON modal, client-side pagination. |
+| Components | `Template/Component` | `LoginForm`, `RedirectToLogin`, `RootRedirect`, `LogoutRedirect`, `SessionBadge`, `NotificationHost`, `JsonModalHost`, `JsonViewLink`, `JsonObjectProperties`, `ConfirmationModal`, `TypedConfirmationModal`, `Pagination`, `TablePaginationFooter`, `EnvironmentPill`, `UiHeadAssets`, `UiBodyScripts`, `LoginLayout`. |
 | `toolkit-ui.css`, `toolkit-ui.js` | `wwwroot` (embedded) | Styles for the components above, layered on the consumer's theme stylesheet; scroll-edge shadows for wide tables. |
 
 ## Wiring a UI
@@ -109,7 +109,7 @@ build the pipeline without `UseToolkitHostUi`. Published applications are unaffe
 
 ## Pages and layout
 
-Pages belong to the application (routes are compile-time constants), composed from the toolkit components. Add `@using Anarchy.Toolkit.Web.Ui.Ui.Template.Component.Session` (and `.Shared`, `.Json`, `.Layout`) to the application's `_Imports.razor`, and register the toolkit assembly with the router only if you add routable components of your own there.
+Pages belong to the application (routes are compile-time constants), composed from the toolkit components. Add `@using Anarchy.Toolkit.Runtime.Web.Ui.Template.Component.Session` (and `.Shared`, `.Json`, `.Layout`) to the application's `_Imports.razor`, and register the toolkit assembly with the router only if you add routable components of your own there.
 
 ```razor
 @* App.razor *@

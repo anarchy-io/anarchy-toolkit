@@ -1,11 +1,11 @@
-# Anarchy.Toolkit.Web.GraphQL
+# Anarchy.Toolkit.Runtime.Web.GraphQL
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Runtime · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
 GraphQL wiring for ASP.NET Core APIs built on the toolkit's web pipeline.
 
 ```bash
-dotnet add package Anarchy.Toolkit.Web.GraphQL
+dotnet add package Anarchy.Toolkit.Runtime.Web.GraphQL
 ```
 
 - Define your schema using `SchemaBase` and register it with `AddToolkitGraphQl<TSchema>(graphTypesAssembly)`. Register root graph types separately.
@@ -22,8 +22,8 @@ Add this package when an ASP.NET Core application needs a GraphQL endpoint along
 2. Register the schema and discover graph types from the appropriate assembly. Add the middleware with the name of an authorization policy already configured by the host:
 
 ```csharp
-using Anarchy.Toolkit.Web.GraphQL.Extension.DependencyInjection;
-using Anarchy.Toolkit.Web.GraphQL.Extension.Service.Builder;
+using Anarchy.Toolkit.Runtime.Web.GraphQL.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Runtime.Web.GraphQL.Extensions.Microsoft.AspNetCore.Builder;
 
 services.AddToolkitGraphQl<MySchema>(typeof(MySchema).Assembly);
 // In the configured ASP.NET Core pipeline:

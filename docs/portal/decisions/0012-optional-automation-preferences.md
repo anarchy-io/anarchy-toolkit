@@ -1,4 +1,4 @@
-# 0009. Optional automation preferences and stable defaults
+# 0012. Optional automation preferences and stable defaults
 
 ## Context
 
@@ -17,7 +17,9 @@ environment and parameter-file resolution remains ahead of saved overrides. The 
 fallback without depending on Fallout. No operation infers a layering mode from the repository layout.
 
 Saving is opt-in and explicit. Normal builds do not write preferences; bootstrap and scaffold save only when asked,
-with interactive consent defaulting to No. Preference editing validates the merged document before an atomic write and
+with interactive consent defaulting to No. The one exception is a structural choice the generated code depends on:
+bootstrap records `scaffolding.appSettings: shared` when it creates shared settings, so later scaffolds match the
+solution instead of generating settings it does not use. Preference editing validates the merged document before an atomic write and
 preserves unrelated values. The schema is a documentation/editor contract and does not materialize defaults into a
 saved file. Credentials and transient or destructive-operation choices are not preferences.
 

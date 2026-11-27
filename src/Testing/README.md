@@ -26,6 +26,18 @@ See the [testing guide](https://anarchy-io.github.io/anarchy-toolkit/conventions
 
 See the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html) and [package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/).
 
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [xUnit.net v3](https://www.nuget.org/packages/xunit.v3.extensibility.core) (`xunit.v3.extensibility.core`) | The test framework the kits are written for; `Xunit` is a global using | No: brought to test projects |
+| [Moq](https://www.nuget.org/packages/Moq) | Mocks for the test projects | No: brought to test projects |
+| [AwesomeAssertions](https://www.nuget.org/packages/AwesomeAssertions) | Fluent assertions, extended by the kit's assertion extensions | Yes: the assertion extensions build on it |
+| [Spectre.Console](https://www.nuget.org/packages/Spectre.Console) | Console output for test projects | No: brought to test projects |
+| [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) | Parses response bodies (`ResponseHelper`) | No |
+
 ## Releases
 
 See the [release notes](RELEASE-NOTES.md) for the complete release history.
