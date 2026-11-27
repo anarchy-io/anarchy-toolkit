@@ -1,9 +1,10 @@
 using Anarchy.Toolkit.Core.Composition.Module;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Anarchy.Toolkit.Core.Telemetry;
+namespace Anarchy.Toolkit.Core.Telemetry.DependencyInjection.Module;
 
 /// <summary>
 /// Base for an application's telemetry module: register the logging providers, recorder or primitives in

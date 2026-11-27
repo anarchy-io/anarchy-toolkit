@@ -1,5 +1,10 @@
 ## Releases
 
+### 4.0.0
+
+- **Breaking:** `OutboundMessageBuilder` follows the new `Core` namespaces.
+- **Breaking:** depends on the new major versions of `Core`.
+
 ### 3.0.0
 
 - Breaking: Use the broker-neutral `BrokerReference` for received message references and allow an optional outbound deduplication ID.

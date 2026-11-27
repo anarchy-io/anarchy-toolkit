@@ -1,5 +1,9 @@
 ## Releases
 
+### 3.0.0
+
+- **Breaking:** depends on the new major versions of `Core`.
+
 ### 2.1.0
 
 - Add generic attribute-ID caching and transaction-local resolution supporting numeric, GUID, and string identifiers.

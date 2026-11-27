@@ -1,3 +1,4 @@
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,7 +10,7 @@ namespace Anarchy.Toolkit.Core.Composition.Module;
 /// </summary>
 /// <remarks>
 /// Modules are applied with the <c>UseModule</c> extensions in
-/// <see cref="Extension.Microsoft.DependencyInjection.ServiceCollectionExtensions"/>, which pass in the application
+/// <see cref="ServiceCollectionExtensions"/>, which pass in the application
 /// configuration and hosting environment so the module can bind options or vary registrations per environment.
 /// </remarks>
 /// <example>

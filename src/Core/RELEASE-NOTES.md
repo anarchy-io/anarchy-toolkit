@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- **Breaking:** extension classes take the `Extensions` suffix under `Extensions/<extended namespace>/` and helpers live in `Helpers/<Subject>/`, with namespaces following their folders (for example `Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection`): update `using` directives.
+- **Breaking:** exceptions and converters found among extensions and helpers move to their own folders and namespaces.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property

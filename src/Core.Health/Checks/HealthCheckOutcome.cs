@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Health.Reports;
-using Anarchy.Toolkit.Core.Helper;
+using Anarchy.Toolkit.Core.Helpers.Dates;
 
 namespace Anarchy.Toolkit.Core.Health.Checks;
 
