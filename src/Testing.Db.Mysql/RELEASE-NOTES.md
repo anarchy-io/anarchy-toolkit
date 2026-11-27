@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- **Breaking:** the helpers move to `Helpers/Database/` with a matching namespace.
+- **Breaking:** depends on the new major versions of `Testing.Db`.
+
 ### 2.0.0
 
 - Update dependencies for the relational event-persistence split and event contract changes.

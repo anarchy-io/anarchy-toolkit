@@ -10,7 +10,7 @@ dotnet add package Anarchy.Toolkit.Testing
 
 - Base tests and fixtures on `TestCaseBase`, `TestCaseBase<TAppSettings>` and `EntityFixtureBase`; use `TestHelper` for common setup.
 - Test instrumentation with `TestTelemetry`: an `AppTelemetry` whose logs (`InMemoryLoggerProvider`, with properties and scopes) and metrics (`InMemoryMetricRecorder`) are captured in memory. `services.AddTestTelemetry(capture)` routes a container's telemetry to the same capture.
-- API Gateway response assertions use AwesomeAssertions. Database, AWS messaging and web-specific helpers live in separate `Testing.*` packages.
+- Database, AWS and web-specific helpers (including API Gateway response assertions) live in separate `Testing.*` packages.
 
 ## When to use it
 

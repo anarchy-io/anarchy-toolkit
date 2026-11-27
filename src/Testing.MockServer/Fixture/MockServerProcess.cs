@@ -1,5 +1,5 @@
+using Anarchy.Toolkit.Runtime.Web.MockServer.Service;
 using Anarchy.Toolkit.Testing.MockServer.Client;
-using Anarchy.Toolkit.Web.MockServer.Service;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -12,12 +12,12 @@ public sealed class MockServerProcessOptions
 {
     /// <summary>
     /// A project to <c>dotnet run</c> (a host of your own built on <c>MockServerEntryPoint</c>); when absent, the
-    /// <c>Anarchy.Toolkit.Web.MockServer</c> assembly next to the test assembly is run.
+    /// <c>Anarchy.Toolkit.Runtime.Web.MockServer</c> assembly next to the test assembly is run.
     /// </summary>
     public string? ProjectPath { get; set; }
 
     /// <summary>The assembly to run when there is no <see cref="ProjectPath"/>.</summary>
-    public string AssemblyPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "Anarchy.Toolkit.Web.MockServer.dll");
+    public string AssemblyPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "Anarchy.Toolkit.Runtime.Web.MockServer.dll");
 
     /// <summary>The port; <see langword="null"/> uses the server's default (<c>6001</c> or the next free one).</summary>
     public int? Port { get; set; }

@@ -4,20 +4,22 @@
     <PackageId>Anarchy.Toolkit.Testing.Aws</PackageId>
     <AssemblyName>Anarchy.Toolkit.Testing.Aws</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Testing.Aws</RootNamespace>
-    <Version>3.0.0</Version>
-    <Description>AWS messaging test helpers (SNS/SQS helpers, typically against LocalStack, and SqsMessageFixture with gzip/zlib bodies) for message-broker integration tests.</Description>
+    <Version>4.0.0</Version>
+    <Description>AWS test helpers: SNS/SQS helpers (typically against LocalStack), SqsMessageFixture with gzip/zlib bodies, and LambdaContextFixture for Lambda handlers under test.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Testing\Testing.csproj" />
+    <ProjectReference Include="..\Bootstrap.Aws\Bootstrap.Aws.csproj" />
     <ProjectReference Include="..\Infrastructure.Messaging.Aws\Infrastructure.Messaging.Aws.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SimpleNotificationService" />
     <PackageReference Include="AWSSDK.SQS" />
+    <PackageReference Include="Amazon.Lambda.Core" />
     <PackageReference Include="Amazon.Lambda.SQSEvents" />
   </ItemGroup>
 

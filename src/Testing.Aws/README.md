@@ -10,6 +10,7 @@ dotnet add package Anarchy.Toolkit.Testing.Aws
 
 - Use `SqsHelper` and `AwsMessageBrokerHelper` to work with test queues and messaging resources.
 - `SqsMessageFixture` builds SQS messages, including gzip/zlib-compressed payloads.
+- `LambdaContextFixture` is an `ILambdaContext` to pass to Lambda handlers under test.
 - Supply a suitable AWS or LocalStack endpoint and resources for your integration tests.
 
 ## When to use it
