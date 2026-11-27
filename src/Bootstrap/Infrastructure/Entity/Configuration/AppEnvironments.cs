@@ -1,0 +1,51 @@
+using Anarchy.Toolkit.Bootstrap.Extensions.Microsoft.Extensions.Hosting;
+
+namespace Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
+
+/// <summary>
+/// Names of the environments supported by the toolkit, for use with <see cref="Microsoft.Extensions.Hosting.IHostEnvironment"/>
+/// (e.g. through <see cref="HostEnvironmentEnvExtensions"/>).
+/// </summary>
+public static class AppEnvironments
+{
+    /// <summary>
+    /// Specifies the Development environment.
+    /// </summary>
+    /// <remarks>The development environment can enable features that shouldn't be exposed in production. Because of the performance cost, scope validation and dependency validation only happens in development.</remarks>
+    public const string Development = "Development";
+
+    /// <summary>
+    /// Specifies the Testing environment.
+    /// </summary>
+    /// <remarks>The testing environment can be used to by developers validate app changes before changing the environment to acceptance.</remarks>
+    public const string Testing = "Testing";
+
+    /// <summary>
+    /// Specifies the Acceptance environment.
+    /// </summary>
+    /// <remarks>The acceptance environment can be used to by stakeholders validate app changes before changing the environment to production.</remarks>
+    public const string Acceptance = "Acceptance";
+
+    /// <summary>
+    /// Specifies the Staging environment.
+    /// </summary>
+    /// <remarks>The staging environment can be used to validate an application in a production-like setting before deployment to production.</remarks>
+    public const string Staging = "Staging";
+
+    /// <summary>
+    /// Specifies the Production environment.
+    /// </summary>
+    /// <remarks>The production environment should be configured to maximize security, performance, and application robustness.</remarks>
+    public const string Production = "Production";
+
+    /// <summary>
+    /// All supported environment names, from <see cref="Development"/> to <see cref="Production"/>.
+    /// </summary>
+    public static readonly IReadOnlyCollection<string> AllAvailable = [
+        Development,
+        Testing,
+        Acceptance,
+        Staging,
+        Production
+    ];
+}
