@@ -1,7 +1,8 @@
 {
   "$schema": "https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json",
   "layering": {
-    "mode": "prefix"
+    "mode": "prefix",
+    "layers": ["Core", "Infrastructure", "Bootstrap", "Runtime", "Automation"]
   },
   "build": {
     "configuration": "Release"

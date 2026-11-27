@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Automation.Build.Component;
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Common;
 using Fallout.CodeGeneration;
 using Fallout.Common;
 using Fallout.Common.IO;
