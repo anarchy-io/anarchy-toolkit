@@ -1,5 +1,14 @@
 ## Releases
 
+### 4.0.0
+
+- **Breaking:** the default layers become `Core < Infrastructure < Bootstrap < Runtime < Apps`: applications go to `src/Apps/{Apis,Jobs,Ui}` (or `src/Apps.<Kind>.<Name>`), libraries to `src/Library/<Layer>` (or `src/Library.<Layer>`), and no Automation library is created.
+- Bootstrapped solutions get `build/Build.cs`, Unit, Integration, EndToEnd and Common test projects, an optional mock server, shared AppSettings in monorepos (`scaffolding.appSettings`), solution-name namespaces and a `solution items` folder, without a samples folder.
+- Scaffolded APIs include Swagger unless left out (`--no-swagger`, `scaffolding.swagger`), and only Lambda entry points reference the AWS packages.
+- The boilerplate adds `scripts/build.anarchy.ps1`, a PowerShell launcher for Windows.
+- The dependency map follows the Anarchy design tokens with a light/dark switch and draws graphs with the ELK layout.
+- **Breaking:** extension classes take the `Extensions` suffix under `Extensions/<extended namespace>/`, helpers live in `Helpers/<Subject>/`, and their namespaces follow those folders: update `using` directives.
+
 ### 3.0.0
 
 - Breaking: scaffold jobs as runnable workers by default, rather than Lambda-only libraries; choose a one-shot job explicitly when needed.

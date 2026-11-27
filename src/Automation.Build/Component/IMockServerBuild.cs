@@ -10,7 +10,7 @@ using static Fallout.Common.Tools.DotNet.DotNetTasks;
 namespace Anarchy.Toolkit.Automation.Build.Component;
 
 /// <summary>
-/// Runs an <c>Anarchy.Toolkit.Web.MockServer</c> host for integration and end-to-end tests: in the foreground
+/// Runs an <c>Anarchy.Toolkit.Runtime.Web.MockServer</c> host for integration and end-to-end tests: in the foreground
 /// (<see cref="MockServerRun"/>), in the background (<see cref="MockServerStart"/>/<see cref="MockServerStop"/>), or
 /// around a test run (<see cref="TestIntegrationWithMockServer"/>, <see cref="TestEndToEndWithMockServer"/>), which
 /// passes its address to the tests as <c>MOCKSERVER_URL</c>.
@@ -62,7 +62,7 @@ public interface IMockServerBuild : IStandardBuild
 
     /// <summary>
     /// Whether the mock server serves its UI at <c>/__mock/ui</c> (<c>--mock-server-ui</c>), when the host plugs one in
-    /// (<c>Anarchy.Toolkit.Web.MockServer.Ui</c>); <see langword="true"/> by default, <c>false</c> passes <c>--no-ui</c>.
+    /// (<c>Anarchy.Toolkit.Runtime.Web.MockServer.Ui</c>); <see langword="true"/> by default, <c>false</c> passes <c>--no-ui</c>.
     /// </summary>
     [Parameter("Serve the mock server UI when the host has one (default: true)")]
     bool MockServerUi => TryGetValue<bool?>(() => MockServerUi) ?? Preference<bool?>("mockServer.ui") ?? true;

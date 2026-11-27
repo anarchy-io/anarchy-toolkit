@@ -15,7 +15,7 @@ namespace Anarchy.Toolkit.Automation.Build.Component.Tasks;
 public sealed record MockServerState(int ProcessId, int Port, string Url, string LogFile);
 
 /// <summary>
-/// Starts and stops an <c>Anarchy.Toolkit.Web.MockServer</c> host (a project running <c>MockServerEntryPoint</c>) in
+/// Starts and stops an <c>Anarchy.Toolkit.Runtime.Web.MockServer</c> host (a project running <c>MockServerEntryPoint</c>) in
 /// the background, so it outlives the build that started it until <see cref="Stop"/>.
 /// </summary>
 /// <remarks>Used by <see cref="IMockServerBuild"/>.</remarks>

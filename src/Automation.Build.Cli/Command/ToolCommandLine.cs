@@ -8,19 +8,29 @@ namespace Anarchy.Toolkit.Automation.Build.Cli.Command;
 public static class ToolCommandLine
 {
     /// <summary>Usage for bootstrap, including optional layout overrides and preference saving.</summary>
-    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills] [--layout monorepo|single-app] [--application-folder <name>] [layout options] [--save-preferences]]";
+    public const string BootstrapUsage = "anarchy-toolkit bootstrap [<solution-name> [--output <empty-directory>] [--with-skills] [--no-tests] [--with-mock-server] [--isolated-app-settings] [--layout monorepo|single-app] [--application-folder <name>] [layout options] [--save-preferences]]";
     /// <summary>Flag to install the toolkit's agent skills while bootstrapping.</summary>
     public const string WithSkills = "--with-skills";
+    /// <summary>Flag to bootstrap without the Unit, Integration and EndToEnd test projects.</summary>
+    public const string NoTests = "--no-tests";
+    /// <summary>Flag to bootstrap a mock server host in <c>tests/MockServer</c>.</summary>
+    public const string WithMockServer = "--with-mock-server";
+    /// <summary>Flag to give each bootstrapped application its own settings instead of sharing one <c>AppSettings</c>.</summary>
+    public const string IsolatedAppSettings = "--isolated-app-settings";
     /// <summary>Usage for installing the toolkit's skills.</summary>
     public const string SkillsUsage = "anarchy-toolkit skills install [--output <solution-directory>]";
     /// <summary>Usage for inspecting packaged boilerplate.</summary>
     public const string BoilerplateUsage = "anarchy-toolkit boilerplate list|show <path>|diff [<path>...]";
+    /// <summary>Flag to scaffold an API without Swagger (<c>Anarchy.Toolkit.Runtime.Web.Swagger</c>).</summary>
+    public const string NoSwagger = "--no-swagger";
+    /// <summary>Flag to scaffold an API with Swagger, overriding a saved preference.</summary>
+    public const string WithSwagger = "--swagger";
     /// <summary>Flag to disable the toolkit's Swagger UI theme for a scaffolded API.</summary>
     public const string NoSwaggerTheme = "--no-swagger-theme";
     /// <summary>Flag to enable the toolkit's Swagger UI theme for a scaffolded API.</summary>
     public const string SwaggerTheme = "--swagger-theme";
     /// <summary>Usage for application, library and test-project scaffolding.</summary>
-    public const string ScaffoldUsage = "anarchy-toolkit scaffold api|job|ui <Name> [--container] [--lambda-api|--lambda-event] [--job-mode worker|once] | library <Name> --layer <Layer> | tests [unit|integration|endtoend] [--dry-run] [--save-preferences]";
+    public const string ScaffoldUsage = "anarchy-toolkit scaffold api|job|ui <Name> [--container] [--lambda-api|--lambda-event] [--job-mode worker|once] [--swagger|--no-swagger] [--swagger-theme|--no-swagger-theme] | library <Name> --layer <Layer> | tests [unit|integration|endtoend] [--dry-run] [--save-preferences]";
     /// <summary>Usage for showing or editing preferences.</summary>
     public const string ConfigUsage = "anarchy-toolkit config show|set <section.property> <json-value>|unset <section.property>|configure [--output <solution-directory>]";
 
@@ -51,6 +61,9 @@ public static class ToolCommandLine
 
         string? output = null;
         var skills = false;
+        var noTests = false;
+        var mockServer = false;
+        var isolated = false;
         var save = false;
         SolutionLayoutPreset? preset = null;
         string? applicationFolder = null;
@@ -64,6 +77,15 @@ public static class ToolCommandLine
                     break;
                 case WithSkills when !skills:
                     skills = true;
+                    break;
+                case NoTests when !noTests:
+                    noTests = true;
+                    break;
+                case WithMockServer when !mockServer:
+                    mockServer = true;
+                    break;
+                case IsolatedAppSettings when !isolated:
+                    isolated = true;
                     break;
                 case "--save-preferences" when !save:
                     save = true;
@@ -85,6 +107,9 @@ public static class ToolCommandLine
         var layering = ParseLayeringMode(overrides["mode"]?.GetValue<string>());
         return new ToolCommand(ToolMode.Bootstrap, args[0], output) {
             AgentSkills = skills,
+            TestProjects = !noTests,
+            MockServer = mockServer,
+            IsolatedAppSettings = isolated,
             Layering = layering,
             LayoutPreset = preset,
             ApplicationFolder = applicationFolder,
@@ -131,6 +156,7 @@ public static class ToolCommandLine
             else if (!args[0].StartsWith('-')) return Invalid("Usage: " + ScaffoldUsage);
         }
 
+        bool? swagger = null;
         bool? swaggerTheme = null;
         var container = false;
         var apiLambda = false;
@@ -164,6 +190,12 @@ public static class ToolCommandLine
                         ? JobExecutionMode.Worker
                         : JobExecutionMode.Once;
                     break;
+                case NoSwagger when swagger is null && application?.Kind == ApplicationKind.Api:
+                    swagger = false;
+                    break;
+                case WithSwagger when swagger is null && application?.Kind == ApplicationKind.Api:
+                    swagger = true;
+                    break;
                 case NoSwaggerTheme when swaggerTheme is null && application?.Kind == ApplicationKind.Api:
                     swaggerTheme = false;
                     break;
@@ -191,6 +223,8 @@ public static class ToolCommandLine
                     break;
             }
         }
+        if (swagger == false && swaggerTheme is not null)
+            return Invalid($"{NoSwagger} cannot be combined with {SwaggerTheme} or {NoSwaggerTheme}.");
         if (target == ScaffoldTarget.Library && layer is null) return Invalid("scaffold library requires --layer <Layer>.");
         if (target != ScaffoldTarget.Library && layer is not null) return Invalid("--layer is only valid for scaffold library.");
         if (applicationFolder is not null && preset != SolutionLayoutPreset.SingleApp)
@@ -206,6 +240,7 @@ public static class ToolCommandLine
             Layering = ParseLayeringMode(overrides["mode"]?.GetValue<string>()),
             LayoutPreset = preset,
             ApplicationFolder = applicationFolder,
+            SwaggerOverride = swagger,
             SwaggerThemeOverride = swaggerTheme,
             SavePreferences = save,
             LayeringOverrides = overrides.Count == 0 ? null : overrides

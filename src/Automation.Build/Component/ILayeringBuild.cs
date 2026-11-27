@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Solutions;
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Fallout.Common;
@@ -8,7 +8,7 @@ using Serilog;
 namespace Anarchy.Toolkit.Automation.Build.Component;
 
 /// <summary>
-/// Enforces the solution's layered architecture, using optional <c>.anarchy-toolkit.json</c> overrides: references, imports
+/// Enforces the solution's layered architecture (sometimes called an onion architecture), using optional <c>.anarchy-toolkit.json</c> overrides: references, imports
 /// and folders may only point to the project's own or a lower layer. The <c>Testing</c> kits may reference anything,
 /// but nothing in a layer may reference them. See <see cref="LayeringTasks"/> for the exact rules and
 /// <see cref="LayeringConfiguration"/> for the file.
@@ -25,9 +25,9 @@ namespace Anarchy.Toolkit.Automation.Build.Component;
 /// <code language="json">
 /// {
 ///   "layering": { "mode": "folder",
-///   "layers": ["Core", "Infrastructure", "Configuration", "Hosting", "Web", "Automation"],
+///   "layers": ["Core", "Infrastructure", "Bootstrap", "Runtime", "Apps"],
 ///   "libraryRoot": "src/Library",
-///   "applicationFolders": { "src/Api": "Web", "src/Jobs": "Hosting", "src/Ui": "Web" } }
+///   "applicationFolders": { "src/Apps/Apis": "Apps", "src/Apps/Jobs": "Apps", "src/Apps/Ui": "Apps" } }
 /// }
 /// </code>
 /// </example>

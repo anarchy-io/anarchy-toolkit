@@ -19,7 +19,7 @@ internal static class WebEntryPointTemplates
         var files = new Dictionary<string, string> {
             ["EntryPointLocal.cs"] = $$"""
                 using {{ns}}.Composition;
-                using Anarchy.Toolkit.Web;
+                using Anarchy.Toolkit.Runtime.Web;
 
                 namespace {{ns}};
 
@@ -36,7 +36,7 @@ internal static class WebEntryPointTemplates
         if (context.App.Container)
             files["EntryPointContainer.cs"] = $$"""
                 using {{ns}}.Composition;
-                using Anarchy.Toolkit.Web;
+                using Anarchy.Toolkit.Runtime.Web;
 
                 namespace {{ns}};
 
@@ -49,7 +49,7 @@ internal static class WebEntryPointTemplates
         if (context.App.ApiLambda)
             files["EntryPointLambda.cs"] = $$"""
                 using {{ns}}.Composition;
-                using Anarchy.Toolkit.Web;
+                using Anarchy.Toolkit.Runtime.Web.Aws;
 
                 namespace {{ns}};
 

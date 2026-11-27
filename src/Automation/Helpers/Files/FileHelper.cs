@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Files;
 
 /// <summary>
 /// File operations that never replace existing content.

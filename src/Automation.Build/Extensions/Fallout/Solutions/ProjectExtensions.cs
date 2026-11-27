@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Fallout.Solutions;
 
-namespace Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+namespace Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Solutions;
 
 /// <summary>
 /// Extensions to Fallout's <see cref="Project"/> type.
@@ -40,7 +40,15 @@ public static class ProjectExtensions
                 project.Directory,
                 relativePath(project),
                 project.GetProperty("RootNamespace") ?? project.Name,
-                project.GetItems<string>("ProjectReference").ToArray()),
+                CodeProjectReferences(project)),
             project => project,
             ReferenceEqualityComparer.Instance);
+
+    // A ProjectReference with ReferenceOutputAssembly="false" only orders the build (e.g. to embed a package's version):
+    // it is no code dependency, so the layering check and the dependency map ignore it.
+    private static string[] CodeProjectReferences(Project project) =>
+        project.GetMSBuildProject().GetItems("ProjectReference")
+            .Where(item => !string.Equals(item.GetMetadataValue("ReferenceOutputAssembly"), "false", StringComparison.OrdinalIgnoreCase))
+            .Select(item => item.EvaluatedInclude)
+            .ToArray();
 }

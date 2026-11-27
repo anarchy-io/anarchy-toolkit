@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Template;
-using Anarchy.Toolkit.Automation.Infrastructure.Helper;
+using Anarchy.Toolkit.Automation.Helpers.Files;
 
 namespace Anarchy.Toolkit.Automation.Core.Service;
 
@@ -11,7 +11,7 @@ namespace Anarchy.Toolkit.Automation.Core.Service;
 public static class BuildHostScaffolder
 {
     /// <summary>
-    /// Writes <c>build/_build.csproj</c> and <c>build/Program.cs</c>, whose <c>Build</c> class implements the toolkit's
+    /// Writes <c>build/_build.csproj</c> and <c>build/Build.cs</c>, whose <c>Build</c> class implements the toolkit's
     /// standard build components (NuGet, layering, dependency map, upgrades, Git hooks, boilerplate and Docker) and
     /// the <c>IBuildTelemetry</c> bridge that lets the solution add its own sinks to the build logs.
     /// </summary>
@@ -19,7 +19,7 @@ public static class BuildHostScaffolder
     /// <param name="automationBuildVersion">
     /// The version of <c>Anarchy.Toolkit.Automation.Build</c>, or <see langword="null"/> under central package management.
     /// </param>
-    /// <exception cref="System.IO.IOException">Thrown when <c>build/_build.csproj</c> or <c>build/Program.cs</c> already exists.</exception>
+    /// <exception cref="System.IO.IOException">Thrown when <c>build/_build.csproj</c> or <c>build/Build.cs</c> already exists.</exception>
     public static void Create(string root, string? automationBuildVersion)
     {
         FileHelper.WriteNewText(Path.Combine(root, "build", "_build.csproj"), $$"""
@@ -33,13 +33,17 @@ public static class BuildHostScaffolder
               <ItemGroup>
                 {{ApplicationTemplates.PackageReference(ToolkitPackageVersions.AutomationBuild, automationBuildVersion)}}
               </ItemGroup>
+              <ItemGroup>
+                <!-- Shown in the solution view: the parameters Fallout reads, e.g. the solution file. -->
+                <None Include="..\.fallout\parameters.json" Link=".fallout\parameters.json" />
+              </ItemGroup>
             </Project>
 
             """);
-        FileHelper.WriteNewText(Path.Combine(root, "build", "Program.cs"), """
+        FileHelper.WriteNewText(Path.Combine(root, "build", "Build.cs"), """
             using Anarchy.Toolkit.Automation.Build.Component;
             using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
-            using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+            using Anarchy.Toolkit.Automation.Build;
             using Anarchy.Toolkit.Automation.Build.Infrastructure.Telemetry;
 
             [BuildTelemetry]

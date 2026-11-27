@@ -25,9 +25,9 @@ public static class Labels
     /// <param name="kind">The application kind.</param>
     /// <returns>The label; the enum name for unknown values.</returns>
     public static string DescribeKind(ApplicationKind kind) => kind switch {
-        ApplicationKind.Api => "API - a REST API on Anarchy.Toolkit.Web",
-        ApplicationKind.Job => "Job - a background job or AWS Lambda function on Anarchy.Toolkit.Hosting",
-        ApplicationKind.Ui => "UI - a Blazor WebApp on Anarchy.Toolkit.Web.Ui",
+        ApplicationKind.Api => "API - a REST API on Anarchy.Toolkit.Runtime.Web",
+        ApplicationKind.Job => "Job - a background job (or AWS Lambda function) on Anarchy.Toolkit.Runtime",
+        ApplicationKind.Ui => "UI - a Blazor WebApp on Anarchy.Toolkit.Runtime.Web.Ui",
         _ => kind.ToString()
     };
 
@@ -37,8 +37,8 @@ public static class Labels
     /// <param name="mode">The layering mode.</param>
     /// <returns>The label; the enum name for unknown values.</returns>
     public static string DescribeMode(LayeringMode mode) => mode switch {
-        LayeringMode.Folder => "Folders - src/Library/<Layer> for libraries; src/Api, src/Jobs and src/Ui for applications",
-        LayeringMode.Prefix => "Name prefixes - src/<Layer>.<Name> for every project",
+        LayeringMode.Folder => "Folders - src/Library/<Layer> for libraries; src/Apps/Apis, src/Apps/Jobs and src/Apps/Ui for applications",
+        LayeringMode.Prefix => "Name prefixes - src/Library.<Layer> for libraries; src/Apps.<Kind>.<Name> for applications",
         _ => mode.ToString()
     };
 }

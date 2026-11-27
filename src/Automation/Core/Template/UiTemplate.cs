@@ -17,14 +17,14 @@ internal static class UiTemplate
         var files = new Dictionary<string, string> {
             [$"{context.ProjectName}.csproj"] = ApplicationTemplates.Project("Microsoft.NET.Sdk.Web", context, exe: true),
             [$"Composition/{context.StartupName}.cs"] = $$"""
-                using {{ns}}.Composition.DependencyInjection;
-                using {{ns}}.Infrastructure.Entity.Configuration;
+                using {{context.ModuleNamespace}};
+                using {{context.SettingsNamespace}};
                 using {{ns}}.Ui.Template;
-                using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
-                using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-                using Anarchy.Toolkit.Web.Ui.Core.Entity.Ui;
-                using Anarchy.Toolkit.Web.Ui.Entity.Ui;
-                using Anarchy.Toolkit.Web.Ui.Composition.Startup;
+                using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration;
+                using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
+                using Anarchy.Toolkit.Runtime.Web.Ui.Core.Entity.Ui;
+                using Anarchy.Toolkit.Runtime.Web.Ui.Entity.Ui;
+                using Anarchy.Toolkit.Runtime.Web.Ui.Composition.Startup;
 
                 namespace {{ns}}.Composition;
 
@@ -62,7 +62,7 @@ internal static class UiTemplate
                 """,
             ["Composition/DependencyInjection/ModuleAppSettings.cs"] = $"""
                 using {ns}.Infrastructure.Entity.Configuration;
-                using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Entity;
+                using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration.Entity;
 
                 namespace {ns}.Composition.DependencyInjection;
 
@@ -70,7 +70,7 @@ internal static class UiTemplate
 
                 """,
             ["Infrastructure/Entity/Configuration/AppSettings.cs"] = $$"""
-                using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
+                using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
                 using System.ComponentModel.DataAnnotations;
 
                 namespace {{ns}}.Infrastructure.Entity.Configuration;
@@ -91,11 +91,11 @@ internal static class UiTemplate
                 """,
             ["Ui/Template/_Imports.razor"] = $"""
                 @using global::{ns}.Ui.Template.Component.Layout
-                @using Anarchy.Toolkit.Web.Ui.Presentation.Presenter
-                @using Anarchy.Toolkit.Web.Ui.Template.Component.Json
-                @using Anarchy.Toolkit.Web.Ui.Template.Component.Layout
-                @using Anarchy.Toolkit.Web.Ui.Template.Component.Session
-                @using Anarchy.Toolkit.Web.Ui.Template.Component.Shared
+                @using Anarchy.Toolkit.Runtime.Web.Ui.Presentation.Presenter
+                @using Anarchy.Toolkit.Runtime.Web.Ui.Template.Component.Json
+                @using Anarchy.Toolkit.Runtime.Web.Ui.Template.Component.Layout
+                @using Anarchy.Toolkit.Runtime.Web.Ui.Template.Component.Session
+                @using Anarchy.Toolkit.Runtime.Web.Ui.Template.Component.Shared
                 @using Microsoft.AspNetCore.Authorization
                 @using Microsoft.AspNetCore.Components
                 @using Microsoft.AspNetCore.Components.Authorization

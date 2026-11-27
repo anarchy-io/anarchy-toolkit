@@ -24,6 +24,22 @@ public sealed record ToolCommand(
     public bool AgentSkills { get; init; }
 
     /// <summary>
+    /// Whether <c>bootstrap</c> creates the Unit, Integration and EndToEnd test projects; <c>--no-tests</c> turns it off.
+    /// </summary>
+    public bool TestProjects { get; init; } = true;
+
+    /// <summary>
+    /// Whether <c>bootstrap</c> creates a mock server host (<c>--with-mock-server</c>).
+    /// </summary>
+    public bool MockServer { get; init; }
+
+    /// <summary>
+    /// Whether <c>bootstrap</c> gives each application its own settings (<c>--isolated-app-settings</c>) instead of
+    /// sharing one <c>AppSettings</c>, which it does whenever the layout supports it.
+    /// </summary>
+    public bool IsolatedAppSettings { get; init; }
+
+    /// <summary>
     /// The layering mode requested for non-interactive bootstrap, or <see langword="null"/> for the default.
     /// </summary>
     public LayeringMode? Layering { get; init; }
@@ -51,6 +67,9 @@ public sealed record ToolCommand(
 
     /// <summary>Whether scaffolding only previews the project without writing files or preferences.</summary>
     public bool DryRun { get; init; }
+
+    /// <summary>Explicit Swagger choice; null means use saved preferences or the toolkit default.</summary>
+    public bool? SwaggerOverride { get; init; }
 
     /// <summary>Explicit Swagger theme choice; null means use saved preferences or the toolkit default.</summary>
     public bool? SwaggerThemeOverride { get; init; }

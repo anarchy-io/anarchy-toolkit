@@ -1,5 +1,11 @@
 ## Releases
 
+### 4.0.0
+
+- **Breaking:** the layering check defaults follow the new `Apps` layer and folders (from `Anarchy.Toolkit.Automation` 4.0.0).
+- The layering check ignores `ProjectReference`s with `ReferenceOutputAssembly="false"`, which only order the build.
+- **Breaking:** extension classes take the `Extensions` suffix under `Extensions/<extended namespace>/`, helpers live in `Helpers/<Subject>/`, and their namespaces follow those folders: update `using` directives.
+
 ### 3.0.0
 
 - Update the Automation dependency for its breaking application-scaffold defaults and explicit entry points.

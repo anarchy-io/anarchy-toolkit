@@ -1,9 +1,9 @@
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Solutions;
 using Fallout.Common.IO;
 using Fallout.Common.Tools.DotNet;
 using Fallout.Solutions;
 
-namespace Anarchy.Toolkit.Automation.Build.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Build.Helpers.TestingPlatforms;
 
 /// <summary>
 /// <para>

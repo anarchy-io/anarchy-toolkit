@@ -21,7 +21,7 @@ Without a command (or with `--help`), the tool shows its usage. Every command st
 | `anarchy-toolkit scaffold api\|job\|ui <Name> [--layout monorepo\|single-app] [--application-folder <name>] [layout options] [--save-preferences]` | Adds one without prompts; a preset applies to this operation, and saving selected preferences is opt-in. |
 | `anarchy-toolkit scaffold library <Name> --layer <Layer> [layout options] [--dry-run] [--save-preferences]` | Adds a library project in a configured layer, referencing the next lower project when present. |
 | `anarchy-toolkit scaffold tests [unit\|integration\|endtoend] [--dry-run] [--save-preferences]` | Adds the shared test project for a kind; without a kind, the wizard asks. Honors Fallout `TestKindAliases` and the optional `tests.kindAliases` preference. |
-| `anarchy-toolkit scaffold api <Name> [--swagger-theme\|--no-swagger-theme] [--save-preferences]` | Adds an API; either flag explicitly selects the Swagger theme. Saving preferences is opt-in. |
+| `anarchy-toolkit scaffold api <Name> [--swagger\|--no-swagger] [--swagger-theme\|--no-swagger-theme] [--save-preferences]` | Adds an API; `--no-swagger` leaves Swagger out, and the theme flags explicitly select the Swagger theme. Saving preferences is opt-in. |
 | `anarchy-toolkit config show\|set\|unset\|configure` | Inspect saved versus effective preferences, set or clear a typed JSON override, or interactively edit preferences. |
 | `anarchy-toolkit skills install [--output <dir>]` | Installs the toolkit's agent skills into `.agents/skills` of the solution found from the current directory (or `<dir>`). |
 | `anarchy-toolkit boilerplate list` | Lists the packaged boilerplate files (Makefile, scripts, settings files, agent skills). |
@@ -102,7 +102,7 @@ Run `anarchy-toolkit scaffold` anywhere inside a solution created by `bootstrap`
 
 It follows the solution's package management. When the nearest `Directory.Packages.props` above the new project enables central package management (in that file or in `Directory.Build.props`), the package version is added there as a `PackageVersion`, unless the package is already pinned, in which case the existing version is kept, and the project's reference is unversioned. Otherwise the reference carries the version.
 
-Generated APIs use the toolkit's default Swagger UI theme (see the [Web package README](../Web/README.md#swagger-ui-theme)). The `scaffolding.swaggerTheme` preference controls the default. `--swagger-theme` and `--no-swagger-theme` explicitly enable or disable it for one scaffold operation, overriding a saved choice.
+Generated APIs include Swagger: they reference `Anarchy.Toolkit.Runtime.Web.Swagger` (pinned in `Directory.Packages.props` under central package management) and call `AddToolkitSwagger` in their startup. The `scaffolding.swagger` preference controls the default; `--no-swagger` (or `--swagger`) overrides it for one scaffold operation, and the wizard asks "Include Swagger?". With Swagger, generated APIs use the toolkit's default Swagger UI theme (see the [Runtime.Web.Swagger package README](../Runtime.Web.Swagger/README.md#swagger-ui-theme)). The `scaffolding.swaggerTheme` preference controls the default. `--swagger-theme` and `--no-swagger-theme` explicitly enable or disable it for one scaffold operation, overriding a saved choice; they cannot be combined with `--no-swagger`.
 
 ### Preference commands
 

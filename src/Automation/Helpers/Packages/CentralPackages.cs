@@ -1,6 +1,7 @@
+using Anarchy.Toolkit.Automation.Helpers.Files;
 using System.Xml.Linq;
 
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Packages;
 
 /// <summary>
 /// NuGet central package management: a <c>Directory.Packages.props</c> with <c>ManagePackageVersionsCentrally</c>

@@ -1,6 +1,8 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Validation;
-using Anarchy.Toolkit.Automation.Infrastructure.Helper;
+using Anarchy.Toolkit.Automation.Helpers.Builds;
+using Anarchy.Toolkit.Automation.Helpers.DotNet;
+using Anarchy.Toolkit.Automation.Helpers.Files;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -127,7 +129,7 @@ public static class SolutionScaffolder
 
             using (var output = new FileStream(destination, FileMode.CreateNew)) input.CopyTo(output);
             if (resource.Path == ".gitignore") WarnAboutIgnoredTrackedFiles(root, log);
-            if (!OperatingSystem.IsWindows() && destination.EndsWith(".sh", StringComparison.Ordinal))
+            if (!OperatingSystem.IsWindows() && (destination.EndsWith(".sh", StringComparison.Ordinal) || destination.EndsWith(".ps1", StringComparison.Ordinal)))
                 File.SetUnixFileMode(destination, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
                     UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
         }
@@ -156,7 +158,8 @@ public static class SolutionScaffolder
         if (createSolution)
         {
             DotNetCli.Run(root, "new", "sln", "--format", "sln", "--name", solutionName!);
-            DotNetCli.Run(root, ["sln", solutionName + ".sln", "add", "build/_build.csproj", .. createCore ? new[] { "src/Core/Core.csproj" } : []]);
+            DotNetCli.Run(root, "sln", solutionName + ".sln", "add", "--in-root", "build/_build.csproj");
+            if (createCore) DotNetCli.Run(root, "sln", solutionName + ".sln", "add", "src/Core/Core.csproj");
             Directory.CreateDirectory(Path.GetDirectoryName(parametersPath)!);
             parameters!["Solution"] = solutionName + ".sln";
             File.WriteAllText(parametersPath, parameters.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n");

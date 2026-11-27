@@ -6,13 +6,14 @@ namespace Anarchy.Toolkit.Automation.Core.Entity;
 public enum LayeringMode
 {
     /// <summary>
-    /// By folder: libraries live in <c>src/Library/&lt;Layer&gt;</c> and applications in <c>src/Api</c>, <c>src/Jobs</c>
-    /// and <c>src/Ui</c>, which map to the <c>Web</c> and <c>Hosting</c> layers.
+    /// By folder: libraries live in <c>src/Library/&lt;Layer&gt;</c> and applications in <c>src/Apps/Apis</c>,
+    /// <c>src/Apps/Jobs</c> and <c>src/Apps/Ui</c>, which map to the <c>Apps</c> layer.
     /// </summary>
     Folder,
 
     /// <summary>
-    /// By name prefix: every project lives in <c>src/&lt;Layer&gt;.&lt;Name&gt;</c>.
+    /// By name prefix: libraries live in <c>src/Library.&lt;Layer&gt;</c> and applications in
+    /// <c>src/Apps.&lt;Kind&gt;.&lt;Name&gt;</c>.
     /// </summary>
     Prefix
 }

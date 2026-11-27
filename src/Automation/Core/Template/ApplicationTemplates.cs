@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
-using Anarchy.Toolkit.Core.Helper;
+using Anarchy.Toolkit.Core.Helpers.Ports;
 
 namespace Anarchy.Toolkit.Automation.Core.Template;
 
@@ -14,33 +14,48 @@ public static class ApplicationTemplates
     /// <param name="context">The application to render.</param>
     /// <returns>The file contents, keyed by path relative to the project directory.</returns>
     /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the application kind is unknown.</exception>
-    public static IReadOnlyDictionary<string, string> Render(ApplicationContext context) =>
-        context.App.Kind switch {
+    public static IReadOnlyDictionary<string, string> Render(ApplicationContext context)
+    {
+        var files = context.App.Kind switch {
             ApplicationKind.Api => ApiTemplate.Render(context),
             ApplicationKind.Ui => UiTemplate.Render(context),
             ApplicationKind.Job => JobTemplate.Render(context),
             _ => throw new ArgumentOutOfRangeException(nameof(context), context.App.Kind, null)
         };
+        return context.SharedSettings is null
+            ? files
+            : files.Where(file => file.Key is not ("Composition/DependencyInjection/ModuleAppSettings.cs" or
+                    "Infrastructure/Entity/Configuration/AppSettings.cs" or "appsettings.json"))
+                .ToDictionary(file => file.Key, file => file.Value);
+    }
 
     /// <summary>
     /// A library project of a layer, referencing the layer below it unless <paramref name="lowerLayerReference"/>
     /// (relative to the library's directory) is null.
     /// </summary>
     /// <param name="lowerLayerReference">The lower layer's project path, or <see langword="null"/> for the innermost layer.</param>
+    /// <param name="rootNamespace">The root namespace and assembly name, or <see langword="null"/> for the project name.</param>
+    /// <param name="packages">The package references, each versioned unless its version is null (central package management).</param>
     /// <returns>The <c>.csproj</c> content.</returns>
-    public static string Library(string? lowerLayerReference) => $$"""
+    public static string Library(string? lowerLayerReference, string? rootNamespace = null,
+        IEnumerable<(string Id, string? Version)>? packages = null) => $$"""
         <Project Sdk="Microsoft.NET.Sdk">
           <PropertyGroup>
             <TargetFramework>net10.0</TargetFramework>
             <ImplicitUsings>enable</ImplicitUsings>
             <Nullable>enable</Nullable>
-          </PropertyGroup>
-        {{References(lowerLayerReference)}}</Project>
+        {{(rootNamespace is null ? "" : $"    <RootNamespace>{rootNamespace}</RootNamespace>\n    <AssemblyName>{rootNamespace}</AssemblyName>\n")}}  </PropertyGroup>
+        {{Packages(packages)}}{{References(lowerLayerReference)}}</Project>
 
         """;
 
+    private static string Packages(IEnumerable<(string Id, string? Version)>? packages) =>
+        packages?.ToArray() is { Length: > 0 } list
+            ? "  <ItemGroup>\n" + string.Concat(list.Select(package => $"    {PackageReference(package.Id, package.Version)}\n")) + "  </ItemGroup>\n"
+            : "";
+
     /// <summary>
-    /// A non-packable application project on <paramref name="sdk"/>, referencing its toolkit package and layer library.
+    /// A non-packable application project on <paramref name="sdk"/>, referencing its toolkit packages and layer library.
     /// </summary>
     internal static string Project(string sdk, ApplicationContext context, bool exe) => $$"""
         <Project Sdk="{{sdk}}">
@@ -54,7 +69,7 @@ public static class ApplicationTemplates
             <IsPackable>false</IsPackable>
           </PropertyGroup>
           <ItemGroup>
-            {{PackageReference(context.App.PackageId, context.PackageVersion)}}
+            {{PackageReference(context.App.PackageId, context.PackageVersion)}}{{(context.App.HasSwagger ? "\n    " + PackageReference(ApplicationSpec.SwaggerPackageId, context.SwaggerPackageVersion) : "")}}
           </ItemGroup>
         {{References(context.LibraryReference)}}</Project>
 

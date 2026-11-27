@@ -1,7 +1,8 @@
 namespace Anarchy.Toolkit.Automation.Core.Template;
 
 /// <summary>
-/// A REST API on <c>RestApiWebAppStartupBase</c> with JWT authorization and one anonymous endpoint.
+/// A REST API on <c>RestApiWebAppStartupBase</c> with JWT authorization, one anonymous endpoint and, unless
+/// <see cref="Entity.ApplicationSpec.Swagger"/> is off, Swagger.
 /// </summary>
 internal static class ApiTemplate
 {
@@ -13,20 +14,26 @@ internal static class ApiTemplate
         var app = context.App;
         var ns = context.Namespace;
         var scope = ApplicationTemplates.Kebab(app.Name);
-        var themeUsing = app.SwaggerTheme ? string.Empty : "\nusing Anarchy.Toolkit.Web.Entity.Swagger;";
-        var disableTheme = app.SwaggerTheme
+        var swaggerUsings = (app.Swagger, app.SwaggerTheme) switch {
+            (false, _) => string.Empty,
+            (true, true) => "\nusing Anarchy.Toolkit.Runtime.Web.Swagger.Extensions.Microsoft.Extensions.DependencyInjection;",
+            (true, false) => "\nusing Anarchy.Toolkit.Runtime.Web.Swagger.Entity;" +
+                             "\nusing Anarchy.Toolkit.Runtime.Web.Swagger.Extensions.Microsoft.Extensions.DependencyInjection;"
+        };
+        var swagger = !app.Swagger
             ? string.Empty
-            : "\n            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)";
+            : "\n            .AddToolkitSwagger(ApiName, AppSettings, Environment)" +
+              (app.SwaggerTheme ? string.Empty : "\n            .Configure<SwaggerThemeOptions>(theme => theme.Enabled = false)");
         var files = new Dictionary<string, string> {
             [$"{context.ProjectName}.csproj"] = ApplicationTemplates.Project("Microsoft.NET.Sdk.Web", context, exe: true),
             [$"Composition/{context.StartupName}.cs"] = $$"""
-                using {{ns}}.Composition.DependencyInjection;
-                using {{ns}}.Infrastructure.Entity.Configuration;
-                using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
-                using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
+                using {{context.ModuleNamespace}};
+                using {{context.SettingsNamespace}};
+                using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration;
+                using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
                 using Anarchy.Toolkit.Core.Health.Checks;
-                using Anarchy.Toolkit.Web.Composition.Startup;{{themeUsing}}
-                using Anarchy.Toolkit.Web.Extension.DependencyInjection;
+                using Anarchy.Toolkit.Runtime.Web.Composition.Startup;
+                using Anarchy.Toolkit.Runtime.Web.Extensions.Microsoft.Extensions.DependencyInjection;{{swaggerUsings}}
 
                 namespace {{ns}}.Composition;
 
@@ -39,14 +46,14 @@ internal static class ApiTemplate
                         base.ConfigureWebCustomServices(services)
                             .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
                             .SetupAuthorization(readScope: "{{scope}}:read", writeScope: "{{scope}}:write", adminScope: "{{scope}}:admin")
-                            .AddSingleton<IReadOnlyCollection<IHealthCheck>>([]){{disableTheme}};
+                            .AddSingleton<IReadOnlyCollection<IHealthCheck>>([]){{swagger}};
                 }
 
                 """,
             ["Composition/DependencyInjection/ModuleAppSettings.cs"] = $$"""
                 using {{ns}}.Infrastructure.Entity.Configuration;
-                using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Entity;
-                using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Api;
+                using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration.Entity;
+                using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration.Api;
 
                 namespace {{ns}}.Composition.DependencyInjection;
 
@@ -58,7 +65,7 @@ internal static class ApiTemplate
 
                 """,
             ["Infrastructure/Entity/Configuration/AppSettings.cs"] = $$"""
-                using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Api;
+                using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration.Api;
                 using System.ComponentModel.DataAnnotations;
 
                 namespace {{ns}}.Infrastructure.Entity.Configuration;
@@ -71,6 +78,7 @@ internal static class ApiTemplate
                 """,
             ["Presentation/Controller/PingController.cs"] = $$"""
                 using Anarchy.Toolkit.Core.Telemetry;
+                using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
                 using Microsoft.AspNetCore.Authorization;
                 using Microsoft.AspNetCore.Mvc;
 

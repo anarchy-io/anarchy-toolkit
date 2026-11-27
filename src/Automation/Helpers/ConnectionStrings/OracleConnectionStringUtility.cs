@@ -1,8 +1,7 @@
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.ConnectionStrings;
 
 /// <summary>
-/// Utility to get Oracle connection strings. The overload resolving the host from the environment being built in
-/// lives in <c>OracleConnectionStringTasks</c> (Configuration layer), as it depends on the build components.
+/// Utility to get Oracle connection strings.
 /// </summary>
 public static class OracleConnectionStringUtility
 {
