@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Core.Telemetry</PackageId>
     <AssemblyName>Anarchy.Toolkit.Core.Telemetry</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Core.Telemetry</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>2.0.0</Version>
     <Description>Provider-neutral telemetry primitives (ICoreTelemetry, IMetricRecorder) and the AppTelemetry conventions over Microsoft logging and standard .NET metrics.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>

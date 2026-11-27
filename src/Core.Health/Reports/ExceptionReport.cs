@@ -1,4 +1,5 @@
-using Anarchy.Toolkit.Core.Extension;
+
+using Anarchy.Toolkit.Core.Extensions.System;
 
 namespace Anarchy.Toolkit.Core.Health.Reports;
 

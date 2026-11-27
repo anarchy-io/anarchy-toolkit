@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Entity;
 using Anarchy.Toolkit.Core.Events.Envelopes;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 
 namespace Anarchy.Toolkit.Core.Events.Domain.Handler;
 
@@ -52,7 +52,7 @@ public abstract class DomainEventHandlerBase<TDomainModelEntity>(
         /// The supported event types; when empty, every event of <paramref name="aggregate"/> is supported.
         /// </param>
         /// <returns>This instance, for chaining. An existing entry for the same aggregate is replaced.</returns>
-        /// <exception cref="Core.Extension.Exceptions.MissingEnumDescriptionException">
+        /// <exception cref="Core.Exceptions.MissingEnumDescriptionException">
         /// An enum value has no description.
         /// </exception>
         public SupportedAggregateTypes Support<TAgg, TEvt>(TAgg aggregate, params TEvt[] events)

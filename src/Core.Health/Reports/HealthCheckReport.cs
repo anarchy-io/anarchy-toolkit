@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Health.Checks;
 using System.Diagnostics;
 

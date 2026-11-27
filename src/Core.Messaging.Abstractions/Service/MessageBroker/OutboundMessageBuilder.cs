@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
 
 namespace Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker;
@@ -7,7 +7,7 @@ namespace Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker;
 /// Builds <see cref="OutboundMessage"/> instances for publishing to a message broker.
 /// The core API works with already-resolved <c>string</c> destination/source names; generic
 /// enum overloads are provided as a convenience and resolve enum values via
-/// <see cref="EnumExtension.ToDescription{T}"/>.
+/// <see cref="EnumExtensions.ToDescription{T}"/>.
 /// </summary>
 public interface IOutboundMessageBuilder
 {

@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- **Breaking:** types moved to folders and namespaces that follow the conventions.
+- **Breaking:** depends on the new major versions of `Core`.
+
 ### 2.0.1
 
 - chore(build): Format package release notes property

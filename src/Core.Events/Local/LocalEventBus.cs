@@ -1,4 +1,6 @@
+using Anarchy.Toolkit.Core.Events.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -9,7 +11,7 @@ namespace Anarchy.Toolkit.Core.Events.Local;
 /// </summary>
 /// <remarks>
 /// Register the default implementation with
-/// <see cref="Extension.Microsoft.DependencyInjection.LocalEventServiceCollectionExtensions.AddLocalEventBus"/>.
+/// <see cref="LocalEventServiceCollectionExtensions.AddLocalEventBus"/>.
 /// </remarks>
 /// <example>
 /// <code language="csharp">

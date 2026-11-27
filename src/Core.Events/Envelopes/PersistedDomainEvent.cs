@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Entity;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -58,7 +58,7 @@ public class PersistedDomainEvent(
     /// <param name="time">When the event happened. Defaults to the current UTC time.</param>
     /// <param name="customAttributes">Optional event metadata. The envelope stores a read-only snapshot.</param>
     /// <returns>The new persisted event.</returns>
-    /// <exception cref="Core.Extension.Exceptions.MissingEnumDescriptionException">
+    /// <exception cref="Core.Exceptions.MissingEnumDescriptionException">
     /// An enum value has no description.
     /// </exception>
     public static PersistedDomainEvent Create<TAggregate, TEvent>(
