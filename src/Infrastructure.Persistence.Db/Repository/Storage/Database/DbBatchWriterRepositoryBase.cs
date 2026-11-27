@@ -3,6 +3,7 @@ using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Repository.Storage.Exceptions;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Dapper;
 using Microsoft.Extensions.Logging;

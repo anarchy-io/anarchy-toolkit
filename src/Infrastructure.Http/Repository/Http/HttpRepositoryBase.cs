@@ -1,5 +1,7 @@
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Anarchy.Toolkit.Infrastructure.Http.Common;
+using Anarchy.Toolkit.Infrastructure.Http.Extensions.System.Net.Http;
 
 namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 
@@ -19,7 +21,7 @@ namespace Anarchy.Toolkit.Infrastructure.Http.Repository.Http;
 /// </para>
 /// <para>
 /// The <c>Monitored*</c> helpers return the raw <see cref="HttpResponseMessage"/>; they do not check the status code.
-/// Use <see cref="Anarchy.Toolkit.Infrastructure.Http.Extension.Http.HttpResponseMessageExtensions"/> to validate and
+/// Use <see cref="HttpResponseMessageExtensions"/> to validate and
 /// deserialize responses.
 /// </para>
 /// </remarks>

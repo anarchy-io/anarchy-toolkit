@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Composition.Module;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Entity.Configuration.Amazon;
-using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extensions.Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

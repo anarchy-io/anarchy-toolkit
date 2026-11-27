@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Exceptions;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Dapper;
 using System.Data;
 

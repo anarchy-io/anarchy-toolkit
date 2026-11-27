@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Exceptions;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Entity.Configuration.Storage.Database;

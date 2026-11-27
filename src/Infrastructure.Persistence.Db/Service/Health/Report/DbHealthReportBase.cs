@@ -1,9 +1,11 @@
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
+using Anarchy.Toolkit.Infrastructure.Persistence.Db.Extensions.Microsoft.Extensions.DependencyInjection;
 using Dapper;
 using Microsoft.Extensions.Logging;
 using System.Data.Common;
@@ -24,7 +26,7 @@ namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Health.Report;
 /// <remarks>
 ///     Failures never throw: the exception is logged and returned in a failed <see cref="HealthCheckOutcome" />.
 ///     Register reader and writer subclasses with
-///     <see cref="Anarchy.Toolkit.Infrastructure.Persistence.Db.Extension.Microsoft.DependencyInjection.DbHealthServiceCollectionExtensions.AddDbHealthReports{TReaderReport, TWriterReport}" />.
+///     <see cref="DbHealthServiceCollectionExtensions.AddDbHealthReports{TReaderReport,TWriterReport}" />.
 /// </remarks>
 public abstract class DbHealthReportBase<TDbConnection, TDialect>(
     IStoragePolicy<TDbConnection> dbPolicy,

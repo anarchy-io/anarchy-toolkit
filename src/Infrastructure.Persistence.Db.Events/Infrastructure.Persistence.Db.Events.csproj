@@ -4,7 +4,7 @@
     <PackageId>Anarchy.Toolkit.Infrastructure.Persistence.Db.Events</PackageId>
     <AssemblyName>Anarchy.Toolkit.Infrastructure.Persistence.Db.Events</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Infrastructure.Persistence.Db.Events</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Description>Provider-agnostic relational event-store repository bases and transactional outbox contracts and records.</Description>
   </PropertyGroup>
 

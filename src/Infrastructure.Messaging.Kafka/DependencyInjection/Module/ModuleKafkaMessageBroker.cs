@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Composition.Module;
-using Anarchy.Toolkit.Infrastructure.Messaging.Kafka.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Messaging.Kafka.Extensions.Microsoft.Extensions.DependencyInjection;
 using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

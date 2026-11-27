@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Infrastructure.Http.Msal</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Infrastructure.Http.Msal</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Infrastructure.Http.Msal</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Microsoft Entra ID (MSAL) certificate-based client credentials authentication for Anarchy Toolkit HTTP clients.</Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Infrastructure.Http\Infrastructure.Http.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Client" />
+  </ItemGroup>
+
+</Project>

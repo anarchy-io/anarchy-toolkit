@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Events.Envelopes;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 
 namespace Anarchy.Toolkit.Infrastructure.Persistence.Db.Events.Entity.Storage.Database.Record;
 

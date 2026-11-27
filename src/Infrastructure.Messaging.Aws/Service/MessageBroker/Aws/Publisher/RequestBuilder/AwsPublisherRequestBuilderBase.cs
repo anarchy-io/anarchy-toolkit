@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
-using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helpers.Compression;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher.RequestBuilder.Exceptions;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.ValueSet.MessageBroker;
 
@@ -24,7 +24,7 @@ namespace Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws
 ///   <item><description>If body plus attributes is below <see cref="AwsMessageMaxSize"/>, send the body as is.
 ///   Otherwise compress the JSON-serialized body into a binary <c>CompressionData</c> attribute, add a
 ///   <c>CompressionType</c> attribute and send an empty body. Consumers can restore it with
-///   <see cref="Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper.MessageBroker.InboundMessageMapper"/>.</description></item>
+///   <see cref="Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helpers.MessageBroker.InboundMessageMapper"/>.</description></item>
 /// </list>
 /// </remarks>
 /// <typeparam name="TRequest">The AWS single-message request type.</typeparam>
