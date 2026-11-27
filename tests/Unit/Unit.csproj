@@ -13,11 +13,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\..\src\Bootstrap\Bootstrap.csproj" />
+    <ProjectReference Include="..\..\src\Bootstrap.Aws\Bootstrap.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Aws\Runtime.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web.Aws\Runtime.Web.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web.Swagger\Runtime.Web.Swagger.csproj" />
     <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
     <ProjectReference Include="..\..\src\Automation.Build.Cli\Automation.Build.Cli.csproj" />
     <ProjectReference Include="..\..\src\Automation\Automation.csproj" />
-    <ProjectReference Include="..\..\src\Hosting.Workers\Hosting.Workers.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Workers\Runtime.Workers.csproj" />
     <ProjectReference Include="..\..\src\Core.Events\Core.Events.csproj" />
     <ProjectReference Include="..\..\src\Core.Health\Core.Health.csproj" />
     <ProjectReference Include="..\..\src\Core.Messaging.Abstractions\Core.Messaging.Abstractions.csproj" />
@@ -38,10 +42,10 @@
     <ProjectReference Include="..\..\src\Testing.Kafka\Testing.Kafka.csproj" />
     <ProjectReference Include="..\..\src\Testing.Db.Mysql\Testing.Db.Mysql.csproj" />
     <ProjectReference Include="..\..\src\Testing.MockServer\Testing.MockServer.csproj" />
-    <ProjectReference Include="..\..\src\Web\Web.csproj" />
-    <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
-    <ProjectReference Include="..\..\src\Web.MockServer\Web.MockServer.csproj" />
-    <ProjectReference Include="..\..\src\Web.MockServer.Ui\Web.MockServer.Ui.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web\Runtime.Web.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web.Ui\Runtime.Web.Ui.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web.MockServer\Runtime.Web.MockServer.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web.MockServer.Ui\Runtime.Web.MockServer.Ui.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,19 +60,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Configuration/: test settings bound to AppSettings; TestHelper.TestSettings<AppSettings>() reads them from this
+    <!-- Bootstrap/: test settings bound to AppSettings; TestHelper.TestSettings<AppSettings>() reads them from this
          assembly, and ModuleAppSettingsBaseTest loads them as "<AssemblyName>.appsettings*.json". -->
-    <EmbeddedResource Include="Configuration\appsettings*.json" LogicalName="$(AssemblyName).%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Bootstrap\appsettings*.json" LogicalName="$(AssemblyName).%(Filename)%(Extension)" />
 
-    <!-- Hosting/Workers/: this test assembly carries the build metadata itself (replacing the legacy
+    <!-- Runtime/Workers/: this test assembly carries the build metadata itself (replacing the legacy
          TestAssemblies.WithMetadata helper assembly). BuildMetadataReader looks for "<AssemblyName>.Properties.build.meta.json". -->
-    <EmbeddedResource Include="Hosting\Workers\TestAssemblies\build.meta.json"
+    <EmbeddedResource Include="Runtime\Workers\TestAssemblies\build.meta.json"
                       LogicalName="$(AssemblyName).Properties.build.meta.json" />
 
-    <!-- Hosting/Workers/: resources used by the TextResourceReader tests, resolved from the assembly name. -->
-    <EmbeddedResource Include="Hosting\Workers\Resources\resource1.txt"
+    <!-- Runtime/Workers/: resources used by the TextResourceReader tests, resolved from the assembly name. -->
+    <EmbeddedResource Include="Runtime\Workers\Helpers\Resources\resource1.txt"
                       LogicalName="$(AssemblyName).resource1.txt" />
-    <EmbeddedResource Include="Hosting\Workers\Resources\subfolder\resource2.txt"
+    <EmbeddedResource Include="Runtime\Workers\Helpers\Resources\subfolder\resource2.txt"
                       LogicalName="$(AssemblyName).subfolder.resource2.txt" />
   </ItemGroup>
 

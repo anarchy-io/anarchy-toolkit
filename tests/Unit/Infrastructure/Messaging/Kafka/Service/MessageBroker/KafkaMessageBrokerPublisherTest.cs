@@ -16,7 +16,7 @@ public class KafkaMessageBrokerPublisherTest
     public async Task PublishAsync_WhenArgumentsAreNull_ThrowsSpecificNullArgumentException()
     {
         IMessageBrokerPublisher publisher = new KafkaMessageBrokerPublisher(new Mock<IProducer<string, string>>().Object, AppTelemetry.Null);
-        var single = () => publisher.PublishAsync((OutboundMessage)null!, TestContext.Current.CancellationToken);
+        var single = () => publisher.PublishAsync(null!, TestContext.Current.CancellationToken);
         var batch = () => publisher.PublishAsync((IReadOnlyCollection<OutboundMessage>)null!, cancellationToken: TestContext.Current.CancellationToken);
 
         var singleException = (await single.Should().ThrowExactlyAsync<KafkaNullArgumentException>()).Which;

@@ -1,4 +1,5 @@
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Testing.Telemetry;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,10 +1,11 @@
 {
   "layering.mode": "folder",
-  "layering.layers": ["Core", "Infrastructure", "Configuration", "Hosting", "Web", "Automation"],
+  "layering.layers": ["Core", "Infrastructure", "Bootstrap", "Runtime", "Apps"],
   "layering.root": "src",
   "build.configuration": "Release",
   "build.sourceRoot": "src",
   "build.treatWarningsAsErrors": true,
+  "tests.commonProject": "Common",
   "tests.kindAliases": [],
   "docker.composeFile": "docker/docker-compose.yml",
   "docker.waitFor": [],
@@ -25,5 +26,7 @@
   "gitHooks.skipLintFix": false,
   "gitHooks.skipTestStatic": false,
   "gitHooks.skipTestRuntime": false,
-  "scaffolding.swaggerTheme": true
+  "scaffolding.swagger": true,
+  "scaffolding.swaggerTheme": true,
+  "scaffolding.appSettings": "isolated"
 }

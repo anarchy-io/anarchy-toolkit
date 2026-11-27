@@ -1,12 +1,12 @@
 using Amazon.SQS.Model;
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Amazon;
+using Anarchy.Toolkit.Bootstrap.Aws.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Entity.Configuration.Amazon;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher.RequestBuilder;
 using Anarchy.Toolkit.Testing;
-using Anarchy.Toolkit.Testing.Aws.Helper;
-using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Testing.Aws.Helpers.MessageBroker;
+using Anarchy.Toolkit.Testing.Helpers.Tests;
 using AwesomeAssertions;
 
 namespace Anarchy.Toolkit.Tests.Integration.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher;

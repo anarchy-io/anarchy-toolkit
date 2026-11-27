@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Events.Domain.Handler;
 using Anarchy.Toolkit.Core.Events.Envelopes;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Dummy;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Fixture;
 using AwesomeAssertions;

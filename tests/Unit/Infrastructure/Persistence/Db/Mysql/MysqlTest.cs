@@ -1,21 +1,22 @@
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Storage.Database;
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Core.Extension;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration.Storage.Database;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Core.Extensions.System;
 using Anarchy.Toolkit.Core.Health.Checks;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Entity.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.ValueSet.Storage.Database;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Core.Service.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.DependencyInjection.Module;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Entity.Configuration.Storage.Database;
-using Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Health.Report.Mysql;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Mysql.Service.Storage.Database.Mysql;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Service.Storage.Database;
 using Anarchy.Toolkit.Testing.Db.Mysql.Entity.Configuration;
-using Anarchy.Toolkit.Testing.Db.Mysql.Helper;
+using Anarchy.Toolkit.Testing.Db.Mysql.Helpers.Database;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -101,11 +102,10 @@ public class MysqlTest
     [Fact]
     public void Module_ResolvesPoolsPoliciesUnitOfWorkAndHealthReports()
     {
-        using var provider = new ServiceCollection()
-            .AddCoreTelemetry()
-            .UseModule(new ModuleMysql(_ => Options(), _ => new MysqlResilienceOptions(3)),
-                new ConfigurationBuilder().Build(), Mock.Of<IHostEnvironment>())
-            .AddMysqlHealthReports().BuildServiceProvider();
+        using var provider = MysqlHealthServiceCollectionExtensions.AddMysqlHealthReports(new ServiceCollection()
+                .AddCoreTelemetry()
+                .UseModule(new ModuleMysql(_ => Options(), _ => new MysqlResilienceOptions(3)),
+                    new ConfigurationBuilder().Build(), Mock.Of<IHostEnvironment>())).BuildServiceProvider();
         using var scope = provider.CreateScope();
         scope.ServiceProvider.GetRequiredService<IUnitOfWork>().Should().BeOfType<MysqlDbUnitOfWork>();
         foreach (var key in new[] { "reader", "writer" })

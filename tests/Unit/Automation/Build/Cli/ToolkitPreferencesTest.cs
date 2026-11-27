@@ -10,9 +10,17 @@ public class ToolkitPreferencesTest
 {
     private static readonly ToolkitPackageVersions Versions = new(new Dictionary<string, string> {
         ["Anarchy.Toolkit.Automation.Build"] = "1.2.3",
-        ["Anarchy.Toolkit.Web"] = "2.0.0",
-        ["Anarchy.Toolkit.Web.Ui"] = "2.1.0",
-        ["Anarchy.Toolkit.Hosting"] = "3.0.0"
+        ["Anarchy.Toolkit.Runtime.Web"] = "2.0.0",
+        ["Anarchy.Toolkit.Runtime.Web.Aws"] = "2.2.0",
+        ["Anarchy.Toolkit.Runtime.Web.Swagger"] = "2.3.0",
+        ["Anarchy.Toolkit.Runtime.Web.Ui"] = "2.1.0",
+        ["Anarchy.Toolkit.Runtime"] = "3.0.0",
+        ["Anarchy.Toolkit.Runtime.Aws"] = "3.1.0",
+        ["Anarchy.Toolkit.Bootstrap"] = "4.0.0",
+        ["Anarchy.Toolkit.Runtime.Web.MockServer.Ui"] = "5.0.0",
+        ["Anarchy.Toolkit.Testing"] = "6.0.0",
+        ["Anarchy.Toolkit.Testing.Runtime.Web"] = "6.1.0",
+        ["Anarchy.Toolkit.Testing.MockServer"] = "6.2.0"
     });
 
     [Fact]

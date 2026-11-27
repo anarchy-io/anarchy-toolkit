@@ -1,5 +1,9 @@
 using Anarchy.Toolkit.Core.Telemetry;
 using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.DependencyInjection.Module;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Extensions.Serilog.Configuration;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Metrics;
 using Anarchy.Toolkit.Testing.Telemetry;
 using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;

@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Service.MessageBroker;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.DependencyInjection.Module;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Entity.Configuration.Amazon;

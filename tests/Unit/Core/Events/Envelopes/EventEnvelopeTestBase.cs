@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Core.Events.Envelopes.Exceptions;
 using Anarchy.Toolkit.Testing;
-using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Testing.Helpers.Tests;
 using AwesomeAssertions;
 using AwesomeAssertions.Execution;
 using System.Text.Json;

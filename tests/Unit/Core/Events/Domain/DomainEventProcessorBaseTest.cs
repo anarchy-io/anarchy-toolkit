@@ -2,6 +2,7 @@ using Anarchy.Toolkit.Core.Events.Domain;
 using Anarchy.Toolkit.Core.Events.Domain.Exceptions;
 using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Anarchy.Toolkit.Testing.Telemetry;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Dummy;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Fixture;

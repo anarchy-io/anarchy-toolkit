@@ -9,9 +9,9 @@ public class LayeringTest
 {
     private static readonly SolutionLayout Monorepo = SolutionLayout.Default;
 
-    private static readonly SolutionLayout SingleApplication = new(LayeringMode.Folder, ["Core", "Infrastructure", "Configuration", "Web"]) {
+    private static readonly SolutionLayout SingleApplication = new(LayeringMode.Folder, ["Core", "Infrastructure", "Bootstrap", "Runtime", "Apps"]) {
         LibraryRoot = "src",
-        ApplicationFolders = new Dictionary<string, string> { ["src/App"] = "Web" }
+        ApplicationFolders = new Dictionary<string, string> { ["src/App"] = "Apps" }
     };
 
     private static readonly SolutionLayout Prefix = new(LayeringMode.Prefix, LayeringTasks.DefaultLayers);
@@ -35,9 +35,29 @@ public class LayeringTest
         LayeringTasks.Check(projects, LayeringTasks.DefaultLayers);
 
     [Fact]
-    public void DefaultLayers_PutAutomationOnTop()
+    public void DefaultLayers_PutAppsOnTop()
     {
-        LayeringTasks.DefaultLayers.Should().Equal("Core", "Infrastructure", "Configuration", "Hosting", "Web", "Automation");
+        LayeringTasks.DefaultLayers.Should().Equal("Core", "Infrastructure", "Bootstrap", "Runtime", "Apps");
+    }
+
+    [Theory]
+    [InlineData("Library.Runtime", "Runtime")]
+    [InlineData("Library.Core.Events", "Core")]
+    [InlineData("Runtime.Web", "Runtime")]
+    [InlineData("Apps.Api.Orders", "Apps")]
+    [InlineData("Library", "Library")]
+    public void PrefixOf_GivenProjectName_SkipsALeadingLibrarySegment(string name, string expected)
+    {
+        LayeringTasks.PrefixOf(name).Should().Be(expected);
+    }
+
+    [Fact]
+    public void GetLayer_GivenPrefixLibraryProject_UsesTheLayerAfterLibrary()
+    {
+        LayeringTasks.GetLayer("Library.Runtime", "src/Library.Runtime/Library.Runtime.csproj", Prefix).Should().Be("Runtime");
+        LayeringTasks.GetLayer("Library.Core.Events", "src/Library.Core.Events/Library.Core.Events.csproj", Prefix).Should().Be("Core");
+        LayeringTasks.GetPrefixLayer("Library.Infrastructure", "src/Library.Infrastructure/Library.Infrastructure.csproj", "src")
+            .Should().Be("Infrastructure");
     }
 
     [Theory]
@@ -76,12 +96,12 @@ public class LayeringTest
     }
 
     [Theory]
-    [InlineData("Orders", "src/Api/Orders/Orders.csproj", "Web")]
-    [InlineData("Reports", "src/Jobs/Reports/Reports.csproj", "Hosting")]
-    [InlineData("Admin", "src/Ui/Admin/Admin.csproj", "Web")]
+    [InlineData("Orders", "src/Apps/Apis/Orders/Orders.csproj", "Apps")]
+    [InlineData("Reports", "src/Apps/Jobs/Reports/Reports.csproj", "Apps")]
+    [InlineData("Admin", "src/Apps/Ui/Admin/Admin.csproj", "Apps")]
     [InlineData("Core", "src/Library/Core/Core.csproj", "Core")]
     [InlineData("Testing", "src/Library/Testing/Testing.csproj", "Testing")]
-    [InlineData("Web.Api.Orders", "src/Library/Core/Web.Api.Orders.csproj", "Core")]
+    [InlineData("Apps.Api.Orders", "src/Library/Core/Apps.Api.Orders.csproj", "Core")]
     [InlineData("Tools", "src/Tools/Tools/Tools.csproj", "")]
     [InlineData("Unit", "tests/Unit/Unit.csproj", null)]
     public void GetLayer_GivenMonorepoFolderLayout_UsesApplicationFoldersThenTheLibraryRoot(string name, string path, string? expected)
@@ -90,9 +110,9 @@ public class LayeringTest
     }
 
     [Theory]
-    [InlineData("App", "src/App/App.csproj", "Web")]
+    [InlineData("App", "src/App/App.csproj", "Apps")]
     [InlineData("Core", "src/Core/Core.csproj", "Core")]
-    [InlineData("Configuration", "src/Configuration/Configuration.csproj", "Configuration")]
+    [InlineData("Bootstrap", "src/Bootstrap/Bootstrap.csproj", "Bootstrap")]
     [InlineData("Loose", "src/Loose.csproj", "")]
     public void GetLayer_GivenSingleApplicationFolderLayout_MapsTheApplicationAndTheLayerProjects(string name, string path, string expected)
     {
@@ -125,63 +145,63 @@ public class LayeringTest
             : layer => $"code/{layer}/{layer}.csproj";
         var core = Located(layout, mode == LayeringMode.Folder ? "Core" : "Core", libraryPath("Core"));
         var infrastructure = Located(layout, mode == LayeringMode.Folder ? "Infrastructure" : "Infrastructure", libraryPath("Infrastructure"), core.Name);
-        var configuration = Located(layout, "Configuration", libraryPath("Configuration"), infrastructure.Name);
-        var web = Located(layout, "Web", libraryPath("Web"), configuration.Name);
+        var configuration = Located(layout, "Bootstrap", libraryPath("Bootstrap"), infrastructure.Name);
+        var runtime = Located(layout, "Runtime", libraryPath("Runtime"), configuration.Name);
         var appPath = mode == LayeringMode.Folder
-            ? $"code/{(preset == SolutionLayoutPreset.SingleApp ? "Shop" : "Api")}/Orders/Orders.csproj"
-            : "code/Web.Api.Orders/Web.Api.Orders.csproj";
-        var app = Located(layout, mode == LayeringMode.Folder ? "Orders" : "Web.Api.Orders", appPath, web.Name);
+            ? $"code/{(preset == SolutionLayoutPreset.SingleApp ? "Shop" : "Apps/Apis")}/Orders/Orders.csproj"
+            : "code/Apps.Api.Orders/Apps.Api.Orders.csproj";
+        var app = Located(layout, mode == LayeringMode.Folder ? "Orders" : "Apps.Api.Orders", appPath, runtime.Name);
 
-        LayeringTasks.Check([core, infrastructure, configuration, web, app], layout).Should().BeEmpty();
-        LayeringTasks.GetLayer(app.Name, appPath, layout).Should().Be("Web");
+        LayeringTasks.Check([core, infrastructure, configuration, runtime, app], layout).Should().BeEmpty();
+        LayeringTasks.GetLayer(app.Name, appPath, layout).Should().Be("Apps");
     }
 
     [Fact]
     public void Check_GivenFolderLayers_EnforcesAllRules()
     {
         var core = new LayeringProject("Project1", LayeringTasks.GetLayer("Project1", "src/Library/Core/Project1/Project1.csproj", Monorepo)!,
-            "Shop.Project1", ["Project2", "Helpers"], new Dictionary<string, string> { ["A.cs"] = "using Shop.Project2;" }, ["Web"]);
-        var web = new LayeringProject("Project2", LayeringTasks.GetLayer("Project2", "src/Library/Web/Project2/Project2.csproj", Monorepo)!,
+            "Shop.Project1", ["Project2", "Helpers"], new Dictionary<string, string> { ["A.cs"] = "using Shop.Project2;" }, ["Runtime"]);
+        var web = new LayeringProject("Project2", LayeringTasks.GetLayer("Project2", "src/Library/Runtime/Project2/Project2.csproj", Monorepo)!,
             "Shop.Project2", ["Project1"], new Dictionary<string, string>(), ["Core"]);
         var testing = new LayeringProject("Helpers", LayeringTasks.GetLayer("Helpers", "src/Library/Testing/Helpers/Helpers.csproj", Monorepo)!,
-            "Shop.Helpers", ["Project2"], new Dictionary<string, string>(), ["Web"]);
+            "Shop.Helpers", ["Project2"], new Dictionary<string, string>(), ["Runtime"]);
 
         var result = LayeringTasks.Check([core, web, testing], Monorepo);
 
         result.Should().Equal(
-            "project Project1 (Core) -> Project2 (Web)",
+            "project Project1 (Core) -> Project2 (Runtime)",
             "project Project1 (Core) -> Helpers (Testing)",
-            "file Project1/A.cs (Core) uses Shop.Project2 (Web)",
-            "folder Project1/Web/ (Core) is not below the project's layer");
+            "file Project1/A.cs (Core) uses Shop.Project2 (Runtime)",
+            "folder Project1/Runtime/ (Core) is not below the project's layer");
     }
 
     [Fact]
     public void Check_GivenMonorepoFolderLayout_AllowsDownwardAndRejectsUpwardDependencies()
     {
         var core = Located(Monorepo, "Core", "src/Library/Core/Core.csproj");
-        var configuration = Located(Monorepo, "Configuration", "src/Library/Configuration/Configuration.csproj", "Core");
-        var web = Located(Monorepo, "Web", "src/Library/Web/Web.csproj", "Configuration");
-        var api = Located(Monorepo, "Orders", "src/Api/Orders/Orders.csproj", "Web");
-        var job = Located(Monorepo, "Reports", "src/Jobs/Reports/Reports.csproj", "Configuration");
+        var configuration = Located(Monorepo, "Bootstrap", "src/Library/Bootstrap/Bootstrap.csproj", "Core");
+        var runtime = Located(Monorepo, "Runtime", "src/Library/Runtime/Runtime.csproj", "Bootstrap");
+        var api = Located(Monorepo, "Orders", "src/Apps/Apis/Orders/Orders.csproj", "Runtime");
+        var job = Located(Monorepo, "Reports", "src/Apps/Jobs/Reports/Reports.csproj", "Bootstrap");
 
-        LayeringTasks.Check([core, configuration, web, api, job], Monorepo).Should().BeEmpty();
+        LayeringTasks.Check([core, configuration, runtime, api, job], Monorepo).Should().BeEmpty();
 
-        var upward = Located(Monorepo, "Reports", "src/Jobs/Reports/Reports.csproj", "Orders");
-        LayeringTasks.Check([core, configuration, web, api, upward], Monorepo)
-            .Should().Equal("project Reports (Hosting) -> Orders (Web)");
+        var upward = Located(Monorepo, "Runtime", "src/Library/Runtime/Runtime.csproj", "Orders");
+        LayeringTasks.Check([core, configuration, upward, api, job], Monorepo)
+            .Should().Equal("project Runtime (Runtime) -> Orders (Apps)");
     }
 
     [Fact]
     public void Check_GivenSingleApplicationFolderLayout_AllowsDownwardAndRejectsUpwardDependencies()
     {
         var core = Located(SingleApplication, "Core", "src/Core/Core.csproj");
-        var web = Located(SingleApplication, "Web", "src/Web/Web.csproj", "Core");
-        var app = Located(SingleApplication, "App", "src/App/App.csproj", "Web");
+        var web = Located(SingleApplication, "Runtime", "src/Runtime/Runtime.csproj", "Core");
+        var app = Located(SingleApplication, "App", "src/App/App.csproj", "Runtime");
 
         LayeringTasks.Check([core, web, app], SingleApplication).Should().BeEmpty();
 
         var upward = Located(SingleApplication, "Core", "src/Core/Core.csproj", "App");
-        LayeringTasks.Check([upward, web, app], SingleApplication).Should().Equal("project Core (Core) -> App (Web)");
+        LayeringTasks.Check([upward, web, app], SingleApplication).Should().Equal("project Core (Core) -> App (Apps)");
     }
 
     [Fact]
@@ -198,8 +218,8 @@ public class LayeringTest
     [Fact]
     public void Check_GivenFolderMode_DoesNotTreatPrefixLikeNamesAsViolations()
     {
-        var core = Located(Monorepo, "Web.Core", "src/Library/Core/Web.Core.csproj");
-        var api = Located(Monorepo, "Core.Api", "src/Api/Core.Api/Core.Api.csproj", "Web.Core");
+        var core = Located(Monorepo, "Apps.Core", "src/Library/Core/Apps.Core.csproj");
+        var api = Located(Monorepo, "Core.Api", "src/Apps/Apis/Core.Api/Core.Api.csproj", "Apps.Core");
 
         LayeringTasks.Check([core, api], Monorepo).Should().BeEmpty();
     }
@@ -224,7 +244,7 @@ public class LayeringTest
         var root = RepositoryRoot();
         var layout = LayeringConfiguration.Read(root);
         layout.Mode.Should().Be(LayeringMode.Prefix);
-        layout.Layers.Should().Equal(LayeringTasks.DefaultLayers);
+        layout.Layers.Should().Equal("Core", "Infrastructure", "Bootstrap", "Runtime", "Automation");
 
         var projects = Directory.EnumerateFiles(Path.Combine(root, "src"), "*.csproj", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
@@ -243,8 +263,8 @@ public class LayeringTest
         var result = Check(
             Project("Core"),
             Project("Infrastructure.Db", ["Core"], new() { ["Repo.cs"] = "using Shop.Core.Entity;" }, ["Core"]),
-            Project("Web", ["Infrastructure.Db", "Core"]),
-            Project("Testing", ["Web"], new() { ["Kit.cs"] = "using Shop.Web;" }, ["Web"]));
+            Project("Runtime", ["Infrastructure.Db", "Core"]),
+            Project("Testing", ["Runtime"], new() { ["Kit.cs"] = "using Shop.Runtime;" }, ["Runtime"]));
 
         result.Should().BeEmpty();
     }
@@ -252,11 +272,12 @@ public class LayeringTest
     [Fact]
     public void Check_GivenAutomationLayer_EnforcesItsDependencies()
     {
-        var automation = Project("Automation", ["Web"]);
+        string[] layers = ["Core", "Infrastructure", "Bootstrap", "Runtime", "Automation"];
+        var automation = Project("Automation", ["Runtime"]);
         var tool = Project("Automation.Build.Cli", ["Automation"]);
-        var web = Project("Web", ["Automation"]);
+        var runtime = Project("Runtime", ["Automation"]);
 
-        Check(automation, tool, web).Should().Equal("project Web (Web) -> Automation (Automation)");
+        LayeringTasks.Check([automation, tool, runtime], layers).Should().Equal("project Runtime (Runtime) -> Automation (Automation)");
     }
 
     [Fact]
@@ -264,29 +285,29 @@ public class LayeringTest
     {
         var result = Check(Project("Tools"));
 
-        result.Should().Equal("project Tools has no known layer prefix (Core, Infrastructure, Configuration, Hosting, Web, Automation, Testing)");
+        result.Should().Equal("project Tools has no known layer prefix (Core, Infrastructure, Bootstrap, Runtime, Apps, Testing)");
     }
 
     [Fact]
     public void Check_GivenUpwardOrTestKitReference_ReportsBoth()
     {
-        var result = Check(Project("Core", ["Web", "Testing"]), Project("Web"), Project("Testing"));
+        var result = Check(Project("Core", ["Runtime", "Testing"]), Project("Runtime"), Project("Testing"));
 
-        result.Should().Equal("project Core (Core) -> Web (Web)", "project Core (Core) -> Testing (Testing)");
+        result.Should().Equal("project Core (Core) -> Runtime (Runtime)", "project Core (Core) -> Testing (Testing)");
     }
 
     [Theory]
-    [InlineData("using Shop.Web.Ui.Page;")]
-    [InlineData("global using Shop.Web.Ui;")]
-    [InlineData("  using static Shop.Web.Ui.Helpers;")]
-    [InlineData("using Page = Shop.Web.Ui.Page;")]
+    [InlineData("using Shop.Runtime.Web.Ui.Page;")]
+    [InlineData("global using Shop.Runtime.Web.Ui;")]
+    [InlineData("  using static Shop.Runtime.Web.Ui.Helpers;")]
+    [InlineData("using Page = Shop.Runtime.Web.Ui.Page;")]
     public void Check_GivenUpwardImport_ReportsFile(string line)
     {
         var core = Project("Core", sources: new() { ["Entity/Order.cs"] = $"namespace Shop.Core;\n{line}\n" });
 
-        var result = Check(core, Project("Web"), Project("Web.Ui"));
+        var result = Check(core, Project("Runtime"), Project("Runtime.Web.Ui"));
 
-        result.Should().ContainSingle().Which.Should().StartWith("file Core/Entity/Order.cs (Core) uses Shop.Web.Ui");
+        result.Should().ContainSingle().Which.Should().StartWith("file Core/Entity/Order.cs (Core) uses Shop.Runtime.Web.Ui");
     }
 
     [Fact]
@@ -303,11 +324,11 @@ public class LayeringTest
     [Fact]
     public void Check_GivenOwnOrHigherLayerFolder_ReportsFolders()
     {
-        var result = Check(Project("Infrastructure.Db", folders: ["Core", "Infrastructure", "Web", "Service"]));
+        var result = Check(Project("Infrastructure.Db", folders: ["Core", "Infrastructure", "Runtime", "Service"]));
 
         result.Should().Equal(
             "folder Infrastructure.Db/Infrastructure/ (Infrastructure) is not below the project's layer",
-            "folder Infrastructure.Db/Web/ (Infrastructure) is not below the project's layer");
+            "folder Infrastructure.Db/Runtime/ (Infrastructure) is not below the project's layer");
     }
 
     private static string RepositoryRoot([CallerFilePath] string path = "") =>

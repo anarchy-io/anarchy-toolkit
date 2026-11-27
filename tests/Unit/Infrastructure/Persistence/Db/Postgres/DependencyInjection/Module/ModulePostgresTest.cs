@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
-using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.DependencyInjection.Module;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Entity.Configuration.Storage.Database;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Service.Storage.Database.Postgres;

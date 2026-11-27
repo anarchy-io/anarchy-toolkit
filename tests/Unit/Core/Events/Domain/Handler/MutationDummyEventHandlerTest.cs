@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Core.Events.Domain.Handler;
 using Anarchy.Toolkit.Core.Events.Envelopes;
-using Anarchy.Toolkit.Core.Extension;
-using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Core.Extensions.System;
+using Anarchy.Toolkit.Testing.Helpers.Tests;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Dummy;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Fixture;
 

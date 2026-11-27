@@ -19,11 +19,11 @@ public class PackageHierarchyTest
         PackageHierarchy.Check(projects, Layers, allowed);
 
     [Theory]
-    [InlineData("Web", "Web.MockServer.Ui", true)]
-    [InlineData("Web.MockServer", "Web.MockServer.Ui", true)]
-    [InlineData("Web.Ui", "Web.MockServer.Ui", false)]
-    [InlineData("Web.MockServer.Ui", "Web.MockServer.Ui", false)]
-    [InlineData("Web.MockServer.Ui", "Web", false)]
+    [InlineData("Runtime", "Runtime.Web.MockServer.Ui", true)]
+    [InlineData("Runtime.Web.MockServer", "Runtime.Web.MockServer.Ui", true)]
+    [InlineData("Runtime.Web.Ui", "Runtime.Web.MockServer.Ui", false)]
+    [InlineData("Runtime.Web.MockServer.Ui", "Runtime.Web.MockServer.Ui", false)]
+    [InlineData("Runtime.Web.MockServer.Ui", "Runtime.Web", false)]
     [InlineData("Core", "CoreX.Events", false)]
     public void IsAncestor_GivenPackages_ReturnsExpected(string ancestor, string package, bool expected)
     {
@@ -37,9 +37,9 @@ public class PackageHierarchyTest
     {
         var result = Check(
             [],
-            Project("Web"),
-            Project("Web.MockServer", "Web"),
-            Project("Web.MockServer.Ui", "Web.MockServer", "Web"),
+            Project("Runtime.Web"),
+            Project("Runtime.Web.MockServer", "Runtime.Web"),
+            Project("Runtime.Web.MockServer.Ui", "Runtime.Web.MockServer", "Runtime.Web"),
             Project("Testing"),
             Project("Testing.Db", "Testing"),
             Project("Testing.Db.Mysql", "Testing", "Testing.Db"));
@@ -67,41 +67,41 @@ public class PackageHierarchyTest
     {
         var result = Check(
             [],
-            Project("Web"),
-            Project("Web.Ui", "Web"),
-            Project("Web.MockServer.Ui", "Web.Ui"),
-            Project("Web.Api", "Web.Ui"));
+            Project("Runtime.Web"),
+            Project("Runtime.Web.Ui", "Runtime.Web"),
+            Project("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui"),
+            Project("Runtime.Web.Api", "Runtime.Web.Ui"));
 
         result.Should()
             .HaveCount(2);
 
         result[0]
             .Should()
-            .StartWith("project Web.Api (Web) -> Web.Ui (Web) is outside its package-name ancestors");
+            .StartWith("project Runtime.Web.Api (Runtime) -> Runtime.Web.Ui (Runtime) is outside its package-name ancestors");
 
         result[1]
             .Should()
-            .StartWith("project Web.MockServer.Ui (Web) -> Web.Ui (Web) is outside its package-name ancestors");
+            .StartWith("project Runtime.Web.MockServer.Ui (Runtime) -> Runtime.Web.Ui (Runtime) is outside its package-name ancestors");
     }
 
     [Fact]
     public void Check_GivenReferenceToADescendant_ReportsIt()
     {
-        var result = Check([], Project("Web", "Web.Ui"), Project("Web.Ui"));
+        var result = Check([], Project("Runtime.Web", "Runtime.Web.Ui"), Project("Runtime.Web.Ui"));
 
         result.Should()
             .ContainSingle()
             .Which.Should()
-            .StartWith("project Web (Web) -> Web.Ui (Web)");
+            .StartWith("project Runtime.Web (Runtime) -> Runtime.Web.Ui (Runtime)");
     }
 
     [Fact]
     public void Check_GivenAllowedReference_ReturnsNoViolations()
     {
         var result = Check(
-            [new AllowedPackageReference("Web.MockServer.Ui", "Web.Ui", "shared UI shell")],
-            Project("Web.Ui"),
-            Project("Web.MockServer.Ui", "Web.Ui"));
+            [new AllowedPackageReference("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui", "shared UI shell")],
+            Project("Runtime.Web.Ui"),
+            Project("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui"));
 
         result.Should()
             .BeEmpty();
@@ -111,26 +111,26 @@ public class PackageHierarchyTest
     public void Check_GivenAllowedReferenceInTheOtherDirection_StillReportsTheReference()
     {
         var result = Check(
-            [new AllowedPackageReference("Web.Ui", "Web.MockServer.Ui", "shared UI shell")],
-            Project("Web.Ui"),
-            Project("Web.MockServer.Ui", "Web.Ui"));
+            [new AllowedPackageReference("Runtime.Web.Ui", "Runtime.Web.MockServer.Ui", "shared UI shell")],
+            Project("Runtime.Web.Ui"),
+            Project("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui"));
 
         result.Should()
             .HaveCount(2);
 
         result[0]
             .Should()
-            .StartWith("project Web.MockServer.Ui (Web) -> Web.Ui (Web)");
+            .StartWith("project Runtime.Web.MockServer.Ui (Runtime) -> Runtime.Web.Ui (Runtime)");
 
         result[1]
             .Should()
-            .StartWith("allowed reference Web.Ui -> Web.MockServer.Ui is stale");
+            .StartWith("allowed reference Runtime.Web.Ui -> Runtime.Web.MockServer.Ui is stale");
     }
 
     [Fact]
     public void Check_GivenHigherLayerReference_LeavesItToTheLayeringCheck()
     {
-        LayeringProject[] projects = [Project("Core.Events", "Web.Ui"), Project("Web.Ui")];
+        LayeringProject[] projects = [Project("Core.Events", "Runtime.Web.Ui"), Project("Runtime.Web.Ui")];
 
         PackageHierarchy.Check(projects, Layers, [])
             .Should()
@@ -138,7 +138,7 @@ public class PackageHierarchyTest
 
         LayeringTasks.Check(projects, Layers)
             .Should()
-            .Equal("project Core.Events (Core) -> Web.Ui (Web)");
+            .Equal("project Core.Events (Core) -> Runtime.Web.Ui (Runtime)");
     }
 
     [Fact]
@@ -152,17 +152,17 @@ public class PackageHierarchyTest
     }
 
     [Theory]
-    [InlineData("Web.MockServer.Ui", "Web.Ui")] // no such reference
-    [InlineData("Web.MockServer.Ui", "Web")] // an ancestor needs no entry
-    [InlineData("Web.MockServer.Ui", "Core")] // nor does a lower layer
+    [InlineData("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui")] // no such reference
+    [InlineData("Runtime.Web.MockServer.Ui", "Runtime.Web")] // an ancestor needs no entry
+    [InlineData("Runtime.Web.MockServer.Ui", "Core")] // nor does a lower layer
     public void Check_GivenAllowedReferenceThatMatchesNothing_ReportsItAsStale(string from, string to)
     {
         var result = Check(
             [new AllowedPackageReference(from, to, "obsolete")],
             Project("Core"),
-            Project("Web"),
-            Project("Web.Ui", "Web"),
-            Project("Web.MockServer.Ui", "Web", "Core"));
+            Project("Runtime.Web"),
+            Project("Runtime.Web.Ui", "Runtime.Web"),
+            Project("Runtime.Web.MockServer.Ui", "Runtime.Web", "Core"));
 
         result.Should()
             .Equal(
@@ -173,12 +173,12 @@ public class PackageHierarchyTest
     public void Check_GivenAllowedReferenceWithoutAReason_ReportsIt()
     {
         var result = Check(
-            [new AllowedPackageReference("Web.MockServer.Ui", "Web.Ui", " ")],
-            Project("Web.Ui"),
-            Project("Web.MockServer.Ui", "Web.Ui"));
+            [new AllowedPackageReference("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui", " ")],
+            Project("Runtime.Web.Ui"),
+            Project("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui"));
 
         result.Should()
-            .Equal("allowed reference Web.MockServer.Ui -> Web.Ui has no reason");
+            .Equal("allowed reference Runtime.Web.MockServer.Ui -> Runtime.Web.Ui has no reason");
     }
 
     [Fact]
@@ -215,7 +215,7 @@ public class PackageHierarchyTest
             .ToArray();
 
         projects.Should()
-            .Contain(p => p.Name == "Web.MockServer.Ui");
+            .Contain(p => p.Name == "Runtime.Web.MockServer.Ui");
 
         LayeringTasks.Check(projects, layout)
             .Should()
@@ -229,6 +229,7 @@ public class PackageHierarchyTest
     private static string[] ProjectReferences(string projectFile) =>
         XDocument.Load(projectFile)
             .Descendants("ProjectReference")
+            .Where(reference => !string.Equals((string?)reference.Attribute("ReferenceOutputAssembly"), "false", StringComparison.OrdinalIgnoreCase))
             .Select(reference => (string?)reference.Attribute("Include"))
             .OfType<string>()
             .Select(include => Path.GetFileNameWithoutExtension(include.Replace('\\', '/')))
