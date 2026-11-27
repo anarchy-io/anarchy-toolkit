@@ -1,0 +1,25 @@
+using Anarchy.Toolkit.Core.Composition.Module;
+using Anarchy.Toolkit.Runtime.Workers.Extensions.Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System.Reflection;
+
+namespace Anarchy.Toolkit.Runtime.Workers.DependencyInjection.Module;
+
+/// <summary>
+/// Registers the application health endpoints, reading the build metadata embedded in the given assembly.
+/// </summary>
+/// <remarks>Equivalent to calling <c>AddApplicationHealthEndpoints(assembly)</c>.</remarks>
+/// <param name="assembly">The assembly containing the embedded build metadata (normally the application's own).</param>
+public sealed class ModuleApplicationHealth(Assembly assembly) : IDependencyInjectionModule
+{
+    /// <inheritdoc />
+    public IServiceCollection RegisterServices(IServiceCollection services, IConfiguration configuration,
+                                               IHostEnvironment environment)
+    {
+        services.AddApplicationHealthEndpoints(assembly);
+
+        return services;
+    }
+}

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <PackageId>Anarchy.Toolkit.Runtime.Web.Ui</PackageId>
+    <AssemblyName>Anarchy.Toolkit.Runtime.Web.Ui</AssemblyName>
+    <RootNamespace>Anarchy.Toolkit.Runtime.Web.Ui</RootNamespace>
+    <Version>1.0.0</Version>
+    <Description>Blazor UI pipeline: cookie-session OAuth login, environment catalog, downstream API client base, and reusable components (notifications, modals, JSON viewer, pagination).</Description>
+    <OutputType>Library</OutputType>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core.Telemetry\Core.Telemetry.csproj" />
+    <ProjectReference Include="..\Runtime.Web\Runtime.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+
+</Project>
