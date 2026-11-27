@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
 using System.ComponentModel.DataAnnotations;
 
 namespace Anarchy.Toolkit.Samples.Job.Infrastructure.Entity.Configuration;

@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Configuration.Extension.Microsoft.Configuration;
+using Anarchy.Toolkit.Bootstrap.Aws.Extensions.Microsoft.Extensions.Configuration;
+using Anarchy.Toolkit.Runtime.Web.Aws;
 using Anarchy.Toolkit.Samples.Api.Composition;
-using Anarchy.Toolkit.Web;
 
 namespace Anarchy.Toolkit.Samples.Api;
 

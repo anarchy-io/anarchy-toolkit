@@ -1,18 +1,18 @@
-using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
-using Anarchy.Toolkit.Configuration.Extension.Microsoft.Hosting;
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration;
+using Anarchy.Toolkit.Bootstrap.Extensions.Microsoft.Extensions.Hosting;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
+using Anarchy.Toolkit.Runtime.Web.Ui.Composition.Startup;
+using Anarchy.Toolkit.Runtime.Web.Ui.Core.Entity.Ui;
+using Anarchy.Toolkit.Runtime.Web.Ui.Entity.Ui;
+using Anarchy.Toolkit.Runtime.Web.Ui.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Samples.Ui.Composition.DependencyInjection;
 using Anarchy.Toolkit.Samples.Ui.Core.Service;
 using Anarchy.Toolkit.Samples.Ui.Infrastructure.Entity.Configuration;
 using Anarchy.Toolkit.Samples.Ui.Infrastructure.Service.Http.Client;
+using Anarchy.Toolkit.Samples.Ui.Runtime.Stub;
 using Anarchy.Toolkit.Samples.Ui.Ui.Presentation.Presenter;
 using Anarchy.Toolkit.Samples.Ui.Ui.Template;
-using Anarchy.Toolkit.Samples.Ui.Web.Stub;
-using Anarchy.Toolkit.Web.Ui.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Web.Ui.Composition.Startup;
-using Anarchy.Toolkit.Web.Ui.Core.Entity.Ui;
-using Anarchy.Toolkit.Web.Ui.Entity.Ui;
 
 namespace Anarchy.Toolkit.Samples.Ui.Composition;
 

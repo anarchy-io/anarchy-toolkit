@@ -5,7 +5,7 @@ using System.Net;
 namespace Anarchy.Toolkit.Samples.Testing.Telemetry;
 
 /// <summary>Runs the telemetry examples and checks what reached each provider, without any external backend.</summary>
-public class TelemetryExamplesTests
+public class TelemetryExamplesTest
 {
     [Fact]
     public async Task DefaultProvider_WritesLogsAndStandardMetrics()

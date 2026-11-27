@@ -1,8 +1,8 @@
-using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Hosting.Host;
-using Anarchy.Toolkit.Hosting.Workers.Service.Worker;
+using Anarchy.Toolkit.Runtime.Host;
+using Anarchy.Toolkit.Runtime.Workers.Service.Worker;
 using Anarchy.Toolkit.Samples.Worker.Composition.DependencyInjection;
 using Anarchy.Toolkit.Samples.Worker.Core.Service.Worker;
 using Anarchy.Toolkit.Samples.Worker.Infrastructure.Entity.Configuration;

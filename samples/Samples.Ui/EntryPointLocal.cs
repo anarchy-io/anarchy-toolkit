@@ -1,5 +1,5 @@
+using Anarchy.Toolkit.Runtime.Web;
 using Anarchy.Toolkit.Samples.Ui.Composition;
-using Anarchy.Toolkit.Web;
 
 namespace Anarchy.Toolkit.Samples.Ui;
 

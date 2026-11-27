@@ -10,7 +10,7 @@ namespace Anarchy.Toolkit.Samples.Testing.Telemetry;
 /// Shows <see cref="TestTelemetry"/> through <see cref="TestCaseBase"/>: the code under test receives
 /// <c>FixtureTelemetry.Telemetry</c>, and the test asserts on the logs and metrics it captured in memory.
 /// </summary>
-public class CheckoutTelemetryTests : TestCaseBase
+public class CheckoutTelemetryTest : TestCaseBase
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 

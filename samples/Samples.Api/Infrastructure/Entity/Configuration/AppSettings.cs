@@ -1,6 +1,6 @@
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Api;
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration.Storage.Database;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration.Api;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration.Storage.Database;
 using System.ComponentModel.DataAnnotations;
 
 namespace Anarchy.Toolkit.Samples.Api.Infrastructure.Entity.Configuration;

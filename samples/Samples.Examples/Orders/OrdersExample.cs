@@ -1,5 +1,6 @@
 using Anarchy.Toolkit.Core.Persistence.Abstractions.Service.Storage;
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Samples.Examples.Orders.Core.Entity;
 using Anarchy.Toolkit.Samples.Examples.Orders.Core.Service;
 using Anarchy.Toolkit.Samples.Examples.Orders.Infrastructure;

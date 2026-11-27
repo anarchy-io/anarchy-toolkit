@@ -1,4 +1,5 @@
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Microsoft.Extensions.Logging;
 
 namespace Anarchy.Toolkit.Samples.Examples.Telemetry;

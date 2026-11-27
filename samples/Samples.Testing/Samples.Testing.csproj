@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Testing\Testing.csproj" />
-    <ProjectReference Include="..\..\src\Testing.Web\Testing.Web.csproj" />
+    <ProjectReference Include="..\..\src\Testing.Runtime.Web.Aws\Testing.Runtime.Web.Aws.csproj" />
     <ProjectReference Include="..\..\src\Testing.MockServer\Testing.MockServer.csproj" />
     <ProjectReference Include="..\Samples.Api\Samples.Api.csproj" />
     <ProjectReference Include="..\Samples.Examples\Samples.Examples.csproj" />

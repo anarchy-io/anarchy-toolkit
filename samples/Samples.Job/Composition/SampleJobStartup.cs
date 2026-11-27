@@ -1,6 +1,7 @@
-using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-using Anarchy.Toolkit.Hosting.Host;
+using Anarchy.Toolkit.Bootstrap.Aws.DependencyInjection.Module;
+using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Runtime.Host;
 using Anarchy.Toolkit.Samples.Job.Composition.DependencyInjection;
 using Anarchy.Toolkit.Samples.Job.Core.Service;
 using Anarchy.Toolkit.Samples.Job.Infrastructure.Entity.Configuration;
@@ -15,6 +16,9 @@ public sealed class SampleJobStartup(IHostEnvironment environment, IConfiguratio
 {
     protected override IServiceCollection ConfigureJobCustomServices(IServiceCollection services) =>
         services
-            .UseModule(new ModuleLibConfiguration<ModuleAppSettings, AppSettings>(), Configuration, Environment)
+            .UseModule(
+                new ModuleLibConfiguration<ModuleAppSettings, AppSettings>()
+                    .WithSecretManagement(new ModuleAwsSecretManagement()),
+                Configuration, Environment)
             .AddScoped<GreetingService>();
 }

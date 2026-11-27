@@ -1,4 +1,5 @@
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Anarchy.Toolkit.Samples.Job.Infrastructure.Entity.Configuration;
 
 namespace Anarchy.Toolkit.Samples.Job.Core.Service;
