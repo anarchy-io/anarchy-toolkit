@@ -10,8 +10,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core.Telemetry\Core.Telemetry.csproj" />
-    <ProjectReference Include="..\..\src\Hosting\Hosting.csproj" />
-    <ProjectReference Include="..\..\src\Hosting.Workers\Hosting.Workers.csproj" />
+    <ProjectReference Include="..\..\src\Bootstrap.Aws\Bootstrap.Aws.csproj" />
+    <ProjectReference Include="..\..\src\Runtime\Runtime.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Workers\Runtime.Workers.csproj" />
   </ItemGroup>
 
 </Project>

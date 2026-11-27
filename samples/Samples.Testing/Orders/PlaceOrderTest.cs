@@ -13,7 +13,7 @@ namespace Anarchy.Toolkit.Samples.Testing.Orders;
 /// Tests a UseCase and its Aggregate: the UseCase owns the transaction, the aggregate joins it, and a failure leaves
 /// nothing written.
 /// </summary>
-public class PlaceOrderTests : TestCaseBase
+public class PlaceOrderTest : TestCaseBase
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 

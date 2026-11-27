@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\..\src\Bootstrap\Bootstrap.csproj" />
     <ProjectReference Include="..\..\src\Core.Persistence.Abstractions\Core.Persistence.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Core.Telemetry\Core.Telemetry.csproj" />
     <ProjectReference Include="..\..\src\Infrastructure.Telemetry.Serilog\Infrastructure.Telemetry.Serilog.csproj" />

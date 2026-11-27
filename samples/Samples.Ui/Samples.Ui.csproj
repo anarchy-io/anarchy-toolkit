@@ -5,13 +5,13 @@
     <RootNamespace>Anarchy.Toolkit.Samples.Ui</RootNamespace>
     <OutputType>Exe</OutputType>
     <StartupObject>Anarchy.Toolkit.Samples.Ui.EntryPointLocal</StartupObject>
-    <Description>Sample WebApp (interactive-server Blazor behind a cookie session) built on Anarchy.Toolkit.Web.Ui.</Description>
+    <Description>Sample WebApp (interactive-server Blazor behind a cookie session) built on Anarchy.Toolkit.Runtime.Web.Ui.</Description>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core.Telemetry\Core.Telemetry.csproj" />
-    <ProjectReference Include="..\..\src\Web.Ui\Web.Ui.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web.Ui\Runtime.Web.Ui.csproj" />
   </ItemGroup>
 
 </Project>

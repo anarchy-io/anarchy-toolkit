@@ -12,7 +12,7 @@ namespace Anarchy.Toolkit.Samples.Testing.Ui;
 /// Smoke tests of the sample UI: the page shell with its assets, and the stub auth service and orders API it
 /// logs in and calls through.
 /// </summary>
-public class SamplesUiTests(WebApplicationFactory<SampleUiStartup> factory) : IClassFixture<WebApplicationFactory<SampleUiStartup>>
+public class SamplesUiTest(WebApplicationFactory<SampleUiStartup> factory) : IClassFixture<WebApplicationFactory<SampleUiStartup>>
 {
     private readonly HttpClient _client = factory.CreateClient(new WebApplicationFactoryClientOptions {
         AllowAutoRedirect = false,

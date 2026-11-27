@@ -1,5 +1,5 @@
+using Anarchy.Toolkit.Runtime.Web.Swagger.Entity;
 using Anarchy.Toolkit.Samples.Api.Composition;
-using Anarchy.Toolkit.Web.Entity.Swagger;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -11,7 +11,7 @@ namespace Anarchy.Toolkit.Samples.Testing.Api;
 /// <summary>
 /// Checks the Swagger document and the default Swagger UI theme served by the example API.
 /// </summary>
-public class SwaggerTests(WebApplicationFactory<SampleApiStartup> factory) : IClassFixture<WebApplicationFactory<SampleApiStartup>>
+public class SwaggerTest(WebApplicationFactory<SampleApiStartup> factory) : IClassFixture<WebApplicationFactory<SampleApiStartup>>
 {
     [Fact]
     public async Task SwaggerUi_LinksTheThemeStylesheetsAndFavicon()

@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Configuration.Extension.Microsoft.Configuration;
-using Anarchy.Toolkit.Hosting.Host;
+using Anarchy.Toolkit.Bootstrap.Aws.Extensions.Microsoft.Extensions.Configuration;
+using Anarchy.Toolkit.Runtime.Host;
 using Anarchy.Toolkit.Samples.Worker.Composition;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

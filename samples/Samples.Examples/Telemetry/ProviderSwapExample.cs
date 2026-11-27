@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Extensions.Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

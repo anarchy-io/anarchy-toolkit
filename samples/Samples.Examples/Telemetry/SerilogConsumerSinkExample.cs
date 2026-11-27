@@ -1,4 +1,5 @@
-using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Extensions.Microsoft.Extensions.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Telemetry.Serilog.Extensions.Serilog.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Serilog.Events;

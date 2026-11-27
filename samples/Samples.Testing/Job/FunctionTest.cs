@@ -5,7 +5,7 @@ using AwesomeAssertions;
 namespace Anarchy.Toolkit.Samples.Testing.Job;
 
 [Collection(EnvironmentVariableCollection.Name)]
-public class FunctionTests
+public class FunctionTest
 {
     [Fact]
     public async Task LocalJob_DoesNotLoadLambdaParameterStore()

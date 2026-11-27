@@ -1,9 +1,10 @@
 using Anarchy.Toolkit.Core.Telemetry;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 using Anarchy.Toolkit.Samples.Api.Infrastructure.Entity.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Anarchy.Toolkit.Samples.Api.Web.Presentation.Controller;
+namespace Anarchy.Toolkit.Samples.Api.Presentation.Controller;
 
 [Route("greetings")]
 [Produces("application/json")]

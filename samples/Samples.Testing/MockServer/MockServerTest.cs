@@ -23,7 +23,7 @@ public sealed class SamplesMockServer : MockServerFixture
 /// <summary>
 /// Plays the part of an application calling a payments and a stock service, then asserts what reached them.
 /// </summary>
-public class MockServerTests(SamplesMockServer mock) : IClassFixture<SamplesMockServer>, IAsyncLifetime
+public class MockServerTest(SamplesMockServer mock) : IClassFixture<SamplesMockServer>, IAsyncLifetime
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 

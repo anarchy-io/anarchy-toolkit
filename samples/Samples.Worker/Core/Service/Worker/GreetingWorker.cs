@@ -1,5 +1,6 @@
 using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Hosting.Workers.Service.Worker;
+using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
+using Anarchy.Toolkit.Runtime.Workers.Service.Worker;
 using Anarchy.Toolkit.Samples.Worker.Infrastructure.Entity.Configuration;
 
 namespace Anarchy.Toolkit.Samples.Worker.Core.Service.Worker;

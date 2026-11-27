@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Samples.Ui.Core.Entity;
 
-namespace Anarchy.Toolkit.Samples.Ui.Web.Stub;
+namespace Anarchy.Toolkit.Samples.Ui.Runtime.Stub;
 
 /// <summary>
 /// In-memory orders per environment, seeded deterministically, so the stub API has something to page through.

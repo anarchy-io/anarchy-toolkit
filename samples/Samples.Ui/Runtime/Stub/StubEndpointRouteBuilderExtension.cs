@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Samples.Ui.Infrastructure.Entity.Configuration;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Anarchy.Toolkit.Samples.Ui.Web.Stub;
+namespace Anarchy.Toolkit.Samples.Ui.Runtime.Stub;
 
 /// <summary>
 /// Stand-ins for an OAuth server and a downstream orders API, so the sample runs without external services.
