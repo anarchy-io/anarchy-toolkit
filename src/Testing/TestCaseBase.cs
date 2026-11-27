@@ -1,5 +1,5 @@
-using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
-using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
+using Anarchy.Toolkit.Testing.Helpers.Tests;
 using Anarchy.Toolkit.Testing.Telemetry;
 using Microsoft.Extensions.Hosting;
 using System.Runtime.CompilerServices;

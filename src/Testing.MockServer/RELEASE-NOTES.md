@@ -1,5 +1,10 @@
 ## Releases
 
+### 3.0.0
+
+- **Breaking:** types follow the conventions' folders and namespaces, and the package now builds on `Anarchy.Toolkit.Runtime.Web.MockServer` (formerly `Web.MockServer`).
+- **Breaking:** depends on the new major versions of `Testing`.
+
 ### 2.0.1
 
 - fix(Web): Support Windows paths and host architecture

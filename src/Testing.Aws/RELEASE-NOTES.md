@@ -1,5 +1,10 @@
 ## Releases
 
+### 4.0.0
+
+- **Breaking:** the Lambda context fixture moves to `Fixture/Amazon/Lambda/` and the SQS helpers to `Helpers/MessageBroker/`, with matching namespaces.
+- **Breaking:** depends on the new major versions of `Testing`.
+
 ### 3.0.0
 
 - Update dependencies for the broker-neutral message contracts and AWS CloudEvents mapping.

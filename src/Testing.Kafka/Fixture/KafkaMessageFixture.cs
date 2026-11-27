@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
 using Anarchy.Toolkit.Infrastructure.Messaging.Kafka.Exceptions;
-using Anarchy.Toolkit.Infrastructure.Messaging.Kafka.Helper.MessageBroker;
+using Anarchy.Toolkit.Infrastructure.Messaging.Kafka.Helpers.MessageBroker;
 using Confluent.Kafka;
 
 namespace Anarchy.Toolkit.Testing.Kafka.Fixture;
