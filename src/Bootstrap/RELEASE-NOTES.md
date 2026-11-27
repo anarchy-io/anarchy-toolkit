@@ -1,0 +1,65 @@
+## Releases
+
+### 1.0.0
+
+- Renamed from `Anarchy.Toolkit.Configuration`, whose last release was 2.0.1; the releases below were published under that name.
+- **Breaking:** extension classes take the `Extensions` suffix under `Extensions/<extended namespace>/`, helpers live in `Helpers/<Subject>/`, and their namespaces follow those folders: update `using` directives.
+- KMS and Secrets Manager secrets, the Parameter Store source, the AWS settings and the X-Ray trace id move to the opt-in `Anarchy.Toolkit.Bootstrap.Aws`; `ModuleLibConfiguration` no longer registers KMS (opt in with `WithSecretManagement(new ModuleAwsSecretManagement())`), and `IApplicationContext.AmazonTraceId` becomes `IAmazonRequestContext`.
+- Drops the unused Microsoft.Identity.Client reference.
+
+### 2.0.1
+
+- chore(build): Format package release notes property
+
+### 2.0.0
+
+- Register the provider-neutral telemetry through `ModuleTelemetry`, extensible with a `ModuleTelemetryBase`, and preserve application logging providers.
+- Removed the Serilog-based observer bootstrap (`ModuleObservability`, `ObserverFactory`, `ObservabilityOptions`, `ConsoleMeasurer`) and its Serilog enrichers; the structured-exception enricher moved to `Infrastructure.Telemetry.Serilog`.
+- `ApplicationContext` and `AmazonRequestContext` moved to the `Anarchy.Toolkit.Configuration.Telemetry` namespace.
+
+- feat(automation): establish onboarding and layering conventions
+- feat(telemetry)!: introduce provider-neutral application telemetry
+- refactor(packages)!: restructure persistence and automation packages
+- refactor(infrastructure.correlationid)!: decouple correlation scopes from Serilog
+- refactor(core)!: reshape telemetry, event and health contracts
+- refactor(telemetry)!: remove legacy APIs and simplify namespaces
+
+### 1.1.1
+
+- docs(packages): identify each package's pillar and layer
+- build(packages): attribute the copyright to Leandro Melão Medeiros
+- build: relicense under Apache-2.0 and update the package metadata
+
+### 1.1.0
+
+- build(deps): upgrade Swashbuckle.AspNetCore to 11.0.1 and Microsoft.OpenApi to 3.11.1
+
+### 1.0.7
+
+- docs: expand XML docblocks across all projects for the DocFX API reference
+
+### 1.0.6
+
+- refactor(src): clean up code style across library packages
+- chore(deps): update AWS SDK, Lambda ASP.NET Core server and MySqlConnector packages
+
+### 1.0.5
+
+- chore(deps): update AWS SDK packages
+
+### 1.0.3
+
+- build: migrate local automation to build tooling
+
+### 1.0.2
+
+- docs: expand package guides and release histories
+- chore(deps): update AWS, Polly, and xUnit packages
+
+### 1.0.1
+
+- Added a package-specific NuGet README.
+
+### 1.0.0
+
+- Introduced application settings, configuration and secret management, observability setup and the AppRunner host helper.
