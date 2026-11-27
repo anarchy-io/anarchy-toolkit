@@ -1,11 +1,11 @@
-# Anarchy.Toolkit.Hosting.Workers
+# Anarchy.Toolkit.Runtime.Workers
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Hosting · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Runtime · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
 Background-worker primitives and a self-hosted health API for worker processes.
 
 ```bash
-dotnet add package Anarchy.Toolkit.Hosting.Workers
+dotnet add package Anarchy.Toolkit.Runtime.Workers
 ```
 
 - Derive from `WorkerBase`, `MonitoredWorkerBase` or `ResilientWorkerBase`; `HeartbeatWorker` provides a heartbeat.
@@ -15,7 +15,7 @@ dotnet add package Anarchy.Toolkit.Hosting.Workers
 
 ## When to use it
 
-Choose this package for a long-running process that needs hosted workers, operational heartbeat or HTTP health endpoints without building a full REST API. It complements `Hosting`, which provides the application host and entry-point conventions.
+Choose this package for a long-running process that needs hosted workers, operational heartbeat or HTTP health endpoints without building a full REST API. It complements `Runtime`, which provides the application host and entry-point conventions.
 
 ## How to use it
 
@@ -26,6 +26,15 @@ Choose this package for a long-running process that needs hosted workers, operat
 The [sample worker startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Worker/Composition/SampleWorkerStartup.cs) demonstrates registering a heartbeat and a custom hosted worker.
 
 See the [worker sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Worker) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Microsoft.Extensions.Hosting.Systemd](https://www.nuget.org/packages/Microsoft.Extensions.Hosting.Systemd) | The self-hosted health API enables systemd integration | No |
+| [Polly](https://www.nuget.org/packages/Polly.Core) (`Polly.Core`) | Retries `ResilientWorkerBase` iterations | No |
 
 ## Releases
 

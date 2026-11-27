@@ -8,11 +8,14 @@ Repositories named their test projects differently (`Tests`, `Acceptance`, `Spec
 
 Tests are `Unit` (no I/O), `Integration` (one adapter against a real or mocked dependency) and `EndToEnd` (a whole application in process), each in its own project, matched by name segment. `Pack` and container publishing run only the unit tests. Other names map through `TestKindAliases`, or `IsTestProjectOfKind` can be overridden.
 
+Code more than one level uses (fixtures, mocks, helpers, custom assertions) goes in one shared, non-executable project, `tests/Common` by default (`tests.commonProject`), which builds on the toolkit's `Testing*` packages and is referenced by every test project. Bootstrapping creates the three level projects and the common project by default, and can add a mock server host in `tests/MockServer`. Test classes take the `Test` suffix and their files mirror the path of the code they test.
+
 ## Consequences
 
 - `make test_unit`, `test_integration` and `test_end_to_end` run the right projects with the right dependencies.
 - Delivery stays fast and independent of containers.
 - Repositories with other names configure aliases or rename.
+- Shared test code has one home instead of being copied between levels or exposed from one test project to another.
 
 ## Alternatives considered
 

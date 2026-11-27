@@ -95,7 +95,7 @@ The build engine is [Fallout](https://fallout.build/), a continuation of the [NU
 
   The converter is best-effort: expect compile errors and manually fix paths, settings, tool invocations and dependency ordering. Review and test the generated build; the [Fallout Cake guide](https://docs.fallout.build/docs/introduction#coming-from-cake-) describes the conversion.
 
-Neither the toolkit build nor a converted build carries over old deployment targets (ADR 0006). Keep deployment in a separate release host beside `build/`, or in the adopter's own `.mk` files and release pipeline.
+Neither the toolkit build nor a converted build carries over old deployment targets (ADR 0011). Keep deployment in a separate release host beside `build/`, or in the adopter's own `.mk` files and release pipeline.
 
 ## Components
 
@@ -106,24 +106,34 @@ Neither the toolkit build nor a converted build carries over old deployment targ
 | `IStandardBuild` | `Restore`, `Compile`, `TestUnit`, `TestIntegration`, `TestEndToEnd`, `TestAll`, `Lint`, `LintFix`, `ListProjects`, `RunApp`, `RunApps`, `GenerateAppSettings`, `PullRequest` (`Lint`, `CheckLayering` when `ILayeringBuild` is implemented, and `TestAll`) | Overrides `TestsDirectory` (`tests`) and `IsTestProject` (ignores test kits under the source root). |
 | `INuGetBuild` | `ListPackages`, `GenerateLocalRelease`, `ValidateLocalRelease`, `Pack`, `Publish` | Versions source projects, and packs and publishes the batch in package dependency order. |
 | `IContainerBuild` | `ContainerPublishAppArtifact`, `ContainerImageBuild`, `ContainerImagePush` | Registry-neutral image flow for `--app-name`. Implement `ContainerRegistry`; image name, tag (short commit SHA), Dockerfile (`docker/Dockerfile`), artifact directory (`artifacts/Container/<app>`) and runtime have defaults. Authenticate the Docker client yourself for ECR, GHCR, ACR, Docker Hub or another registry. |
-| `IDependencyMapBuild` | `GenerateDependencyMap` | Writes a static HTML page (`--dependency-map-output`, default `docs/dependency-map.html`): a Mermaid graph of project references with layering violations highlighted, an onion of the layers (click a ring, or a group outside the chain, to zoom in on the references between its own projects; `#<Group>` in the URL opens it directly) and a table of projects, files and lines per group. Layers and groups use the effective layout resolved from Fallout parameters, optional `.anarchy-toolkit.json` overrides, then in-code defaults; override `GetDependencyMapGroup` for other conventions. It carries no timestamp, so CI can regenerate it and commit only when it changed. |
-| `IApiReferenceBuild` | `GenerateApiReference` | Builds a [DocFX](https://dotnet.github.io/docfx/) API reference site from the compiled assemblies and XML docs of the packable `src` projects (override `IsApiReferenceProject`), after `Compile`, so nothing is compiled twice. The site is configured by the `build` section of `--api-reference-config` (default `docs-api/docfx.json`), whose content should include the generated `api/**.yml` next to it. Fails on DocFX errors. |
+| `IDependencyMapBuild` | `GenerateDependencyMap` | Writes a static HTML page (`--dependency-map-output`, default `docs/dependency-map.html`): a Mermaid graph of project references with layering violations highlighted, Anarchy styling with a light/dark toggle, an onion of the layers (click a ring, or a group outside the chain, to zoom in on the references between its own projects; `#<Group>` in the URL opens it directly) and a table of projects, files and lines per group. Layers and groups use the effective layout resolved from Fallout parameters, optional `.anarchy-toolkit.json` overrides, then in-code defaults; override `GetDependencyMapGroup` for other conventions. It carries no timestamp, so CI can regenerate it and commit only when it changed. |
+| `IApiReferenceBuild` | `GenerateApiReference` | Builds a [DocFX](https://dotnet.github.io/docfx/) API reference site from the compiled assemblies and XML docs of the packable `src` projects (override `IsApiReferenceProject`), after `Compile`, so nothing is compiled twice. The site is configured by the `build` section of `--api-reference-config` (default `docs-api/docfx.json`), whose content should include the generated `api/**.yml` next to it; the site goes to that file's `output` (the toolkit's own writes to `artifacts/docs-api`, which CI copies into the documentation site under `api/`). Fails on DocFX errors. |
 | `IBoilerplateBuild` | `SetupBoilerplate` | Creates a starter solution, folders, Makefile, scripts and configuration. Select or exclude individual items with `--boilerplate-items` / `--boilerplate-exclude`; `--append-existing` optionally appends the packaged Git and editor settings and adds the packaged test runner to an existing [`global.json`](https://learn.microsoft.com/dotnet/core/tools/global-json). `--boilerplate-dry-run` only reports what it would do. See the [package README](../packages/Automation.Build/README.md#choosing-what-to-install) for setup. |
-| `ILayeringBuild` | `CheckLayering` | Fails when layering is broken or the effective layout is invalid. Layout values resolve from existing Fallout parameters, then `.anarchy-toolkit.json`, then the in-code folder baseline (`src/Library`, standard app folders and layers); a missing file or mode is valid and no layout is inferred. Override `GetLayer` (return `null` to leave a project out) for other conventions. See the [architecture guide](architecture.md#enforcing-the-rule) and [preferences guide](automation-preferences.md). |
+| `ILayeringBuild` | `CheckLayering` | Fails when layering is broken or the effective layout is invalid. Layout values resolve from existing Fallout parameters, then `.anarchy-toolkit.json`, then the in-code folder baseline (`src/Library`, standard app folders and layers); a missing file or mode is valid and no layout is inferred. `ProjectReference`s with `ReferenceOutputAssembly="false"` only order the build and are ignored. Override `GetLayer` (return `null` to leave a project out) for other conventions. See the [architecture guide](architecture.md#enforcing-the-rule) and [preferences guide](automation-preferences.md). |
 | `IDependencyUpgradeBuild` | `UpgradeDependencies` | Lists outdated packages and optionally runs the global `dotnet-outdated-tool`. |
 | `IGitHooksBuild` | `EnableGitHook`, `DisableGitHook`, `ShowGitHooks` | Manages local hooks; generated hooks invoke the repository's [Make](https://www.gnu.org/software/make/) targets. |
 | `IAgentSkillsBuild` | `ValidateAgentSkills`, `SyncAgentSkills` | Keeps the agent skills in step with the Makefiles: targets marked with `#@` must be listed by a skill, whose commands table is generated from their `#?` comments while the rest stays hand-written. Not part of `PullRequest`: run it as a separate CI step. See [Agent skills](../packages/Automation.Build/README.md#agent-skills). |
 
 Run `make anarchy_help` for the full list of targets and parameters, or `make anarchy TARGET="--plan"` for the execution plan. `make fallout`, `make nuke` and their `_help` variants remain compatibility aliases.
 
-The distributed `scripts/build.anarchy.sh` launcher reloads the shell environment by default. Set
+The distributed `scripts/build.anarchy.sh` launcher, and its PowerShell counterpart `scripts/build.anarchy.ps1` for Windows, reload the environment by default (the PowerShell one refreshes `PATH` from the machine and user settings). Set
 `ANARCHY_RELOAD_ENV=false` to skip that step, or set `ANARCHY_LOG_LEVEL` to change the engine log level. The legacy
 `FALLOUT_LOG_LEVEL` variable is a fallback when `ANARCHY_LOG_LEVEL` is unset or empty.
 
 ### Without Make (including Windows)
 
 Make and the distributed shell scripts are convenient wrappers, not a requirement for the build host. From the solution
-root, run any Fallout target directly; target names use PascalCase and target parameters use `--kebab-case value`:
+root, run any Fallout target directly; target names use PascalCase. A target parameter can be passed in any of these
+equivalent ways (matching ignores case and dashes, but not underscores):
+
+| Source | Accepted forms (e.g. `LayeringMode`) |
+|---|---|
+| Command line | `--layering-mode folder`, `--LayeringMode folder`, `--layeringmode folder`, `-LayeringMode folder` |
+| Environment variable | `LAYERING_MODE=folder`, `LayeringMode=folder`, `layering-mode=folder` |
+| `.fallout/parameters.json` | `"LayeringMode": "folder"` |
+
+`make anarchy_help` (or `--help`) lists the parameters in kebab case; that is only how they are printed. Saved preferences
+in `.anarchy-toolkit.json` apply after all of these ([Automation Preferences](automation-preferences.md)). For example:
 
 | Make target | Fallout target | Direct invocation |
 |---|---|---|
@@ -133,6 +143,8 @@ root, run any Fallout target directly; target names use PascalCase and target pa
 | `make lint` / `make check_layering` | `Lint` / `CheckLayering` | Use the corresponding target name after `--`. |
 | `make pack` | `Pack` | `dotnet run --project build/_build.csproj -- Pack` |
 | `make pull_request` | `PullRequest` | `dotnet run --project build/_build.csproj -- PullRequest` |
+
+Fallout runs several targets in one call, each once and in dependency order: `dotnet run --project build/_build.csproj -- Lint CheckLayering TestUnit`. `make pull_request` (`PullRequest`) chains the usual checks for you.
 
 The mapping is the Make target's `#?` description and `make anarchy_help` tells you the complete set of build targets;
 `dotnet run --project build/_build.csproj -- --help` prints the same build-host targets and parameters.
@@ -148,12 +160,15 @@ dotnet run --project build/_build.csproj -- Pack
 dotnet run --project build/_build.csproj -- ContainerImageBuild --AppName Api
 ```
 
+On Windows, `./scripts/build.anarchy.ps1 <Target> [--parameter value]` (PowerShell 5.1 or 7+) does the same with the
+launcher's environment defaults, log level and `DOTNET_EXE` check: `./scripts/build.anarchy.ps1 Compile TestUnit`.
+
 For example, `make lint_fix AUTO_STAGE=true` becomes
 `dotnet run --project build/_build.csproj -- LintFix --AutoStageLintFixes true`. To discover the installed build's
 targets and parameters, use `dotnet run --project build/_build.csproj -- --help` (the Make equivalent is
 `make anarchy_help`).
 
-These targets (`Compile`, the test targets, `Lint`, `CheckLayering` and `Pack`) run on Windows without Bash. Every Make
+These targets (`Compile`, the test targets, `Lint`, `CheckLayering` and `Pack`) run on Windows without Bash, directly or through `scripts/build.anarchy.ps1`. Every Make
 target still needs GNU Make and Bash (macOS, Linux or WSL); in particular, `install`, `install_dev_env`, `install_sdk`,
 `rebuild` and generated Git hooks use the distributed shell scripts. Docker-related targets additionally need the
 Docker CLI/Compose; registry publishing also needs the adopter's registry login. The pull-request workflow exercises
@@ -268,8 +283,8 @@ Each key not yet set is prompted for, showing its explanation; values already se
 
 ```csharp
 public IReadOnlyCollection<Artifact> Artifacts => [
-    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Api" / "Users" / "Users.csproj" },
-    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Jobs" / "ClientSync" / "ClientSync.csproj" },
+    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Apps" / "Apis" / "Users" / "Users.csproj" },
+    new() { ProjectFile = this.As<IDefaultBuild>().SourceDirectory / "Apps" / "Jobs" / "ClientSync" / "ClientSync.csproj" },
 ];
 ```
 

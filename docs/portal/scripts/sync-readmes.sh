@@ -28,6 +28,31 @@ for readme in "$repo_dir"/src/*/README.md; do
   count=$((count + 1))
 done
 
+# Gathers every package's "## Third-party dependencies" section into one page, a level-two heading per package.
+third_party="$docs_dir/packages/third-party-dependencies.md"
+{
+  cat <<'EOF'
+# Third-party dependencies
+
+Most third-party libraries a package brings are announced by its name: `Infrastructure.Persistence.Db.Postgres` brings
+a PostgreSQL driver and `Infrastructure.Telemetry.Serilog` brings Serilog. The libraries below are the *invisible*
+ones: a package brings them although its name does not say so, and they reach your application as transitive
+dependencies. They are listed so you can check licences, versions and conflicts before you adopt a package, and know
+when one of them appears in its public API, where upgrading or replacing it would affect your code. The framework,
+`Microsoft.Extensions.*` and ASP.NET Core are not listed.
+
+This page is generated from the `## Third-party dependencies` section of each [package](README.md)'s README; packages
+without third-party dependencies beyond their name are not listed.
+EOF
+  for readme in "$repo_dir"/src/*/README.md; do
+    project="$(basename "$(dirname "$readme")")"
+    section="$(awk '/^## /{inside = ($0 == "## Third-party dependencies"); next} inside' "$readme")"
+    [ -n "$section" ] || continue
+    printf '\n## [%s](%s/README.md)\n' "$project" "$project"
+    printf '%s\n' "$section" | rewrite_links "../"
+  done
+} > "$third_party"
+
 mkdir -p "$docs_dir/samples"
 rewrite_links "../" < "$repo_dir/samples/README.md" \
   | sed -E \
@@ -35,4 +60,4 @@ rewrite_links "../" < "$repo_dir/samples/README.md" \
     -e "s#\]\((Samples\.[A-Za-z]+)\)#](${repo_url}/tree/main/samples/\1)#g" \
   > "$docs_dir/samples/README.md"
 
-echo "Synced $count package READMEs and the samples README into $docs_dir"
+echo "Synced $count package READMEs, their third-party dependencies and the samples README into $docs_dir"

@@ -27,18 +27,23 @@ It asks for:
 2. whether it will contain one application or several, before choosing a layering mode;
 3. for one application, its kind and folder name (default: `App`); for several, which applications to start with and a name for each;
 4. how projects are mapped to layers: by folder (the default) or by name prefix;
-5. the layers, innermost first; a library project is created per layer, each referencing the one below it;
-6. whether to install the agent skills (default: no; see [Agent skills](#agent-skills));
-7. whether to save selected automation preferences (default: no).
+5. the layers, innermost first (default: `Core, Infrastructure, Bootstrap, Runtime, Apps`); a library project is created per layer but `Apps`, each referencing the one below it, and the applications reference the Runtime library;
+6. for each API, whether to include Swagger and its theme, and the optional entry points: a container for APIs and UIs, an AWS Lambda for APIs and jobs;
+7. in a monorepo, whether the applications share their settings (one `AppSettings` in the Infrastructure library, `ModuleAppSettings` and `appsettings*.json` in the Bootstrap library) or each has its own;
+8. whether to create the `Unit`, `Integration` and `EndToEnd` test projects (default: yes, with a shared `tests/Common` project) and a mock server host in `tests/MockServer` (default: no);
+9. whether to install the agent skills (default: no; see [Agent skills](#agent-skills));
+10. whether to save selected automation preferences (default: no).
 
 It then shows the plan, including each web application's local ports, and writes nothing until you confirm. To skip the questions and create the baseline solution only:
 
 ```bash
-anarchy-toolkit bootstrap MyApp --output ./MyApp [--with-skills] [--layout monorepo|single-app] [--application-folder MyApp] [layout options] [--save-preferences]
+anarchy-toolkit bootstrap MyApp --output ./MyApp [--with-skills] [--no-tests] [--with-mock-server] [--isolated-app-settings] [--layout monorepo|single-app] [--application-folder MyApp] [layout options] [--save-preferences]
 ```
 
-`--layout monorepo` keeps shared libraries under `src/`, grouped in `src/Library`; `--layout single-app` puts them
-directly under `src` and maps one application folder to `Web` (API/UI) or `Hosting` (job). The folder defaults to `App`;
+`--layout monorepo` keeps shared libraries under `src/`, grouped in `src/Library`, with applications in
+`src/Apps/Apis`, `src/Apps/Jobs` and `src/Apps/Ui`; `--layout single-app` puts them directly under `src` and maps one
+application folder to the `Apps` layer. `--no-tests` skips the test projects, `--with-mock-server` adds the mock
+server host, and `--isolated-app-settings` gives each application its own settings instead of the shared ones. The folder defaults to `App`;
 choose names such as `Api`, `Job`, `Cli` or the solution name with `--application-folder`. Use `--layering prefix` to
 choose project-name prefixes without the wizard; use
 `--save-preferences` only when the selected preference should be persisted. Otherwise bootstrap and scaffold use
@@ -52,22 +57,24 @@ flowchart LR
     subgraph Solution["MyApp/"]
         direction TB
         Libs["src/Library/&lt;Layer&gt;/<br/>one library per layer"]
-        Apps["src/Api · src/Jobs · src/Ui<br/>your applications"]
-        Build["build/_build.csproj<br/>Anarchy build host"]
+        Apps["src/Apps/Apis · src/Apps/Jobs · src/Apps/Ui<br/>your applications"]
+        Tests["tests/Unit · Integration · EndToEnd · Common<br/>optional tests/MockServer"]
+        Build["build/_build.csproj · build/Build.cs<br/>Anarchy build host"]
         Tooling["Makefile · scripts/<br/>.fallout/parameters.json · optional .anarchy-toolkit.json"]
         Props["Directory.Packages.props<br/>central package versions"]
     end
     Apps --> Libs
+    Tests --> Apps
     Build -.->|"compile · test · check_layering"| Libs
 ```
 
 | Kind | Built on | Starts with |
 |---|---|---|
-| API | [`Web`](../packages/Web/README.md) | A REST API with JWT authorization and a `/ping` endpoint. |
-| Job | [`Hosting`](../packages/Hosting/README.md) | A job entry point (e.g., an AWS Lambda handler) and a service. |
-| UI | [`Web.Ui`](../packages/Web.Ui/README.md) | A Blazor UI with cookie-session login and a home page. |
+| API | [`Runtime.Web`](../packages/Runtime.Web/README.md), plus [`Runtime.Web.Swagger`](../packages/Runtime.Web.Swagger/README.md) unless left out (`--no-swagger`, `scaffolding.swagger`) | A REST API with JWT authorization and a `/ping` endpoint. |
+| Job | [`Runtime`](../packages/Runtime/README.md) | A job entry point (a local worker or a one-off run) and a service. |
+| UI | [`Runtime.Web.Ui`](../packages/Runtime.Web.Ui/README.md) | A Blazor UI with cookie-session login and a home page. |
 
-APIs and UIs belong to the `Web` layer and jobs to the `Hosting` layer. Package versions are managed centrally in `Directory.Packages.props`, and existing files are never overwritten.
+APIs, jobs and UIs all belong to the `Apps` layer. Only applications with an AWS Lambda entry point reference the AWS packages ([`Runtime.Web.Aws`](../packages/Runtime.Web.Aws/README.md) for an API, [`Runtime.Aws`](../packages/Runtime.Aws/README.md) for a job). Namespaces start with the solution name (e.g. `MyApp.Apps.Apis.Orders`), the solution-level files are listed in a `solution items` solution folder, and no `samples` folder is created. Package versions are managed centrally in `Directory.Packages.props`, and existing files are never overwritten.
 
 ## Build and run
 
@@ -90,6 +97,8 @@ anarchy-toolkit scaffold          # guided
 anarchy-toolkit scaffold api Users
 anarchy-toolkit scaffold job ClientSync
 anarchy-toolkit scaffold ui UserAdmin
+anarchy-toolkit scaffold library Reports --layer Infrastructure
+anarchy-toolkit scaffold tests unit
 ```
 
 The tool places each application from explicit arguments, optional saved preferences and then the standard in-code folder baseline; a preferences file is not required and the tool does not infer a layout. Pass `--save-preferences` to persist selected choices. It adds the application to the solution and references the toolkit package it needs, following the solution's central package management.

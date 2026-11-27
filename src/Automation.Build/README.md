@@ -22,7 +22,7 @@ consumer needs to customize.
 ```csharp
 using Anarchy.Toolkit.Automation.Build.Component;
 using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Common;
 class Build : AnarchyBuild, INuGetBuild, ILayeringBuild, IDependencyMapBuild,
               IDependencyUpgradeBuild, IGitHooksBuild
 {
@@ -154,7 +154,7 @@ Use `--boilerplate-items` for a comma-separated allowlist and `--boilerplate-exc
 | `tests`, `samples`, `docs` | Create the directory and its `.gitkeep`. |
 | `Makefile`, `.gitignore`, `.editorconfig`, `global.json`, `nuget.config` | Install the corresponding packaged file. |
 | `Directory.Build.props` | Create the SQL resource embedding rule if the file is absent. |
-| `scripts` | Install all scripts; individual paths such as `scripts/build.anarchy.sh` or `scripts/bootstrap` can also be selected or excluded. |
+| `scripts` | Install all scripts; individual paths such as `scripts/build.anarchy.sh`, `scripts/build.anarchy.ps1` or `scripts/bootstrap` can also be selected or excluded. |
 | `skills` | Install the toolkit's agent skills into `.agents/skills` (see [Agent skills](#agent-skills)). Opt-in: `all` leaves them out. |
 
 `all` selects every item except `skills`, and `none` selects nothing. Unknown names fail before any files are written. When selecting individual scripts, include their helpers: the launcher needs `scripts/shared/colors.env`, `scripts/console/subtitle.sh` and, unless environment reloading is disabled, `scripts/bootstrap/shell-profile-path.sh`.
@@ -201,7 +201,7 @@ build execution never writes preferences. See the [complete inventory and defaul
 
 ## Mock server
 
-`IMockServerBuild` runs an [Anarchy.Toolkit.Web.MockServer](https://www.nuget.org/packages/Anarchy.Toolkit.Web.MockServer) host, a runnable project in the solution whose name ends in `MockServer` (or `MockServerProject`) and whose `Program` calls `MockServerEntryPoint.RunAsync(args)`. It is launched by path with `dotnet run`, so the build does not reference it. Parameters: `MockServerPort` (default 6001, or the next free one), `MockServerExpectations`, `MockServerRecord` (default `artifacts/mock-server/requests.jsonl`), `MockServerVerbosity` (`quiet` to `diagnostic`), `MockServerArgs` and `MockServerTimeout`. The boilerplate's `mock-server.mk` exposes each target to Make:
+`IMockServerBuild` runs an [Anarchy.Toolkit.Runtime.Web.MockServer](https://www.nuget.org/packages/Anarchy.Toolkit.Runtime.Web.MockServer) host, a runnable project in the solution whose name ends in `MockServer` (or `MockServerProject`) and whose `Program` calls `MockServerEntryPoint.RunAsync(args)`. It is launched by path with `dotnet run`, so the build does not reference it. Parameters: `MockServerPort` (default 6001, or the next free one), `MockServerExpectations`, `MockServerRecord` (default `artifacts/mock-server/requests.jsonl`), `MockServerVerbosity` (`quiet` to `diagnostic`), `MockServerArgs` and `MockServerTimeout`. The boilerplate's `mock-server.mk` exposes each target to Make:
 
 | Target | Make | What it does |
 |---|---|---|
@@ -227,6 +227,17 @@ What Fallout keeps to itself:
 - the console theme, the `--verbosity` level switch (your sinks choose their own minimum level), the CI annotation
   sink and the log files;
 - output written straight to the console rather than logged, such as the toolkit's tables and sections.
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Fallout](https://www.nuget.org/packages/Fallout.Common) (`Fallout.Common`) | The build engine behind the components | Yes: `Target`, `AbsolutePath`, `Solution`, `Project` and the parameter attributes |
+| [NuGet.Packaging](https://www.nuget.org/packages/NuGet.Packaging) | Reads and compares package versions (dependency upgrades, NuGet packaging) | No |
+| [Docfx](https://www.nuget.org/packages/Docfx.App) (`Docfx.App`) | Generates the API reference | No |
+| [Serilog](https://www.nuget.org/packages/Serilog) (through `Infrastructure.Telemetry.Serilog`) | Build logs | No |
 
 ## Releases
 

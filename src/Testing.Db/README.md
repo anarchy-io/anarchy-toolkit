@@ -21,7 +21,7 @@ Use this package in database integration tests or when building a new provider's
 Create a real test database and a provider-specific storage policy, then register any enum handlers before testing Dapper mappings. For cleanup, choose truncation through the dialect or a `DELETE` through `ClearTableAsync`:
 
 ```csharp
-using Anarchy.Toolkit.Testing.Db.Helper;
+using Anarchy.Toolkit.Testing.Db.Helpers.Database;
 
 DbTestHelper.RegisterEnumTypeHandler<UserStatus>();
 await DbTestHelper.ClearTableAsync<MyConnection>(policy, "users", cancellationToken);
@@ -30,6 +30,14 @@ await DbTestHelper.ClearTableAsync<MyConnection>(policy, "users", cancellationTo
 Replace `UserStatus`, `MyConnection` and `policy` with your own enum, database connection type and configured policy. Table names are inserted into SQL, so use trusted fixed identifiers, never user input. Cleanup is destructive; use a dedicated test schema and account for foreign keys, identity behavior and tests running concurrently.
 
 See the [testing conventions](https://anarchy-io.github.io/anarchy-toolkit/conventions/testing.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Dapper](https://www.nuget.org/packages/Dapper) | Registers enum type handlers and runs the cleanup SQL | No |
 
 ## Releases
 

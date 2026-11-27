@@ -8,7 +8,7 @@ Foundational, infrastructure-independent building blocks for .NET services.
 dotnet add package Anarchy.Toolkit.Core
 ```
 
-- Use helpers and extensions for strings, enums, dates and JSON, plus common exception primitives.
+- Use helpers and extensions for strings, enums, dates and JSON, plus common exception primitives. Extensions follow the namespace of the type they extend (`StringExtensions` in `Anarchy.Toolkit.Core.Extensions.System`, `UseModule` in `Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection`); helpers are grouped by subject (`DateHelper` in `Anarchy.Toolkit.Core.Helpers.Dates`).
 - Mark domain objects with `IEntity`, `IPersistedEntity` or `IDeepCloneableEntity<T>` as appropriate.
 - Implement `IDependencyInjectionModule` and register it with `UseModule<T>()` or `UseModule(module)`; use the keyed client-resolver abstractions when selecting clients by key.
 
@@ -25,6 +25,15 @@ Reference Core from domain and application projects that need shared contracts w
 For a complete registration example using a concrete adapter, see the [module guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules).
 
 See the [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/) and [dependency-injection guide](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules).
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Humanizer](https://www.nuget.org/packages/Humanizer) | Human-readable durations (`TimeSpanExtensions.ToHuman`) | Yes: `ToHuman` takes Humanizer's `TimeUnit` |
+| [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) | JSON serialization helpers (`JsonExtensions`) | Yes: `JsonExtensions` takes and exposes Newtonsoft settings types |
 
 ## Releases
 

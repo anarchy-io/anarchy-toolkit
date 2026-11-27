@@ -18,23 +18,28 @@ Docs: https://anarchy-io.github.io/anarchy-toolkit/
 ## Rules
 
 - Run `make` from the solution root. `make help` lists every target; `make help COMMAND=<target>` describes one and
-  names the skill covering it. Prefer a target to hand-written `dotnet` commands: it encodes the solution's settings.
-- Projects only reference their own or a lower layer (by default `Core < Infrastructure < Configuration < Hosting <
-  Web < Automation`); `make check_layering` enforces it. Put new code in the lowest layer that can hold it.
+  names the skill covering it. Prefer a target to hand-written `dotnet` commands: it encodes the solution's settings. To run several build targets,
+  pass them to one `dotnet run --project build/_build.csproj -- <Target> <Target>` call instead of chaining make targets.
+- Projects only reference their own or a lower layer, a layered style sometimes called onion architecture (by default `Core < Infrastructure < Bootstrap < Runtime <
+  Apps`); `make check_layering` enforces it. Put new code in the lowest layer that can hold it.
 - Before advising, scaffolding, building or checking architecture, read the optional solution-root
   `.anarchy-toolkit.json` and follow any `layering` overrides: its `mode` (`folder`, the baseline, or `prefix`),
   `layers`, `root`, and in folder mode `libraryRoot` and `applicationFolders`. With no override, use folder mode under
   `src/Library` with the standard app folders/layers. Never infer a mode from the repository. Explicit operation
   arguments win over saved preferences, which win over in-code defaults. A missing file or mode is valid.
 - In a monorepo, prefer shared library dependencies and DI modules or wrappers, but let the developer weigh reuse against
-  unused transitive assemblies and larger artifacts. Shared Web is optional; single applications can place their layer
-  projects directly under `src/`.
+  unused transitive assemblies and larger artifacts. Shared runtime libraries are optional; single applications can place
+  their layer projects directly under `src/`. Folder mode puts libraries under `src/Library/<Layer>` and applications
+  under `src/Apps/{Apis,Jobs,Ui}/<Name>`; prefix mode uses `src/Library.<Layer>` and `src/Apps.<Api|Job|Ui>.<Name>`.
+  Customize the solution's automation in `build/_build.csproj` (entry point `build/Build.cs`).
 - Never edit `<Version>` by hand; versions go through `make release_bump` (see `anarchy-release`).
 - Generators never overwrite files. On a conflict, report it and ask the user; do not delete to make room.
 - Ask the user before publishing, pushing images, destroying data or anything that affects other projects.
 - Before writing or reviewing code, load `anarchy-conventions` for the toolkit's coding conventions. They are
   recommendations: the solution's own `AGENTS.md`, ADRs and established code win where they differ.
-- Before finishing a change: `make compile test_unit lint check_layering`.
+- Before finishing a change: `dotnet run --project build/_build.csproj -- Lint CheckLayering TestUnit`. Each make target
+  rebuilds the build project and restores (often compiles) again, so chain checks in one build call or use a combined
+  target such as `make pull_request`, never `make a b c` (see `anarchy-develop`).
 
 ## Which skill
 
@@ -58,11 +63,11 @@ Install or update it with `dotnet tool update --global Anarchy.Toolkit.Automatio
 
 | Command | What it does |
 |---|---|
-| `anarchy-toolkit bootstrap <Name> --output <dir> [--with-skills] [--layout monorepo\|single-app] [--application-folder <name>] [layout options] [--save-preferences]` | Creates a layered solution in an empty or new directory. `monorepo` keeps shared `src/Library`; `single-app` puts libraries under `src` and maps one application folder. Preference saving is opt-in. |
-| `anarchy-toolkit scaffold api\|job\|ui <Name> [--layout monorepo\|single-app] [--application-folder <name>] [layout options] [--save-preferences]` | Adds a REST API (`Web`), job (`Hosting`) or Blazor UI (`Web.Ui`) using explicit, saved or default layout values. |
+| `anarchy-toolkit bootstrap <Name> --output <dir> [--with-skills] [--no-tests] [--with-mock-server] [--isolated-app-settings] [--layout monorepo\|single-app] [--application-folder <name>] [layout options] [--save-preferences]` | Creates a layered solution in an empty or new directory, with unit, integration and end-to-end test projects unless `--no-tests`, and a mock server host with `--with-mock-server`. `monorepo` keeps shared `src/Library` and shares one `AppSettings` between applications unless `--isolated-app-settings`; `single-app` puts libraries under `src` and maps one application folder. Preference saving is opt-in. |
+| `anarchy-toolkit scaffold api\|job\|ui <Name> [--layout monorepo\|single-app] [--application-folder <name>] [layout options] [--save-preferences]` | Adds a REST API (`Runtime.Web`, plus `Runtime.Web.Swagger` unless `--no-swagger`), job (`Runtime`) or Blazor UI (`Runtime.Web.Ui`) using explicit, saved or default layout values. |
 | `anarchy-toolkit scaffold library <Name> --layer <Layer> [layout options] [--dry-run] [--save-preferences]` | Adds a library to the effective folder or prefix layout, referencing the next lower layer when present. |
 | `anarchy-toolkit scaffold tests [unit\|integration\|endtoend] [--dry-run] [--save-preferences]` | Creates the shared test project for a kind, honoring `TestKindAliases`; no kind starts an interactive choice. |
-| `anarchy-toolkit scaffold api <Name> [--swagger-theme\|--no-swagger-theme]` | Explicitly enables or disables Swagger UI's theme for the generated API. |
+| `anarchy-toolkit scaffold api <Name> [--swagger\|--no-swagger] [--swagger-theme\|--no-swagger-theme]` | Explicitly includes or leaves out Swagger, and enables or disables Swagger UI's theme, for the generated API; the defaults come from `scaffolding.swagger` and `scaffolding.swaggerTheme`. |
 | `anarchy-toolkit scaffold api\|ui <Name> [--container]` | Optionally generates a container web entry point. APIs also support `--lambda-api`. |
 | `anarchy-toolkit scaffold job <Name> [--job-mode worker\|once] [--lambda-event]` | Selects a local worker (default) or one-shot job, optionally with a scheduled Lambda. |
 | `anarchy-toolkit config show\|set\|unset\|configure` | Inspect effective preferences and their saved/default source, edit a typed JSON override, remove an override or use the interactive editor. |
@@ -71,8 +76,9 @@ Install or update it with `dotnet tool update --global Anarchy.Toolkit.Automatio
 
 - Without arguments, `bootstrap` and `scaffold` start an interactive wizard; only use it in an interactive terminal,
   otherwise ask the user for the names and pass them.
-- The bootstrap wizard asks one application or several before layering mode. `--layout monorepo` selects the shared
-  `src/Library` baseline; `--layout single-app` maps one folder to `Web` for API/UI or `Hosting` for a job. It defaults
+- The bootstrap wizard asks one application or several before layering mode, then, per API, whether to include Swagger
+  and its theme, then shared or isolated settings (monorepo only), the test projects, a mock server and the skills. `--layout monorepo` selects the shared
+  `src/Library` baseline; `--layout single-app` maps one folder to the `Apps` layer. It defaults
   to `App`; choose `Api`, `Job`, `Cli`, the solution name or another folder with `--application-folder`. Use
   `--layering prefix` for name-prefix layout. For custom layouts, use explicit operation arguments or ask the
   user whether to save selected preferences (`--save-preferences`; interactive consent defaults to No). Without
@@ -82,7 +88,7 @@ Install or update it with `dotnet tool update --global Anarchy.Toolkit.Automatio
   for what belongs in each settings file and their precedence.
 - `scaffold library` and `scaffold tests` accept `--dry-run` to report without writing. `--save-preferences` only saves
   explicit layout choices; test-kind aliases come from Fallout's `TestKindAliases` or saved `tests.kindAliases`.
-- After `bootstrap`: `cd <dir> && make install`. After `scaffold`: `make compile check_layering`, then review the new
+- After `bootstrap`: `cd <dir> && make install`. After `scaffold`: `dotnet run --project build/_build.csproj -- CheckLayering` (it compiles first), then review the new
   application's settings (auth URLs, client IDs) and run `make appsettings` for local ones.
 
 ## Guides
@@ -103,7 +109,7 @@ are online; read them when a task needs the detail:
 | `AppTelemetry`, logging and metrics providers, OTLP, optional Serilog, correlation IDs, Datadog and New Relic configuration | https://anarchy-io.github.io/anarchy-toolkit/guides/observability.html |
 | Persistence providers (PostgreSQL, MySQL, Oracle) | https://anarchy-io.github.io/anarchy-toolkit/guides/database-providers.html |
 | The mock server: expectations, own host, assertions, recording | https://anarchy-io.github.io/anarchy-toolkit/guides/mock-server.html |
-| Blazor UIs on `Web.Ui` | https://anarchy-io.github.io/anarchy-toolkit/guides/building-uis.html |
+| Blazor UIs on `Runtime.Web.Ui` | https://anarchy-io.github.io/anarchy-toolkit/guides/building-uis.html |
 | Anarchy automation components, test discovery, artifacts, releases | https://anarchy-io.github.io/anarchy-toolkit/guides/automation-builds.html |
 | Packages, with a "Which package do I need?" table, one README each (also in the NuGet cache) | https://anarchy-io.github.io/anarchy-toolkit/packages/ |
 

@@ -14,8 +14,8 @@ The **Anarchy I/O Toolkit** is a **.NET developer platform**: an integrated ecos
 
 | Pillar | What it provides | Start with |
 |---|---|---|
-| **Architecture** | How applications are structured and how dependencies are governed: the layers `Core < Infrastructure < Configuration < Hosting < Web < Automation` in the toolkit, DI modules as the unit of composition, and conventions for async code, exceptions, enums, endpoints and tests. | [Layered Architecture](guides/architecture.md), [Guides](guides/README.md) |
-| **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence ([PostgreSQL](https://www.postgresql.org/), Oracle, MySQL), AWS SNS/SQS and Kafka messaging, CloudEvents representation, telemetry, configuration and secrets, hosting for jobs and workers, REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
+| **Architecture** | How applications are structured and how dependencies are governed: the layers `Core < Infrastructure < Bootstrap < Runtime < Automation` in the toolkit (`Core < Infrastructure < Bootstrap < Runtime < Apps` in your solutions), DI modules as the unit of composition, and conventions for async code, exceptions, enums, endpoints and tests. | [Layered Architecture](guides/architecture.md), [Guides](guides/README.md) |
+| **Infrastructure** | Reusable application capabilities, published as independent NuGet packages: core abstractions, persistence ([PostgreSQL](https://www.postgresql.org/), Oracle, MySQL), AWS SNS/SQS and Kafka messaging, CloudEvents representation, telemetry, configuration and opt-in AWS secrets, runtime hosting for jobs, workers and REST/GraphQL/Blazor pipelines, and testing kits. | [Package Catalog](packages/README.md) |
 | **Build Ecosystem** | Tools and workflows for developing and delivering applications: the [`Automation.Build`](packages/Automation.Build/README.md) build components (compile, lint, test, layering check, dependency map, packaging, versioning, releases, Docker) and the [`anarchy-toolkit`](packages/Automation.Build.Cli/README.md) CLI (solution bootstrap and scaffolding), with a distributed Makefile and scripts. Powered by [Fallout Build](https://fallout.build/). | [Getting Started](getting-started/README.md), [Anarchy Automation Builds](guides/automation-builds.md) |
 
 ## How the pillars work together
@@ -32,8 +32,8 @@ flowchart LR
     end
     subgraph Infrastructure["<b>Infrastructure</b>"]
         I1["Core abstractions · persistence · messaging"]
-        I2["Telemetry · configuration · hosting"]
-        I3["Web · testing kits"]
+        I2["Telemetry · bootstrap · runtime"]
+        I3["Web pipelines · testing kits"]
     end
     subgraph BuildEcosystem["<b>Build Ecosystem</b> (development time)"]
         B1["Automation · CLI · scaffolding"]
@@ -60,15 +60,14 @@ Every project under `src/` is one package, versioned and published on its own to
 ```mermaid
 flowchart TB
     Build["<b>Automation</b><br/>build components · CLI tool"]
-    Web["<b>Web</b><br/>REST API · GraphQL · Blazor UI"]
-    Hosting["<b>Hosting</b><br/>Startups · jobs · workers"]
-    Configuration["<b>Configuration</b><br/>Settings · secrets · telemetry bootstrap"]
-    Infrastructure["<b>Infrastructure</b><br/>Databases · AWS messaging · HTTP · correlation · Serilog"]
+    Runtime["<b>Runtime</b><br/>Startups · jobs · workers · REST API · GraphQL · Blazor UI · Lambda · Swagger"]
+    Bootstrap["<b>Bootstrap</b><br/>Settings · secrets · telemetry bootstrap"]
+    Infrastructure["<b>Infrastructure</b><br/>Databases · AWS messaging · HTTP · MSAL · correlation · Serilog"]
     Core["<b>Core</b><br/>Abstractions · events · health · telemetry"]
-    Testing["<b>Testing kits</b><br/>Fixtures · DB/AWS/Web helpers"]
+    Testing["<b>Testing kits</b><br/>Fixtures · DB/AWS/Runtime.Web helpers"]
 
-    Build --> Web --> Hosting --> Configuration --> Infrastructure --> Core
-    Testing -.-> Web
+    Build --> Runtime --> Bootstrap --> Infrastructure --> Core
+    Testing -.-> Runtime
     Testing -.-> Infrastructure
 ```
 

@@ -1,14 +1,14 @@
 # Endpoints
 
-This convention explains how to expose endpoints from an API built on `Anarchy.Toolkit.Web`, with clear boundaries and low coupling. The objective is to keep HTTP contracts stable while allowing domain models to evolve independently.
+This convention explains how to expose endpoints from an API built on `Anarchy.Toolkit.Runtime.Web`, with clear boundaries and low coupling. The objective is to keep HTTP contracts stable while allowing domain models to evolve independently.
 
 > **Recommendation, not a requirement.** The packages work without following this convention. It is a rule only for code in the toolkit repository (see [Contributing](https://anarchy-io.github.io/anarchy-toolkit/contributing/)); applications can adopt it, adapt it or skip it. [Opting out or adapting](#opting-out-or-adapting) explains how.
 
 ## Why
 
-Separate presentation DTOs keep HTTP contracts stable while domain types change, and keep Web concerns out of Core, as [layering](layering.md) requires.
+Separate presentation DTOs keep HTTP contracts stable while domain types change, and keep web concerns out of Core, as [layering](layering.md) requires.
 
-The toolkit follows these rules itself (see `HealthController` and the `Health*Output` DTOs in `Anarchy.Toolkit.Web`), and applications built on it may use them as a starting point. The examples below use a `User` resource from a user-management API.
+The toolkit follows these rules itself (see `HealthController` and the `Health*Output` DTOs in `Anarchy.Toolkit.Runtime.Web`), and applications built on it may use them as a starting point. The examples below use a `User` resource from a user-management API.
 
 ## Recommended project structure
 
@@ -27,7 +27,7 @@ src/
     │           │   └── CreateUserUseCaseInput.cs
     │           └── Output/
     │               └── UserAuditDto.cs
-    └── Web/
+    └── Runtime/
         └── Presentation/
             ├── Contract/
             │   └── User/
@@ -45,16 +45,16 @@ src/
 - `Core/Entity/DomainModel`: internal business state and behavior. Keep it free to evolve without forcing HTTP contract changes.
 - `Core/Entity/Api/Input`: service/use-case inputs when arguments are complex and do not map to a single domain entity.
 - `Core/Entity/Api/Output`: DTOs produced by services when combining several domain sources (in the toolkit, `HealthCheckReport` and `ExceptionReport` in `Anarchy.Toolkit.Core.Health.Reports` play this role).
-- `Web/Presentation/Contract`: endpoint routes and signatures. One stable contract surface helps tests and client integrations. Controller contracts may extend the toolkit's `IToolkitController` marker.
-- `Web/Presentation/Entity/Input` and `Web/Presentation/Entity/Output`: HTTP request/response shapes owned by the presentation layer. Output DTOs also own their own Core-to-DTO mapping (see below); there is no separate `Web/Service/Builder` layer.
+- `Runtime/Presentation/Contract`: endpoint routes and signatures. One stable contract surface helps tests and client integrations. Controller contracts may extend the toolkit's `IToolkitController` marker.
+- `Runtime/Presentation/Entity/Input` and `Runtime/Presentation/Entity/Output`: HTTP request/response shapes owned by the presentation layer. Output DTOs also own their own Core-to-DTO mapping (see below); there is no separate `Runtime/Service/Builder` layer.
 
 ## Endpoint rules
 
 - Every endpoint must declare explicit response types (`ProducesResponseType`) using Web entities.
 - **Use [`ActionResult<T>`](https://learn.microsoft.com/aspnet/core/web-api/action-return-types) for endpoints that return payloads.** This enforces type safety at the interface level and improves API documentation. For example, `Task<ActionResult<UserOutput>>` makes the contract explicit.
 - Only use bare `IActionResult` for endpoints without a response body (e.g. `204 No Content`, `202 Accepted`).
-- **Never expose Core domain entities (or Core `Api` DTOs) in response payloads.** Every response payload must be a dedicated Web `*Output` type under `Web/Presentation/Entity/Output`, even when its shape mirrors a Core entity/DTO one-to-one.
-- **Never accept Core domain entities (or Core `Api` DTOs) as controller parameters.** Every non-primitive request payload (`[FromBody]`, or an implicit-body complex parameter) must be a dedicated Web `*Input` type under `Web/Presentation/Entity/Input`. Route/query parameters may stay primitive (`string`, `long`, `int`, `double`, `bool`, enums, etc.).
+- **Never expose Core domain entities (or Core `Api` DTOs) in response payloads.** Every response payload must be a dedicated Web `*Output` type under `Runtime/Presentation/Entity/Output`, even when its shape mirrors a Core entity/DTO one-to-one.
+- **Never accept Core domain entities (or Core `Api` DTOs) as controller parameters.** Every non-primitive request payload (`[FromBody]`, or an implicit-body complex parameter) must be a dedicated Web `*Input` type under `Runtime/Presentation/Entity/Input`. Route/query parameters may stay primitive (`string`, `long`, `int`, `double`, `bool`, enums, etc.).
 - Controllers must never call repositories directly. Call abstraction services such as Use Cases and Entity-based Aggregates.
 - Keep controllers thin: validate input, call the service, map output via the DTO's own static factory method, return a status.
 - Only expose fields intentionally meant for API consumers.
@@ -67,7 +67,7 @@ Do not create separate `*Builder` classes for this mapping. Add a `public static
 This is exactly how the toolkit's health endpoint works:
 
 ```csharp
-namespace Anarchy.Toolkit.Web.Presentation.Entity.Output.Health;
+namespace Anarchy.Toolkit.Runtime.Web.Presentation.Entity.Output.Health;
 
 public record HealthCheckReportOutput(
     bool Passed,
@@ -88,10 +88,10 @@ public record HealthCheckReportOutput(
 
 Rules for this mapping:
 
-- The factory method lives on the DTO it produces, not on a separate class. If you find yourself creating a `Web/Service/Builder/Output` folder, fold that logic into the DTO instead.
+- The factory method lives on the DTO it produces, not on a separate class. If you find yourself creating a `Runtime/Service/Builder/Output` folder, fold that logic into the DTO instead.
 - When a DTO nests other DTOs (e.g. a collection of items), give each nested DTO its own static factory method and have the parent call it (`Tests = dto.Tests.Select(HealthCheckOutcomeOutput.FromDto).ToArray()`), rather than inlining the nested mapping.
 - Prefer `FromEntity` when mapping directly from a `Core/Entity/DomainModel(/Persisted)` entity, and `FromDto` when mapping from a `Core/Entity/Api/Output` DTO.
-- **Every `FromEntity`/`FromDto` method must have a unit test** that mirrors the DTO's folder (e.g. `tests/Unit/Web/Presentation/Entity/Output/Health/HealthCheckReportOutputTest.cs`). At minimum, cover field-by-field mapping, nested-collection mapping (count + ordering), and null/optional-field handling.
+- **Every `FromEntity`/`FromDto` method must have a unit test** that mirrors the DTO's folder (e.g. `tests/Unit/Runtime/Web/Presentation/Entity/Output/Health/HealthCheckReportOutputTest.cs`). At minimum, cover field-by-field mapping, nested-collection mapping (count + ordering), and null/optional-field handling.
 
 ## Mapping Web Input records to Core Input DTOs/entities
 
@@ -120,11 +120,11 @@ Rules for this mapping:
 - Controllers call `input.ToEntity(...)`/`input.ToDto(...)` directly in the service call instead of constructing the Core type inline.
 - **Every `ToDto`/`ToEntity`/`ToUseCaseParams` method must have a unit test** mirroring the Input type's folder, covering field-by-field mapping and optional/default-value fields.
 
-The toolkit's validation attributes (`RequiredIntAttribute`, `RequiredLongAttribute`, `RequiredDecimalAttribute`, `DefinedEnumAttribute` in `Web/Presentation/Attribute`) are meant for these Input records.
+The toolkit's validation attributes (`RequiredIntAttribute`, `RequiredLongAttribute`, `RequiredDecimalAttribute`, `DefinedEnumAttribute` in `Runtime/Presentation/Attribute`) are meant for these Input records.
 
-## Contract-first interfaces in Web
+## Contract-first interfaces in Runtime
 
-Declare controller interfaces in `Web/Presentation/Contract` and implement them in API hosts.
+Declare controller interfaces in `Runtime/Presentation/Contract` and implement them in API hosts.
 
 Benefits:
 
@@ -138,7 +138,7 @@ Benefits:
 The native ASP.NET Core `ActionResult<T>` type gives you:
 
 - **Type safety**: the payload type is explicit in the interface and enforced at compile time.
-- **Better documentation**: Swagger (configured by `RestApiWebAppStartupBase`) picks up the response type automatically.
+- **Better documentation**: Swagger (`AddToolkitSwagger` from the opt-in `Anarchy.Toolkit.Runtime.Web.Swagger`) picks up the response type automatically.
 - **No casting**: standard helpers like `Ok()`, `BadRequest()`, `NotFound()` work without wrapper classes.
 - **Backward compatibility**: existing implementations using `Ok(payload)` keep working.
 
@@ -163,10 +163,10 @@ public interface IUserController : IToolkitController
 
 ## Recommended endpoint flow
 
-1. Receive and validate the transport input (`Web/Presentation/Entity/Input`).
+1. Receive and validate the transport input (`Runtime/Presentation/Entity/Input`).
 2. Convert it to a use-case/service input (`Core/Entity/Api/Input`) or a Core entity via the Input record's own `ToDto()`/`ToEntity()` method.
 3. Execute the service/application logic through abstractions (Use Cases / Aggregates), never repositories from controllers.
-4. Map the domain/service output to `Web/Presentation/Entity/Output` via the Output DTO's own `FromEntity()`/`FromDto()` method.
+4. Map the domain/service output to `Runtime/Presentation/Entity/Output` via the Output DTO's own `FromEntity()`/`FromDto()` method.
 5. Return explicit status codes and typed responses.
 
 Unhandled exceptions are translated centrally by the toolkit's `ExceptionMiddleware`: `InvalidOperationException` and `JsonException` become `400 Bad Request`, everything else becomes `500` with an exception report body. Expected outcomes such as "not found" are part of the contract, so return them explicitly from the controller (`NotFound()`) instead of relying on the middleware. Endpoints that must handle exceptions themselves can opt out with `[IgnoreExceptionHandling]`.
@@ -209,8 +209,8 @@ public class UserController(IUserUseCase useCase) : ControllerBase, IUserControl
 
 | You want to... | Do this |
 |---|---|
-| Return domain types directly | Possible for internal or small APIs; nothing in `Web` requires DTOs. |
+| Return domain types directly | Possible for internal or small APIs; nothing in `Runtime.Web` requires DTOs. |
 | Use minimal APIs instead of controllers | Fine: the toolkit's middlewares and startup work with either. |
 | Use a mapping library ([Mapster](https://github.com/MapsterMapper/Mapster), [AutoMapper](https://automapper.io/)) | Fine: `ToDto`/`FromDto` are a convention, not an interface the toolkit calls. |
 
-**What you lose by opting out:** contracts that survive refactoring the domain, and the clear Web/Core boundary the layering check enforces.
+**What you lose by opting out:** contracts that survive refactoring the domain, and the clear Runtime/Core boundary the layering check enforces.

@@ -12,7 +12,7 @@
     "layering": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Defaults to folder mode, standard layers, src/Library and src/Api, src/Jobs, src/Ui. Effective layouts must be valid; prefix mode cannot contain explicit folder settings.",
+      "description": "Defaults to folder mode, standard layers, src/Library and src/Apps/Apis, src/Apps/Jobs, src/Apps/Ui. Effective layouts must be valid; prefix mode cannot contain explicit folder settings.",
       "dependentSchemas": {
         "mode": {
           "if": {
@@ -52,10 +52,9 @@
           "default": [
             "Core",
             "Infrastructure",
-            "Configuration",
-            "Hosting",
-            "Web",
-            "Automation"
+            "Bootstrap",
+            "Runtime",
+            "Apps"
           ]
         },
         "root": {
@@ -121,6 +120,12 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "commonProject": {
+          "type": "string",
+          "minLength": 1,
+          "default": "Common",
+          "description": "The shared, non-executable test project every test project references."
+        },
         "kindAliases": {
           "type": "array",
           "items": {
@@ -388,9 +393,20 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "swagger": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether scaffolded APIs include Swagger (Anarchy.Toolkit.Runtime.Web.Swagger)."
+        },
         "swaggerTheme": {
           "type": "boolean",
           "default": true
+        },
+        "appSettings": {
+          "type": "string",
+          "enum": ["isolated", "shared"],
+          "default": "isolated",
+          "description": "shared: applications use the single AppSettings of the Infrastructure library and the ModuleAppSettings and appsettings*.json of the Bootstrap library; isolated: each application has its own. Bootstrapping a monorepo shares by default and saves shared here, so later scaffolds follow it; isolated applies when nothing is saved."
         }
       }
     }

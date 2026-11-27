@@ -32,7 +32,7 @@ Make targets name their skill with `#@`; `make skills_validate` (run in CI) chec
 
 ## Where code goes
 
-- @docs/portal/guides/architecture.md: the layers (`Core < Infrastructure < Configuration < Hosting < Web < Automation`), project
+- @docs/portal/guides/architecture.md: the layers (`Core < Infrastructure < Bootstrap < Runtime < Automation`), project
   structure and DI modules. Projects only reference lower layers; `make check_layering` enforces it. Within a layer,
   this monorepo's packages also follow their name hierarchy (a package may reference its name ancestors, any lower
   layer, or a pair listed with its reason in `build/PackageHierarchy.cs`); `make check_package_hierarchy` enforces it

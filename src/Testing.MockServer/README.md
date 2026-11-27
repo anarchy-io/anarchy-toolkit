@@ -2,7 +2,7 @@
 
 > Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Testing kit · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
-Test helpers for [Anarchy.Toolkit.Web.MockServer](https://www.nuget.org/packages/Anarchy.Toolkit.Web.MockServer):
+Test helpers for [Anarchy.Toolkit.Runtime.Web.MockServer](https://www.nuget.org/packages/Anarchy.Toolkit.Runtime.Web.MockServer):
 assert which requests the mock server received.
 
 ```bash
@@ -46,7 +46,7 @@ public class UserRegistrationTests(IdentityMockServer mock) : IClassFixture<Iden
 ```
 
 Paths in assertions are exact, `{param}` templates or regular expressions, as in expectations. `MockServerProcess`
-runs the `Anarchy.Toolkit.Web.MockServer` assembly copied next to the tests, or `dotnet run`s
+runs the `Anarchy.Toolkit.Runtime.Web.MockServer` assembly copied next to the tests, or `dotnet run`s
 `MockServerProcessOptions.ProjectPath` when you have a host of your own; it stops the server, and everything it started,
 on dispose.
 

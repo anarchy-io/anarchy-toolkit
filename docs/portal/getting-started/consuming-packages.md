@@ -36,22 +36,23 @@ Modules never assume a configuration section or settings type: options always co
 
 | You are building | Start with |
 |---|---|
-| A REST API (Kestrel or [AWS Lambda](https://aws.amazon.com/lambda/)) | [`Web`](../packages/Web/README.md), plus [`Testing.Web`](../packages/Testing.Web/README.md) for tests |
-| A GraphQL API | [`Web.GraphQL`](../packages/Web.GraphQL/README.md) |
-| A [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) WebApp | [`Web.Ui`](../packages/Web.Ui/README.md) and the [Building UIs guide](../guides/building-uis.md) |
-| An AWS Lambda job | [`Hosting`](../packages/Hosting/README.md) |
-| An EC2/systemd worker | [`Hosting.Workers`](../packages/Hosting.Workers/README.md) |
+| A REST API (Kestrel) | [`Runtime.Web`](../packages/Runtime.Web/README.md), optionally [`Runtime.Web.Swagger`](../packages/Runtime.Web.Swagger/README.md), plus [`Testing.Runtime.Web`](../packages/Testing.Runtime.Web/README.md) for tests |
+| A REST API on [AWS Lambda](https://aws.amazon.com/lambda/) | [`Runtime.Web.Aws`](../packages/Runtime.Web.Aws/README.md), plus [`Testing.Runtime.Web.Aws`](../packages/Testing.Runtime.Web.Aws/README.md) for tests |
+| A GraphQL API | [`Runtime.Web.GraphQL`](../packages/Runtime.Web.GraphQL/README.md) |
+| A [Blazor](https://learn.microsoft.com/aspnet/core/blazor/) WebApp | [`Runtime.Web.Ui`](../packages/Runtime.Web.Ui/README.md) and the [Building UIs guide](../guides/building-uis.md) |
+| A job | [`Runtime`](../packages/Runtime/README.md), or [`Runtime.Aws`](../packages/Runtime.Aws/README.md) for an AWS Lambda job |
+| An EC2/systemd worker | [`Runtime.Workers`](../packages/Runtime.Workers/README.md) |
 | Relational persistence | A provider: [`Postgres`](../packages/Infrastructure.Persistence.Db.Postgres/README.md), [`Oracle`](../packages/Infrastructure.Persistence.Db.Oracle/README.md) or [`Mysql`](../packages/Infrastructure.Persistence.Db.Mysql/README.md). See [Database Providers](../guides/database-providers.md) |
 | Messaging over SNS/SQS | [`Infrastructure.Messaging.Aws`](../packages/Infrastructure.Messaging.Aws/README.md) |
 | A new solution from scratch | The [`anarchy-toolkit` tool](../packages/Automation.Build.Cli/README.md) and [`Automation.Build`](../packages/Automation.Build/README.md) |
 
-Every host registers [`Configuration`](../packages/Configuration/README.md)'s `ModuleLibConfiguration`, which brings settings binding, secrets and the [telemetry](../guides/observability.md) registration (`AppTelemetry`, correlation IDs) in one module. Not sure which packages you need? See [Which package do I need?](../packages/README.md#which-package-do-i-need).
+Every host registers [`Bootstrap`](../packages/Bootstrap/README.md)'s `ModuleLibConfiguration`, which brings settings binding and the [telemetry](../guides/observability.md) registration (`AppTelemetry`, correlation IDs) in one module. Secrets are opt-in: `.WithSecretManagement(new ModuleAwsSecretManagement())` from [`Bootstrap.Aws`](../packages/Bootstrap.Aws/README.md) adds AWS KMS secrets. Not sure which packages you need? See [Which package do I need?](../packages/README.md#which-package-do-i-need).
 
 ## Plugging in your organization's conventions
 
-Organization-specific behavior is not part of the toolkit. Organizations plug their conventions into its extension points instead: logging providers, an OTLP exporter or an `IMetricRecorder` registered in DI (packaged as a `ModuleTelemetryBase`) for logs and metrics; options and constructor parameters; and `ConfigureAppConfiguration` hooks for configuration sources such as the AWS Parameter Store. See [Your company's setup](../guides/observability.md#your-companys-setup).
+Organization-specific behavior is not part of the toolkit. Organizations plug their conventions into its extension points instead: logging providers, an OTLP exporter or an `IMetricRecorder` registered in DI (packaged as a `ModuleTelemetryBase`) for logs and metrics; options and constructor parameters; and `ConfigureAppConfiguration` hooks for configuration sources such as the AWS Parameter Store (in `Bootstrap.Aws`). See [Your company's setup](../guides/observability.md#your-companys-setup).
 
-Domain code (task orchestration, concrete repositories and clients, domain event payloads, message destinations, Swagger scopes, UI environment URLs) belongs in the consuming applications, not in the toolkit. Generic code takes strings and generic parameters instead of domain enums; enum overloads convert values with `EnumExtension.ToDescription()` (see [Enum Conventions](../conventions/enums.md)). Entities are marked with `IEntity`/`IPersistedEntity`.
+Domain code (task orchestration, concrete repositories and clients, domain event payloads, message destinations, Swagger scopes, UI environment URLs) belongs in the consuming applications, not in the toolkit. Generic code takes strings and generic parameters instead of domain enums; enum overloads convert values with `EnumExtensions.ToDescription()` (see [Enum Conventions](../conventions/enums.md)). Entities are marked with `IEntity`/`IPersistedEntity`.
 
 ## Assertions in tests
 

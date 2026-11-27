@@ -39,7 +39,7 @@ The agent works out which path fits, asks before anything destructive, can insta
 ## Requirements
 
 - The [.NET 10 SDK](https://dotnet.microsoft.com/download).
-- Bash and [Make](https://www.gnu.org/software/make/) (macOS, Linux or WSL) for the generated Makefile and scripts. Windows users can run supported build targets directly with `dotnet run --project build/_build.csproj -- <Target>`; see [Without Make](../guides/automation-builds.md#without-make-including-windows).
+- Bash and [Make](https://www.gnu.org/software/make/) (macOS, Linux or WSL) for the generated Makefile and scripts. Windows users can run supported build targets directly with `./scripts/build.anarchy.ps1 <Target>` or `dotnet run --project build/_build.csproj -- <Target>`; see [Without Make](../guides/automation-builds.md#without-make-including-windows).
 - Access to nuget.org, where the packages are published under the [`anarchy-io` profile](https://www.nuget.org/profiles/anarchy-io) (or a feed mirroring the `Anarchy.Toolkit.*` packages).
 
 ## See it working

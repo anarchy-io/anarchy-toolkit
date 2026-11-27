@@ -13,10 +13,11 @@ The toolkit adds **no logging or metrics backend of its own**. By default it wri
 |---|---|
 | `Anarchy.Toolkit.Core.Telemetry` | `ICoreTelemetry`: the primitives (`ILogger Logger`, `IMetricRecorder Metrics`). `AppTelemetry`: the toolkit conventions on top of them (call sites, standard metric names, timers, monitored actions, log helpers, `LogContext` scopes). `AddCoreTelemetry()` and `ModuleTelemetryBase` for registration. |
 | `Anarchy.Toolkit.Infrastructure.CorrelationId` | `CorrelationContext`, the `UseCorrelationId()` middleware and `CorrelationContext.BeginScope(...)` for non-HTTP entry points. Provider-neutral: no Serilog dependency. |
-| `Anarchy.Toolkit.Configuration` | `ModuleTelemetry`, which registers telemetry, the correlation context and `IApplicationContext`; `ModuleLibConfiguration` applies it with the settings. |
+| `Anarchy.Toolkit.Bootstrap` | `ModuleTelemetry`, which registers telemetry, the correlation context and `IApplicationContext`; `ModuleLibConfiguration` applies it with the settings. |
 | `Anarchy.Toolkit.Infrastructure.Telemetry.Serilog` | Optional. Serilog as one more logging provider, a console default for tools, a correlation enricher, a structured-exception enricher and opt-in log-based metrics. |
 | `Anarchy.Toolkit.Infrastructure.Telemetry.StatsD` | Optional. DogStatsD recorder with application-supplied client configuration. |
 | `Anarchy.Toolkit.Infrastructure.Messaging.Aws` | `InboundMessage.BeginCorrelationScope(logger)`: the entry point for consumers of mapped SQS messages. |
+| `Anarchy.Toolkit.Bootstrap.Aws`, `Anarchy.Toolkit.Runtime.Web.Aws` | Optional. `IAmazonRequestContext` (registered by `ModuleAwsRequestContext`) holds the AWS request and X-Ray trace IDs; `UseAmazonTraceId()` reads the `X-Amzn-Trace-Id` header, echoes it on the response and adds it to the log scope. The Lambda entry point `AwsWebAppEntryPointBase` applies both. |
 | `Anarchy.Toolkit.Infrastructure.Messaging.Kafka` | Kafka publisher logs and records publish duration/count through `AppTelemetry`; Kafka inbound mapping does not start a correlation scope. |
 | `Anarchy.Toolkit.Testing` | `TestTelemetry`: an `AppTelemetry` whose logs and metrics are captured in memory, for tests. |
 
@@ -24,7 +25,7 @@ Which of these to install is summarized in [Which package do I need?](../package
 
 ## Start here
 
-Install `Anarchy.Toolkit.Core.Telemetry` (the host packages `Configuration`, `Web` and `Hosting.Workers` already bring it), register it once and inject `AppTelemetry`:
+Install `Anarchy.Toolkit.Core.Telemetry` (the host packages `Bootstrap`, `Runtime.Web` and `Runtime.Workers` already bring it), register it once and inject `AppTelemetry`:
 
 ```csharp
 services.AddCoreTelemetry();
@@ -137,7 +138,7 @@ export OTEL_EXPORTER_OTLP_HEADERS="api-key=<license key>"
 export OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
 ```
 
-Keep keys out of source control: they belong in the host's secret store or environment, like any other secret (see [Configuration](../packages/Configuration/README.md)).
+Keep keys out of source control: they belong in the host's secret store or environment, like any other secret (see [Bootstrap](../packages/Bootstrap/README.md)).
 
 ### DogStatsD (optional)
 
@@ -214,6 +215,7 @@ A correlation ID ties together the log lines and traces of one request; an attem
 |---|---|
 | HTTP request | `app.UseCorrelationId()` early in the pipeline (installed with the toolkit's web startups). Headers default to `X-Correlation-Id` and `X-Attempt-Id`; a missing header is generated unless the options say to ignore or reject it. |
 | Worker iteration | `ResilientWorkerBase` opens a scope per iteration with a new correlation ID and attempt ID. Work that carries its own IDs opens `BeginCorrelationScope(correlationId, attemptId)` around its processing. |
+| AWS X-Ray trace | `app.UseAmazonTraceId()` (`Runtime.Web.Aws`) before `UseToolkitCommonMiddlewares` in a container behind an AWS load balancer; `AwsWebAppEntryPointBase` adds it for Lambda APIs. The trace ID is logged as `X-Amzn-Trace-Id`. |
 | Any other entry point | `using (CorrelationContext.BeginScope(logger, correlationId, attemptId)) { ... }` |
 | SQS message | `using (message.BeginCorrelationScope(logger)) { ... }` on the `InboundMessage` returned by `InboundMessageMapper.FromSqs(...)`. |
 

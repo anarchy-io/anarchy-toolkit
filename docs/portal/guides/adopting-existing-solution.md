@@ -46,13 +46,13 @@ Add `build/_build.csproj` with the components that fit (start with `IStandardBui
 dotnet run --project build/_build.csproj -- SetupBoilerplate --boilerplate-items Makefile,scripts --append-existing --boilerplate-dry-run
 ```
 
-Keep the targets your pipeline calls (`install`, `build_release`, `run_smoke_test`, ...) in your own `.mk` files (for example `scripts/make/project/*.mk`), included by your Makefile after the toolkit's and listed in `MAKE_EXTRA_TARGETS`, so `make help` lists yours and the toolkit's together. If your build also deploys, keep that in a separate `release/` host: the toolkit's build doesn't deploy ([ADR 0006](../decisions/0006-fallout-build.md)).
+Keep the targets your pipeline calls (`install`, `build_release`, `run_smoke_test`, ...) in your own `.mk` files (for example `scripts/make/project/*.mk`), included by your Makefile after the toolkit's and listed in `MAKE_EXTRA_TARGETS`, so `make help` lists yours and the toolkit's together. If your build also deploys, keep that in a separate `release/` host: the toolkit's build doesn't deploy ([ADR 0011](../decisions/0011-fallout-build.md)).
 
 If your code or tests are not under `src` and `tests`, say where they are with `SourceRoot` and `TestsRoot`; if your test projects have their own names, declare them with `"TestKindAliases": ["EndToEnd=Acceptance"]`. See [Testing: opting out](../conventions/testing.md#opting-out-or-adapting). Coming from NUKE or Cake? See [Coming from another build tool](automation-builds.md#coming-from-another-build-tool).
 
 ### Layering
 
-`ILayeringBuild` uses a folder-mode baseline (`src/Library`, standard application folders and layers) when no preference is saved or passed. Adding it does not require a configuration file. Choose **one** mode for the whole solution: **folder** (recommended) when projects already sit, or can sit, in layer folders such as `src/Library/Core`; **prefix** when they are named `Core.*`, `Infrastructure.*` and so on, as the toolkit's own are. Provide the choice as explicit operation arguments or save selected overrides in `.anarchy-toolkit.json`. Map application folders (`src/Api`, `src/Jobs`) to their layers, and leave the check out of the pull-request gate until it passes locally. The tooling does not infer a mode. See [Layering](../conventions/layering.md), [Code Organization](../conventions/code-organization.md) and the [settings-file guide](automation-preferences.md) for what belongs in `.fallout/parameters.json` versus `.anarchy-toolkit.json`.
+`ILayeringBuild` uses a folder-mode baseline (`src/Library`, standard application folders and layers) when no preference is saved or passed. Adding it does not require a configuration file. Choose **one** mode for the whole solution: **folder** (recommended) when projects already sit, or can sit, in layer folders such as `src/Library/Core`; **prefix** when they are named after their layer (`Library.Core`, `Apps.Api.Orders`, or `Core.*`, `Infrastructure.*` as the toolkit's own are). The default layers are `Core < Infrastructure < Bootstrap < Runtime < Apps`; your build stays in `build/`, outside them. Provide the choice as explicit operation arguments or save selected overrides in `.anarchy-toolkit.json`. Map application folders (`src/Apps/Apis`, `src/Apps/Jobs`, or wherever yours are) to their layer (`Apps` by default), and leave the check out of the pull-request gate until it passes locally. The tooling does not infer a mode. See [Layering](../conventions/layering.md), [Code Organization](../conventions/code-organization.md) and the [settings-file guide](automation-preferences.md) for what belongs in `.fallout/parameters.json` versus `.anarchy-toolkit.json`.
 
 ### Tests
 
@@ -64,7 +64,7 @@ If your tests call HTTP upstreams, add the toolkit's mock server: expectation fi
 
 ### Packages and validated settings
 
-Add the runtime packages you'll use, and nothing else yet. Then add an `AppSettings` with your section names and `ModuleAppSettingsBase`; the boot fails when a section is missing. Add validation attributes only where every environment already satisfies them. See the [recipe](onboarding-recipes.md#add-validated-settings).
+Add the runtime packages you'll use, and nothing else yet. AWS integrations (`Bootstrap.Aws`, `Runtime.Aws`, `Runtime.Web.Aws`), Swagger (`Runtime.Web.Swagger`) and MSAL clients (`Infrastructure.Http.Msal`) are separate opt-in packages. Then add an `AppSettings` with your section names and `ModuleAppSettingsBase`; the boot fails when a section is missing. Add validation attributes only where every environment already satisfies them. See the [recipe](onboarding-recipes.md#add-validated-settings).
 
 ### One module per adapter
 

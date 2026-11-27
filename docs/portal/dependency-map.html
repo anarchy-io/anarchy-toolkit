@@ -4,111 +4,131 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Anarchy.Toolkit dependency map</title>
+<script>
+  // Applied before the page renders, so a saved theme never flashes the other one.
+  try { const saved = localStorage.getItem("anarchy-dependency-map-theme"); if (saved) document.documentElement.dataset.theme = saved; } catch {}
+</script>
 <style>
 :root {
   color-scheme: light;
-  --surface: #fcfcfb;
-  --surface-2: #f2f1ee;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --border: #dddcd7;
-  --bad: #c0302f;
-  --series-0: #2a78d6;
-  --series-1: #eb6834;
-  --series-2: #1baf7a;
-  --series-3: #eda100;
-  --series-4: #e87ba4;
-  --series-5: #008300;
-  --series-6: #6250d6;
-  --series-7: #e34948;
-  --series-8: #8a8984;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --gradient: linear-gradient(110deg, #F02020 0%, #FF751F 100%);
+  --radius: 8px;
+  --surface: #FFFFFF;
+  --surface-2: #F5F5F7;
+  --text-primary: #111114;
+  --text-secondary: #5C5C66;
+  --border: #DCDCE2;
+  --link: #C81818;
+  --bad: #C81818;
+  --series-0: #FF751F;
+  --series-1: #2F6FD0;
+  --series-2: #1A9E6E;
+  --series-3: #C98500;
+  --series-4: #7A4FD0;
+  --series-5: #C2417A;
+  --series-6: #0F8A9E;
+  --series-7: #5C5C66;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --surface: #1a1a19;
-    --surface-2: #252524;
-    --text-primary: #f0efec;
-    --text-secondary: #c3c2b7;
-    --border: #3a3a38;
-    --bad: #e66767;
-  --series-0: #3987e5;
-  --series-1: #d95926;
-  --series-2: #199e70;
-  --series-3: #c98500;
-  --series-4: #d55181;
-  --series-5: #008300;
-  --series-6: #9085e9;
-  --series-7: #e66767;
-  --series-8: #7a7974;
+  --surface: #111114;
+  --surface-2: #1C1C21;
+  --text-primary: #F5F5F7;
+  --text-secondary: #A1A1AA;
+  --border: #2E2E36;
+  --link: #FF751F;
+  --bad: #FF5A4A;
+  --series-0: #FF8A3D;
+  --series-1: #5B8FE0;
+  --series-2: #2DBA88;
+  --series-3: #E0A020;
+  --series-4: #9B7BE6;
+  --series-5: #DD6A9C;
+  --series-6: #2BB0C4;
+  --series-7: #A1A1AA;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --surface: #1a1a19;
-  --surface-2: #252524;
-  --text-primary: #f0efec;
-  --text-secondary: #c3c2b7;
-  --border: #3a3a38;
-  --bad: #e66767;
-  --series-0: #3987e5;
-  --series-1: #d95926;
-  --series-2: #199e70;
-  --series-3: #c98500;
-  --series-4: #d55181;
-  --series-5: #008300;
-  --series-6: #9085e9;
-  --series-7: #e66767;
-  --series-8: #7a7974;
+  --surface: #111114;
+  --surface-2: #1C1C21;
+  --text-primary: #F5F5F7;
+  --text-secondary: #A1A1AA;
+  --border: #2E2E36;
+  --link: #FF751F;
+  --bad: #FF5A4A;
+  --series-0: #FF8A3D;
+  --series-1: #5B8FE0;
+  --series-2: #2DBA88;
+  --series-3: #E0A020;
+  --series-4: #9B7BE6;
+  --series-5: #DD6A9C;
+  --series-6: #2BB0C4;
+  --series-7: #A1A1AA;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--surface); color: var(--text-primary);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
-h1 { font-size: 1.75rem; margin: 0 0 8px; }
-h2 { font-size: 1.2rem; margin: 40px 0 12px; }
+  font: 15px/1.6 var(--font-sans); -webkit-font-smoothing: antialiased; }
+main { max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px; }
+header { padding-bottom: 20px; border-bottom: 3px solid transparent; border-image: var(--gradient) 1; }
+h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 8px; }
+h2 { font-size: 1.25rem; font-weight: 700; margin: 40px 0 12px; padding-left: 12px; border-left: 3px solid #F02020; }
+a { color: var(--link); text-decoration: none; }
+a:hover { color: #FF751F; text-decoration: underline; }
 .muted, figcaption { color: var(--text-secondary); }
-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
-.stats { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; padding: 0; margin: 16px 0 0; }
+code { font-family: var(--font-mono); font-size: 0.85em; background: var(--surface-2); border-radius: 4px; padding: 1px 5px; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 16px 0 0; }
+.stats li { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 12px; }
+.stats .bad { border-color: var(--bad); }
 .stats .bad strong { color: var(--bad); }
 .explorer[data-view="overview"] .detail, .explorer[data-view="detail"] .overview { display: none; }
 .overview { overflow: hidden; }
 .onion { display: block; max-width: 100%; height: auto; transform-origin: 50% 50%;
   transition: transform 0.35s ease-in, opacity 0.35s ease-in; }
 .onion.zooming { opacity: 0; }
-.onion text { fill: var(--text-primary); font: 12px system-ui, sans-serif; pointer-events: none;
+.onion text { fill: var(--text-primary); font: 600 12px var(--font-sans); pointer-events: none;
   paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
 .ring { cursor: pointer; outline: none; }
 .ring path { fill-opacity: 0.2; transition: fill-opacity 0.15s; }
 .ring:hover path, .ring:focus-visible path { fill-opacity: 0.45; }
 .ring:focus-visible circle { stroke-width: 4; }
-button { font: inherit; color: var(--text-primary); background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: 6px; padding: 2px 10px; cursor: pointer; }
-button:hover { border-color: var(--text-secondary); }
+button { font: 500 0.9rem var(--font-sans); color: #FFFFFF; background: var(--gradient); border: 0;
+  border-radius: var(--radius); padding: 6px 14px; cursor: pointer; }
+button:hover { background: var(--text-primary); color: var(--surface); }
+.title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.theme-toggle { flex: none; background: var(--surface-2); color: var(--text-primary); border: 1px solid var(--border); }
+.theme-toggle:hover { background: var(--text-primary); color: var(--surface); }
 .detail-head { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
-.detail-head h3 { margin: 0; font-size: 1.1rem; }
+.detail-head h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
 .detail .graph { margin: 12px 0 16px; }
 @media (prefers-reduced-motion: reduce) { .onion, .ring path { transition: none; } }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; list-style: none; padding: 0; margin: 20px 0; font-size: 0.9rem; }
 .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
-th, td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-weight: 600; color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.04em; }
+th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-.graph { overflow-x: auto; background: var(--surface-2); border-radius: 8px; padding: 16px; }
-pre.mermaid { margin: 0; }
+.graph { overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+pre.mermaid { margin: 0; font-family: var(--font-sans); }
 </style>
 </head>
 <body>
 <main>
 <header>
-  <h1>Anarchy.Toolkit dependency map</h1>
+  <div class="title-row">
+    <h1>Anarchy.Toolkit dependency map</h1>
+    <button type="button" class="theme-toggle" aria-label="Switch between light and dark mode"></button>
+  </div>
   <p class="muted">Generated by Anarchy automation's <code>GenerateDependencyMap</code> target, powered by
   <a href="https://fallout.build/">Fallout Build</a>. Dependencies only point
-  down the layers: Core &lt; Infrastructure &lt; Configuration &lt; Hosting &lt; Web &lt; Automation.</p>
+  down the layers: Core &lt; Infrastructure &lt; Bootstrap &lt; Runtime &lt; Automation.</p>
   <ul class="stats">
-    <li><strong>48</strong> projects</li>
-    <li><strong>155</strong> references</li>
+    <li><strong>54</strong> projects</li>
+    <li><strong>169</strong> references</li>
     <li class=""><strong>0</strong> layering violations</li>
   </ul>
 </header>
@@ -118,16 +138,16 @@ pre.mermaid { margin: 0; }
   <p class="muted">Click a layer, or a group outside the chain, to zoom in on how its projects reference each other.</p>
   <div class="explorer" data-view="overview">
     <div class="overview">
-      <svg class="onion" viewBox="0 0 360 360" width="360" height="360" role="group" aria-label="Layers from the innermost (Core) to the outermost (Automation)"><g class="ring" data-group="Automation" data-zoom="1" role="button" tabindex="0" aria-label="Zoom into Automation: 3 projects"><path d="M5 180 a175 175 0 1 0 350 0 a175 175 0 1 0 -350 0 Z M34.17 180 a145.83 145.83 0 1 0 291.67 0 a145.83 145.83 0 1 0 -291.67 0 Z" fill-rule="evenodd" fill="var(--series-5)"><title>Automation: 3 projects</title></path><circle cx="180" cy="180" r="175" fill="none" stroke="var(--series-5)" stroke-width="2"/></g><g class="ring" data-group="Web" data-zoom="1.2" role="button" tabindex="0" aria-label="Zoom into Web: 5 projects"><path d="M34.17 180 a145.83 145.83 0 1 0 291.67 0 a145.83 145.83 0 1 0 -291.67 0 Z M63.33 180 a116.67 116.67 0 1 0 233.33 0 a116.67 116.67 0 1 0 -233.33 0 Z" fill-rule="evenodd" fill="var(--series-4)"><title>Web: 5 projects</title></path><circle cx="180" cy="180" r="145.83" fill="none" stroke="var(--series-4)" stroke-width="2"/></g><g class="ring" data-group="Hosting" data-zoom="1.5" role="button" tabindex="0" aria-label="Zoom into Hosting: 2 projects"><path d="M63.33 180 a116.67 116.67 0 1 0 233.33 0 a116.67 116.67 0 1 0 -233.33 0 Z M92.5 180 a87.5 87.5 0 1 0 175 0 a87.5 87.5 0 1 0 -175 0 Z" fill-rule="evenodd" fill="var(--series-3)"><title>Hosting: 2 projects</title></path><circle cx="180" cy="180" r="116.67" fill="none" stroke="var(--series-3)" stroke-width="2"/></g><g class="ring" data-group="Configuration" data-zoom="2" role="button" tabindex="0" aria-label="Zoom into Configuration: 1 project"><path d="M92.5 180 a87.5 87.5 0 1 0 175 0 a87.5 87.5 0 1 0 -175 0 Z M121.67 180 a58.33 58.33 0 1 0 116.67 0 a58.33 58.33 0 1 0 -116.67 0 Z" fill-rule="evenodd" fill="var(--series-2)"><title>Configuration: 1 project</title></path><circle cx="180" cy="180" r="87.5" fill="none" stroke="var(--series-2)" stroke-width="2"/></g><g class="ring" data-group="Infrastructure" data-zoom="3" role="button" tabindex="0" aria-label="Zoom into Infrastructure: 12 projects"><path d="M121.67 180 a58.33 58.33 0 1 0 116.67 0 a58.33 58.33 0 1 0 -116.67 0 Z M150.83 180 a29.17 29.17 0 1 0 58.33 0 a29.17 29.17 0 1 0 -58.33 0 Z" fill-rule="evenodd" fill="var(--series-1)"><title>Infrastructure: 12 projects</title></path><circle cx="180" cy="180" r="58.33" fill="none" stroke="var(--series-1)" stroke-width="2"/></g><g class="ring" data-group="Core" data-zoom="6" role="button" tabindex="0" aria-label="Zoom into Core: 6 projects"><path d="M150.83 180 a29.17 29.17 0 1 0 58.33 0 a29.17 29.17 0 1 0 -58.33 0 Z" fill-rule="evenodd" fill="var(--series-0)"><title>Core: 6 projects</title></path><circle cx="180" cy="180" r="29.17" fill="none" stroke="var(--series-0)" stroke-width="2"/></g><text x="180" y="23.58" text-anchor="middle">Automation (3)</text><text x="180" y="52.75" text-anchor="middle">Web (5)</text><text x="180" y="81.92" text-anchor="middle">Hosting (2)</text><text x="180" y="111.08" text-anchor="middle">Configuration (1)</text><text x="180" y="140.25" text-anchor="middle">Infrastructure (12)</text><text x="180" y="184" text-anchor="middle">Core (6)</text></svg>
-      <p class="muted">Outside the chain: <button type="button" data-group="Samples">Samples (7)</button> <button type="button" data-group="Testing">Testing (9)</button> <button type="button" data-group="Tests">Tests (3)</button></p>
+      <svg class="onion" viewBox="0 0 360 360" width="360" height="360" role="group" aria-label="Layers from the innermost (Core) to the outermost (Automation)"><g class="ring" data-group="Automation" data-zoom="1" role="button" tabindex="0" aria-label="Zoom into Automation: 3 projects"><path d="M5 180 a175 175 0 1 0 350 0 a175 175 0 1 0 -350 0 Z M40 180 a140 140 0 1 0 280 0 a140 140 0 1 0 -280 0 Z" fill-rule="evenodd" fill="var(--series-4)"><title>Automation: 3 projects</title></path><circle cx="180" cy="180" r="175" fill="none" stroke="var(--series-4)" stroke-width="2"/></g><g class="ring" data-group="Runtime" data-zoom="1.25" role="button" tabindex="0" aria-label="Zoom into Runtime: 10 projects"><path d="M40 180 a140 140 0 1 0 280 0 a140 140 0 1 0 -280 0 Z M75 180 a105 105 0 1 0 210 0 a105 105 0 1 0 -210 0 Z" fill-rule="evenodd" fill="var(--series-3)"><title>Runtime: 10 projects</title></path><circle cx="180" cy="180" r="140" fill="none" stroke="var(--series-3)" stroke-width="2"/></g><g class="ring" data-group="Bootstrap" data-zoom="1.67" role="button" tabindex="0" aria-label="Zoom into Bootstrap: 2 projects"><path d="M75 180 a105 105 0 1 0 210 0 a105 105 0 1 0 -210 0 Z M110 180 a70 70 0 1 0 140 0 a70 70 0 1 0 -140 0 Z" fill-rule="evenodd" fill="var(--series-2)"><title>Bootstrap: 2 projects</title></path><circle cx="180" cy="180" r="105" fill="none" stroke="var(--series-2)" stroke-width="2"/></g><g class="ring" data-group="Infrastructure" data-zoom="2.5" role="button" tabindex="0" aria-label="Zoom into Infrastructure: 13 projects"><path d="M110 180 a70 70 0 1 0 140 0 a70 70 0 1 0 -140 0 Z M145 180 a35 35 0 1 0 70 0 a35 35 0 1 0 -70 0 Z" fill-rule="evenodd" fill="var(--series-1)"><title>Infrastructure: 13 projects</title></path><circle cx="180" cy="180" r="70" fill="none" stroke="var(--series-1)" stroke-width="2"/></g><g class="ring" data-group="Core" data-zoom="5" role="button" tabindex="0" aria-label="Zoom into Core: 6 projects"><path d="M145 180 a35 35 0 1 0 70 0 a35 35 0 1 0 -70 0 Z" fill-rule="evenodd" fill="var(--series-0)"><title>Core: 6 projects</title></path><circle cx="180" cy="180" r="35" fill="none" stroke="var(--series-0)" stroke-width="2"/></g><text x="180" y="26.5" text-anchor="middle">Automation (3)</text><text x="180" y="61.5" text-anchor="middle">Runtime (10)</text><text x="180" y="96.5" text-anchor="middle">Bootstrap (2)</text><text x="180" y="131.5" text-anchor="middle">Infrastructure (13)</text><text x="180" y="184" text-anchor="middle">Core (6)</text></svg>
+      <p class="muted">Outside the chain: <button type="button" data-group="Samples">Samples (7)</button> <button type="button" data-group="Testing">Testing (10)</button> <button type="button" data-group="Tests">Tests (3)</button></p>
     </div>
     <div class="detail">
       <div class="detail-head"><button type="button" class="back">← All layers</button><h3></h3></div>
       <div class="detail-body"></div>
     </div>
   </div>
-  <ul class="legend"><li><span class="swatch" style="background: var(--series-0)"></span>Core</li><li><span class="swatch" style="background: var(--series-1)"></span>Infrastructure</li><li><span class="swatch" style="background: var(--series-2)"></span>Configuration</li><li><span class="swatch" style="background: var(--series-3)"></span>Hosting</li><li><span class="swatch" style="background: var(--series-4)"></span>Web</li><li><span class="swatch" style="background: var(--series-5)"></span>Automation</li><li><span class="swatch" style="background: var(--series-6)"></span>Samples</li><li><span class="swatch" style="background: var(--series-7)"></span>Testing</li><li><span class="swatch" style="background: var(--series-8)"></span>Tests</li></ul>
-  <div class="table-wrap"><table><thead><tr><th>Group</th><th class="num">Projects</th><th class="num">Files</th><th class="num">Lines</th><th class="num">Share</th><th>Projects</th></tr></thead><tbody><tr><td>Core</td><td class="num">6</td><td class="num">145</td><td class="num">5,868</td><td class="num">10.1%</td><td><code>Core</code>, <code>Core.Events</code>, <code>Core.Health</code>, <code>Core.Messaging.Abstractions</code>, <code>Core.Persistence.Abstractions</code>, <code>Core.Telemetry</code></td></tr><tr><td>Infrastructure</td><td class="num">12</td><td class="num">180</td><td class="num">8,283</td><td class="num">14.3%</td><td><code>Infrastructure.CorrelationId</code>, <code>Infrastructure.Http</code>, <code>Infrastructure.Messaging.Aws</code>, <code>Infrastructure.Messaging.CloudEvents</code>, <code>Infrastructure.Messaging.Kafka</code>, <code>Infrastructure.Persistence.Db</code>, <code>Infrastructure.Persistence.Db.Events</code>, <code>Infrastructure.Persistence.Db.Mysql</code>, <code>Infrastructure.Persistence.Db.Oracle</code>, <code>Infrastructure.Persistence.Db.Postgres</code>, <code>Infrastructure.Telemetry.Serilog</code>, <code>Infrastructure.Telemetry.StatsD</code></td></tr><tr><td>Configuration</td><td class="num">1</td><td class="num">27</td><td class="num">977</td><td class="num">1.7%</td><td><code>Configuration</code></td></tr><tr><td>Hosting</td><td class="num">2</td><td class="num">36</td><td class="num">2,005</td><td class="num">3.5%</td><td><code>Hosting</code>, <code>Hosting.Workers</code></td></tr><tr><td>Web</td><td class="num">5</td><td class="num">101</td><td class="num">6,238</td><td class="num">10.7%</td><td><code>Web</code>, <code>Web.GraphQL</code>, <code>Web.MockServer</code>, <code>Web.MockServer.Ui</code>, <code>Web.Ui</code></td></tr><tr><td>Automation</td><td class="num">3</td><td class="num">120</td><td class="num">11,330</td><td class="num">19.5%</td><td><code>Automation</code>, <code>Automation.Build</code>, <code>Automation.Build.Cli</code></td></tr><tr><td>Samples <span class="muted">(outside)</span></td><td class="num">7</td><td class="num">59</td><td class="num">1,710</td><td class="num">2.9%</td><td><code>Samples.Api</code>, <code>Samples.Examples</code>, <code>Samples.Job</code>, <code>Samples.MockServer</code>, <code>Samples.Testing</code>, <code>Samples.Ui</code>, <code>Samples.Worker</code></td></tr><tr><td>Testing <span class="muted">(outside)</span></td><td class="num">9</td><td class="num">46</td><td class="num">4,225</td><td class="num">7.3%</td><td><code>Testing</code>, <code>Testing.Aws</code>, <code>Testing.Db</code>, <code>Testing.Db.Mysql</code>, <code>Testing.Db.Oracle</code>, <code>Testing.Db.Postgres</code>, <code>Testing.Kafka</code>, <code>Testing.MockServer</code>, <code>Testing.Web</code></td></tr><tr><td>Tests <span class="muted">(outside)</span></td><td class="num">3</td><td class="num">201</td><td class="num">17,394</td><td class="num">30%</td><td><code>EndToEnd</code>, <code>Integration</code>, <code>Unit</code></td></tr></tbody></table></div>
+  <ul class="legend"><li><span class="swatch" style="background: var(--series-0)"></span>Core</li><li><span class="swatch" style="background: var(--series-1)"></span>Infrastructure</li><li><span class="swatch" style="background: var(--series-2)"></span>Bootstrap</li><li><span class="swatch" style="background: var(--series-3)"></span>Runtime</li><li><span class="swatch" style="background: var(--series-4)"></span>Automation</li><li><span class="swatch" style="background: var(--series-5)"></span>Samples</li><li><span class="swatch" style="background: var(--series-6)"></span>Testing</li><li><span class="swatch" style="background: var(--series-7)"></span>Tests</li></ul>
+  <div class="table-wrap"><table><thead><tr><th>Group</th><th class="num">Projects</th><th class="num">Files</th><th class="num">Lines</th><th class="num">Share</th><th>Projects</th></tr></thead><tbody><tr><td>Core</td><td class="num">6</td><td class="num">145</td><td class="num">5,873</td><td class="num">9.8%</td><td><code>Core</code>, <code>Core.Events</code>, <code>Core.Health</code>, <code>Core.Messaging.Abstractions</code>, <code>Core.Persistence.Abstractions</code>, <code>Core.Telemetry</code></td></tr><tr><td>Infrastructure</td><td class="num">13</td><td class="num">181</td><td class="num">8,308</td><td class="num">13.8%</td><td><code>Infrastructure.CorrelationId</code>, <code>Infrastructure.Http</code>, <code>Infrastructure.Http.Msal</code>, <code>Infrastructure.Messaging.Aws</code>, <code>Infrastructure.Messaging.CloudEvents</code>, <code>Infrastructure.Messaging.Kafka</code>, <code>Infrastructure.Persistence.Db</code>, <code>Infrastructure.Persistence.Db.Events</code>, <code>Infrastructure.Persistence.Db.Mysql</code>, <code>Infrastructure.Persistence.Db.Oracle</code>, <code>Infrastructure.Persistence.Db.Postgres</code>, <code>Infrastructure.Telemetry.Serilog</code>, <code>Infrastructure.Telemetry.StatsD</code></td></tr><tr><td>Bootstrap</td><td class="num">2</td><td class="num">32</td><td class="num">1,114</td><td class="num">1.9%</td><td><code>Bootstrap</code>, <code>Bootstrap.Aws</code></td></tr><tr><td>Runtime</td><td class="num">10</td><td class="num">145</td><td class="num">8,488</td><td class="num">14.1%</td><td><code>Runtime</code>, <code>Runtime.Aws</code>, <code>Runtime.Web</code>, <code>Runtime.Web.Aws</code>, <code>Runtime.Web.GraphQL</code>, <code>Runtime.Web.MockServer</code>, <code>Runtime.Web.MockServer.Ui</code>, <code>Runtime.Web.Swagger</code>, <code>Runtime.Web.Ui</code>, <code>Runtime.Workers</code></td></tr><tr><td>Automation</td><td class="num">3</td><td class="num">123</td><td class="num">12,178</td><td class="num">20.3%</td><td><code>Automation</code>, <code>Automation.Build</code>, <code>Automation.Build.Cli</code></td></tr><tr><td>Samples <span class="muted">(outside)</span></td><td class="num">7</td><td class="num">60</td><td class="num">1,733</td><td class="num">2.9%</td><td><code>Samples.Api</code>, <code>Samples.Examples</code>, <code>Samples.Job</code>, <code>Samples.MockServer</code>, <code>Samples.Testing</code>, <code>Samples.Ui</code>, <code>Samples.Worker</code></td></tr><tr><td>Testing <span class="muted">(outside)</span></td><td class="num">10</td><td class="num">49</td><td class="num">4,327</td><td class="num">7.2%</td><td><code>Testing</code>, <code>Testing.Aws</code>, <code>Testing.Db</code>, <code>Testing.Db.Mysql</code>, <code>Testing.Db.Oracle</code>, <code>Testing.Db.Postgres</code>, <code>Testing.Kafka</code>, <code>Testing.MockServer</code>, <code>Testing.Runtime.Web</code>, <code>Testing.Runtime.Web.Aws</code></td></tr><tr><td>Tests <span class="muted">(outside)</span></td><td class="num">3</td><td class="num">207</td><td class="num">18,061</td><td class="num">30.1%</td><td><code>EndToEnd</code>, <code>Integration</code>, <code>Unit</code></td></tr></tbody></table></div>
 </section>
 
 <section>
@@ -145,156 +165,177 @@ flowchart RL
   p5[&quot;Core.Telemetry&quot;]:::c0
   p6[&quot;Infrastructure.CorrelationId&quot;]:::c1
   p7[&quot;Infrastructure.Http&quot;]:::c1
-  p8[&quot;Infrastructure.Messaging.Aws&quot;]:::c1
-  p9[&quot;Infrastructure.Messaging.CloudEvents&quot;]:::c1
-  p10[&quot;Infrastructure.Messaging.Kafka&quot;]:::c1
-  p11[&quot;Infrastructure.Persistence.Db&quot;]:::c1
-  p12[&quot;Infrastructure.Persistence.Db.Events&quot;]:::c1
-  p13[&quot;Infrastructure.Persistence.Db.Mysql&quot;]:::c1
-  p14[&quot;Infrastructure.Persistence.Db.Oracle&quot;]:::c1
-  p15[&quot;Infrastructure.Persistence.Db.Postgres&quot;]:::c1
-  p16[&quot;Infrastructure.Telemetry.Serilog&quot;]:::c1
-  p17[&quot;Infrastructure.Telemetry.StatsD&quot;]:::c1
-  p18[&quot;Configuration&quot;]:::c2
-  p19[&quot;Hosting&quot;]:::c3
-  p20[&quot;Hosting.Workers&quot;]:::c3
-  p21[&quot;Web&quot;]:::c4
-  p22[&quot;Web.GraphQL&quot;]:::c4
-  p23[&quot;Web.MockServer&quot;]:::c4
-  p24[&quot;Web.MockServer.Ui&quot;]:::c4
-  p25[&quot;Web.Ui&quot;]:::c4
-  p26[&quot;Automation&quot;]:::c5
-  p27[&quot;Automation.Build&quot;]:::c5
-  p28[&quot;Automation.Build.Cli&quot;]:::c5
-  p29[&quot;Samples.Api&quot;]:::c6
-  p30[&quot;Samples.Examples&quot;]:::c6
-  p31[&quot;Samples.Job&quot;]:::c6
-  p32[&quot;Samples.MockServer&quot;]:::c6
-  p33[&quot;Samples.Testing&quot;]:::c6
-  p34[&quot;Samples.Ui&quot;]:::c6
-  p35[&quot;Samples.Worker&quot;]:::c6
-  p36[&quot;Testing&quot;]:::c7
-  p37[&quot;Testing.Aws&quot;]:::c7
-  p38[&quot;Testing.Db&quot;]:::c7
-  p39[&quot;Testing.Db.Mysql&quot;]:::c7
-  p40[&quot;Testing.Db.Oracle&quot;]:::c7
-  p41[&quot;Testing.Db.Postgres&quot;]:::c7
-  p42[&quot;Testing.Kafka&quot;]:::c7
-  p43[&quot;Testing.MockServer&quot;]:::c7
-  p44[&quot;Testing.Web&quot;]:::c7
-  p45[&quot;EndToEnd&quot;]:::c8
-  p46[&quot;Integration&quot;]:::c8
-  p47[&quot;Unit&quot;]:::c8
-  p26 --&gt; p0
-  p27 --&gt; p26
-  p27 --&gt; p16
-  p28 --&gt; p27
-  p28 --&gt; p25
-  p18 --&gt; p5
-  p18 --&gt; p6
+  p8[&quot;Infrastructure.Http.Msal&quot;]:::c1
+  p9[&quot;Infrastructure.Messaging.Aws&quot;]:::c1
+  p10[&quot;Infrastructure.Messaging.CloudEvents&quot;]:::c1
+  p11[&quot;Infrastructure.Messaging.Kafka&quot;]:::c1
+  p12[&quot;Infrastructure.Persistence.Db&quot;]:::c1
+  p13[&quot;Infrastructure.Persistence.Db.Events&quot;]:::c1
+  p14[&quot;Infrastructure.Persistence.Db.Mysql&quot;]:::c1
+  p15[&quot;Infrastructure.Persistence.Db.Oracle&quot;]:::c1
+  p16[&quot;Infrastructure.Persistence.Db.Postgres&quot;]:::c1
+  p17[&quot;Infrastructure.Telemetry.Serilog&quot;]:::c1
+  p18[&quot;Infrastructure.Telemetry.StatsD&quot;]:::c1
+  p19[&quot;Bootstrap&quot;]:::c2
+  p20[&quot;Bootstrap.Aws&quot;]:::c2
+  p21[&quot;Runtime&quot;]:::c3
+  p22[&quot;Runtime.Aws&quot;]:::c3
+  p23[&quot;Runtime.Web&quot;]:::c3
+  p24[&quot;Runtime.Web.Aws&quot;]:::c3
+  p25[&quot;Runtime.Web.GraphQL&quot;]:::c3
+  p26[&quot;Runtime.Web.MockServer&quot;]:::c3
+  p27[&quot;Runtime.Web.MockServer.Ui&quot;]:::c3
+  p28[&quot;Runtime.Web.Swagger&quot;]:::c3
+  p29[&quot;Runtime.Web.Ui&quot;]:::c3
+  p30[&quot;Runtime.Workers&quot;]:::c3
+  p31[&quot;Automation&quot;]:::c4
+  p32[&quot;Automation.Build&quot;]:::c4
+  p33[&quot;Automation.Build.Cli&quot;]:::c4
+  p34[&quot;Samples.Api&quot;]:::c5
+  p35[&quot;Samples.Examples&quot;]:::c5
+  p36[&quot;Samples.Job&quot;]:::c5
+  p37[&quot;Samples.MockServer&quot;]:::c5
+  p38[&quot;Samples.Testing&quot;]:::c5
+  p39[&quot;Samples.Ui&quot;]:::c5
+  p40[&quot;Samples.Worker&quot;]:::c5
+  p41[&quot;Testing&quot;]:::c6
+  p42[&quot;Testing.Aws&quot;]:::c6
+  p43[&quot;Testing.Db&quot;]:::c6
+  p44[&quot;Testing.Db.Mysql&quot;]:::c6
+  p45[&quot;Testing.Db.Oracle&quot;]:::c6
+  p46[&quot;Testing.Db.Postgres&quot;]:::c6
+  p47[&quot;Testing.Kafka&quot;]:::c6
+  p48[&quot;Testing.MockServer&quot;]:::c6
+  p49[&quot;Testing.Runtime.Web&quot;]:::c6
+  p50[&quot;Testing.Runtime.Web.Aws&quot;]:::c6
+  p51[&quot;EndToEnd&quot;]:::c7
+  p52[&quot;Integration&quot;]:::c7
+  p53[&quot;Unit&quot;]:::c7
+  p31 --&gt; p0
+  p32 --&gt; p31
+  p32 --&gt; p17
+  p33 --&gt; p31
+  p19 --&gt; p5
+  p19 --&gt; p6
+  p20 --&gt; p19
   p1 --&gt; p3
   p1 --&gt; p5
   p2 --&gt; p0
   p3 --&gt; p0
   p4 --&gt; p0
   p5 --&gt; p0
-  p45 --&gt; p28
-  p45 --&gt; p36
-  p45 --&gt; p23
-  p19 --&gt; p18
-  p20 --&gt; p18
-  p20 --&gt; p2
+  p51 --&gt; p32
+  p51 --&gt; p33
+  p51 --&gt; p26
+  p51 --&gt; p41
   p6 --&gt; p0
   p7 --&gt; p5
-  p8 --&gt; p3
-  p8 --&gt; p5
-  p8 --&gt; p6
-  p9 --&gt; p1
-  p10 --&gt; p3
-  p10 --&gt; p5
-  p11 --&gt; p1
-  p11 --&gt; p2
-  p11 --&gt; p4
-  p12 --&gt; p11
-  p13 --&gt; p11
-  p14 --&gt; p11
-  p15 --&gt; p11
-  p16 --&gt; p5
-  p16 --&gt; p6
+  p8 --&gt; p7
+  p9 --&gt; p3
+  p9 --&gt; p5
+  p9 --&gt; p6
+  p10 --&gt; p1
+  p11 --&gt; p3
+  p11 --&gt; p5
+  p12 --&gt; p1
+  p12 --&gt; p2
+  p12 --&gt; p4
+  p13 --&gt; p12
+  p14 --&gt; p12
+  p15 --&gt; p12
+  p16 --&gt; p12
   p17 --&gt; p5
-  p46 --&gt; p27
-  p46 --&gt; p12
-  p46 --&gt; p17
-  p46 --&gt; p29
-  p46 --&gt; p37
-  p29 --&gt; p13
-  p29 --&gt; p14
-  p29 --&gt; p15
-  p29 --&gt; p21
-  p30 --&gt; p18
-  p30 --&gt; p4
-  p30 --&gt; p16
-  p31 --&gt; p19
-  p32 --&gt; p24
-  p33 --&gt; p29
-  p33 --&gt; p30
-  p33 --&gt; p31
-  p33 --&gt; p32
-  p33 --&gt; p34
-  p33 --&gt; p43
-  p33 --&gt; p44
-  p34 --&gt; p25
-  p35 --&gt; p19
-  p35 --&gt; p20
-  p36 --&gt; p18
-  p37 --&gt; p8
-  p37 --&gt; p36
-  p38 --&gt; p18
-  p38 --&gt; p11
-  p39 --&gt; p13
-  p39 --&gt; p36
-  p39 --&gt; p38
-  p40 --&gt; p14
-  p40 --&gt; p36
-  p40 --&gt; p38
-  p41 --&gt; p15
-  p41 --&gt; p36
-  p41 --&gt; p38
-  p42 --&gt; p10
-  p43 --&gt; p36
-  p43 --&gt; p23
-  p44 --&gt; p36
-  p44 --&gt; p21
-  p47 --&gt; p28
-  p47 --&gt; p20
-  p47 --&gt; p9
-  p47 --&gt; p12
-  p47 --&gt; p14
-  p47 --&gt; p15
-  p47 --&gt; p17
-  p47 --&gt; p37
-  p47 --&gt; p39
-  p47 --&gt; p42
-  p47 --&gt; p43
-  p47 --&gt; p24
-  p21 --&gt; p2
-  p21 --&gt; p4
+  p17 --&gt; p6
+  p18 --&gt; p5
+  p52 --&gt; p32
+  p52 --&gt; p13
+  p52 --&gt; p18
+  p52 --&gt; p34
+  p52 --&gt; p42
   p21 --&gt; p19
-  p21 --&gt; p7
-  p22 --&gt; p0
-  p23 --&gt; p0
+  p22 --&gt; p20
+  p22 --&gt; p21
+  p23 --&gt; p2
+  p23 --&gt; p4
+  p23 --&gt; p7
+  p23 --&gt; p21
+  p24 --&gt; p20
   p24 --&gt; p23
-  p24 --&gt; p25
-  p25 --&gt; p21
-  classDef c0 stroke:#2a78d6,stroke-width:2px
-  classDef c1 stroke:#eb6834,stroke-width:2px
-  classDef c2 stroke:#1baf7a,stroke-width:2px
-  classDef c3 stroke:#eda100,stroke-width:2px
-  classDef c4 stroke:#e87ba4,stroke-width:2px
-  classDef c5 stroke:#008300,stroke-width:2px
-  classDef c6 stroke:#6250d6,stroke-width:2px
-  classDef c7 stroke:#e34948,stroke-width:2px
-  classDef c8 stroke:#8a8984,stroke-width:2px
+  p25 --&gt; p0
+  p26 --&gt; p0
+  p27 --&gt; p26
+  p27 --&gt; p29
+  p28 --&gt; p23
+  p29 --&gt; p23
+  p30 --&gt; p19
+  p30 --&gt; p2
+  p34 --&gt; p14
+  p34 --&gt; p15
+  p34 --&gt; p16
+  p34 --&gt; p24
+  p34 --&gt; p28
+  p35 --&gt; p19
+  p35 --&gt; p4
+  p35 --&gt; p17
+  p36 --&gt; p22
+  p37 --&gt; p27
+  p38 --&gt; p34
+  p38 --&gt; p35
+  p38 --&gt; p36
+  p38 --&gt; p37
+  p38 --&gt; p39
+  p38 --&gt; p48
+  p38 --&gt; p50
+  p39 --&gt; p29
+  p40 --&gt; p20
+  p40 --&gt; p21
+  p40 --&gt; p30
+  p41 --&gt; p19
+  p42 --&gt; p20
+  p42 --&gt; p9
+  p42 --&gt; p41
+  p43 --&gt; p19
+  p43 --&gt; p12
+  p44 --&gt; p14
+  p44 --&gt; p41
+  p44 --&gt; p43
+  p45 --&gt; p15
+  p45 --&gt; p41
+  p45 --&gt; p43
+  p46 --&gt; p16
+  p46 --&gt; p41
+  p46 --&gt; p43
+  p47 --&gt; p11
+  p48 --&gt; p26
+  p48 --&gt; p41
+  p49 --&gt; p23
+  p49 --&gt; p41
+  p50 --&gt; p24
+  p50 --&gt; p49
+  p53 --&gt; p32
+  p53 --&gt; p33
+  p53 --&gt; p10
+  p53 --&gt; p13
+  p53 --&gt; p15
+  p53 --&gt; p16
+  p53 --&gt; p18
+  p53 --&gt; p22
+  p53 --&gt; p24
+  p53 --&gt; p27
+  p53 --&gt; p28
+  p53 --&gt; p30
+  p53 --&gt; p42
+  p53 --&gt; p44
+  p53 --&gt; p47
+  p53 --&gt; p48
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
 
   </pre></div>
 </section>
@@ -311,108 +352,126 @@ flowchart RL
   p3 --&gt; p0
   p4 --&gt; p0
   p5 --&gt; p0
-  classDef c0 stroke:#2a78d6,stroke-width:2px
-  classDef c1 stroke:#eb6834,stroke-width:2px
-  classDef c2 stroke:#1baf7a,stroke-width:2px
-  classDef c3 stroke:#eda100,stroke-width:2px
-  classDef c4 stroke:#e87ba4,stroke-width:2px
-  classDef c5 stroke:#008300,stroke-width:2px
-  classDef c6 stroke:#6250d6,stroke-width:2px
-  classDef c7 stroke:#e34948,stroke-width:2px
-  classDef c8 stroke:#8a8984,stroke-width:2px
-</pre></div><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Core</th><th>Referenced by in Core</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Core</code></td><td class="num">2,146</td><td>—</td><td><code>Core.Events</code>, <code>Core.Health</code>, <code>Core.Messaging.Abstractions</code>, <code>Core.Persistence.Abstractions</code>, <code>Core.Telemetry</code></td><td>—</td></tr><tr><td><code>Core.Events</code></td><td class="num">1,347</td><td><code>Core</code>, <code>Core.Messaging.Abstractions</code>, <code>Core.Telemetry</code></td><td>—</td><td>—</td></tr><tr><td><code>Core.Health</code></td><td class="num">304</td><td><code>Core</code></td><td>—</td><td>—</td></tr><tr><td><code>Core.Messaging.Abstractions</code></td><td class="num">561</td><td><code>Core</code></td><td><code>Core.Events</code></td><td>—</td></tr><tr><td><code>Core.Persistence.Abstractions</code></td><td class="num">924</td><td><code>Core</code></td><td>—</td><td>—</td></tr><tr><td><code>Core.Telemetry</code></td><td class="num">586</td><td><code>Core</code></td><td><code>Core.Events</code></td><td>—</td></tr></tbody></table></div></template>
-<template data-group="Infrastructure"><p class="muted">12 projects, 6 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
+</pre></div><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Core</th><th>Referenced by in Core</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Core</code></td><td class="num">2,146</td><td>—</td><td><code>Core.Events</code>, <code>Core.Health</code>, <code>Core.Messaging.Abstractions</code>, <code>Core.Persistence.Abstractions</code>, <code>Core.Telemetry</code></td><td>—</td></tr><tr><td><code>Core.Events</code></td><td class="num">1,349</td><td><code>Core</code>, <code>Core.Messaging.Abstractions</code>, <code>Core.Telemetry</code></td><td>—</td><td>—</td></tr><tr><td><code>Core.Health</code></td><td class="num">304</td><td><code>Core</code></td><td>—</td><td>—</td></tr><tr><td><code>Core.Messaging.Abstractions</code></td><td class="num">561</td><td><code>Core</code></td><td><code>Core.Events</code></td><td>—</td></tr><tr><td><code>Core.Persistence.Abstractions</code></td><td class="num">924</td><td><code>Core</code></td><td>—</td><td>—</td></tr><tr><td><code>Core.Telemetry</code></td><td class="num">589</td><td><code>Core</code></td><td><code>Core.Events</code></td><td>—</td></tr></tbody></table></div></template>
+<template data-group="Infrastructure"><p class="muted">13 projects, 7 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
   p0[&quot;Infrastructure.CorrelationId&quot;]:::c1
-  p1[&quot;Infrastructure.Messaging.Aws&quot;]:::c1
-  p2[&quot;Infrastructure.Persistence.Db&quot;]:::c1
-  p3[&quot;Infrastructure.Persistence.Db.Events&quot;]:::c1
-  p4[&quot;Infrastructure.Persistence.Db.Mysql&quot;]:::c1
-  p5[&quot;Infrastructure.Persistence.Db.Oracle&quot;]:::c1
-  p6[&quot;Infrastructure.Persistence.Db.Postgres&quot;]:::c1
-  p7[&quot;Infrastructure.Telemetry.Serilog&quot;]:::c1
-  p1 --&gt; p0
-  p3 --&gt; p2
-  p4 --&gt; p2
-  p5 --&gt; p2
-  p6 --&gt; p2
-  p7 --&gt; p0
-  classDef c0 stroke:#2a78d6,stroke-width:2px
-  classDef c1 stroke:#eb6834,stroke-width:2px
-  classDef c2 stroke:#1baf7a,stroke-width:2px
-  classDef c3 stroke:#eda100,stroke-width:2px
-  classDef c4 stroke:#e87ba4,stroke-width:2px
-  classDef c5 stroke:#008300,stroke-width:2px
-  classDef c6 stroke:#6250d6,stroke-width:2px
-  classDef c7 stroke:#e34948,stroke-width:2px
-  classDef c8 stroke:#8a8984,stroke-width:2px
-</pre></div><p>Not referencing or referenced by the others: <code>Infrastructure.Http</code>, <code>Infrastructure.Messaging.CloudEvents</code>, <code>Infrastructure.Messaging.Kafka</code>, <code>Infrastructure.Telemetry.StatsD</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Infrastructure</th><th>Referenced by in Infrastructure</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Infrastructure.CorrelationId</code></td><td class="num">549</td><td>—</td><td><code>Infrastructure.Messaging.Aws</code>, <code>Infrastructure.Telemetry.Serilog</code></td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Http</code></td><td class="num">747</td><td>—</td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Messaging.Aws</code></td><td class="num">1,515</td><td><code>Infrastructure.CorrelationId</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Messaging.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Messaging.CloudEvents</code></td><td class="num">406</td><td>—</td><td>—</td><td><code>Core.Events</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Messaging.Kafka</code></td><td class="num">275</td><td>—</td><td>—</td><td><code>Core.Messaging.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db</code></td><td class="num">2,202</td><td>—</td><td><code>Infrastructure.Persistence.Db.Events</code>, <code>Infrastructure.Persistence.Db.Mysql</code>, <code>Infrastructure.Persistence.Db.Oracle</code>, <code>Infrastructure.Persistence.Db.Postgres</code></td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Events</code> <span class="muted">(Core)</span>, <code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Persistence.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Events</code></td><td class="num">542</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core.Events</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Mysql</code></td><td class="num">501</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Oracle</code></td><td class="num">560</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Postgres</code></td><td class="num">539</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Telemetry.Serilog</code></td><td class="num">352</td><td><code>Infrastructure.CorrelationId</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Telemetry.StatsD</code></td><td class="num">95</td><td>—</td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr></tbody></table></div></template>
-<template data-group="Configuration"><p class="muted">1 project, 0 references between them.</p><p>None of them reference each other: <code>Configuration</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Configuration</th><th>Referenced by in Configuration</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Configuration</code></td><td class="num">977</td><td>—</td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.CorrelationId</code> <span class="muted">(Infrastructure)</span></td></tr></tbody></table></div></template>
-<template data-group="Hosting"><p class="muted">2 projects, 0 references between them.</p><p>None of them reference each other: <code>Hosting</code>, <code>Hosting.Workers</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Hosting</th><th>Referenced by in Hosting</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Hosting</code></td><td class="num">473</td><td>—</td><td>—</td><td><code>Configuration</code> <span class="muted">(Configuration)</span>, <code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Hosting.Workers</code></td><td class="num">1,532</td><td>—</td><td>—</td><td><code>Configuration</code> <span class="muted">(Configuration)</span>, <code>Core</code> <span class="muted">(Core)</span>, <code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.CorrelationId</code> <span class="muted">(Infrastructure)</span></td></tr></tbody></table></div></template>
-<template data-group="Web"><p class="muted">5 projects, 3 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
-  p0[&quot;Web&quot;]:::c4
-  p1[&quot;Web.MockServer&quot;]:::c4
-  p2[&quot;Web.MockServer.Ui&quot;]:::c4
-  p3[&quot;Web.Ui&quot;]:::c4
+  p1[&quot;Infrastructure.Http&quot;]:::c1
+  p2[&quot;Infrastructure.Http.Msal&quot;]:::c1
+  p3[&quot;Infrastructure.Messaging.Aws&quot;]:::c1
+  p4[&quot;Infrastructure.Persistence.Db&quot;]:::c1
+  p5[&quot;Infrastructure.Persistence.Db.Events&quot;]:::c1
+  p6[&quot;Infrastructure.Persistence.Db.Mysql&quot;]:::c1
+  p7[&quot;Infrastructure.Persistence.Db.Oracle&quot;]:::c1
+  p8[&quot;Infrastructure.Persistence.Db.Postgres&quot;]:::c1
+  p9[&quot;Infrastructure.Telemetry.Serilog&quot;]:::c1
   p2 --&gt; p1
-  p2 --&gt; p3
   p3 --&gt; p0
-  classDef c0 stroke:#2a78d6,stroke-width:2px
-  classDef c1 stroke:#eb6834,stroke-width:2px
-  classDef c2 stroke:#1baf7a,stroke-width:2px
-  classDef c3 stroke:#eda100,stroke-width:2px
-  classDef c4 stroke:#e87ba4,stroke-width:2px
-  classDef c5 stroke:#008300,stroke-width:2px
-  classDef c6 stroke:#6250d6,stroke-width:2px
-  classDef c7 stroke:#e34948,stroke-width:2px
-  classDef c8 stroke:#8a8984,stroke-width:2px
-</pre></div><p>Not referencing or referenced by the others: <code>Web.GraphQL</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Web</th><th>Referenced by in Web</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Web</code></td><td class="num">2,363</td><td>—</td><td><code>Web.Ui</code></td><td><code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Persistence.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Hosting</code> <span class="muted">(Hosting)</span>, <code>Infrastructure.Http</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Web.GraphQL</code></td><td class="num">128</td><td>—</td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Web.MockServer</code></td><td class="num">1,653</td><td>—</td><td><code>Web.MockServer.Ui</code></td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Web.MockServer.Ui</code></td><td class="num">106</td><td><code>Web.MockServer</code>, <code>Web.Ui</code></td><td>—</td><td>—</td></tr><tr><td><code>Web.Ui</code></td><td class="num">1,988</td><td><code>Web</code></td><td><code>Web.MockServer.Ui</code></td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr></tbody></table></div></template>
-<template data-group="Automation"><p class="muted">3 projects, 3 references between them (the graph leaves out the ones already implied by others).</p><div class="graph"><pre class="mermaid">flowchart RL
-  p0[&quot;Automation&quot;]:::c5
-  p1[&quot;Automation.Build&quot;]:::c5
-  p2[&quot;Automation.Build.Cli&quot;]:::c5
+  p5 --&gt; p4
+  p6 --&gt; p4
+  p7 --&gt; p4
+  p8 --&gt; p4
+  p9 --&gt; p0
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
+</pre></div><p>Not referencing or referenced by the others: <code>Infrastructure.Messaging.CloudEvents</code>, <code>Infrastructure.Messaging.Kafka</code>, <code>Infrastructure.Telemetry.StatsD</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Infrastructure</th><th>Referenced by in Infrastructure</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Infrastructure.CorrelationId</code></td><td class="num">549</td><td>—</td><td><code>Infrastructure.Messaging.Aws</code>, <code>Infrastructure.Telemetry.Serilog</code></td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Http</code></td><td class="num">601</td><td>—</td><td><code>Infrastructure.Http.Msal</code></td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Http.Msal</code></td><td class="num">153</td><td><code>Infrastructure.Http</code></td><td>—</td><td>—</td></tr><tr><td><code>Infrastructure.Messaging.Aws</code></td><td class="num">1,518</td><td><code>Infrastructure.CorrelationId</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Messaging.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Messaging.CloudEvents</code></td><td class="num">406</td><td>—</td><td>—</td><td><code>Core.Events</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Messaging.Kafka</code></td><td class="num">275</td><td>—</td><td>—</td><td><code>Core.Messaging.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db</code></td><td class="num">2,209</td><td>—</td><td><code>Infrastructure.Persistence.Db.Events</code>, <code>Infrastructure.Persistence.Db.Mysql</code>, <code>Infrastructure.Persistence.Db.Oracle</code>, <code>Infrastructure.Persistence.Db.Postgres</code></td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Events</code> <span class="muted">(Core)</span>, <code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Persistence.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Events</code></td><td class="num">542</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core.Events</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Mysql</code></td><td class="num">501</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Oracle</code></td><td class="num">560</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Persistence.Db.Postgres</code></td><td class="num">539</td><td><code>Infrastructure.Persistence.Db</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Telemetry.Serilog</code></td><td class="num">358</td><td><code>Infrastructure.CorrelationId</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Infrastructure.Telemetry.StatsD</code></td><td class="num">97</td><td>—</td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr></tbody></table></div></template>
+<template data-group="Bootstrap"><p class="muted">2 projects, 1 reference between them.</p><div class="graph"><pre class="mermaid">flowchart RL
+  p0[&quot;Bootstrap&quot;]:::c2
+  p1[&quot;Bootstrap.Aws&quot;]:::c2
   p1 --&gt; p0
-  p2 --&gt; p1
-  classDef c0 stroke:#2a78d6,stroke-width:2px
-  classDef c1 stroke:#eb6834,stroke-width:2px
-  classDef c2 stroke:#1baf7a,stroke-width:2px
-  classDef c3 stroke:#eda100,stroke-width:2px
-  classDef c4 stroke:#e87ba4,stroke-width:2px
-  classDef c5 stroke:#008300,stroke-width:2px
-  classDef c6 stroke:#6250d6,stroke-width:2px
-  classDef c7 stroke:#e34948,stroke-width:2px
-  classDef c8 stroke:#8a8984,stroke-width:2px
-</pre></div><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Automation</th><th>Referenced by in Automation</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Automation</code></td><td class="num">6,015</td><td>—</td><td><code>Automation.Build</code>, <code>Automation.Build.Cli</code></td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Automation.Build</code></td><td class="num">3,672</td><td><code>Automation</code></td><td><code>Automation.Build.Cli</code></td><td><code>Infrastructure.Telemetry.Serilog</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Automation.Build.Cli</code></td><td class="num">1,643</td><td><code>Automation</code>, <code>Automation.Build</code></td><td>—</td><td><code>Hosting</code> <span class="muted">(Hosting)</span>, <code>Web</code> <span class="muted">(Web)</span>, <code>Web.Ui</code> <span class="muted">(Web)</span></td></tr></tbody></table></div></template>
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
+</pre></div><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Bootstrap</th><th>Referenced by in Bootstrap</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Bootstrap</code></td><td class="num">713</td><td>—</td><td><code>Bootstrap.Aws</code></td><td><code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.CorrelationId</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Bootstrap.Aws</code></td><td class="num">401</td><td><code>Bootstrap</code></td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span></td></tr></tbody></table></div></template>
+<template data-group="Runtime"><p class="muted">10 projects, 7 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
+  p0[&quot;Runtime&quot;]:::c3
+  p1[&quot;Runtime.Aws&quot;]:::c3
+  p2[&quot;Runtime.Web&quot;]:::c3
+  p3[&quot;Runtime.Web.Aws&quot;]:::c3
+  p4[&quot;Runtime.Web.MockServer&quot;]:::c3
+  p5[&quot;Runtime.Web.MockServer.Ui&quot;]:::c3
+  p6[&quot;Runtime.Web.Swagger&quot;]:::c3
+  p7[&quot;Runtime.Web.Ui&quot;]:::c3
+  p1 --&gt; p0
+  p2 --&gt; p0
+  p3 --&gt; p2
+  p5 --&gt; p4
+  p5 --&gt; p7
+  p6 --&gt; p2
+  p7 --&gt; p2
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
+</pre></div><p>Not referencing or referenced by the others: <code>Runtime.Web.GraphQL</code>, <code>Runtime.Workers</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Runtime</th><th>Referenced by in Runtime</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Runtime</code></td><td class="num">475</td><td>—</td><td><code>Runtime.Aws</code>, <code>Runtime.Web</code></td><td><code>Bootstrap</code> <span class="muted">(Bootstrap)</span>, <code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Runtime.Aws</code></td><td class="num">44</td><td><code>Runtime</code></td><td>—</td><td><code>Bootstrap.Aws</code> <span class="muted">(Bootstrap)</span></td></tr><tr><td><code>Runtime.Web</code></td><td class="num">1,902</td><td><code>Runtime</code></td><td><code>Runtime.Web.Aws</code>, <code>Runtime.Web.Swagger</code>, <code>Runtime.Web.Ui</code></td><td><code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Persistence.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Http</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Runtime.Web.Aws</code></td><td class="num">191</td><td><code>Runtime.Web</code></td><td>—</td><td><code>Bootstrap.Aws</code> <span class="muted">(Bootstrap)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Runtime.Web.GraphQL</code></td><td class="num">129</td><td>—</td><td>—</td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Runtime.Web.MockServer</code></td><td class="num">1,656</td><td>—</td><td><code>Runtime.Web.MockServer.Ui</code></td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Runtime.Web.MockServer.Ui</code></td><td class="num">106</td><td><code>Runtime.Web.MockServer</code>, <code>Runtime.Web.Ui</code></td><td>—</td><td>—</td></tr><tr><td><code>Runtime.Web.Swagger</code></td><td class="num">458</td><td><code>Runtime.Web</code></td><td>—</td><td>—</td></tr><tr><td><code>Runtime.Web.Ui</code></td><td class="num">1,991</td><td><code>Runtime.Web</code></td><td><code>Runtime.Web.MockServer.Ui</code></td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Runtime.Workers</code></td><td class="num">1,536</td><td>—</td><td>—</td><td><code>Bootstrap</code> <span class="muted">(Bootstrap)</span>, <code>Core</code> <span class="muted">(Core)</span>, <code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.CorrelationId</code> <span class="muted">(Infrastructure)</span></td></tr></tbody></table></div></template>
+<template data-group="Automation"><p class="muted">3 projects, 2 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
+  p0[&quot;Automation&quot;]:::c4
+  p1[&quot;Automation.Build&quot;]:::c4
+  p2[&quot;Automation.Build.Cli&quot;]:::c4
+  p1 --&gt; p0
+  p2 --&gt; p0
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
+</pre></div><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Automation</th><th>Referenced by in Automation</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Automation</code></td><td class="num">6,704</td><td>—</td><td><code>Automation.Build</code>, <code>Automation.Build.Cli</code></td><td><code>Core</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Automation.Build</code></td><td class="num">3,680</td><td><code>Automation</code></td><td>—</td><td><code>Infrastructure.Telemetry.Serilog</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Automation.Build.Cli</code></td><td class="num">1,794</td><td><code>Automation</code></td><td>—</td><td>—</td></tr></tbody></table></div></template>
 <template data-group="Samples"><p class="muted">7 projects, 5 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
-  p0[&quot;Samples.Api&quot;]:::c6
-  p1[&quot;Samples.Examples&quot;]:::c6
-  p2[&quot;Samples.Job&quot;]:::c6
-  p3[&quot;Samples.MockServer&quot;]:::c6
-  p4[&quot;Samples.Testing&quot;]:::c6
-  p5[&quot;Samples.Ui&quot;]:::c6
+  p0[&quot;Samples.Api&quot;]:::c5
+  p1[&quot;Samples.Examples&quot;]:::c5
+  p2[&quot;Samples.Job&quot;]:::c5
+  p3[&quot;Samples.MockServer&quot;]:::c5
+  p4[&quot;Samples.Testing&quot;]:::c5
+  p5[&quot;Samples.Ui&quot;]:::c5
   p4 --&gt; p0
   p4 --&gt; p1
   p4 --&gt; p2
   p4 --&gt; p3
   p4 --&gt; p5
-  classDef c0 stroke:#2a78d6,stroke-width:2px
-  classDef c1 stroke:#eb6834,stroke-width:2px
-  classDef c2 stroke:#1baf7a,stroke-width:2px
-  classDef c3 stroke:#eda100,stroke-width:2px
-  classDef c4 stroke:#e87ba4,stroke-width:2px
-  classDef c5 stroke:#008300,stroke-width:2px
-  classDef c6 stroke:#6250d6,stroke-width:2px
-  classDef c7 stroke:#e34948,stroke-width:2px
-  classDef c8 stroke:#8a8984,stroke-width:2px
-</pre></div><p>Not referencing or referenced by the others: <code>Samples.Worker</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Samples</th><th>Referenced by in Samples</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Samples.Api</code></td><td class="num">142</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span>, <code>Web</code> <span class="muted">(Web)</span></td></tr><tr><td><code>Samples.Examples</code></td><td class="num">534</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Configuration</code> <span class="muted">(Configuration)</span>, <code>Core.Persistence.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Telemetry.Serilog</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Samples.Job</code></td><td class="num">96</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Hosting</code> <span class="muted">(Hosting)</span></td></tr><tr><td><code>Samples.MockServer</code></td><td class="num">52</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Web.MockServer.Ui</code> <span class="muted">(Web)</span></td></tr><tr><td><code>Samples.Testing</code></td><td class="num">440</td><td><code>Samples.Api</code>, <code>Samples.Examples</code>, <code>Samples.Job</code>, <code>Samples.MockServer</code>, <code>Samples.Ui</code></td><td>—</td><td><code>Testing</code> <span class="muted">(Testing)</span>, <code>Testing.MockServer</code> <span class="muted">(Testing)</span>, <code>Testing.Web</code> <span class="muted">(Testing)</span></td></tr><tr><td><code>Samples.Ui</code></td><td class="num">369</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Web.Ui</code> <span class="muted">(Web)</span></td></tr><tr><td><code>Samples.Worker</code></td><td class="num">77</td><td>—</td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Hosting</code> <span class="muted">(Hosting)</span>, <code>Hosting.Workers</code> <span class="muted">(Hosting)</span></td></tr></tbody></table></div></template>
-<template data-group="Testing"><p class="muted">9 projects, 9 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
-  p0[&quot;Testing&quot;]:::c7
-  p1[&quot;Testing.Aws&quot;]:::c7
-  p2[&quot;Testing.Db&quot;]:::c7
-  p3[&quot;Testing.Db.Mysql&quot;]:::c7
-  p4[&quot;Testing.Db.Oracle&quot;]:::c7
-  p5[&quot;Testing.Db.Postgres&quot;]:::c7
-  p6[&quot;Testing.MockServer&quot;]:::c7
-  p7[&quot;Testing.Web&quot;]:::c7
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
+</pre></div><p>Not referencing or referenced by the others: <code>Samples.Worker</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Samples</th><th>Referenced by in Samples</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Samples.Api</code></td><td class="num">145</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span>, <code>Runtime.Web.Aws</code> <span class="muted">(Runtime)</span>, <code>Runtime.Web.Swagger</code> <span class="muted">(Runtime)</span></td></tr><tr><td><code>Samples.Examples</code></td><td class="num">542</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Bootstrap</code> <span class="muted">(Bootstrap)</span>, <code>Core.Persistence.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Telemetry.Serilog</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Samples.Job</code></td><td class="num">101</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Runtime.Aws</code> <span class="muted">(Runtime)</span></td></tr><tr><td><code>Samples.MockServer</code></td><td class="num">58</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Runtime.Web.MockServer.Ui</code> <span class="muted">(Runtime)</span></td></tr><tr><td><code>Samples.Testing</code></td><td class="num">440</td><td><code>Samples.Api</code>, <code>Samples.Examples</code>, <code>Samples.Job</code>, <code>Samples.MockServer</code>, <code>Samples.Ui</code></td><td>—</td><td><code>Testing</code> <span class="muted">(Testing)</span>, <code>Testing.MockServer</code> <span class="muted">(Testing)</span>, <code>Testing.Runtime.Web.Aws</code> <span class="muted">(Testing)</span></td></tr><tr><td><code>Samples.Ui</code></td><td class="num">369</td><td>—</td><td><code>Samples.Testing</code></td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Runtime.Web.Ui</code> <span class="muted">(Runtime)</span></td></tr><tr><td><code>Samples.Worker</code></td><td class="num">78</td><td>—</td><td>—</td><td><code>Bootstrap.Aws</code> <span class="muted">(Bootstrap)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Runtime</code> <span class="muted">(Runtime)</span>, <code>Runtime.Workers</code> <span class="muted">(Runtime)</span></td></tr></tbody></table></div></template>
+<template data-group="Testing"><p class="muted">10 projects, 10 references between them.</p><div class="graph"><pre class="mermaid">flowchart RL
+  p0[&quot;Testing&quot;]:::c6
+  p1[&quot;Testing.Aws&quot;]:::c6
+  p2[&quot;Testing.Db&quot;]:::c6
+  p3[&quot;Testing.Db.Mysql&quot;]:::c6
+  p4[&quot;Testing.Db.Oracle&quot;]:::c6
+  p5[&quot;Testing.Db.Postgres&quot;]:::c6
+  p6[&quot;Testing.MockServer&quot;]:::c6
+  p7[&quot;Testing.Runtime.Web&quot;]:::c6
+  p8[&quot;Testing.Runtime.Web.Aws&quot;]:::c6
   p1 --&gt; p0
   p3 --&gt; p0
   p3 --&gt; p2
@@ -422,23 +481,71 @@ flowchart RL
   p5 --&gt; p2
   p6 --&gt; p0
   p7 --&gt; p0
-  classDef c0 stroke:#2a78d6,stroke-width:2px
-  classDef c1 stroke:#eb6834,stroke-width:2px
-  classDef c2 stroke:#1baf7a,stroke-width:2px
-  classDef c3 stroke:#eda100,stroke-width:2px
-  classDef c4 stroke:#e87ba4,stroke-width:2px
-  classDef c5 stroke:#008300,stroke-width:2px
-  classDef c6 stroke:#6250d6,stroke-width:2px
-  classDef c7 stroke:#e34948,stroke-width:2px
-  classDef c8 stroke:#8a8984,stroke-width:2px
-</pre></div><p>Not referencing or referenced by the others: <code>Testing.Kafka</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Testing</th><th>Referenced by in Testing</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Testing</code></td><td class="num">1,515</td><td>—</td><td><code>Testing.Aws</code>, <code>Testing.Db.Mysql</code>, <code>Testing.Db.Oracle</code>, <code>Testing.Db.Postgres</code>, <code>Testing.MockServer</code>, <code>Testing.Web</code></td><td><code>Configuration</code> <span class="muted">(Configuration)</span>, <code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Testing.Aws</code></td><td class="num">739</td><td><code>Testing</code></td><td>—</td><td><code>Infrastructure.Messaging.Aws</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db</code></td><td class="num">115</td><td>—</td><td><code>Testing.Db.Mysql</code>, <code>Testing.Db.Oracle</code>, <code>Testing.Db.Postgres</code></td><td><code>Configuration</code> <span class="muted">(Configuration)</span>, <code>Infrastructure.Persistence.Db</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db.Mysql</code></td><td class="num">280</td><td><code>Testing</code>, <code>Testing.Db</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db.Oracle</code></td><td class="num">342</td><td><code>Testing</code>, <code>Testing.Db</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db.Postgres</code></td><td class="num">341</td><td><code>Testing</code>, <code>Testing.Db</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Kafka</code></td><td class="num">54</td><td>—</td><td>—</td><td><code>Infrastructure.Messaging.Kafka</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.MockServer</code></td><td class="num">473</td><td><code>Testing</code></td><td>—</td><td><code>Web.MockServer</code> <span class="muted">(Web)</span></td></tr><tr><td><code>Testing.Web</code></td><td class="num">366</td><td><code>Testing</code></td><td>—</td><td><code>Web</code> <span class="muted">(Web)</span></td></tr></tbody></table></div></template>
-<template data-group="Tests"><p class="muted">3 projects, 0 references between them.</p><p>None of them reference each other: <code>EndToEnd</code>, <code>Integration</code>, <code>Unit</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Tests</th><th>Referenced by in Tests</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>EndToEnd</code></td><td class="num">1,554</td><td>—</td><td>—</td><td><code>Automation.Build</code> <span class="muted">(Automation)</span>, <code>Automation.Build.Cli</code> <span class="muted">(Automation)</span>, <code>Testing</code> <span class="muted">(Testing)</span>, <code>Web.MockServer</code> <span class="muted">(Web)</span></td></tr><tr><td><code>Integration</code></td><td class="num">1,623</td><td>—</td><td>—</td><td><code>Automation.Build</code> <span class="muted">(Automation)</span>, <code>Infrastructure.Persistence.Db.Events</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Telemetry.StatsD</code> <span class="muted">(Infrastructure)</span>, <code>Samples.Api</code> <span class="muted">(Samples)</span>, <code>Testing</code> <span class="muted">(Testing)</span>, <code>Testing.Aws</code> <span class="muted">(Testing)</span></td></tr><tr><td><code>Unit</code></td><td class="num">14,217</td><td>—</td><td>—</td><td><code>Automation</code> <span class="muted">(Automation)</span>, <code>Automation.Build</code> <span class="muted">(Automation)</span>, <code>Automation.Build.Cli</code> <span class="muted">(Automation)</span>, <code>Configuration</code> <span class="muted">(Configuration)</span>, <code>Core</code> <span class="muted">(Core)</span>, <code>Core.Events</code> <span class="muted">(Core)</span>, <code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Messaging.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Hosting.Workers</code> <span class="muted">(Hosting)</span>, <code>Infrastructure.CorrelationId</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Messaging.Aws</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Messaging.CloudEvents</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Messaging.Kafka</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Events</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Telemetry.Serilog</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Telemetry.StatsD</code> <span class="muted">(Infrastructure)</span>, <code>Testing</code> <span class="muted">(Testing)</span>, <code>Testing.Aws</code> <span class="muted">(Testing)</span>, <code>Testing.Db.Mysql</code> <span class="muted">(Testing)</span>, <code>Testing.Kafka</code> <span class="muted">(Testing)</span>, <code>Testing.MockServer</code> <span class="muted">(Testing)</span>, <code>Web</code> <span class="muted">(Web)</span>, <code>Web.MockServer</code> <span class="muted">(Web)</span>, <code>Web.MockServer.Ui</code> <span class="muted">(Web)</span>, <code>Web.Ui</code> <span class="muted">(Web)</span></td></tr></tbody></table></div></template>
+  p8 --&gt; p7
+  classDef c0 stroke:#FF751F,stroke-width:2px
+  classDef c1 stroke:#2F6FD0,stroke-width:2px
+  classDef c2 stroke:#1A9E6E,stroke-width:2px
+  classDef c3 stroke:#C98500,stroke-width:2px
+  classDef c4 stroke:#7A4FD0,stroke-width:2px
+  classDef c5 stroke:#C2417A,stroke-width:2px
+  classDef c6 stroke:#0F8A9E,stroke-width:2px
+  classDef c7 stroke:#5C5C66,stroke-width:2px
+</pre></div><p>Not referencing or referenced by the others: <code>Testing.Kafka</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Testing</th><th>Referenced by in Testing</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>Testing</code></td><td class="num">1,209</td><td>—</td><td><code>Testing.Aws</code>, <code>Testing.Db.Mysql</code>, <code>Testing.Db.Oracle</code>, <code>Testing.Db.Postgres</code>, <code>Testing.MockServer</code>, <code>Testing.Runtime.Web</code></td><td><code>Bootstrap</code> <span class="muted">(Bootstrap)</span>, <code>Core</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span></td></tr><tr><td><code>Testing.Aws</code></td><td class="num">781</td><td><code>Testing</code></td><td>—</td><td><code>Bootstrap.Aws</code> <span class="muted">(Bootstrap)</span>, <code>Infrastructure.Messaging.Aws</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db</code></td><td class="num">115</td><td>—</td><td><code>Testing.Db.Mysql</code>, <code>Testing.Db.Oracle</code>, <code>Testing.Db.Postgres</code></td><td><code>Bootstrap</code> <span class="muted">(Bootstrap)</span>, <code>Infrastructure.Persistence.Db</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db.Mysql</code></td><td class="num">280</td><td><code>Testing</code>, <code>Testing.Db</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db.Oracle</code></td><td class="num">342</td><td><code>Testing</code>, <code>Testing.Db</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Db.Postgres</code></td><td class="num">341</td><td><code>Testing</code>, <code>Testing.Db</code></td><td>—</td><td><code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.Kafka</code></td><td class="num">54</td><td>—</td><td>—</td><td><code>Infrastructure.Messaging.Kafka</code> <span class="muted">(Infrastructure)</span></td></tr><tr><td><code>Testing.MockServer</code></td><td class="num">473</td><td><code>Testing</code></td><td>—</td><td><code>Runtime.Web.MockServer</code> <span class="muted">(Runtime)</span></td></tr><tr><td><code>Testing.Runtime.Web</code></td><td class="num">273</td><td><code>Testing</code></td><td><code>Testing.Runtime.Web.Aws</code></td><td><code>Runtime.Web</code> <span class="muted">(Runtime)</span></td></tr><tr><td><code>Testing.Runtime.Web.Aws</code></td><td class="num">459</td><td><code>Testing.Runtime.Web</code></td><td>—</td><td><code>Runtime.Web.Aws</code> <span class="muted">(Runtime)</span></td></tr></tbody></table></div></template>
+<template data-group="Tests"><p class="muted">3 projects, 0 references between them.</p><p>None of them reference each other: <code>EndToEnd</code>, <code>Integration</code>, <code>Unit</code>.</p><div class="table-wrap"><table><thead><tr><th>Project</th><th class="num">Lines</th><th>References in Tests</th><th>Referenced by in Tests</th><th>References elsewhere</th></tr></thead><tbody><tr><td><code>EndToEnd</code></td><td class="num">1,902</td><td>—</td><td>—</td><td><code>Automation.Build</code> <span class="muted">(Automation)</span>, <code>Automation.Build.Cli</code> <span class="muted">(Automation)</span>, <code>Runtime.Web.MockServer</code> <span class="muted">(Runtime)</span>, <code>Testing</code> <span class="muted">(Testing)</span></td></tr><tr><td><code>Integration</code></td><td class="num">1,622</td><td>—</td><td>—</td><td><code>Automation.Build</code> <span class="muted">(Automation)</span>, <code>Infrastructure.Persistence.Db.Events</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Telemetry.StatsD</code> <span class="muted">(Infrastructure)</span>, <code>Samples.Api</code> <span class="muted">(Samples)</span>, <code>Testing</code> <span class="muted">(Testing)</span>, <code>Testing.Aws</code> <span class="muted">(Testing)</span></td></tr><tr><td><code>Unit</code></td><td class="num">14,537</td><td>—</td><td>—</td><td><code>Automation</code> <span class="muted">(Automation)</span>, <code>Automation.Build</code> <span class="muted">(Automation)</span>, <code>Automation.Build.Cli</code> <span class="muted">(Automation)</span>, <code>Bootstrap</code> <span class="muted">(Bootstrap)</span>, <code>Bootstrap.Aws</code> <span class="muted">(Bootstrap)</span>, <code>Core</code> <span class="muted">(Core)</span>, <code>Core.Events</code> <span class="muted">(Core)</span>, <code>Core.Health</code> <span class="muted">(Core)</span>, <code>Core.Messaging.Abstractions</code> <span class="muted">(Core)</span>, <code>Core.Telemetry</code> <span class="muted">(Core)</span>, <code>Infrastructure.CorrelationId</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Messaging.Aws</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Messaging.CloudEvents</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Messaging.Kafka</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Events</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Mysql</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Oracle</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Persistence.Db.Postgres</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Telemetry.Serilog</code> <span class="muted">(Infrastructure)</span>, <code>Infrastructure.Telemetry.StatsD</code> <span class="muted">(Infrastructure)</span>, <code>Runtime.Aws</code> <span class="muted">(Runtime)</span>, <code>Runtime.Web</code> <span class="muted">(Runtime)</span>, <code>Runtime.Web.Aws</code> <span class="muted">(Runtime)</span>, <code>Runtime.Web.MockServer</code> <span class="muted">(Runtime)</span>, <code>Runtime.Web.MockServer.Ui</code> <span class="muted">(Runtime)</span>, <code>Runtime.Web.Swagger</code> <span class="muted">(Runtime)</span>, <code>Runtime.Web.Ui</code> <span class="muted">(Runtime)</span>, <code>Runtime.Workers</code> <span class="muted">(Runtime)</span>, <code>Testing</code> <span class="muted">(Testing)</span>, <code>Testing.Aws</code> <span class="muted">(Testing)</span>, <code>Testing.Db.Mysql</code> <span class="muted">(Testing)</span>, <code>Testing.Kafka</code> <span class="muted">(Testing)</span>, <code>Testing.MockServer</code> <span class="muted">(Testing)</span></td></tr></tbody></table></div></template>
 </main>
 <script type="module">
   import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
-  const dark = document.documentElement.dataset.theme === "dark"
-    || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "neutral", flowchart: { useMaxWidth: false } });
+  import elkLayouts from "https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.7/dist/mermaid-layout-elk.esm.min.mjs";
+  mermaid.registerLayoutLoaders(elkLayouts);
+  const root = document.documentElement;
+  const themeKey = "anarchy-dependency-map-theme";
+  const isDark = () => root.dataset.theme === "dark"
+    || (root.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+
+  function configure() {
+    const css = getComputedStyle(root);
+    const token = name => css.getPropertyValue(name).trim();
+    mermaid.initialize({
+      startOnLoad: false,
+      layout: "elk",
+      elk: { mergeEdges: false, nodePlacementStrategy: "BRANDES_KOEPF" },
+      theme: "base",
+      darkMode: isDark(),
+      fontFamily: token("--font-sans"),
+      themeVariables: {
+        background: token("--surface-2"),
+        primaryColor: token("--surface"),
+        primaryTextColor: token("--text-primary"),
+        primaryBorderColor: token("--border"),
+        lineColor: token("--text-secondary"),
+        clusterBkg: token("--surface"),
+        clusterBorder: token("--border"),
+        edgeLabelBackground: token("--surface")
+      },
+      flowchart: { useMaxWidth: false }
+    });
+  }
+
+  // Mermaid replaces each graph's source with its drawing: keep the source to draw it again in the other theme.
+  function render(nodes) {
+    for (const node of nodes) {
+      if (node.dataset.source === undefined) node.dataset.source = node.textContent;
+      else { node.textContent = node.dataset.source; node.removeAttribute("data-processed"); }
+    }
+    return mermaid.run({ nodes });
+  }
+
+  const toggle = document.querySelector(".theme-toggle");
+  const label = () => { toggle.textContent = isDark() ? "☀ Light mode" : "☾ Dark mode"; };
+  toggle.addEventListener("click", () => {
+    root.dataset.theme = isDark() ? "light" : "dark";
+    try { localStorage.setItem(themeKey, root.dataset.theme); } catch {}
+    label();
+    configure();
+    render([...document.querySelectorAll("pre.mermaid[data-source]")]);
+  });
+  label();
+  configure();
 
   // Zooming in: the clicked ring is scaled up to fill the onion while it fades out, then the group's
   // own graph and table (from its <template>) replace it.
@@ -461,7 +568,7 @@ flowchart RL
     body.replaceChildren(template.content.cloneNode(true));
     detail.querySelector("h3").textContent = group;
     explorer.dataset.view = "detail";
-    await mermaid.run({ nodes: body.querySelectorAll("pre.mermaid") });
+    await render([...body.querySelectorAll("pre.mermaid")]);
     detail.querySelector(".back").focus();
     history.replaceState(null, "", "#" + encodeURIComponent(group));
   }
@@ -490,7 +597,7 @@ flowchart RL
   if (location.hash) open(decodeURIComponent(location.hash.slice(1)));
 
   // Not awaited, so the layers respond to clicks while the full graph is still being laid out.
-  mermaid.run({ nodes: [document.getElementById("all-references")] });
+  render([document.getElementById("all-references")]);
 </script>
 </body>
 </html>

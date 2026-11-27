@@ -39,9 +39,9 @@ put a repeatable build-host setting in Fallout's parameter file; put a reusable 
 `.anarchy-toolkit.json`. Neither file is a place for credentials or transient operation approvals.
 
 Layering follows the same explicit-override → saved-override → default model. With nothing saved or passed, the
-effective baseline is folder mode under `src`: standard layers (`Core`, `Infrastructure`, `Configuration`, `Hosting`,
-`Web`, `Automation`), libraries under `src/Library`, and standard application folders `src/Api` (`Web`), `src/Jobs`
-(`Hosting`) and `src/Ui` (`Web`). The effective layout is validated before use. The tool does not guess a mode from
+effective baseline is folder mode under `src`: standard layers (`Core`, `Infrastructure`, `Bootstrap`, `Runtime`,
+`Apps`), libraries under `src/Library`, and standard application folders `src/Apps/Apis`, `src/Apps/Jobs` and
+`src/Apps/Ui` (all in the `Apps` layer). The effective layout is validated before use. The tool does not guess a mode from
 project names or folders. Select prefix mode explicitly when needed; folder-only defaults are suppressed for prefix
 mode. A single-application bootstrap can use `--layout single-app` (or explicitly set `libraryRoot: "src"` and one
 application-folder mapping) without changing the global baseline.
@@ -64,7 +64,7 @@ by operations that need them.
 |---|---|
 | `layering` | `mode`, `layers`, checked `root`, `libraryRoot`, and `applicationFolders`. Optional; effective omissions use the folder baseline above. Prefix mode does not inherit folder mappings. |
 | `build` | `configuration`, production `sourceRoot`, `testsRoot`, `toolVerbosity`, `treatWarningsAsErrors`. `sourceRoot` is distinct from layering's checked root. |
-| `tests` | `kindAliases`, VSTest `filter`, and Microsoft.Testing.Platform `testingPlatformArguments`. The two runner filter syntaxes remain separate. |
+| `tests` | `commonProject` (the shared, non-executable test project every test project references; default `Common`, i.e. `tests/Common`), `kindAliases`, VSTest `filter`, and Microsoft.Testing.Platform `testingPlatformArguments`. The two runner filter syntaxes remain separate. |
 | `docker` | `composeFile`, `projectName`, startup `waitFor` list, `waitForHealthy`, readiness `timeout`, and `startTimeout`. |
 | `mockServer` | `project`, `port`, `expectations`, `record`, `verbosity`, `ui`, extra `args`, `timeout`, `openApi`, and `openApiOutput`. |
 | `documentation` | `dependencyMapOutput`, DocFX `apiReferenceConfig`, and `apiReferenceMetadataOutput`; derived output paths follow the configured parent paths. |
@@ -75,7 +75,7 @@ by operations that need them.
 | `agentSkills` | `prefix` and ordered, solution-relative `directories`; the first directory is the creation destination. Absolute paths and traversal are rejected for installation and synchronization. |
 | `gitHooks` | `skipLintFix`, `skipTestStatic`, and `skipTestRuntime`; hook choice, force and dry-run remain operation-specific. |
 | `boilerplate` | Default `items` and `exclude` selection; an explicit install selection wins. |
-| `scaffolding` | `swaggerTheme`, the default Swagger UI theme choice for generated APIs. |
+| `scaffolding` | `swagger` (whether generated APIs include Swagger through `Anarchy.Toolkit.Runtime.Web.Swagger`; default `true`), `swaggerTheme` (the default Swagger UI theme choice; default `true`) and `appSettings` (`isolated`, the default: each application has its own settings; `shared`: applications use one `AppSettings` in the Infrastructure library and one `ModuleAppSettings` with `appsettings*.json` in the Bootstrap library). |
 
 Collections replace rather than append. Explicit `false`, empty collections and supported empty strings can intentionally
 override saved values. Do not copy the schema's defaults into the file just to make them effective.

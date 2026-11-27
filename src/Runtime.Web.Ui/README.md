@@ -1,11 +1,11 @@
-# Anarchy.Toolkit.Web.Ui
+# Anarchy.Toolkit.Runtime.Web.Ui
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Runtime · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
 An interactive-server Blazor UI pipeline with reusable components and cookie-session OAuth login.
 
 ```bash
-dotnet add package Anarchy.Toolkit.Web.Ui
+dotnet add package Anarchy.Toolkit.Runtime.Web.Ui
 ```
 
 - Derive from `UiWebAppStartupBase` and supply the application's environment catalog through `UiAuthenticationOptions.Environments`.
@@ -32,7 +32,7 @@ See the [UI guide](https://anarchy-io.github.io/anarchy-toolkit/guides/building-
 `css/toolkit-ui.css` follows the documentation sites and the Anarchy brand guide: neutral surfaces, a black header with the red/orange gradient rule, red/orange kept for primary actions and important states, and Inter and JetBrains Mono when installed (system fonts otherwise; nothing is downloaded).
 
 - **Light and dark mode.** Every colour token is a `light-dark(<light>, <dark>)` pair. Pages follow the system preference; add `<ThemeToggle />` (for example to the navbar) to let users switch, and their choice is remembered in the browser. `<html data-theme="light">` or `"dark"` forces a mode.
-- **Assets.** Served from the usual `wwwroot` layout: `css/toolkit-ui.css`, `js/toolkit-ui.js`, and from `Anarchy.Toolkit.Web` `favicon.svg`, `favicon.png` and `images/logo-dark.png`.
+- **Assets.** Served from the usual `wwwroot` layout: `css/toolkit-ui.css`, `js/toolkit-ui.js`, and from `Anarchy.Toolkit.Runtime.Web` `favicon.svg`, `favicon.png` and `images/logo-dark.png`.
 - **Login logo.** `LoginForm` shows the Anarchy I/O logo above the heading, `images/logo.png` in light mode and `images/logo-dark.png` in dark mode. Set `BrandLogoPath` and `DarkBrandLogoPath` to use your own, or `BrandLogoPath=""` to show none.
 - **Logo.** `images/logo-dark.png` is the Anarchy I/O logo with white text (for dark backgrounds), sized for the dark navbar with the `navbar-logo` class (as in the sample and scaffolded layouts).
 - **Rebranding.** Override the tokens at the top of `css/toolkit-ui.css` (`--primary-color`, `--link-color`, `--header-bg`, `--brand-gradient`, …) in a stylesheet passed to `UiHeadAssets`' `Stylesheets`, which load after the toolkit's.

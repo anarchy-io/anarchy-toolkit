@@ -24,7 +24,7 @@ A **project root** is a folder containing a `.csproj`. Create a project when one
 - a separate test suite;
 - a shared architectural layer reused by several applications.
 
-Everything else is a **folder**. A folder inside a project root, even one named after a layer (`Core/`, `Infrastructure/`, `Configuration/`, `Web/`), is ordinary source organization: it does not make a second project and does not change the project's own layer or relax the dependency direction. An application uses such folders to extend the shared libraries without a project per layer.
+Everything else is a **folder**. A folder inside a project root, even one named after a layer (`Core/`, `Infrastructure/`, `Bootstrap/`, `Runtime/`), is ordinary source organization: it does not make a second project and does not change the project's own layer or relax the dependency direction. An application uses such folders to extend the shared libraries without a project per layer.
 
 This is separate from the [layering mode](layering.md#choose-one-project-layering-mode) (how the build finds a project's layer, by folder or by name prefix). Both modes enforce the same dependency rules, and neither implies that projects are NuGet packages. Choose one mode for the whole solution.
 
@@ -50,24 +50,26 @@ Shared layer projects live under `src/Library/`; deployable applications are sep
 │   ├── Library/
 │   │   ├── Core/                 # shared Core.csproj
 │   │   ├── Infrastructure/       # shared Infrastructure.csproj
-│   │   ├── Configuration/        # shared Configuration.csproj
-│   │   └── Web/                  # shared Web.csproj, when needed
-│   ├── Api/
-│   │   └── Backoffice/           # application project
-│   ├── Jobs/
-│   │   └── Processor/            # application project
-│   └── Ui/
-│       └── AdminPanel/           # application project
+│   │   ├── Bootstrap/            # shared Bootstrap.csproj
+│   │   └── Runtime/              # shared Runtime.csproj
+│   └── Apps/
+│       ├── Apis/
+│       │   └── Backoffice/       # application project
+│       ├── Jobs/
+│       │   └── Processor/        # application project
+│       └── Ui/
+│           └── AdminPanel/       # application project
 └── tests/
     ├── Common/                   # shared test resources
     ├── Unit/
     ├── Integration/
-    └── EndToEnd/
+    ├── EndToEnd/
+    └── MockServer/               # optional HTTP mock server
 ```
 
-The shared reference direction is `[Web →] Configuration → Infrastructure → Core`: an arrow means "references" and brackets mark an optional layer. APIs and UIs typically reference shared Web, jobs shared Configuration. Shared Web is optional: when no application needs shared web functionality, the chain ends at Configuration, and jobs never need Web.
+The shared reference direction is `Apps → Runtime → Bootstrap → Infrastructure → Core`: an arrow means "references". The `Apps` layer has no library project: APIs, jobs and UIs reference the shared Runtime library. Applications can share settings (`scaffolding.appSettings: shared` in `.anarchy-toolkit.json`): the single `AppSettings` then lives in Infrastructure, and the `ModuleAppSettings` with the `appsettings*.json` files in Bootstrap; by default (`isolated`) each application has its own.
 
-Each application project can hold its own `Core/`, `Infrastructure/`, `Configuration/`, `Web/`, `Host/` or `Presentation/` folders to extend the shared libraries, still pointing toward lower layers. In folder mode, the default mapping assigns `src/Api`, `src/Jobs` and `src/Ui` to their standard layers; override them under `layering.applicationFolders` in `.anarchy-toolkit.json` ([Layering](layering.md#choose-one-project-layering-mode)).
+Each application project can hold its own `Core/`, `Infrastructure/`, `Bootstrap/`, `Runtime/`, `Composition/` or `Presentation/` folders to extend the shared libraries, still pointing toward lower layers. In folder mode, the default mapping assigns `src/Apps/Apis`, `src/Apps/Jobs` and `src/Apps/Ui` to the `Apps` layer; override them under `layering.applicationFolders` in `.anarchy-toolkit.json` ([Layering](layering.md#choose-one-project-layering-mode)).
 
 ### Single application
 
@@ -77,12 +79,12 @@ For one application, put the layer projects directly under `src/`, without a `Li
 src/
 ├── Core/                         # Core.csproj
 ├── Infrastructure/               # Infrastructure.csproj
-├── Configuration/                # Configuration.csproj
-├── Web/                          # optional Web.csproj
+├── Bootstrap/                    # Bootstrap.csproj
+├── Runtime/                      # Runtime.csproj
 └── App/                          # the application project
 ```
 
-Dependencies point down: `App → [Web →] Configuration → Infrastructure → Core`. Name the application project `App`, `Api`, `Job`, `Program`, `Cli` or after the solution. Omit Web when the application has no web surface. For this layout, set `layering.libraryRoot` to `src` and map the application folder in `.anarchy-toolkit.json`, or pass those choices directly to the operation.
+Dependencies point down: `App → Runtime → Bootstrap → Infrastructure → Core`. Name the application project `App`, `Api`, `Job`, `Program`, `Cli` or after the solution. For this layout, set `layering.libraryRoot` to `src` and map the application folder in `.anarchy-toolkit.json`, or pass those choices directly to the operation.
 
 ### Tests
 
@@ -117,12 +119,14 @@ General-purpose static helpers go in a project-root `Helpers/` folder, grouped b
 
 ### Extensions
 
-Extension classes go in a project-root `Extensions/` folder, organized by their subject. The class takes the `Extensions` suffix, lives in a static class and uses **the subject's namespace**, without an `Extensions` segment added just because of the folder:
+Extension classes go in a project-root `Extensions/` folder whose subfolders mirror **the extended type's namespace**. The class takes the `Extensions` suffix, is static, and its namespace follows its folder:
 
 ```text
-Repositories/MyResource/IMyResourceRepository.cs
-Extensions/Repositories/MyResource/MyResourceRepositoryExtensions.cs     // namespace …Core.Repositories.MyResource
+Extensions/Microsoft/Extensions/DependencyInjection/ServiceCollectionExtensions.cs  // namespace …Core.Extensions.Microsoft.Extensions.DependencyInjection
+Extensions/System/StringExtensions.cs                                               // namespace …Core.Extensions.System
 ```
+
+See [ADR 0002](../decisions/0002-extensions-and-helpers.md) for why namespaces follow folders for extensions too.
 
 Group extensions by subject and responsibility instead of collecting them in a generic class.
 
@@ -171,7 +175,7 @@ This holds in folder-mode layouts and in prefix-layered projects alike. The tool
 | Namespaces, types, services | See [Naming](naming.md) |
 | UseCases, Aggregates | See [UseCases and Aggregates](usecases-and-aggregates.md) |
 | Helpers | Static, pure, subject-grouped, outside DI |
-| Extensions | Root `Extensions/` folder, subject's namespace |
+| Extensions | Root `Extensions/` folder mirroring the extended type's namespace; namespace follows the folder |
 | Adapters | Resource folder, then technology folder |
 | DI | The composition root selects implementations |
 

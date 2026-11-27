@@ -22,6 +22,16 @@ Most consumers should use the `anarchy-toolkit` tool or the Anarchy build target
 
 `Boilerplate/` holds the Makefile, scripts, `.gitignore`, `.editorconfig` and agent skills (`.agents/skills`, installed only when selected) installed into generated solutions; together with the repository's `global.json` and `nuget.config`, it is embedded as-is. The repository's own `.gitignore` and `.editorconfig` start with the packaged ones and add their own entries below the managed block. `BoilerplateCatalog` lists and reads the packaged files and diffs them against a solution's copies (`UnifiedDiff`), so they can be inspected without installing them. The toolkit repository uses the same files in place through its root `Makefile`, which sets `SCRIPTS_ROOT` so that `SCRIPTS_DIR` (and shell completion) resolve to `src/Automation/Boilerplate/scripts`. The scripts find the project root from `PROJECT_ROOT` (exported by the Makefile), else their parent directory.
 
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Microsoft.OpenApi](https://www.nuget.org/packages/Microsoft.OpenApi) (with `Microsoft.OpenApi.YamlReader`) | Reads OpenAPI specifications to sync mock-server expectations | No |
+| [Serilog](https://www.nuget.org/packages/Serilog) | Logs the operations (Git hooks, lint staging) | No |
+| [Spectre.Console](https://www.nuget.org/packages/Spectre.Console) | The banner and console progress | Yes: `ConsoleBannerOptions.Write` takes an `IAnsiConsole` |
+
 ## Releases
 
 See the [release notes](RELEASE-NOTES.md) for the complete release history.

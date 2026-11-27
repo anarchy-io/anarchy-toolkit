@@ -22,7 +22,7 @@ Use this provider when a toolkit application stores relational data in PostgreSQ
 Register `AppTelemetry` through `ModuleTelemetry` (or supply a consumer implementation) before configuring the module with factories that read the application's configuration. For example, with configuration, environment and section binding already set up:
 
 ```csharp
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.DependencyInjection.Module;
 using Anarchy.Toolkit.Infrastructure.Persistence.Db.Postgres.Entity.Configuration.Storage.Database;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +37,15 @@ services.UseModule(
 Populate and validate reader/writer hosts, credentials, database name, time zone and command timeout in that section; a null port uses 5432. Set `MaximumPoolSize` when the default of 100 is unsuitable. The unkeyed storage policy uses the writer; keyed `reader` and `writer` policies select the corresponding pools. Register health reports separately and use provider repository bases with your own PostgreSQL SQL.
 
 See the [module registration example](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html#dependency-injection-modules) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Dapper](https://www.nuget.org/packages/Dapper) (also through `Infrastructure.Persistence.Db`) | Runs the repositories' SQL and maps results | Yes: through `Infrastructure.Persistence.Db`'s type handlers |
+| [Polly](https://www.nuget.org/packages/Polly.Core) (`Polly.Core`, through `Infrastructure.Persistence.Db`) | Retries transient database failures | Yes: through the resilience policy builder |
 
 ## Releases
 

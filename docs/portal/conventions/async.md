@@ -11,7 +11,7 @@ The toolkit's workers, persistence policies and message brokers stop on cancella
 
 In a short-lived host such as [AWS Lambda](https://aws.amazon.com/lambda/), each invocation is bounded by the platform, so missing cancellation support is rarely visible.
 
-Long-lived workers (`Anarchy.Toolkit.Hosting.Workers` on EC2 or ECS) are different. Without cancellation:
+Long-lived workers (`Anarchy.Toolkit.Runtime.Workers` on EC2 or ECS) are different. Without cancellation:
 
 - long-running calls block processing loops,
 - shutdown is delayed until in-flight calls complete or time out,
@@ -95,6 +95,6 @@ Following these rules results in prompt shutdowns, fewer stuck operations and mo
 |---|---|
 | Keep methods without the `Async` suffix | Nothing in the toolkit relies on names; only the analyzers you enable do. |
 | Keep tokens required instead of optional | Fine: the toolkit's bases accept any token you pass. |
-| Ignore cancellation in short-lived hosts (Lambda) | Possible, but workers on `Hosting.Workers` then wait for in-flight calls on shutdown. |
+| Ignore cancellation in short-lived hosts (Lambda) | Possible, but workers on `Runtime.Workers` then wait for in-flight calls on shutdown. |
 
 **What you lose by opting out:** fast, clean shutdowns of long-running workers and consistent API signatures between your code and the toolkit's.

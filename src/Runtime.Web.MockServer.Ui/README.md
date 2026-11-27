@@ -1,13 +1,13 @@
-# Anarchy.Toolkit.Web.MockServer.Ui
+# Anarchy.Toolkit.Runtime.Web.MockServer.Ui
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Runtime · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
-A browser UI for [`Anarchy.Toolkit.Web.MockServer`](../Web.MockServer/README.md), built on
-[`Anarchy.Toolkit.Web.Ui`](../Web.Ui/README.md): see what the mock server answers with and what it received while your
+A browser UI for [`Anarchy.Toolkit.Runtime.Web.MockServer`](../Runtime.Web.MockServer/README.md), built on
+[`Anarchy.Toolkit.Runtime.Web.Ui`](../Runtime.Web.Ui/README.md): see what the mock server answers with and what it received while your
 tests or application run.
 
 ```bash
-dotnet add package Anarchy.Toolkit.Web.MockServer.Ui
+dotnet add package Anarchy.Toolkit.Runtime.Web.MockServer.Ui
 ```
 
 - **Expectations**: every loaded, code and runtime expectation with its method, path, status, priority, remaining
@@ -19,14 +19,14 @@ dotnet add package Anarchy.Toolkit.Web.MockServer.Ui
 ## When to use it
 
 When developing against a mock server, or debugging a failing integration test, and reading the console is not enough.
-Use `Anarchy.Toolkit.Web.MockServer` alone when no one looks at it, e.g. in CI.
+Use `Anarchy.Toolkit.Runtime.Web.MockServer` alone when no one looks at it, e.g. in CI.
 
 ## How to use it
 
 Run it standalone, like the plain mock server (same arguments), and open `http://localhost:6001/__mock/ui/`:
 
 ```bash
-dotnet Anarchy.Toolkit.Web.MockServer.Ui.dll -e "mocks/**/*.json"
+dotnet Anarchy.Toolkit.Runtime.Web.MockServer.Ui.dll -e "mocks/**/*.json"
 ```
 
 Or call `UseUi()` from a host of your own:

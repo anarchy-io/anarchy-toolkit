@@ -96,7 +96,7 @@ Exceptions always live in an `Exceptions` folder whose namespace matches the fol
 | Any project | `src/Core/Exceptions` | `EmptyArgumentException` |
 | An abstraction shared by several implementations | the abstraction project, next to the contract | `Core.Persistence.Abstractions/Service/Storage/Exceptions/TransactionCommitException.cs` (thrown by any `IUnitOfWork`) |
 | One area of one project | the area's folder | `Core.Events/Domain/Exceptions` |
-| One class or feature | a sibling `Exceptions` folder | `Web/Helper/Presentation/Contract/Exceptions/MissingRouteParameterException.cs` |
+| One class or feature | a sibling `Exceptions` folder | `Runtime.Web/Helpers/Presentation/Contract/Exceptions/MissingRouteParameterException.cs` |
 
 Never declare an exception in the same file or folder as the class that throws it, and never name the folder `Exception` (singular): it shadows `System.Exception` inside the parent namespace.
 
@@ -109,7 +109,7 @@ Never declare an exception in the same file or folder as the class that throws i
 - Keep `sealed` / `abstract` for when it matters: `abstract` for mid-levels that must never be thrown directly.
 
 ```csharp
-namespace Anarchy.Toolkit.Configuration.Service.AppSecret.Exceptions;
+namespace Anarchy.Toolkit.Bootstrap.Service.AppSecret.Exceptions;
 
 /// <summary>
 /// Thrown when the secret store fails to return a secret.
@@ -130,7 +130,7 @@ public class SecretRetrievalException(string secretName, Exception innerExceptio
 
 ## Base types change HTTP status codes
 
-`ExceptionMiddleware` (`Web`) chooses the response status from the **native** base type: `InvalidOperationException` and Newtonsoft's `JsonException` become `400`, everything else `500`. `UnitOfWorkSessionException` is unwrapped to its base exception first.
+`ExceptionMiddleware` (`Runtime.Web`) chooses the response status from the **native** base type: `InvalidOperationException` and Newtonsoft's `JsonException` become `400`, everything else `500`. `UnitOfWorkSessionException` is unwrapped to its base exception first.
 
 So picking a base is also picking a status code. `InvalidStateException` derives from `InvalidOperationException` and therefore returns `400`. When you re-base an existing exception, check that it keeps the status code its callers expect.
 

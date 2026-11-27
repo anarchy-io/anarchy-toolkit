@@ -1,21 +1,21 @@
-# Anarchy.Toolkit.Web
+# Anarchy.Toolkit.Runtime.Web
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Runtime · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
 Shared ASP.NET Core REST API pipeline and presentation helpers.
 
 ```bash
-dotnet add package Anarchy.Toolkit.Web
+dotnet add package Anarchy.Toolkit.Runtime.Web
 ```
 
 - Build an API using `RestApiWebAppStartupBase` and the web entry-point bases for native or container hosting; AWS Lambda hosting lives in `Anarchy.Toolkit.Runtime.Web.Aws`.
-- Compose the supplied middleware, authentication, JSON converters and validation attributes around your application's endpoints.
+- Compose the supplied middleware, JWT bearer authentication with scope policies (`RequireScope`, no IdentityServer dependency), JSON converters and validation attributes around your application's endpoints.
 - A health controller exposes the shared health-report model. Application-specific scopes and endpoints remain in the consumer.
 - Swagger is opt-in: add `Anarchy.Toolkit.Runtime.Web.Swagger` and call `AddToolkitSwagger(ApiName, AppSettings, Environment)` from the startup. Without it, this package references neither Swashbuckle nor Microsoft.OpenApi.
 
 ## When to use it
 
-Use this package to host a toolkit-based REST API on ASP.NET Core or AWS Lambda while sharing startup, authentication, health and error-handling conventions. It supplies infrastructure around your endpoints; it does not define your application's API contracts or business logic.
+Use this package to host a toolkit-based REST API on ASP.NET Core (natively or in a container; AWS Lambda through `Runtime.Web.Aws`) while sharing startup, authentication, health and error-handling conventions. It supplies infrastructure around your endpoints; it does not define your application's API contracts or business logic.
 
 ## How to use it
 
@@ -24,9 +24,18 @@ Use this package to host a toolkit-based REST API on ASP.NET Core or AWS Lambda 
 3. Supply the `IReadOnlyCollection<IHealthCheck>` consumed by the health controller, using an empty collection if there are no checks or registering the relevant provider reports.
 4. Use `WebAppEntryPoint.RunWebHost<Startup>(args)` for a native host and an `AwsWebAppEntryPointBase` implementation (from `Anarchy.Toolkit.Runtime.Web.Aws`) for Lambda. Configure real authentication, secrets and environment-specific settings before deployment.
 
-The [sample API startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/SampleApiStartup.cs), [native entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/EntryPointLocal.cs) and [Lambda entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/EntryPointLambda.cs) show the complete structure. Test the HTTP pipeline with `Testing.Web`.
+The [sample API startup](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/Composition/SampleApiStartup.cs), [native entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/EntryPointLocal.cs) and [Lambda entry point](https://github.com/anarchy-io/anarchy-toolkit/blob/main/samples/Samples.Api/EntryPointLambda.cs) show the complete structure. Test the HTTP pipeline with `Testing.Runtime.Web` (and the Lambda pipeline with `Testing.Runtime.Web.Aws`).
 
 See the [endpoint guide](https://anarchy-io.github.io/anarchy-toolkit/conventions/endpoints.html), [API sample](https://github.com/anarchy-io/anarchy-toolkit/tree/main/samples/Samples.Api) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json) (through `Microsoft.AspNetCore.Mvc.NewtonsoftJson`) | Controllers serialize JSON with Newtonsoft; the exception middleware maps its errors | No: configured by the startup |
+| [Microsoft.IdentityModel.JsonWebTokens](https://www.nuget.org/packages/Microsoft.IdentityModel.JsonWebTokens) and [System.IdentityModel.Tokens.Jwt](https://www.nuget.org/packages/System.IdentityModel.Tokens.Jwt) | Validate JWT bearer tokens and read their scopes | No |
 
 ## Releases
 

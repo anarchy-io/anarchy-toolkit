@@ -9,7 +9,7 @@ dotnet tool install --global Anarchy.Toolkit.Automation.Build.Cli
 anarchy-toolkit bootstrap
 ```
 
-The wizard asks whether you are creating one application or several before it asks about layering mode. A single application gets one application-folder mapping; several applications start with the shared monorepo layout. It shows the plan before writing anything. Then:
+The wizard asks whether you are creating one application or several before it asks about layering mode. A single application gets one application-folder mapping; several applications start with the shared monorepo layout. For each API it asks whether to include Swagger (`Anarchy.Toolkit.Runtime.Web.Swagger`) and the toolkit's Swagger UI theme. In a monorepo it asks whether the applications share their settings (one `AppSettings` in the Infrastructure library, one `ModuleAppSettings` and the `appsettings*.json` files in the Bootstrap library, linked into every application by the root `Directory.Build.props`) or keep them isolated. It then offers the Unit, Integration and EndToEnd test projects (with a shared `tests/Common` project), a mock server host in `tests/MockServer` and the agent skills, and shows the plan before writing anything. The non-interactive equivalents are `--no-tests`, `--with-mock-server`, `--isolated-app-settings` and `--with-skills`. Then:
 
 ```bash
 make install
@@ -18,7 +18,7 @@ make pull_request
 
 Remove `ILayeringBuild` from `build/Build.cs` to opt out; to adapt your layout, use [layering preferences](automation-preferences.md) or follow the [layering convention's opt-out guidance](../conventions/layering.md#opting-out-or-adapting).
 
-You now have `build/` (Anarchy automation powered by [Fallout Build](https://fallout.build/)), a Makefile and scripts, [`Directory.Packages.props`](https://learn.microsoft.com/nuget/consume-packages/central-package-management), a library per layer and your applications, all compiling and tested.
+You now have `build/` (Anarchy automation powered by [Fallout Build](https://fallout.build/), with `build/Build.cs` as its entry point), a Makefile and scripts, [`Directory.Packages.props`](https://learn.microsoft.com/nuget/consume-packages/central-package-management), a library per layer except `Apps`, your applications and the test projects, all compiling and tested. Namespaces start with the solution name (`Shop.Library.Infrastructure`, `Shop.Apps.Apis.Orders`, `Shop.Tests.Unit`). In the solution, the root files (Makefile, scripts, `Directory.Build.props`, `Directory.Packages.props`, ...) sit in a `solution items` folder, and the `_build` project sits at the solution root together with `.fallout/parameters.json`. No `samples` folder is created.
 
 ## Choose a layout
 
@@ -26,12 +26,12 @@ The wizard's first real decision is how projects map to layers.
 
 | Layout | Looks like | Pick it when |
 |---|---|---|
-| **By folder** (default) | `src/Library/Core/Core.csproj`, `src/Library/Web/Web.csproj`, `src/Api/Orders/...` | One or several applications share a library per layer; few, larger projects. |
-| **By name prefix** | `src/Core.Orders/`, `src/Infrastructure.Orders.Postgres/` | Useful for separately packaged projects (like the toolkit itself), but available to any solution. |
+| **By folder** (default) | `src/Library/Core/Core.csproj`, `src/Library/Runtime/Runtime.csproj`, `src/Apps/Apis/Orders/...` | One or several applications share a library per layer; few, larger projects. |
+| **By name prefix** | `src/Library.Core/`, `src/Library.Infrastructure/`, `src/Apps.Api.Orders/` | Useful for separately packaged projects (like the toolkit itself), but available to any solution. |
 
 Choose one mode for the entire solution; the check does not mix modes or fall back between them. Folder-based layering
 is recommended for adopters. For a single application, layer projects can sit directly under `src/` rather than under
-`src/Library/`. Shared Web is optional. See [Code Organization](../conventions/code-organization.md) for the layouts.
+`src/Library/`. See [Code Organization](../conventions/code-organization.md) for the layouts.
 
 The chosen layout applies to this bootstrap/scaffold operation. Saving it is optional: pass `--save-preferences` or
 accept the wizard's separate save prompt (default **No**) to write selected preferences to the root
@@ -44,12 +44,12 @@ layering, preferences can override where the libraries live and which layer each
   "layering": {
     "mode": "folder",
     "libraryRoot": "src/Library",
-    "applicationFolders": { "src/Api": "Web", "src/Jobs": "Hosting", "src/Ui": "Web" }
+    "applicationFolders": { "src/Apps/Apis": "Apps", "src/Apps/Jobs": "Apps", "src/Apps/Ui": "Apps" }
   }
 }
 ```
 
-For a single application, set `"libraryRoot": "src"` and map the application's folder (e.g. `{ "src/App": "Web" }`) as an operation choice or saved override. With no configuration, the standard `src/Library` folder baseline is used; mode is never inferred.
+For a single application, set `"libraryRoot": "src"` and map the application's folder (e.g. `{ "src/App": "Apps" }`) as an operation choice or saved override. With no configuration, the standard `src/Library` folder baseline is used; mode is never inferred.
 
 For non-interactive setup, choose a preset directly:
 
@@ -58,13 +58,12 @@ anarchy-toolkit bootstrap Shop --layout single-app --application-folder Shop --s
 anarchy-toolkit scaffold api Orders --layout single-app --application-folder Shop
 ```
 
-`single-app` puts the layer libraries under `src/` and maps one application folder to `Web` for an API/UI or `Hosting`
-for a job. The folder defaults to `App`; choose names such as `Api`, `Job`, `Cli` or the solution name with
-`--application-folder`. `monorepo` keeps the standard shared `src/Library` and `src/Api`, `src/Jobs`, `src/Ui` layout.
+`single-app` puts the layer libraries under `src/` and maps one application folder to the `Apps` layer. The folder defaults to `App`; choose names such as `Api`, `Job`, `Cli` or the solution name with
+`--application-folder`. `monorepo` keeps the standard shared `src/Library` and `src/Apps/Apis`, `src/Apps/Jobs`, `src/Apps/Ui` layout.
 Both presets accept the regular layering options for custom roots, layers and mappings. See the [preferences guide](automation-preferences.md)
 for what belongs in each settings file and how one-run arguments differ from saved defaults.
 
-A job then cannot use web code, and no library can reference an application. Several domains can share one project per layer, side by side in folders (`Core/Orders/`, `Core/Billing/`, `Core/Common/`). See the [Layering convention](../conventions/layering.md) for the rules and how to bend them.
+No library can reference an application. Several domains can share one project per layer, side by side in folders (`Core/Orders/`, `Core/Billing/`, `Core/Common/`). See the [Layering convention](../conventions/layering.md) for the rules and how to bend them.
 
 Prefer placing Anarchy and other third-party dependencies in the shared libraries, with DI modules or wrappers where
 useful, so applications can build on a common base. This can pull unused transitive assemblies into an application's
@@ -76,6 +75,8 @@ artifacts; the solution developer decides when application-local dependencies ar
 anarchy-toolkit scaffold api Orders
 anarchy-toolkit scaffold job InvoiceCleanup
 ```
+
+APIs include Swagger and its theme unless you pass `--no-swagger` or `--no-swagger-theme` (or save `scaffolding.swagger` / `scaffolding.swaggerTheme` as `false`). `--container` adds a container image to an API or UI, `--lambda-api` makes an API an AWS Lambda, `--lambda-event` makes a job an event-driven Lambda, and `--job-mode worker|once` picks a long-running worker or a run-once job. New applications follow the `scaffolding.appSettings` preference (`shared` or `isolated`).
 
 Each application is a thin entry point: a `Program`, a `Startup` choosing modules, and settings. The logic goes in the libraries. Describe the settings once in an `AppSettings` class validated on start, and list the keys a developer must provide in `appsettings.json.template`; `make appsettings` asks for them. See [Dependency Injection](../conventions/dependency-injection.md).
 
@@ -97,17 +98,17 @@ only saves explicit layout choices; it does not persist test names or other oper
 
 ## Stand in for upstreams
 
-Add a runnable project whose name ends in [`MockServer`](https://www.mock-server.com/) (for example `src/MockServer`), referencing `Anarchy.Toolkit.Web.MockServer`, put expectation files under a folder per upstream, and add `IMockServerBuild` to the build:
+Bootstrap with `--with-mock-server` (or answer yes in the wizard) to get `tests/MockServer` (with the UI, and expectations under `tests/MockServer/mocks`), or add a runnable project whose name ends in [`MockServer`](https://www.mock-server.com/) referencing `Anarchy.Toolkit.Runtime.Web.MockServer`, put expectation files under a folder per upstream, and add `IMockServerBuild` to the build:
 
 ```json
-{ "MockServerExpectations": ["src/MockServer/expectations"] }
+{ "MockServerExpectations": ["tests/MockServer/mocks"] }
 ```
 
 `make mock_server_start` runs it for local development; `make test_end_to_end_mocked` runs it around the tests. Point the applications' development and test settings at it. The [Mock Server guide](mock-server.md) covers runtime expectations, assertions and recording.
 
 ## Bring your company stack
 
-Logging sinks, metrics backend, correlation headers, CodeArtifact or other private feeds, auth: see [Bringing your company stack](bringing-your-company-stack.md). Keep that code in your own `Configuration` and `Infrastructure` libraries, in a folder named after the company, so it is easy to find and to replace.
+Logging sinks, metrics backend, correlation headers, CodeArtifact or other private feeds, auth: see [Bringing your company stack](bringing-your-company-stack.md). Keep that code in your own `Bootstrap` and `Infrastructure` libraries, in a folder named after the company, so it is easy to find and to replace.
 
 ## Add databases and brokers when you need them
 

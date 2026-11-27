@@ -36,7 +36,7 @@ The wizard asks for:
 2. whether it will contain one application or several, before asking about the layering mode;
 3. for one application, its kind and folder name (default: `App`); for several, which application kinds to start with and a name for each, as many as you like;
 4. how `make check_layering` finds each project's layer (see below);
-5. the layers, innermost first. A library project is created per layer, each referencing the one below it;
+5. the layers, innermost first. A library project is created per layer but `Apps`, each referencing the one below it;
 6. whether to install the agent skills (default: no);
 7. whether to save selected automation preferences (default: no).
 
@@ -46,22 +46,22 @@ It then shows the plan, including each web application's local ports, and asks f
 
 | | By folder (default) | By name prefix |
 |---|---|---|
-| Libraries | `src/Library/<Layer>/<Layer>.csproj` | `src/<Layer>/<Layer>.csproj` |
-| API | `src/Api/<Name>`, namespace `Api.<Name>` | `src/Web.Api.<Name>` |
-| Job | `src/Jobs/<Name>`, namespace `Jobs.<Name>` | `src/Hosting.Job.<Name>` |
-| UI | `src/Ui/<Name>`, namespace `Ui.<Name>` | `src/Web.Ui.<Name>` |
+| Libraries | `src/Library/<Layer>/<Layer>.csproj` | `src/Library.<Layer>/Library.<Layer>.csproj` |
+| API | `src/Apps/Apis/<Name>`, namespace `<Solution>.Apps.Apis.<Name>` | `src/Apps.Api.<Name>` |
+| Job | `src/Apps/Jobs/<Name>`, namespace `<Solution>.Apps.Jobs.<Name>` | `src/Apps.Job.<Name>` |
+| UI | `src/Apps/Ui/<Name>`, namespace `<Solution>.Apps.Ui.<Name>` | `src/Apps.Ui.<Name>` |
 
-APIs and UIs belong to the `Web` layer and jobs to the `Hosting` layer; each references its layer's library. The effective layout resolves explicit operation arguments, optional saved values in the root `.anarchy-toolkit.json`, then the in-code baseline: folder mode under `src/Library`, standard app folders and standard layers. The mode is never inferred and no preferences file is required. With `--save-preferences`, bootstrap or scaffold persists only deliberately selected preferences; interactive save consent defaults to No. See the [unified schema](https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json) and [preferences guide](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
+The default layers are `Core < Infrastructure < Bootstrap < Runtime < Apps`. APIs, jobs and UIs belong to the `Apps` layer, which has no library project: applications reference the `Runtime` library. The effective layout resolves explicit operation arguments, optional saved values in the root `.anarchy-toolkit.json`, then the in-code baseline: folder mode under `src/Library`, standard app folders and standard layers. The mode is never inferred and no preferences file is required. With `--save-preferences`, bootstrap or scaffold persists only deliberately selected preferences; interactive save consent defaults to No. See the [unified schema](https://anarchy-io.github.io/anarchy-toolkit/schemas/anarchy-toolkit.schema.json) and [preferences guide](https://anarchy-io.github.io/anarchy-toolkit/guides/automation-preferences.html).
 
-`--layout monorepo` selects that baseline. `--layout single-app` uses folder mode with `libraryRoot` equal to the checked root (`src` by default) and one application folder mapped to the application's outer layer: `Web` for an API/UI or `Hosting` for a job. The default folder is `App`; pass `--application-folder Api`, `Job`, `Cli`, the solution name, or another single folder name to choose it. A single-app layout can also use prefix mode; in that mode the folder option does not apply. Explicit `--layering-root`, `--layering-layers`, `--layering-library-root`, and `--layering-application-folders` further customize either preset. On non-interactive bootstrap without an application kind, single-app starts with the `Web` layer; `scaffold` selects the correct outer layer for its API, job or UI.
+`--layout monorepo` selects that baseline. `--layout single-app` uses folder mode with `libraryRoot` equal to the checked root (`src` by default) and one application folder mapped to the `Apps` layer. The default folder is `App`; pass `--application-folder Api`, `Job`, `Cli`, the solution name, or another single folder name to choose it. A single-app layout can also use prefix mode; in that mode the folder option does not apply. Explicit `--layering-root`, `--layering-layers`, `--layering-library-root`, and `--layering-application-folders` further customize either preset. Every application kind belongs to the `Apps` layer, so a single-app layout accepts an API, job or UI.
 
 ### Applications
 
 | Kind | Built on |
 |---|---|
-| API | `Anarchy.Toolkit.Web`: REST API with JWT authorization and a `/ping` endpoint |
-| Job | `Anarchy.Toolkit.Hosting`: job entry point (e.g. an AWS Lambda handler) and service |
-| UI | `Anarchy.Toolkit.Web.Ui`: Blazor UI with cookie-session login and a home page |
+| API | `Anarchy.Toolkit.Runtime.Web` (`Anarchy.Toolkit.Runtime.Web.Aws` with `--lambda-api`): REST API with JWT authorization and a `/ping` endpoint |
+| Job | `Anarchy.Toolkit.Runtime` (`Anarchy.Toolkit.Runtime.Aws` with `--lambda-event`): job entry point and service |
+| UI | `Anarchy.Toolkit.Runtime.Web.Ui`: Blazor UI with cookie-session login and a home page |
 
 Applications are not packable, so `Pack` ignores them. Web applications get local ports from 5000 upwards, two per application, skipping ports already used in legacy `Program.cs` and explicit `EntryPointLocal.cs` files. In folder layering mode startup classes use `<ProjectName>Startup`; prefix mode retains `Startup` or `JobStartup`. Review each application's settings (auth service URLs, client IDs and scopes) before running it.
 
@@ -129,7 +129,7 @@ The `boilerplate` commands print plain text, without the banner, so scripts and 
 
 ## Requirements
 
-The .NET 10 SDK is required to generate and build solutions. The generated projects reference the `Anarchy.Toolkit.Automation.Build`, `Anarchy.Toolkit.Web`, `Anarchy.Toolkit.Web.Ui` and `Anarchy.Toolkit.Hosting` versions this tool was built with, which must be available on a configured NuGet feed. The generated `nuget.config` uses nuget.org by default; adjust it if using a private feed.
+The .NET 10 SDK is required to generate and build solutions. The generated projects reference the `Anarchy.Toolkit.Automation.Build`, `Anarchy.Toolkit.Runtime`, `Anarchy.Toolkit.Runtime.Web`, `Anarchy.Toolkit.Runtime.Web.Ui` and, when chosen, `Anarchy.Toolkit.Runtime.Aws`, `Anarchy.Toolkit.Runtime.Web.Aws`, `Anarchy.Toolkit.Runtime.Web.Swagger` and test-kit versions this tool was built with, which must be available on a configured NuGet feed. The generated `nuget.config` uses nuget.org by default; adjust it if using a private feed.
 
 When releasing the tool, publish those packages first and wait for them to be available on the feed. A .NET tool declares no NuGet dependencies, so package dependency ordering alone does not enforce this.
 
@@ -142,6 +142,14 @@ make check_layering
 ```
 
 The bootstrapping and scaffolding live in [`Anarchy.Toolkit.Automation`](../Automation/README.md); see the [automation build package README](../Automation.Build/README.md) for the build targets.
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Spectre.Console](https://www.nuget.org/packages/Spectre.Console) | The wizards, prompts and banner | No: a .NET tool, not a library |
 
 ## Releases
 

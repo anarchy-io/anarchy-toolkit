@@ -5,6 +5,7 @@ Part of the platform's **Build Ecosystem**, [`Anarchy.Toolkit.Automation.Build`]
 ```mermaid
 flowchart LR
     Make["make test"] --> Script["scripts/build.anarchy.sh"] --> Host["build/_build.csproj<br/>class Build : AnarchyBuild, …"]
+    Pwsh["Windows: scripts/build.anarchy.ps1"] --> Host
     Host --> Components["Automation.Build components<br/>IStandardBuild · INuGetBuild · ILayeringBuild · …"]
     Components --> Dotnet["dotnet restore · build · test · pack"]
 ```
@@ -23,21 +24,22 @@ printf '{ "Solution": "MyApp.sln" }\n' > .fallout/parameters.json
 ```
 
 `.fallout/` is Fallout's folder (its root marker, parameters and generated schema). No toolkit preferences file is
-required: layering defaults to folder mode with libraries under `src/Library` and standard app folders. For a single
+required: layering defaults to folder mode over `Core < Infrastructure < Bootstrap < Runtime < Apps`, with libraries under
+`src/Library/<Layer>` and applications under `src/Apps/Apis`, `src/Apps/Jobs` and `src/Apps/Ui`. For a single
 application whose layer projects sit directly under `src/`, pass the layout arguments to operations or explicitly
-save `{ "layering": { "libraryRoot": "src", "applicationFolders": { "src/App": "Web" } } }` in
+save `{ "layering": { "libraryRoot": "src", "applicationFolders": { "src/App": "Apps" } } }` in
 `.anarchy-toolkit.json`. See [Layering](../conventions/layering.md#choose-one-project-layering-mode) for monorepos and
 the name-prefix alternative, and [Automation Preferences](../guides/automation-preferences.md) for all settings and
 editing commands.
 
 ## Pick your components
 
-Replace `build/Program.cs` with a build class implementing the components that suit your repository:
+Replace `build/Program.cs` with a build class (e.g. `build/Build.cs`) implementing the components that suit your repository:
 
 ```csharp
 using Anarchy.Toolkit.Automation.Build.Component;
 using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Common;
 class Build : AnarchyBuild, IStandardBuild, ILayeringBuild, IDependencyMapBuild,
               IDependencyUpgradeBuild, IGitHooksBuild, IBoilerplateBuild, IAgentSkillsBuild
 {
@@ -81,7 +83,9 @@ make check_layering
 make anarchy TARGET=Pack
 ```
 
-For CI, `make pull_request` runs linting, the layering check (when implemented) and all tests.
+For CI, `make pull_request` runs linting, the layering check (when implemented) and all tests. To run several targets
+yourself, chain them in one call (`dotnet run --project build/_build.csproj -- Lint TestUnit`) rather than one call per
+target, so the build compiles once.
 
 ## Agent skills
 

@@ -1,12 +1,12 @@
-# Anarchy.Toolkit.Web.MockServer
+# Anarchy.Toolkit.Runtime.Web.MockServer
 
-> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Web · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
+> Part of [Anarchy I/O Toolkit](https://anarchy-io.github.io/anarchy-toolkit/overview/), a .NET developer platform · **Pillar:** [Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/overview/#the-three-pillars) · **Layer:** Runtime · [Package catalog](https://anarchy-io.github.io/anarchy-toolkit/packages/)
 
 An HTTP mock server for integration and end-to-end tests: JSON expectations, pluggable middlewares, request recording
 and colourful console output.
 
 ```bash
-dotnet add package Anarchy.Toolkit.Web.MockServer
+dotnet add package Anarchy.Toolkit.Runtime.Web.MockServer
 ```
 
 - Expectations follow [MockServer](https://www.mock-server.com/)'s JSON shape, so existing `expectations/*.json` files work as they are.
@@ -47,7 +47,7 @@ Write expectations, one object or an array per file:
 Run it:
 
 ```bash
-dotnet Anarchy.Toolkit.Web.MockServer.dll -e "mocks/**/*.json" --record artifacts/mock-requests.jsonl -v detailed
+dotnet Anarchy.Toolkit.Runtime.Web.MockServer.dll -e "mocks/**/*.json" --record artifacts/mock-requests.jsonl -v detailed
 ```
 
 | Option | Environment | Description |
@@ -59,7 +59,7 @@ dotnet Anarchy.Toolkit.Web.MockServer.dll -e "mocks/**/*.json" --record artifact
 | `-r, --record` | `MOCKSERVER_RECORD` | Append every request to a JSON-lines file. |
 | `--record-limit` | `MOCKSERVER_RECORD_LIMIT` | Requests kept in memory (default 1000, `0` = all). |
 | `--log-buffer` | `MOCKSERVER_LOG_BUFFER` | Log entries kept in memory for the UI and `/__mock/logs` (default 1000, `0` = all). |
-| `--no-ui` | `MOCKSERVER_UI=false` | Do not serve the UI, on hosts that plug one in (`Anarchy.Toolkit.Web.MockServer.Ui`). |
+| `--no-ui` | `MOCKSERVER_UI=false` | Do not serve the UI, on hosts that plug one in (`Anarchy.Toolkit.Runtime.Web.MockServer.Ui`). |
 | `--kill-timeout` | `MOCKSERVER_KILL_TIMEOUT` | Stop after this many seconds. |
 | `--unmatched-status` | `MOCKSERVER_UNMATCHED_STATUS` | Status when nothing matches (default 404). |
 | `-v, --verbosity` | `MOCKSERVER_VERBOSITY` | `quiet`, `minimal`, `normal` (default), `detailed` (headers and bodies) or `diagnostic` (responses and ASP.NET Core logs). |
@@ -124,6 +124,14 @@ UI or `GET /__mock/logs?after=<sequence>` still follows it.
 | `POST /__mock/reload` | Reloads expectation files. |
 | `GET /__mock/logs?after=` | Log entries, optionally only those after a sequence number. |
 | `GET /__mock/middlewares` | The consumer middlewares, in pipeline order. |
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [Spectre.Console](https://www.nuget.org/packages/Spectre.Console) | The console banner and request log | Yes: `MockServerConsole` takes an optional `IAnsiConsole` |
 
 ## Releases
 

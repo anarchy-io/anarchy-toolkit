@@ -12,7 +12,7 @@ The toolkit is built around three pillars. Each one can be adopted on its own, a
 
 | Pillar | What it provides |
 |---|---|
-| **[Architecture](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html)** | Application structure, dependency boundaries (`Core < Infrastructure < Configuration < Hosting < Web < Automation` in this repository), DI-module composition and engineering conventions. |
+| **[Architecture](https://anarchy-io.github.io/anarchy-toolkit/guides/architecture.html)** | Application structure, dependency boundaries (`Core < Infrastructure < Bootstrap < Runtime < Automation` in this repository), DI-module composition and engineering conventions. |
 | **[Infrastructure](https://anarchy-io.github.io/anarchy-toolkit/packages/)** | Independently published NuGet packages for persistence, messaging, telemetry, configuration, hosting, APIs, UIs and testing. |
 | **[Build Ecosystem](https://anarchy-io.github.io/anarchy-toolkit/getting-started/)** | Anarchy automation components and the `anarchy-toolkit` CLI: scaffolding, validation, tests, packaging, versioning and releases, powered by [Fallout Build](https://fallout.build/). |
 

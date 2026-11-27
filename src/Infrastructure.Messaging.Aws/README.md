@@ -23,7 +23,7 @@ Register `AppTelemetry` and the required broker adapters. The example uses expli
 
 ```csharp
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Entity.Configuration.Amazon;
-using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extensions.Microsoft.Extensions.DependencyInjection;
 
 var options = new AwsMessagingOptions("eu-west-1", "123456789012");
 services.AddSnsMessageBroker(options);
@@ -37,8 +37,8 @@ Alternatively, register the modules with options factories using `UseModule`. Re
 The package maps inbound messages (`InboundMessageMapper.FromSqs(sqsEvent)`) but does not ship a consumer loop, so nothing propagates correlation IDs on its own: your handler opts in by opening the scope around each message.
 
 ```csharp
-using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extension.MessageBroker.Aws;
-using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper.MessageBroker;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Extensions.Core.Messaging.Abstractions.Entity.MessageBroker;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helpers.MessageBroker;
 
 foreach (var message in InboundMessageMapper.FromSqs(sqsEvent))
 {
@@ -57,7 +57,7 @@ Both request types carry the formatter's structured-envelope media type, `applic
 
 ```csharp
 using Anarchy.Toolkit.Core.Messaging.Abstractions.Entity.MessageBroker;
-using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helper.MessageBroker;
+using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Helpers.MessageBroker;
 using Anarchy.Toolkit.Infrastructure.Messaging.Aws.Service.MessageBroker.Aws.Publisher.RequestBuilder;
 
 var metadata = new OutboundMessage("outbound-1", "orders.fifo", "placeholder",
@@ -75,6 +75,14 @@ var brokerMetadata = received.Message;
 Only structured JSON is supported, not the CloudEvents binary binding. String broker attributes are carried independently of CloudEvent extensions; binary and number attributes, SNS signatures and timestamps, most SQS system attributes, and received deduplication IDs are not represented in these result models. Request the required SQS message/system attributes when receiving. SNS non-raw envelopes are not signature-verified by this mapper; validate them separately when your trust boundary requires it. Inbound compressed messages may use `CompressionType` and binary `CompressionData` attributes. Size, AWS attribute limits, delivery and deduplication guarantees remain the broker's responsibility.
 
 See the [registration example](https://anarchy-io.github.io/anarchy-toolkit/getting-started/consuming-packages.html) and [toolkit overview](https://anarchy-io.github.io/anarchy-toolkit/overview/).
+
+## Third-party dependencies
+
+This package brings these libraries, which its name does not announce:
+
+| Library | Why | In the public API? |
+|---|---|---|
+| [CloudNative.CloudEvents](https://www.nuget.org/packages/CloudNative.CloudEvents.NewtonsoftJson) (with its Newtonsoft.Json formatter) | Sends and receives structured CloudEvents over SNS and SQS (`AwsCloudEventMapper`) | Yes: `AwsCloudEventMapper` takes and returns `CloudEvent` |
 
 ## Releases
 
