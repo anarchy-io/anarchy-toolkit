@@ -19,7 +19,7 @@ internal sealed record AllowedPackageReference(string From, string To, string Re
 /// Only projects with a known layer are checked (<see cref="LayeringTasks.Testing"/> included, as its own layer), so
 /// tests, samples and the build are left out. A reference to a lower layer is free, whatever its package family; a
 /// reference to a higher layer is the layering check's to reject. A reference within the same layer must go to one of
-/// the package's name ancestors (<c>Web.MockServer.Ui</c> to <c>Web.MockServer</c> or <c>Web</c>), unless the exact
+/// the package's name ancestors (<c>Runtime.Web.MockServer.Ui</c> to <c>Runtime.Web.MockServer</c>, <c>Runtime.Web</c> or <c>Runtime</c>), unless the exact
 /// pair is in <see cref="AllowedReferences"/>.
 /// </remarks>
 internal static class PackageHierarchy
@@ -34,7 +34,7 @@ internal static class PackageHierarchy
         new("Core.Events", "Core.Telemetry", "event publishing and processing record telemetry"),
         new("Infrastructure.Messaging.Aws", "Infrastructure.CorrelationId", "AWS consumers open correlation scopes for inbound messages"),
         new("Infrastructure.Telemetry.Serilog", "Infrastructure.CorrelationId", "the opt-in Serilog enricher reads the correlation context"),
-        new("Web.MockServer.Ui", "Web.Ui", "the mock server UI is hosted in the shared UI shell"),
+        new("Runtime.Web.MockServer.Ui", "Runtime.Web.Ui", "the mock server UI is hosted in the shared UI shell"),
     ];
 
     /// <summary>

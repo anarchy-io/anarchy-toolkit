@@ -32,6 +32,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\.anarchy-toolkit.json" Link=".anarchy-toolkit.json" />
+    <None Remove="..\.fallout\temp\build.log" />
+    <None Remove="..\.fallout\temp\build.2026-11-27_15-14-43.log" />
+    <None Remove="..\.fallout\temp\build.2026-11-27_15-33-21.log" />
+    <None Remove="..\.fallout\temp\build.2026-11-27_15-56-47.log" />
+    <None Remove="..\.fallout\temp\build.2026-11-27_15-59-05.log" />
+    <None Remove="..\.fallout\temp\build.2026-11-27_16-00-30.log" />
+    <None Remove="..\.fallout\temp\build.2026-11-27_16-04-40.log" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="logs\" />
   </ItemGroup>
 

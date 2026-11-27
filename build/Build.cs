@@ -1,6 +1,7 @@
 using Anarchy.Toolkit.Automation.Build.Component;
 using Anarchy.Toolkit.Automation.Build.Core.Entity.Build;
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+using Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Common;
+using Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Solutions;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Fallout.Common;
 using Fallout.Common.CI;
