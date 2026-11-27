@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Builds;
 
 /// <summary>
 /// Reads Fallout's <c>.fallout/parameters.json</c>; parameter names match case-insensitively.

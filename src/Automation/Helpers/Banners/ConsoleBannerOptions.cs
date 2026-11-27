@@ -1,6 +1,6 @@
 using Spectre.Console;
 
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Banners;
 
 /// <summary>
 /// Which banner a tool built on these packages prints: Anarchy's by default, another <see cref="IConsoleBanner"/>

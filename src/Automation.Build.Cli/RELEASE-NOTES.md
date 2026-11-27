@@ -1,5 +1,10 @@
 ## Releases
 
+### 4.0.0
+
+- **Breaking:** `bootstrap` and `scaffold` create `Apps`-layer solutions with test projects, shared settings and opt-in technologies (from `Anarchy.Toolkit.Automation` 4.0.0).
+- New flags: `--no-tests`, `--with-mock-server`, `--isolated-app-settings`, `--swagger`/`--no-swagger`; the wizard asks about Swagger and its theme for each API.
+
 ### 3.0.0
 
 - Breaking: scaffold jobs as runnable workers by default; `--job-mode once` selects a one-shot job.

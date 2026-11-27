@@ -1,6 +1,6 @@
 using Fallout.Common;
 
-namespace Anarchy.Toolkit.Automation.Build.Infrastructure.Extension;
+namespace Anarchy.Toolkit.Automation.Build.Extensions.Fallout.Common;
 
 /// <summary>
 /// Utility functions for conversion.

@@ -3,7 +3,8 @@ using Anarchy.Toolkit.Automation.Build.Cli.Wizard;
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Anarchy.Toolkit.Automation.Core.Validation;
-using Anarchy.Toolkit.Automation.Infrastructure.Helper;
+using Anarchy.Toolkit.Automation.Helpers.Builds;
+using Anarchy.Toolkit.Automation.Helpers.Solutions;
 using Spectre.Console;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -122,6 +123,9 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
             }
             plan = new SolutionPlan(command.SolutionName, Path.GetFullPath(command.OutputDirectory ?? workingDirectory, workingDirectory), layout, []) {
                 AgentSkills = command.AgentSkills,
+                TestKinds = command.TestProjects ? SolutionPlan.AllTestKinds : [],
+                MockServer = command.MockServer,
+                SharedAppSettings = !command.IsolatedAppSettings && layout.SupportsSharedAppSettings,
                 SavePreferences = command.SavePreferences
             };
         }
@@ -141,6 +145,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
                 SaveLayoutPreferences(plan.RootDirectory, command.LayoutPreset is not null
                     ? AutomationPreferences.LayoutOverrides(plan.Layout)
                     : command.LayeringOverrides!);
+            SolutionItems.Add(plan.RootDirectory, plan.Name + ".sln", [AutomationPreferences.FileName]);
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException or ArgumentException)
         {
@@ -238,10 +243,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         try
         {
             preferences = AutomationPreferences.Read(root);
-            var layoutKind = command.Application?.Kind ?? (command.ScaffoldTarget == ScaffoldTarget.Library &&
-                string.Equals(command.LibraryLayer, SolutionLayout.HostingLayer, StringComparison.OrdinalIgnoreCase)
-                    ? ApplicationKind.Job
-                    : ApplicationKind.Api);
+            var layoutKind = command.Application?.Kind ?? ApplicationKind.Api;
             workspace = SolutionWorkspace.Load(root, LayoutOverrides(command, layoutKind));
         }
         catch (Exception exception) when (exception is InvalidOperationException or IOException or UnauthorizedAccessException
@@ -255,27 +257,36 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         if (command.ScaffoldTarget == ScaffoldTarget.Tests)
             return ScaffoldTests(root, workspace, command);
 
+        var defaultSwagger = preferences.Get<bool?>("scaffolding.swagger") ?? true;
         var defaultSwaggerTheme = preferences.Get<bool?>("scaffolding.swaggerTheme") ?? true;
         var wizard = new ScaffoldWizard(prompter);
         var app = command.Application is null
-            ? wizard.Run(workspace, defaultSwaggerTheme)
-            : command.Application with { SwaggerTheme = command.SwaggerThemeOverride ?? defaultSwaggerTheme };
+            ? wizard.Run(workspace, defaultSwaggerTheme, defaultSwagger)
+            : command.Application with {
+                Swagger = command.SwaggerOverride ?? defaultSwagger,
+                SwaggerTheme = command.SwaggerThemeOverride ?? defaultSwaggerTheme
+            };
         if (app is null) return Cancelled();
         if (ApplicationScaffolder.Validate(workspace.Layout, app, workspace.ProjectNames) is { } invalid) return Fail(invalid);
         if (!TryRun($"Adding {app.Name}", progress => ApplicationScaffolder.Add(workspace, app, versions, progress))) return 1;
 
         var layoutPreferencesSaved = false;
-        if (command.SavePreferences || wizard.SaveSwaggerThemePreference)
+        if (command.SavePreferences || wizard.SaveSwaggerPreferences)
         {
             var selected = new JsonObject();
             if (command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 }))
                 selected["layering"] = command.LayoutPreset is not null
                     ? AutomationPreferences.LayoutOverrides(workspace.Layout)
                     : command.LayeringOverrides!.DeepClone();
+            if (command.SavePreferences && command.SwaggerOverride is { } explicitSwagger)
+                SetNested(selected, "scaffolding", "swagger", JsonValue.Create(explicitSwagger));
             if (command.SavePreferences && command.SwaggerThemeOverride is { } explicitTheme)
                 SetNested(selected, "scaffolding", "swaggerTheme", JsonValue.Create(explicitTheme));
-            if (wizard.SaveSwaggerThemePreference)
-                SetNested(selected, "scaffolding", "swaggerTheme", JsonValue.Create(app.SwaggerTheme));
+            if (wizard.SaveSwaggerPreferences)
+            {
+                SetNested(selected, "scaffolding", "swagger", JsonValue.Create(app.Swagger));
+                if (app.Swagger) SetNested(selected, "scaffolding", "swaggerTheme", JsonValue.Create(app.SwaggerTheme));
+            }
             if (selected.Count > 0)
             {
                 try { SaveSelectedPreferences(root, selected); }
@@ -359,7 +370,7 @@ public sealed class ToolApplication(IWizardPrompter prompter, ToolkitPackageVers
         }
 
         if (!TryRun(command.DryRun ? $"Previewing {plan.Kind} tests" : $"Adding {plan.ProjectName}",
-                progress => TestProjectScaffolder.Add(root, workspace.SolutionFile, plan, command.DryRun, progress))) return 1;
+                progress => TestProjectScaffolder.Add(root, workspace.SolutionFile, plan, command.DryRun, versions, progress))) return 1;
         if (command.DryRun) return 0;
 
         if (command.SavePreferences && (command.LayoutPreset is not null || command.LayeringOverrides is { Count: > 0 }))

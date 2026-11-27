@@ -1,4 +1,4 @@
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Banners;
 
 /// <summary>
 /// Anarchy's logo, as printed by <c>scripts/console/banner.sh</c>: the wide wordmark on terminals of at least

@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 namespace Anarchy.Toolkit.Automation.Core.Service.MockServer;
 
 /// <summary>
-/// Adds mock server expectations (the <c>Anarchy.Toolkit.Web.MockServer</c> JSON format) for the endpoints of an
+/// Adds mock server expectations (the <c>Anarchy.Toolkit.Runtime.Web.MockServer</c> JSON format) for the endpoints of an
 /// OpenAPI specification that have none yet, for a developer to review, adjust and commit.
 /// </summary>
 /// <remarks>

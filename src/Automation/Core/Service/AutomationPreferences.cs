@@ -76,7 +76,7 @@ public sealed class AutomationPreferences
             ApplicationFolders = values["applicationFolders"]?.Deserialize<Dictionary<string, string>>()
                                  ?? (mode == LayeringMode.Folder
                                      ? SolutionLayout.Kinds.Where(kind => layers.Contains(SolutionLayout.LayerOf(kind)))
-                                         .ToDictionary(kind => $"{root}/{SolutionLayout.FolderOf(kind)}", SolutionLayout.LayerOf)
+                                         .ToDictionary(kind => $"{root}/{SolutionLayout.AppsLayer}/{SolutionLayout.FolderOf(kind)}", SolutionLayout.LayerOf)
                                      : new Dictionary<string, string>())
         };
         if (LayeringConfiguration.Validate(layout) is { Count: > 0 } errors)

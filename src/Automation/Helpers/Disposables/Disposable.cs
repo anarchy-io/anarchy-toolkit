@@ -1,4 +1,4 @@
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Disposables;
 
 /// <summary>
 /// An <see cref="IDisposable"/> running an action on its first disposal only.

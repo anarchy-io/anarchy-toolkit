@@ -1,4 +1,4 @@
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Banners;
 
 /// <summary>
 /// Anarchy's logo as an <see cref="IConsoleBanner"/> (see <see cref="ConsoleBanner"/>). Derive from it to adjust the

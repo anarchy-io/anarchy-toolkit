@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Automation.Build.Component.Tasks;
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Helper;
+using Anarchy.Toolkit.Automation.Build.Helpers.Consoles;
 using Anarchy.Toolkit.Automation.Core.Service;
 using Fallout.Common;
 using Fallout.Common.IO;

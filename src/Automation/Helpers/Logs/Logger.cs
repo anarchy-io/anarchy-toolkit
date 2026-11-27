@@ -1,4 +1,4 @@
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Logs;
 
 /// <summary>
 /// A wrapper around <see cref="Serilog.Log"/> used by the build components: <c>Normal</c> logs at

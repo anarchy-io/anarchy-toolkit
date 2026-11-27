@@ -6,7 +6,7 @@
     <PackageId>Anarchy.Toolkit.Automation.Build.Cli</PackageId>
     <AssemblyName>Anarchy.Toolkit.Automation.Build.Cli</AssemblyName>
     <RootNamespace>Anarchy.Toolkit.Automation.Build.Cli</RootNamespace>
-    <Version>3.0.0</Version>
+    <Version>4.0.0</Version>
     <Description>The anarchy-toolkit command: bootstrap Anarchy-based .NET solutions and scaffold APIs, jobs and UIs into them from guided wizards.</Description>
     <PackageTags>anarchy bootstrap scaffold dotnet-tool</PackageTags>
   </PropertyGroup>
@@ -20,9 +20,17 @@
     <!-- Packages the generated projects reference. Only their versions are needed, embedded below; referencing the
          projects also lets release automation bump this tool whenever one of them is bumped. -->
     <ProjectReference Include="..\Automation.Build\Automation.Build.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
-    <ProjectReference Include="..\Hosting\Hosting.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
-    <ProjectReference Include="..\Web\Web.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
-    <ProjectReference Include="..\Web.Ui\Web.Ui.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Bootstrap\Bootstrap.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Runtime\Runtime.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Runtime.Aws\Runtime.Aws.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Runtime.Web\Runtime.Web.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Runtime.Web.Aws\Runtime.Web.Aws.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Runtime.Web.Swagger\Runtime.Web.Swagger.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Runtime.Web.Ui\Runtime.Web.Ui.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Runtime.Web.MockServer.Ui\Runtime.Web.MockServer.Ui.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Testing\Testing.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Testing.Runtime.Web\Testing.Runtime.Web.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
+    <ProjectReference Include="..\Testing.MockServer\Testing.MockServer.csproj" ReferenceOutputAssembly="false" ToolkitPackage="true" />
   </ItemGroup>
 
   <!-- Embeds "AnarchyToolkitPackage:<PackageId>" = "<Version>" assembly metadata for each package above. -->

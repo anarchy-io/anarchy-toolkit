@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
-using Anarchy.Toolkit.Automation.Infrastructure.Helper;
-using Anarchy.Toolkit.Core.Helper;
+using Anarchy.Toolkit.Automation.Helpers.Banners;
+using Anarchy.Toolkit.Core.Helpers.Ports;
 using Spectre.Console;
 
 namespace Anarchy.Toolkit.Automation.Build.Cli.Wizard;
@@ -45,6 +45,7 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
         grid.AddRow("[blue]anarchy-toolkit scaffold api|job|ui <Name>[/]", "Add one without prompts. Options: --container, --lambda-api, --lambda-event, --job-mode worker|once (where applicable).");
         grid.AddRow("[blue]anarchy-toolkit scaffold library <Name> --layer <Layer> [[--dry-run]] [[--save-preferences]][/]", "Add a library project in a configured layer.");
         grid.AddRow("[blue]anarchy-toolkit scaffold tests [[unit|integration|endtoend]] [[--dry-run]] [[--save-preferences]][/]", "Add the shared test project for a kind; no kind starts a wizard.");
+        grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger[/]", "Add an API without Swagger (no Anarchy.Toolkit.Runtime.Web.Swagger).");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --no-swagger-theme[/]", "Add an API whose Swagger UI keeps its own look.");
         grid.AddRow("[blue]anarchy-toolkit scaffold api <Name> --swagger-theme[/]", "Explicitly enable the toolkit's Swagger UI theme.");
         grid.AddRow("[blue]layout options[/]", "--layout monorepo|single-app, --application-folder <name>, --layering folder|prefix, --layering-layers (JSON array), --layering-root <path>, --layering-library-root <path>, --layering-application-folders (JSON object).");
@@ -101,12 +102,19 @@ public sealed class SpectreWizardPrompter(IAnsiConsole console) : IWizardPrompte
 
         var table = NewProjectTable();
         table.AddRow("build", "build/_build.csproj", "", "", "");
-        foreach (var layer in plan.Layout.Layers)
+        foreach (var layer in plan.Layout.LibraryLayers)
             table.AddRow("library", Markup.Escape(plan.Layout.LibraryProjectPath(layer)), Markup.Escape(layer), "", "");
         var ports = plan.Ports;
         foreach (var app in plan.Applications)
             AddApplicationRow(table, plan.Layout, app, ports.TryGetValue(app, out var port) ? port : null);
+        if (plan.TestKinds.Count > 0)
+            table.AddRow("tests", Markup.Escape(SolutionPlan.TestProjectPath(plan.CommonTestProject)), "", "", "");
+        foreach (var kind in plan.TestKinds)
+            table.AddRow("tests", Markup.Escape(SolutionPlan.TestProjectPath(kind)), "", "", "");
+        if (plan.MockServer)
+            table.AddRow("mock server", Markup.Escape(SolutionPlan.TestProjectPath(Core.Template.TestTemplates.MockServerProject)), "", "", "");
         console.Write(table);
+        if (plan.SharedAppSettings) console.MarkupLine("[grey]With one AppSettings shared by every application[/]");
         if (plan.AgentSkills) console.MarkupLine("[grey]With the toolkit's agent skills in .agents/skills[/]");
     }
 

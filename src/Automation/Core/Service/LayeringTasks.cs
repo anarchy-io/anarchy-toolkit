@@ -16,8 +16,8 @@ public static partial class LayeringTasks
 
     /// <summary>
     /// The default layered chain, innermost first (see the architecture guide), used when a solution's
-    /// <c>.anarchy-toolkit.json</c> overrides no <c>layering.layers</c>. <c>Automation</c> (build tooling) sits on top so that no shipped
-    /// library can depend on it.
+    /// <c>.anarchy-toolkit.json</c> overrides no <c>layering.layers</c>. <c>Apps</c> (APIs, jobs and UIs) sits on top so that no
+    /// library can depend on an application.
     /// </summary>
     public static readonly IReadOnlyList<string> DefaultLayers = SolutionLayout.DefaultLayers;
 
@@ -46,7 +46,7 @@ public static partial class LayeringTasks
         ArgumentNullException.ThrowIfNull(layout);
         var path = NormalizePath(relativePath);
         if (!IsWithin(path, NormalizePath(layout.Root))) return null;
-        if (layout.Mode == LayeringMode.Prefix) return projectName.Split('.')[0];
+        if (layout.Mode == LayeringMode.Prefix) return PrefixOf(projectName);
 
         foreach (var (folder, layer) in layout.ApplicationFolders.OrderByDescending(entry => entry.Key.Length))
         {
@@ -65,7 +65,19 @@ public static partial class LayeringTasks
     /// <param name="root">The solution-relative folder holding the layered projects, e.g. <c>src</c>.</param>
     /// <returns>The layer, or <see langword="null"/> when the project is not checked.</returns>
     public static string? GetPrefixLayer(string projectName, string relativePath, string root) =>
-        PathUnderRoot(relativePath, root) is not null ? projectName.Split('.')[0] : null;
+        PathUnderRoot(relativePath, root) is not null ? PrefixOf(projectName) : null;
+
+    /// <summary>
+    /// The layer named by a prefix-mode project name: its first segment, or its second after a leading
+    /// <see cref="SolutionLayout.LibraryFolder"/> segment (<c>Library.Runtime</c> is in <c>Runtime</c>).
+    /// </summary>
+    /// <param name="projectName">The project name.</param>
+    /// <returns>The layer prefix.</returns>
+    public static string PrefixOf(string projectName)
+    {
+        var parts = projectName.Split('.');
+        return parts.Length > 1 && parts[0] == SolutionLayout.LibraryFolder ? parts[1] : parts[0];
+    }
 
     /// <summary>
     /// The first folder under <paramref name="root"/>, a solution-relative folder, or an empty string for a project

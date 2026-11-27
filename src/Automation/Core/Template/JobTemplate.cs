@@ -14,7 +14,7 @@ internal static class JobTemplate
             [$"{context.ProjectName}.csproj"] = ApplicationTemplates.Project("Microsoft.NET.Sdk", context, exe: true),
             ["EntryPointLocal.cs"] = worker ? $$"""
                 using {{ns}}.Composition;
-                using Anarchy.Toolkit.Hosting.Host;
+                using Anarchy.Toolkit.Runtime.Host;
                 using Microsoft.Extensions.Hosting;
 
                 namespace {{ns}};
@@ -33,7 +33,7 @@ internal static class JobTemplate
                 """ : $$"""
                 using {{ns}}.Composition;
                 using {{ns}}.Core.Service;
-                using Anarchy.Toolkit.Hosting.Host;
+                using Anarchy.Toolkit.Runtime.Host;
                 using Microsoft.Extensions.DependencyInjection;
 
                 namespace {{ns}};
@@ -58,12 +58,12 @@ internal static class JobTemplate
 
                 """,
             [$"Composition/{startup}.cs"] = $$"""
-                using {{ns}}.Composition.DependencyInjection;
+                using {{context.ModuleNamespace}};
                 using {{ns}}.Core.Service;
-                using {{ns}}.Infrastructure.Entity.Configuration;
-                using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration;
-                using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
-                using Anarchy.Toolkit.Hosting.Host;
+                using {{context.SettingsNamespace}};
+                using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration;
+                using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
+                using Anarchy.Toolkit.Runtime.Host;
                 using Microsoft.Extensions.Configuration;
                 using Microsoft.Extensions.DependencyInjection;
                 using Microsoft.Extensions.Hosting;
@@ -82,7 +82,7 @@ internal static class JobTemplate
                 """,
             ["Composition/DependencyInjection/ModuleAppSettings.cs"] = $$"""
                 using {{ns}}.Infrastructure.Entity.Configuration;
-                using Anarchy.Toolkit.Configuration.DependencyInjection.Module.Configuration.Entity;
+                using Anarchy.Toolkit.Bootstrap.DependencyInjection.Module.Configuration.Entity;
 
                 namespace {{ns}}.Composition.DependencyInjection;
 
@@ -90,7 +90,7 @@ internal static class JobTemplate
 
                 """,
             ["Infrastructure/Entity/Configuration/AppSettings.cs"] = $$"""
-                using Anarchy.Toolkit.Configuration.Infrastructure.Entity.Configuration;
+                using Anarchy.Toolkit.Bootstrap.Infrastructure.Entity.Configuration;
 
                 namespace {{ns}}.Infrastructure.Entity.Configuration;
 
@@ -99,6 +99,7 @@ internal static class JobTemplate
                 """,
             ["Core/Service/JobService.cs"] = $$"""
                 using Anarchy.Toolkit.Core.Telemetry;
+                using Anarchy.Toolkit.Core.Telemetry.Extensions.System;
 
                 namespace {{ns}}.Core.Service;
 
@@ -138,17 +139,17 @@ internal static class JobTemplate
             files["EntryPointLambda.cs"] = $$"""
                 using {{ns}}.Composition;
                 using {{ns}}.Core.Service;
-                using Anarchy.Toolkit.Hosting.Host;
+                using Anarchy.Toolkit.Runtime.Aws.Host;
                 using Microsoft.Extensions.DependencyInjection;
 
                 namespace {{ns}};
 
                 /// <summary>Scheduled Lambda handler: <c>{{ns}}::{{ns}}.EntryPointLambda::HandleAsync</c>.</summary>
-                public sealed class EntryPointLambda : JobEntryPointBase<{{startup}}>
+                public sealed class EntryPointLambda : LambdaJobEntryPointBase<{{startup}}>
                 {
                     public async Task HandleAsync()
                     {
-                        await using var scope = App.Services.CreateAsyncScope();
+                        await using var scope = BeginInvocation();
                         await scope.ServiceProvider.GetRequiredService<JobService>().RunAsync("scheduled");
                     }
                 }

@@ -6,17 +6,17 @@ namespace Anarchy.Toolkit.Automation.Core.Entity;
 public enum ApplicationKind
 {
     /// <summary>
-    /// A REST API on <c>Anarchy.Toolkit.Web</c>.
+    /// A REST API on <c>Anarchy.Toolkit.Runtime.Web</c>.
     /// </summary>
     Api,
 
     /// <summary>
-    /// A job (e.g. an AWS Lambda function) on <c>Anarchy.Toolkit.Hosting</c>.
+    /// A job on <c>Anarchy.Toolkit.Runtime</c> (an AWS Lambda function on <c>Anarchy.Toolkit.Runtime.Aws</c>).
     /// </summary>
     Job,
 
     /// <summary>
-    /// An interactive-server Blazor UI on <c>Anarchy.Toolkit.Web.Ui</c>.
+    /// An interactive-server Blazor UI on <c>Anarchy.Toolkit.Runtime.Web.Ui</c>.
     /// </summary>
     Ui
 }

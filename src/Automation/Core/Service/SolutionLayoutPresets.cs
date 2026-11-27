@@ -23,11 +23,11 @@ public static class SolutionLayoutPresets
                 Root = root,
                 LibraryRoot = $"{root}/{SolutionLayout.LibraryFolder}",
                 ApplicationFolders = SolutionLayout.Kinds.Where(applicationKind => SolutionLayout.DefaultLayers.Contains(SolutionLayout.LayerOf(applicationKind)))
-                    .ToDictionary(applicationKind => $"{root}/{SolutionLayout.FolderOf(applicationKind)}", SolutionLayout.LayerOf)
+                    .ToDictionary(applicationKind => $"{root}/{SolutionLayout.AppsLayer}/{SolutionLayout.FolderOf(applicationKind)}", SolutionLayout.LayerOf)
             };
 
         var applicationLayer = SolutionLayout.LayerOf(kind);
-        var layers = new[] { "Core", "Infrastructure", "Configuration", applicationLayer };
+        var layers = new[] { "Core", "Infrastructure", "Bootstrap", SolutionLayout.RuntimeLayer, applicationLayer };
         return new SolutionLayout(LayeringMode.Folder, layers) {
             Root = root,
             LibraryRoot = root,

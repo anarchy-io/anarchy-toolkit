@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Automation.Build.Infrastructure.Helper;
+using Anarchy.Toolkit.Automation.Build.Helpers.TestingPlatforms;
 using Fallout.Common;
 using Fallout.Common.IO;
 using Fallout.Common.Tooling;

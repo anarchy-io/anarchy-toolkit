@@ -12,10 +12,23 @@ namespace Anarchy.Toolkit.Automation.Core.Entity;
 /// <param name="Name">The application name, e.g. <c>Orders</c>.</param>
 /// <param name="SwaggerTheme">
 /// Whether an API keeps the toolkit's default Swagger UI theme; when <see langword="false"/>, the generated startup
-/// disables it. Ignored for other kinds.
+/// disables it. Ignored for other kinds and when <see cref="Swagger"/> is off.
 /// </param>
 public sealed record ApplicationSpec(ApplicationKind Kind, string Name, bool SwaggerTheme = true)
 {
+    /// <summary>The package an API references for its OpenAPI document and Swagger UI.</summary>
+    public const string SwaggerPackageId = "Anarchy.Toolkit.Runtime.Web.Swagger";
+
+    /// <summary>
+    /// Whether an API includes Swagger (<see cref="SwaggerPackageId"/>, enabled in the generated startup).
+    /// Ignored for other kinds.
+    /// </summary>
+    /// <value>Defaults to <see langword="true"/>.</value>
+    public bool Swagger { get; init; } = true;
+
+    /// <summary>Whether the application is an API that includes Swagger.</summary>
+    public bool HasSwagger => Kind == ApplicationKind.Api && Swagger;
+
     /// <summary>Whether to generate a container host for a web application.</summary>
     public bool Container { get; init; }
 
@@ -38,14 +51,24 @@ public sealed record ApplicationSpec(ApplicationKind Kind, string Name, bool Swa
     /// The toolkit package the application is built on.
     /// </summary>
     /// <value>
-    /// <c>Anarchy.Toolkit.Web</c> for an API, <c>Anarchy.Toolkit.Web.Ui</c> for a UI, <c>Anarchy.Toolkit.Hosting</c>
-    /// for a job.
+    /// <c>Anarchy.Toolkit.Runtime.Web</c> for an API (<c>Anarchy.Toolkit.Runtime.Web.Aws</c> with <see cref="ApiLambda"/>),
+    /// <c>Anarchy.Toolkit.Runtime.Web.Ui</c> for a UI, <c>Anarchy.Toolkit.Runtime</c> for a job
+    /// (<c>Anarchy.Toolkit.Runtime.Aws</c> with <see cref="EventLambda"/>). Applications without a Lambda entry point
+    /// reference no AWS package.
     /// </value>
     /// <exception cref="System.ArgumentOutOfRangeException">Thrown when <see cref="Kind"/> is not a known value.</exception>
     public string PackageId => Kind switch {
-        ApplicationKind.Api => "Anarchy.Toolkit.Web",
-        ApplicationKind.Ui => "Anarchy.Toolkit.Web.Ui",
-        ApplicationKind.Job => "Anarchy.Toolkit.Hosting",
+        ApplicationKind.Api when ApiLambda => "Anarchy.Toolkit.Runtime.Web.Aws",
+        ApplicationKind.Api => "Anarchy.Toolkit.Runtime.Web",
+        ApplicationKind.Ui => "Anarchy.Toolkit.Runtime.Web.Ui",
+        ApplicationKind.Job when EventLambda => "Anarchy.Toolkit.Runtime.Aws",
+        ApplicationKind.Job => "Anarchy.Toolkit.Runtime",
         _ => throw new ArgumentOutOfRangeException(nameof(Kind), Kind, null)
     };
+
+    /// <summary>
+    /// Every toolkit package the application references: <see cref="PackageId"/>, then <see cref="SwaggerPackageId"/>
+    /// for an API with <see cref="Swagger"/>.
+    /// </summary>
+    public IReadOnlyList<string> PackageIds => HasSwagger ? [PackageId, SwaggerPackageId] : [PackageId];
 }

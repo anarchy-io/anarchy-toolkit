@@ -5,8 +5,9 @@ using Anarchy.Toolkit.Automation.Core.Validation;
 namespace Anarchy.Toolkit.Automation.Build.Cli.Wizard;
 
 /// <summary>
-/// Guides the user through naming the solution, choosing its directory and layering, adding APIs, jobs and UIs, and
-/// optionally installing the agent skills.
+/// Guides the user through naming the solution, choosing its directory and layering, adding APIs, jobs and UIs, the
+/// settings (shared by default in a monorepo), the test projects (all of them by default), an optional mock server host,
+/// and optionally installing the agent skills.
 /// </summary>
 /// <remarks>
 /// <see cref="Service.ToolApplication"/> runs it for <c>anarchy-toolkit bootstrap</c> when no solution name is given. Answers
@@ -49,9 +50,20 @@ public sealed class BootstrapWizard(IWizardPrompter prompter)
                 AskApplications(layout, selectedKind, applications);
         }
 
+        var sharedSettings = layout.SupportsSharedAppSettings && prompter.SelectOne(
+            "How should the applications get their settings?", [true, false], shared => shared
+                ? "Shared - one AppSettings in the Infrastructure library, ModuleAppSettings and appsettings*.json in the Bootstrap library"
+                : "Isolated - each application has its own AppSettings, ModuleAppSettings and appsettings.json");
+        var tests = prompter.Confirm($"Create the {string.Join(", ", SolutionPlan.AllTestKinds)} test projects?", true);
+        var mockServer = prompter.Confirm($"Create a mock server host (tests/{Core.Template.TestTemplates.MockServerProject})?", false);
         var skills = prompter.Confirm("Install the toolkit's agent skills (.agents/skills) for AI coding agents?", false);
 
-        var plan = new SolutionPlan(name, Path.GetFullPath(directory), layout, applications) { AgentSkills = skills };
+        var plan = new SolutionPlan(name, Path.GetFullPath(directory), layout, applications) {
+            AgentSkills = skills,
+            TestKinds = tests ? SolutionPlan.AllTestKinds : [],
+            MockServer = mockServer,
+            SharedAppSettings = sharedSettings
+        };
         prompter.ShowPlan(plan);
         var savePreferences = prompter.Confirm("Save the selected layering preferences in .anarchy-toolkit.json?", false);
         plan = plan with { SavePreferences = savePreferences };
@@ -83,7 +95,7 @@ public sealed class BootstrapWizard(IWizardPrompter prompter)
                 ApplicationFolders = singleApplication
                     ? preset.ApplicationFolders
                     : SolutionLayout.Kinds.Where(applicationKind => selectedLayers.Contains(SolutionLayout.LayerOf(applicationKind)))
-                        .ToDictionary(applicationKind => $"{preset.Root}/{SolutionLayout.FolderOf(applicationKind)}", SolutionLayout.LayerOf)
+                        .ToDictionary(applicationKind => $"{preset.Root}/{SolutionLayout.AppsLayer}/{SolutionLayout.FolderOf(applicationKind)}", SolutionLayout.LayerOf)
             };
     }
 
@@ -98,7 +110,9 @@ public sealed class BootstrapWizard(IWizardPrompter prompter)
             var taken = layout.Layers.Concat(applications.Select(layout.ProjectName)).ToArray();
             var appName = prompter.Ask($"Name of {Labels.Of(kind)} #{number}", null,
                 answer => ApplicationScaffolder.Validate(layout, new ApplicationSpec(kind, answer), taken));
-            applications.Add(EntryPointWizard.Ask(prompter, new ApplicationSpec(kind, appName)));
+            var swagger = kind != ApplicationKind.Api || prompter.Confirm("Include Swagger?", true);
+            var swaggerTheme = kind != ApplicationKind.Api || !swagger || prompter.Confirm("Use the toolkit's Swagger UI theme?", true);
+            applications.Add(EntryPointWizard.Ask(prompter, new ApplicationSpec(kind, appName, swaggerTheme) { Swagger = swagger }));
             number++;
         } while (allowMore && prompter.Confirm($"Add another {Labels.Of(kind)}?", false));
     }

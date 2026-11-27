@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.DotNet;
 
 /// <summary>
 /// Runs <c>dotnet</c> commands, keeping their output out of the console unless they fail.

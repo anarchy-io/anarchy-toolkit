@@ -1,8 +1,10 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Template;
 using Anarchy.Toolkit.Automation.Core.Validation;
-using Anarchy.Toolkit.Automation.Infrastructure.Helper;
-using Anarchy.Toolkit.Core.Helper;
+using Anarchy.Toolkit.Automation.Helpers.DotNet;
+using Anarchy.Toolkit.Automation.Helpers.Files;
+using Anarchy.Toolkit.Automation.Helpers.Packages;
+using Anarchy.Toolkit.Core.Helpers.Ports;
 
 namespace Anarchy.Toolkit.Automation.Core.Service;
 
@@ -51,10 +53,15 @@ public static class ApplicationScaffolder
     /// <param name="root">The solution directory.</param>
     /// <param name="layout">The solution's layout.</param>
     /// <param name="app">The application to create.</param>
-    /// <param name="packageVersion">The version of the application's toolkit package.</param>
+    /// <param name="versions">The toolkit package versions; only those of <see cref="ApplicationSpec.PackageIds"/> are used.</param>
     /// <param name="ports">The local HTTP and HTTPS ports of a web host, or <see langword="null"/> for the defaults.</param>
+    /// <param name="solutionName">The solution name, prefixing the project's root namespace.</param>
+    /// <param name="sharedSettings">
+    /// The libraries holding the solution's shared settings, or <see langword="null"/> for the application's own.
+    /// </param>
     /// <exception cref="System.InvalidOperationException">Thrown when the project directory already exists.</exception>
-    public static void Create(string root, SolutionLayout layout, ApplicationSpec app, string packageVersion, (int Http, int Https)? ports)
+    public static void Create(string root, SolutionLayout layout, ApplicationSpec app, ToolkitPackageVersions versions, (int Http, int Https)? ports,
+        string solutionName, SharedAppSettings? sharedSettings = null)
     {
         root = Path.GetFullPath(root);
         var directory = Path.Combine(root, layout.ProjectDirectory(app));
@@ -64,15 +71,47 @@ public static class ApplicationScaffolder
         var library = layout.LibraryOf(app.Kind) is { } path && File.Exists(Path.Combine(root, path))
             ? Path.GetRelativePath(directory, Path.Combine(root, path)).Replace('\\', '/')
             : null;
-        string? referenceVersion = packageVersion;
-        if (CentralPackages.Find(directory) is { } centralPackages)
-        {
-            CentralPackages.Ensure(centralPackages, app.PackageId, packageVersion);
-            referenceVersion = null;
-        }
-        var context = new ApplicationContext(app, layout.ProjectName(app), layout.RootNamespace(app), referenceVersion, ports, library) { LayeringMode = layout.Mode };
+        var central = CentralPackages.Find(directory);
+        if (central is not null)
+            foreach (var packageId in app.PackageIds) CentralPackages.Ensure(central, packageId, versions[packageId]);
+        var context = new ApplicationContext(app, layout.ProjectName(app), layout.RootNamespace(app, solutionName),
+            central is null ? versions[app.PackageId] : null, ports, library) {
+            SwaggerPackageVersion = central is null && app.HasSwagger ? versions[ApplicationSpec.SwaggerPackageId] : null,
+            LayeringMode = layout.Mode,
+            SharedSettings = sharedSettings
+        };
         foreach (var (file, content) in ApplicationTemplates.Render(context))
             FileHelper.WriteNewText(Path.Combine(directory, file), content);
+    }
+
+    /// <summary>
+    /// The preference choosing between shared and isolated application settings.
+    /// </summary>
+    public const string SharedSettingsPreference = "scaffolding.appSettings";
+
+    /// <summary>
+    /// The <see cref="SharedSettingsPreference"/> value of shared settings.
+    /// </summary>
+    public const string SharedSettingsValue = "shared";
+
+    /// <summary>
+    /// The shared settings of a solution, whose Infrastructure library must hold the shared <c>AppSettings</c>.
+    /// </summary>
+    /// <param name="root">The solution directory.</param>
+    /// <param name="layout">The solution's layout.</param>
+    /// <param name="solutionName">The solution name.</param>
+    /// <returns>The libraries' root namespaces.</returns>
+    /// <exception cref="System.InvalidOperationException">Thrown when the layout or the solution has no shared settings.</exception>
+    public static SharedAppSettings SharedSettingsOf(string root, SolutionLayout layout, string solutionName)
+    {
+        if (!layout.SupportsSharedAppSettings)
+            throw new InvalidOperationException($"{SharedSettingsPreference} is shared, but the layout has no separate {SolutionLayout.InfrastructureLayer} and {SolutionLayout.BootstrapLayer} libraries.");
+        var infrastructure = layout.LibraryProjectPath(SolutionLayout.InfrastructureLayer);
+        var settings = Path.Combine(root, infrastructure[..infrastructure.LastIndexOf('/')], SharedAppSettingsTemplates.AppSettingsPath);
+        if (!File.Exists(settings))
+            throw new InvalidOperationException($"{SharedSettingsPreference} is shared, but {Path.GetRelativePath(root, settings)} does not exist; create it or set {SharedSettingsPreference} to isolated.");
+        return new SharedAppSettings(layout.LibraryNamespace(SolutionLayout.InfrastructureLayer, solutionName),
+            layout.LibraryNamespace(SolutionLayout.BootstrapLayer, solutionName));
     }
 
     /// <summary>
@@ -89,8 +128,13 @@ public static class ApplicationScaffolder
         var report = progress ?? (_ => { });
         var ports = LocalPorts.Assign(app.IsWebHost ? [app] : Array.Empty<ApplicationSpec>(), workspace.UsedPorts);
 
+        var solutionName = Path.GetFileNameWithoutExtension(workspace.SolutionFile);
+        var shared = AutomationPreferences.Read(workspace.Root).Get<string>(SharedSettingsPreference) == SharedSettingsValue
+            ? SharedSettingsOf(workspace.Root, workspace.Layout, solutionName)
+            : null;
+
         report($"Creating {workspace.Layout.ProjectPath(app)}");
-        Create(workspace.Root, workspace.Layout, app, versions[app.PackageId], ports.TryGetValue(app, out var port) ? port : null);
+        Create(workspace.Root, workspace.Layout, app, versions, ports.TryGetValue(app, out var port) ? port : null, solutionName, shared);
 
         report($"Adding it to {Path.GetFileName(workspace.SolutionFile)}");
         DotNetCli.Run(workspace.Root, "sln", workspace.SolutionFile, "add", workspace.Layout.ProjectPath(app));

@@ -1,4 +1,4 @@
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.Banners;
 
 /// <summary>
 /// Renders the banner shown at the top of a tool's output. Use <see cref="AnarchyConsoleBanner"/> to keep Anarchy's

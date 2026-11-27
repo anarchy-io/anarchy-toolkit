@@ -1,4 +1,4 @@
-namespace Anarchy.Toolkit.Automation.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Helpers.ConnectionStrings;
 
 /// <summary>
 /// Utility to get MySQL connection strings.

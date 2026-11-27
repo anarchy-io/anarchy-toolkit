@@ -1,7 +1,7 @@
 using Fallout.Common.Tools.DotNet;
 using Spectre.Console;
 
-namespace Anarchy.Toolkit.Automation.Build.Infrastructure.Helper;
+namespace Anarchy.Toolkit.Automation.Build.Helpers.Consoles;
 
 /// <summary>
 /// Shared Spectre.Console formatting for target output: section rules, status lines and tables. Errors and warnings
