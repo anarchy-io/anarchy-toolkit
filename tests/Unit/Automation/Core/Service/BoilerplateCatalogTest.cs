@@ -1,6 +1,6 @@
 using Anarchy.Toolkit.Automation.Core.Entity;
 using Anarchy.Toolkit.Automation.Core.Service;
-using Anarchy.Toolkit.Automation.Infrastructure.Helper;
+using Anarchy.Toolkit.Automation.Helpers.Files;
 using AwesomeAssertions;
 
 namespace Anarchy.Toolkit.Tests.Unit.Automation.Core.Service;
@@ -12,7 +12,7 @@ public class BoilerplateCatalogTest
     [Fact]
     public void ListAndRead_ExposeThePackagedFiles()
     {
-        BoilerplateCatalog.List().Should().Contain(["Makefile", ".gitignore", ".editorconfig", "scripts/build.anarchy.sh", ".agents/skills/anarchy/SKILL.md"]);
+        BoilerplateCatalog.List().Should().Contain(["Makefile", ".gitignore", ".editorconfig", "scripts/build.anarchy.sh", "scripts/build.anarchy.ps1", ".agents/skills/anarchy/SKILL.md"]);
         BoilerplateCatalog.List().Should().NotContain("scripts/build.fallout.sh");
         BoilerplateCatalog.Read("Makefile").Should().Contain("include");
         BoilerplateCatalog.Read(".\\nope").Should().BeNull();
@@ -104,7 +104,7 @@ public class BoilerplateCatalogTest
         UnifiedDiff.Create("f", before, before.ReplaceLineEndings("\r\n")).Should().BeEmpty();
     }
 
-    private static string FileMerge(string root) => Anarchy.Toolkit.Automation.Infrastructure.Helper.FileHelper.MergeManagedBlock(
+    private static string FileMerge(string root) => Anarchy.Toolkit.Automation.Helpers.Files.FileHelper.MergeManagedBlock(
         File.ReadAllText(Path.Combine(root, ".gitignore")), BoilerplateCatalog.Read(".gitignore")!,
         skipExistingLines: true, placeBlockFirst: true);
 }

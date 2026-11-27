@@ -1,7 +1,7 @@
 using Anarchy.Toolkit.Core.Events.Envelopes;
 using Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents.DependencyInjection.Module;
 using Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents.Envelopes;
-using Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Infrastructure.Messaging.CloudEvents.Extensions.Microsoft.Extensions.DependencyInjection;
 using AwesomeAssertions;
 using CloudNative.CloudEvents;
 using Microsoft.Extensions.Configuration;

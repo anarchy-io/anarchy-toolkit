@@ -57,9 +57,28 @@ public class ApplicationTemplatesTest
 
         files.Should().ContainKeys("EntryPointLocal.cs", "EntryPointContainer.cs", "EntryPointLambda.cs", "Composition/Startup.cs");
         files["EntryPointLocal.cs"].Should().Contain("RUNTIME_HOST");
-        files["EntryPointLambda.cs"].Should().Contain("AwsWebAppEntryPointBase<Startup>");
+        files["EntryPointLambda.cs"].Should().Contain("AwsWebAppEntryPointBase<Startup>").And.Contain("using Anarchy.Toolkit.Runtime.Web.Aws;");
         ApplicationTemplates.Render(context with { App = app with { Container = false, ApiLambda = false } })
             .Should().NotContainKey("EntryPointContainer.cs").And.NotContainKey("EntryPointLambda.cs");
+    }
+
+    [Fact]
+    public void RenderApi_EnablesSwaggerUnlessLeftOut()
+    {
+        var app = new ApplicationSpec(ApplicationKind.Api, "Orders");
+        var context = new ApplicationContext(app, "Orders", "App.Orders", "2.0.0", null, null) { SwaggerPackageVersion = "2.3.0" };
+
+        var files = ApplicationTemplates.Render(context);
+        var unthemed = ApplicationTemplates.Render(context with { App = app with { SwaggerTheme = false } });
+        var bare = ApplicationTemplates.Render(context with { App = app with { Swagger = false } });
+
+        files["Orders.csproj"].Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Runtime.Web.Swagger\" Version=\"2.3.0\" />");
+        files["Composition/Startup.cs"].Should().Contain(".AddToolkitSwagger(ApiName, AppSettings, Environment);")
+            .And.NotContain("SwaggerThemeOptions");
+        unthemed["Composition/Startup.cs"].Should().Contain("using Anarchy.Toolkit.Runtime.Web.Swagger.Entity;")
+            .And.Contain(".Configure<SwaggerThemeOptions>(theme => theme.Enabled = false);");
+        bare["Orders.csproj"].Should().NotContain("Swagger");
+        bare["Composition/Startup.cs"].Should().NotContain("Swagger");
     }
 
     [Theory]
@@ -72,7 +91,7 @@ public class ApplicationTemplatesTest
 
         files.Should().ContainKeys("EntryPointLocal.cs", "EntryPointLambda.cs");
         files["EntryPointLocal.cs"].Should().Contain(mode == JobExecutionMode.Worker ? "RunAsync()" : "job.RunAsync");
-        files["EntryPointLambda.cs"].Should().Contain("CreateAsyncScope");
+        files["EntryPointLambda.cs"].Should().Contain("LambdaJobEntryPointBase<JobStartup>").And.Contain("BeginInvocation()");
         files.ContainsKey("Core/Service/JobWorker.cs").Should().Be(mode == JobExecutionMode.Worker);
     }
 

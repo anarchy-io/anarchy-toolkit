@@ -19,8 +19,9 @@ public class BuildHostScaffolderTest
             typeof(BuildHostScaffolder).GetMethod(nameof(BuildHostScaffolder.Create))!.GetParameters()[1].Name
                 .Should().Be("automationBuildVersion");
             File.ReadAllText(Path.Combine(root, "build", "_build.csproj"))
-                .Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Automation.Build\" Version=\"1.2.3\" />");
-            File.ReadAllText(Path.Combine(root, "build", "Program.cs"))
+                .Should().Contain("<PackageReference Include=\"Anarchy.Toolkit.Automation.Build\" Version=\"1.2.3\" />")
+                .And.Contain(@"<None Include=""..\.fallout\parameters.json"" Link="".fallout\parameters.json"" />");
+            File.ReadAllText(Path.Combine(root, "build", "Build.cs"))
                 .Should().Contain("class Build : AnarchyBuild,").And.NotContain("using Fallout.Common;");
         }
         finally

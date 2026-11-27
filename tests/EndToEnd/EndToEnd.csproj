@@ -19,7 +19,7 @@
     <ProjectReference Include="..\..\src\Automation.Build\Automation.Build.csproj" />
     <ProjectReference Include="..\..\src\Automation.Build.Cli\Automation.Build.Cli.csproj" />
     <!-- Automation/Build/Component/MockServerTasksTest runs this project without building it, so it must be built first. -->
-    <ProjectReference Include="..\..\src\Web.MockServer\Web.MockServer.csproj" />
+    <ProjectReference Include="..\..\src\Runtime.Web.MockServer\Runtime.Web.MockServer.csproj" />
   </ItemGroup>
 
 </Project>

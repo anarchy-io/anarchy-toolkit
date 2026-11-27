@@ -7,7 +7,7 @@ namespace Anarchy.Toolkit.Tests.Unit.Automation.Core.Service;
 
 public class DependencyMapTest
 {
-    private static readonly string[] Layers = ["Core", "Infrastructure", "Configuration", "Web"];
+    private static readonly string[] Layers = ["Core", "Infrastructure", "Bootstrap", "Web"];
 
     private static DependencyMap Map(params DependencyMapReference[] references) => new(
         "Shop",
@@ -39,8 +39,8 @@ public class DependencyMapTest
     }
 
     [Theory]
-    [InlineData("Orders", "src/Api/Orders/Orders.csproj", "Web")]
-    [InlineData("Reports", "src/Jobs/Reports/Reports.csproj", "Hosting")]
+    [InlineData("Orders", "src/Apps/Apis/Orders/Orders.csproj", "Apps")]
+    [InlineData("Reports", "src/Apps/Jobs/Reports/Reports.csproj", "Apps")]
     [InlineData("Core", "src/Library/Core/Core.csproj", "Core")]
     [InlineData("Kit", "src/Library/Testing/Kit/Kit.csproj", "Testing")]
     [InlineData("Web.Ui", "src/Web.Ui/Web.Ui.csproj", "Other")]
@@ -56,7 +56,8 @@ public class DependencyMapTest
     {
         var layout = new SolutionLayout(LayeringMode.Prefix, LayeringTasks.DefaultLayers);
 
-        DependencyMapTasks.GetDefaultGroup("Automation.Build", "src/Automation.Build/Automation.Build.csproj", layout).Should().Be("Automation");
+        DependencyMapTasks.GetDefaultGroup("Apps.Api.Orders", "src/Apps.Api.Orders/Apps.Api.Orders.csproj", layout).Should().Be("Apps");
+        DependencyMapTasks.GetDefaultGroup("Library.Runtime", "src/Library.Runtime/Library.Runtime.csproj", layout).Should().Be("Runtime");
         DependencyMapTasks.GetDefaultGroup("Tools.Cli", "src/Tools.Cli/Tools.Cli.csproj", layout).Should().Be("Other");
     }
 
@@ -86,7 +87,7 @@ public class DependencyMapTest
         var result = Map().Groups;
 
         // Assert
-        result.Should().Equal("Core", "Infrastructure", "Configuration", "Web", "Testing", "Tests");
+        result.Should().Equal("Core", "Infrastructure", "Bootstrap", "Web", "Testing", "Tests");
     }
 
     [Fact]
@@ -115,7 +116,7 @@ public class DependencyMapTest
         result.Should().Contain("<strong>1</strong> layering violations")
             .And.Contain("<code>Core</code> → <code>Web</code>")
             .And.Contain("p0 -.-&gt; p2")
-            .And.Contain("linkStyle 0 stroke:#c0302f");
+            .And.Contain("linkStyle 0 stroke:#C81818");
     }
 
     [Fact]
@@ -127,7 +128,7 @@ public class DependencyMapTest
         // Assert
         result.Should().Contain("""<g class="ring" data-group="Core" data-zoom="4" role="button" tabindex="0" """)
             .And.Contain("""<template data-group="Core">""")
-            .And.Contain("""<template data-group="Configuration"><p class="muted">No projects.</p></template>""")
+            .And.Contain("""<template data-group="Bootstrap"><p class="muted">No projects.</p></template>""")
             .And.Contain("""<button type="button" data-group="Testing">Testing (1)</button>""");
     }
 

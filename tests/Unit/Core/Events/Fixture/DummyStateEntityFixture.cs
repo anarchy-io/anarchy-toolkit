@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Testing.Fixture;
-using Anarchy.Toolkit.Testing.Helper;
+using Anarchy.Toolkit.Testing.Helpers.Tests;
 using Anarchy.Toolkit.Tests.Unit.Core.Events.Dummy;
 
 namespace Anarchy.Toolkit.Tests.Unit.Core.Events.Fixture;

@@ -1,5 +1,6 @@
-using Anarchy.Toolkit.Core.Events.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Core.Events.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Core.Events.Local;
+using Anarchy.Toolkit.Testing.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Testing.Telemetry;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,5 @@
 using Anarchy.Toolkit.Core.Telemetry;
-using Anarchy.Toolkit.Infrastructure.Telemetry.StatsD;
+using Anarchy.Toolkit.Infrastructure.Telemetry.StatsD.Extensions.Microsoft.Extensions.DependencyInjection;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using StatsdClient;

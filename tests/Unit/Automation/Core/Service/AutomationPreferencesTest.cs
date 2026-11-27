@@ -158,13 +158,13 @@ public class AutomationPreferencesTest
     public void WithLayering_GivenOmittedSavedModeAndFolderModeEdit_PreservesFolderOverrides()
     {
         var preferences = AutomationPreferences.Parse("""
-            { "layering": { "libraryRoot": "src/custom", "applicationFolders": { "src/Api": "Web" } } }
+            { "layering": { "libraryRoot": "src/custom", "applicationFolders": { "src/Api": "Apps" } } }
             """);
 
         var edited = preferences.WithLayering(new JsonObject { ["mode"] = "folder" });
 
         edited.Saved["layering"]!["libraryRoot"]!.GetValue<string>().Should().Be("src/custom");
-        edited.Saved["layering"]!["applicationFolders"]!["src/Api"]!.GetValue<string>().Should().Be("Web");
+        edited.Saved["layering"]!["applicationFolders"]!["src/Api"]!.GetValue<string>().Should().Be("Apps");
         edited.ResolveLayout().Mode.Should().Be(LayeringMode.Folder);
     }
 

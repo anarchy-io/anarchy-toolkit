@@ -1,4 +1,4 @@
-using Anarchy.Toolkit.Core.Composition.Extension.Microsoft.DependencyInjection;
+using Anarchy.Toolkit.Core.Extensions.Microsoft.Extensions.DependencyInjection;
 using Anarchy.Toolkit.Infrastructure.CorrelationId.Core.Entity;
 using Anarchy.Toolkit.Infrastructure.CorrelationId.DependencyInjection.Module;
 using AwesomeAssertions;

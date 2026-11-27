@@ -32,9 +32,9 @@ public class LayeringConfigurationTest
         layout.Root.Should().Be("code");
         layout.LibraryRoot.Should().Be("code/Library");
         layout.ApplicationFolders.Should().BeEquivalentTo(new Dictionary<string, string> {
-            ["code/Api"] = "Web",
-            ["code/Jobs"] = "Hosting",
-            ["code/Ui"] = "Web"
+            ["code/Apps/Apis"] = "Apps",
+            ["code/Apps/Jobs"] = "Apps",
+            ["code/Apps/Ui"] = "Apps"
         });
     }
 
@@ -57,7 +57,7 @@ public class LayeringConfigurationTest
               "layering": {
                 "mode": "folder",
                 "libraryRoot": "src/custom-library",
-                "applicationFolders": { "src/services": "Web" }
+                "applicationFolders": { "src/services": "Apps" }
               }
             }
             """);
